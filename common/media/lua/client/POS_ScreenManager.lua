@@ -164,11 +164,11 @@ function POS_ScreenManager.handleClick(terminal, mouseX, mouseY)
     local screen = POS_ScreenManager.screens[POS_ScreenManager.currentScreen]
     if not screen then return false end
 
-    -- Calculate which line was clicked
-    local th = terminal:titleBarHeight()
-    local pad = 16
+    -- Calculate which line was clicked using screen rect
+    local sx, sy, sw, sh = terminal:getScreenRect()
+    local pad = 8  -- matches SCREEN_PAD in POS_TerminalUI
     local lh = terminal._lineHeight or 16
-    local contentY = mouseY - th - pad + (terminal.scrollOffset or 0)
+    local contentY = mouseY - sy - pad + (terminal.scrollOffset or 0)
 
     if contentY < 0 then return false end
 

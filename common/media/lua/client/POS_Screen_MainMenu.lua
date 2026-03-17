@@ -43,6 +43,7 @@ local MENU_OPTIONS = {
     { key = "UI_POS_MainMenuOption_Journal", screen = "JOURNAL",                  enabled = false },
     { key = "UI_POS_MainMenuOption_Profile", screen = "PROFILE",                  enabled = false },
     { key = "UI_POS_MainMenuOption_Stock",   screen = "STOCKMARKET_PLACEHOLDER",  enabled = true },
+    { key = "UI_POS_MainMenuOption_Shutdown", screen = nil,                       enabled = true, action = "shutdown" },
 }
 
 ---------------------------------------------------------------
@@ -84,9 +85,10 @@ function screen.rebuildLines(terminal, _params)
         table.insert(lines, { text = prefix .. label .. suffix, colour = colour })
 
         if opt.enabled then
+            local actionId = opt.action or "navigate"
             table.insert(hitZones, {
                 lineIndex = lineIdx,
-                actionId  = "navigate",
+                actionId  = actionId,
                 data      = { screen = opt.screen },
             })
         end
@@ -107,6 +109,8 @@ end
 function screen.onAction(terminal, actionId, data)
     if actionId == "navigate" and data and data.screen then
         POS_ScreenManager.navigateTo(data.screen)
+    elseif actionId == "shutdown" then
+        POS_TerminalUI.closeTerminal()
     end
 end
 

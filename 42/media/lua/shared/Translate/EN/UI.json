@@ -55,6 +55,7 @@
     "UI_POS_MainMenuOption_Journal": "Journal — Timeline",
     "UI_POS_MainMenuOption_Profile": "Profile — Stats",
     "UI_POS_MainMenuOption_Stock": "Stockmarket",
+    "UI_POS_MainMenuOption_Shutdown": "SHUTDOWN",
     "UI_POS_MainMenuPrompt": "Select an option...",
     "UI_POS_BackPrompt": "Back",
 

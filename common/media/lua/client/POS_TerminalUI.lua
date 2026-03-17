@@ -18,10 +18,11 @@
 -- POS_TerminalUI.lua
 -- Retro early-90s computer terminal UI for POSnet.
 --
--- Hosts the CRT-style window with scanline effect. Content
--- rendering is delegated to POS_ScreenManager which drives
--- a multi-screen BBS state machine. On first open per
--- world-load, plays a DOS-style boot sequence.
+-- Hosts the CRT-style window with a generated bezel texture,
+-- scanline effect, and phosphor glow. Content rendering is
+-- delegated to POS_ScreenManager which drives a multi-screen
+-- BBS state machine. On first open per world-load, plays a
+-- DOS-style boot sequence.
 ---------------------------------------------------------------
 
 require "PhobosLib"
@@ -44,6 +45,26 @@ local TERM = {
     err     = { r = 0.90, g = 0.25, b = 0.20 },
     border  = { r = 0.15, g = 0.40, b = 0.15, a = 1.0 },
     scan    = { r = 0.10, g = 0.20, b = 0.10, a = 0.15 },
+    glow    = { r = 0.05, g = 0.15, b = 0.05, a = 0.08 },
+}
+
+--- CRT bezel texture (lazy-loaded, cached by PZ engine).
+local CRT_BEZEL = nil
+local function getCRTBezel()
+    if not CRT_BEZEL then
+        CRT_BEZEL = getTexture("media/textures/POSnet_CRT_Bezel.png")
+    end
+    return CRT_BEZEL
+end
+
+--- Bezel screen area inset percentages.
+--- These define where the monitor's "screen" sits within the bezel texture.
+--- Values measured from the generated CRT bezel image.
+local BEZEL = {
+    left   = 0.14,
+    right  = 0.14,
+    top    = 0.11,
+    bottom = 0.28,
 }
 
 --- Safe getText wrapper.
@@ -60,6 +81,9 @@ local FONT = UIFont.Code
 local function lineHeight()
     return getTextManager():getFontHeight(FONT) + 2
 end
+
+--- Content padding inside the screen area.
+local SCREEN_PAD = 8
 
 ---------------------------------------------------------------
 -- Boot sequence
@@ -131,6 +155,29 @@ local BASE_CHARS_PER_FRAME = BOOT_TOTAL_CHARS / (30 * 60)
 local BOOT_PAUSE_FRAMES = 60
 
 ---------------------------------------------------------------
+-- Screen rect helper
+---------------------------------------------------------------
+
+--- Compute the content screen rectangle within the bezel.
+--- Returns absolute pixel coordinates relative to the window.
+---@return number sx, number sy, number sw, number sh
+function POS_TerminalUI:getScreenRect()
+    local tex = getCRTBezel()
+    if tex then
+        local bx = math.floor(self.width * BEZEL.left)
+        local by = math.floor(self.height * BEZEL.top)
+        local bw = self.width - bx - math.floor(self.width * BEZEL.right)
+        local bh = self.height - by - math.floor(self.height * BEZEL.bottom)
+        return bx, by, bw, bh
+    else
+        -- Fallback: use title bar + padding (original behaviour)
+        local th = self:titleBarHeight()
+        local pad = 16
+        return pad, th + pad, self.width - pad * 2, self.height - th - pad * 2
+    end
+end
+
+---------------------------------------------------------------
 -- Constructor
 ---------------------------------------------------------------
 
@@ -140,6 +187,7 @@ function POS_TerminalUI:new(x, y, width, height)
     self.__index = self
     o.title = "POSnet Terminal"
     o.resizable = false
+    o.pin = true
     o.radioName = "Radio"
     o.frequency = 91500
     o.scrollOffset = 0
@@ -171,30 +219,51 @@ function POS_TerminalUI:initialise()
 end
 
 function POS_TerminalUI:createChildren()
-    PhobosLib.makeWindowResizable(self, 400, 400)
+    PhobosLib.makeWindowResizable(self, 480, 520)
     ISCollapsableWindow.createChildren(self)
+
+    -- Hide standard window chrome — CRT bezel replaces it visually
+    local tex = getCRTBezel()
+    if tex then
+        if self.closeButton then self.closeButton:setVisible(false) end
+        if self.collapseButton then self.collapseButton:setVisible(false) end
+        if self.pinButton then self.pinButton:setVisible(false) end
+        self.drawFrame = false
+        self.background = false
+    end
 end
 
 function POS_TerminalUI:prerender()
-    ISCollapsableWindow.prerender(self)
+    local tex = getCRTBezel()
+    if tex then
+        -- Draw CRT bezel texture covering entire window (including title bar)
+        self:drawTextureScaled(tex, 0, 0, self.width, self.height, 1.0, 1, 1, 1)
 
-    -- Terminal background
-    local th = self:titleBarHeight()
-    self:drawRect(0, th, self.width, self.height - th,
-        TERM.bg.a, TERM.bg.r, TERM.bg.g, TERM.bg.b)
+        -- Scanline effect within screen area only
+        local sx, sy, sw, sh = self:getScreenRect()
+        for y = sy, sy + sh - 1, 3 do
+            self:drawRect(sx, y, sw, 1,
+                TERM.scan.a, TERM.scan.r, TERM.scan.g, TERM.scan.b)
+        end
+    else
+        -- Fallback: original programmatic rendering
+        ISCollapsableWindow.prerender(self)
+        local th = self:titleBarHeight()
+        self:drawRect(0, th, self.width, self.height - th,
+            TERM.bg.a, TERM.bg.r, TERM.bg.g, TERM.bg.b)
 
-    -- Scanline effect
-    for y = th, self.height - 1, 3 do
-        self:drawRect(0, y, self.width, 1,
-            TERM.scan.a, TERM.scan.r, TERM.scan.g, TERM.scan.b)
+        for y = th, self.height - 1, 3 do
+            self:drawRect(0, y, self.width, 1,
+                TERM.scan.a, TERM.scan.r, TERM.scan.g, TERM.scan.b)
+        end
+
+        -- Inner border (fallback only)
+        local pad = 8
+        local bx, by = pad, th + pad
+        local bw, bh = self.width - pad * 2, self.height - th - pad * 2
+        self:drawRectBorder(bx, by, bw, bh,
+            TERM.border.a, TERM.border.r, TERM.border.g, TERM.border.b)
     end
-
-    -- Inner border
-    local pad = 8
-    local bx, by = pad, th + pad
-    local bw, bh = self.width - pad * 2, self.height - th - pad * 2
-    self:drawRectBorder(bx, by, bw, bh,
-        TERM.border.a, TERM.border.r, TERM.border.g, TERM.border.b)
 end
 
 function POS_TerminalUI:render()
@@ -205,6 +274,11 @@ function POS_TerminalUI:render()
     else
         self:renderScreen()
     end
+
+    -- Phosphor glow effect over screen area
+    local sx, sy, sw, sh = self:getScreenRect()
+    self:drawRect(sx, sy, sw, sh,
+        TERM.glow.a, TERM.glow.r, TERM.glow.g, TERM.glow.b)
 end
 
 function POS_TerminalUI:onMouseWheel(del)
@@ -227,6 +301,13 @@ function POS_TerminalUI:onMouseDown(x, y)
     end
 
     return ISCollapsableWindow.onMouseDown(self, x, y)
+end
+
+function POS_TerminalUI:onKeyPress(key)
+    if key == Keyboard.KEY_ESCAPE then
+        self:close()
+        return
+    end
 end
 
 function POS_TerminalUI:close()
@@ -267,11 +348,11 @@ function POS_TerminalUI:renderBoot()
     end
 
     -- Render visible boot text
-    local th = self:titleBarHeight()
-    local pad = 16
-    local x = pad
+    local sx, sy, sw, sh = self:getScreenRect()
+    local pad = SCREEN_PAD
+    local x = sx + pad
     local lh = lineHeight()
-    local viewHeight = self.height - th - pad * 2
+    local viewHeight = sh - pad * 2
 
     -- Determine which characters are visible
     local charsSoFar = 0
@@ -311,14 +392,14 @@ function POS_TerminalUI:renderBoot()
         self.scrollOffset = 0
     end
 
-    -- Draw lines
-    local y = th + pad - self.scrollOffset
+    -- Draw lines (clipped to screen area)
+    local drawY = sy + pad - self.scrollOffset
     for _, text in ipairs(renderedLines) do
-        if y + lh > th and y < self.height then
-            self:drawText(text, x, y,
+        if drawY + lh > sy and drawY < sy + sh then
+            self:drawText(text, x, drawY,
                 TERM.text.r, TERM.text.g, TERM.text.b, 1.0, FONT)
         end
-        y = y + lh
+        drawY = drawY + lh
     end
 end
 
@@ -344,23 +425,23 @@ function POS_TerminalUI:renderScreen()
     end
 
     -- Render cached terminal lines
-    local th = self:titleBarHeight()
-    local pad = 16
-    local x = pad
-    local y = th + pad - self.scrollOffset
+    local sx, sy, sw, sh = self:getScreenRect()
+    local pad = SCREEN_PAD
+    local x = sx + pad
+    local drawY = sy + pad - self.scrollOffset
     local lh = lineHeight()
 
     for _, line in ipairs(self.cachedLines) do
-        if y + lh > th and y < self.height then
+        if drawY + lh > sy and drawY < sy + sh then
             local c = line.colour or TERM.text
-            self:drawText(line.text, x, y, c.r, c.g, c.b, 1.0, FONT)
+            self:drawText(line.text, x, drawY, c.r, c.g, c.b, 1.0, FONT)
         end
-        y = y + lh
+        drawY = drawY + lh
     end
 
     -- Track max scroll
     local contentHeight = #self.cachedLines * lh
-    local viewHeight = self.height - th - pad * 2
+    local viewHeight = sh - pad * 2
     self.maxScroll = math.max(0, contentHeight - viewHeight)
 end
 
@@ -380,8 +461,8 @@ function POS_TerminalUI.open(radioName, frequency)
 
     local sw = getCore():getScreenWidth()
     local sh = getCore():getScreenHeight()
-    local w = 520
-    local h = 560
+    local w = 640
+    local h = 700
     local x = (sw - w) / 2
     local y = (sh - h) / 2
 
