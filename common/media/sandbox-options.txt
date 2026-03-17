@@ -1,0 +1,55 @@
+option POS.EnableDebugLogging
+{
+    type = boolean,
+    default = false,
+    page = POS_Sandbox,
+    translation = POS_EnableDebugLogging,
+}
+
+option POS.EnableBroadcasts
+{
+    type = boolean,
+    default = true,
+    page = POS_Sandbox,
+    translation = POS_EnableBroadcasts,
+}
+
+option POS.BroadcastIntervalMinutes
+{
+    type = integer,
+    default = 30,
+    min = 5,
+    max = 120,
+    page = POS_Sandbox,
+    translation = POS_BroadcastIntervalMinutes,
+}
+
+option POS.MaxActiveOperations
+{
+    type = integer,
+    default = 3,
+    min = 1,
+    max = 10,
+    page = POS_Sandbox,
+    translation = POS_MaxActiveOperations,
+}
+
+option POS.OperationExpiryDays
+{
+    type = integer,
+    default = 7,
+    min = 1,
+    max = 30,
+    page = POS_Sandbox,
+    translation = POS_OperationExpiryDays,
+}
+
+option POS.POSnetFrequency
+{
+    type = integer,
+    default = 91500,
+    min = 10000,
+    max = 500000,
+    page = POS_Sandbox,
+    translation = POS_POSnetFrequency,
+}

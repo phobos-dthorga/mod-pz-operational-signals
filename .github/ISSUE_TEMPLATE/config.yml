@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: PhobosLib (dependency) on Steam Workshop
+    url: https://steamcommunity.com/sharedfiles/filedetails/?id=3668598865
+    about: Required dependency — subscribe to PhobosLib if you haven't already

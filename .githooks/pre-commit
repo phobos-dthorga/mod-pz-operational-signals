@@ -1,0 +1,39 @@
+#!/bin/bash
+# POSnet pre-commit hook
+# Checks version consistency (2 locations) and runs luacheck if available.
+# Install: git config core.hooksPath .githooks
+
+set -e
+FAIL=0
+
+echo "[pre-commit] POSnet validation..."
+
+# --- Version consistency (2 locations) ---
+V_ROOT=$(grep -oP 'modversion=\K[0-9]+\.[0-9]+\.[0-9]+' mod.info 2>/dev/null || echo "")
+V_42=$(grep -oP 'modversion=\K[0-9]+\.[0-9]+\.[0-9]+' 42/mod.info 2>/dev/null || echo "")
+
+if [ -n "$V_ROOT" ]; then
+    if [ "$V_42" != "$V_ROOT" ]; then
+        echo "  FAIL: 42/mod.info=$V_42 does not match mod.info=$V_ROOT"
+        FAIL=1
+    else
+        echo "  OK: All 2 version locations match ($V_ROOT)"
+    fi
+fi
+
+# --- Luacheck (if available) ---
+if command -v luacheck &>/dev/null; then
+    echo "[pre-commit] Running luacheck..."
+    if ! luacheck common/media/lua/ --quiet; then
+        FAIL=1
+    fi
+else
+    echo "[pre-commit] Skipping luacheck (not installed)"
+fi
+
+if [ "$FAIL" -ne 0 ]; then
+    echo "[pre-commit] FAILED — commit blocked. Fix the issues above."
+    exit 1
+fi
+
+echo "[pre-commit] All checks passed."

@@ -1,0 +1,80 @@
+[h1]Phobos' Operational Signals (POSnet)[/h1]
+
+[b]Version:[/b] 0.1.0
+[b]Requires:[/b] [url=https://steamcommunity.com/sharedfiles/filedetails/?id=3668598865]PhobosLib[/url]
+[b]PZ Version:[/b] Build 42.15.0+
+
+[hr][/hr]
+
+Radio-driven procedural operations system for Project Zomboid Build 42. Tune your radio to the POSnet frequency, intercept operational broadcasts, and deploy into the field to complete objectives.
+
+[h2]Core Systems[/h2]
+
+[h3]Radio Interception[/h3]
+POSnet registers a custom military radio channel at a configurable frequency (default 91.5 MHz). Tune any radio to the POSnet frequency to receive operation broadcasts. No radio, no missions — immersion first.
+
+[h3]Mission Generator[/h3]
+Procedural operation generation from registered templates. Missions scale with game day and are selected from five categories covering different gameplay styles.
+
+[h3]Operation Log[/h3]
+Track your active, completed, and expired operations in a persistent journal stored in your player data. Operations auto-expire after a configurable number of days.
+
+[h3]Completion Detector[/h3]
+Extensible objective tracking system. Built-in objective types include item acquisition, with support for custom checkers registered by external mods.
+
+[h3]Broadcast System[/h3]
+Server-side timed broadcast scheduling delivers new operations at configurable intervals to all players tuned to the POSnet frequency.
+
+[h2]Mission Categories[/h2]
+
+[list]
+[*] [b]Industrial Recovery[/b] — Salvage materials from factories and warehouses
+[*] [b]Vehicle Salvage[/b] — Locate and recover vehicle parts
+[*] [b]Scientific Research[/b] — Collect specimens and conduct field research
+[*] [b]Survivor Assistance[/b] — Aid survivors with supplies and medical care
+[*] [b]Infrastructure Repair[/b] — Restore critical infrastructure
+[/list]
+
+[h2]Sandbox Options[/h2]
+
+[list]
+[*] [b]Enable Debug Logging[/b] (default: off) — Verbose console output for troubleshooting
+[*] [b]Enable Broadcasts[/b] (default: on) — Toggle POSnet broadcast system
+[*] [b]Broadcast Interval[/b] (default: 30 min, range: 5–120) — Minutes between broadcasts
+[*] [b]Max Active Operations[/b] (default: 3, range: 1–10) — Concurrent operation limit
+[*] [b]Operation Expiry[/b] (default: 7 days, range: 1–30) — Days before operations expire
+[*] [b]POSnet Frequency[/b] (default: 91500, range: 10000–500000) — Radio frequency in Hz
+[/list]
+
+[h2]Extensibility[/h2]
+
+POSnet is designed for cross-mod integration:
+[list]
+[*] Register custom mission templates via [b]POS_MissionTemplates.register()[/b]
+[*] Register custom objective type checkers via [b]POS_CompletionDetector.registerChecker()[/b]
+[*] Optional tie-ins with PhobosChemistryPathways and PhobosIndustrialPathology
+[/list]
+
+[h2]Dependencies[/h2]
+
+[b]Required:[/b]
+[list]
+[*] [url=https://steamcommunity.com/sharedfiles/filedetails/?id=3668598865]PhobosLib[/url] — Shared utility library
+[/list]
+
+[b]Optional (soft dependencies):[/b]
+[list]
+[*] [url=https://steamcommunity.com/sharedfiles/filedetails/?id=3668197831]Phobos' Chemistry Pathways[/url] — Scientific Research mission templates
+[*] PhobosIndustrialPathology — Pathology-themed mission templates
+[/list]
+
+[h2]Source Code[/h2]
+
+[url=https://github.com/phobos-dthorga/mod-pz-operational-signals]GitHub Repository[/url]
+
+[h2]Licensing[/h2]
+
+[list]
+[*] Code: MIT License
+[*] Assets: CC BY-NC-SA 4.0
+[/list]

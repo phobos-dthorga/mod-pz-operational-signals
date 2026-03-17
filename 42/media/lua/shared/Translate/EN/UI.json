@@ -1,0 +1,21 @@
+{
+    "__copyright": "Copyright (c) 2026 Phobos A. D'thorga. All rights reserved.",
+    "UI_POS_OperationLog": "Operation Log",
+    "UI_POS_ActiveOperations": "Active Operations",
+    "UI_POS_CompletedOperations": "Completed Operations",
+    "UI_POS_ExpiredOperations": "Expired Operations",
+    "UI_POS_NoActiveOps": "No active operations. Tune to POSnet frequency to receive broadcasts.",
+    "UI_POS_ObjectiveComplete": "Objective Complete",
+    "UI_POS_OperationComplete": "Operation Complete — POSnet acknowledges.",
+    "UI_POS_OperationExpired": "Operation expired — window of opportunity has closed.",
+    "UI_POS_BroadcastReceived": "POSnet broadcast received.",
+    "UI_POS_Category_IndustrialRecovery": "Industrial Recovery",
+    "UI_POS_Category_VehicleSalvage": "Vehicle Salvage",
+    "UI_POS_Category_ScientificResearch": "Scientific Research",
+    "UI_POS_Category_SurvivorAssistance": "Survivor Assistance",
+    "UI_POS_Category_InfrastructureRepair": "Infrastructure Repair",
+    "UI_POS_Difficulty_Easy": "Routine",
+    "UI_POS_Difficulty_Medium": "Standard",
+    "UI_POS_Difficulty_Hard": "High Priority",
+    "UI_POS_Difficulty_Critical": "Critical"
+}

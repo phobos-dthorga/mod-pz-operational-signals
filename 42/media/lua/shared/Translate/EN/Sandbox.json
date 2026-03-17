@@ -1,0 +1,16 @@
+{
+    "__copyright": "Copyright (c) 2026 Phobos A. D'thorga. All rights reserved.",
+    "Sandbox_POS_Sandbox": "Phobos Operational Signals",
+    "Sandbox_POS_EnableDebugLogging": "Enable Debug Logging",
+    "Sandbox_POS_EnableDebugLogging_tooltip": "Print verbose debug messages from POSnet modules to console.txt. <BR> <BR> <INDENT:20> Useful for troubleshooting but may impact performance. <BR> Default: OFF",
+    "Sandbox_POS_EnableBroadcasts": "Enable POSnet Broadcasts",
+    "Sandbox_POS_EnableBroadcasts_tooltip": "Master toggle for the POSnet radio broadcast system. <BR> <BR> <INDENT:20> When disabled, no operations will be generated or broadcast. <BR> Default: ON",
+    "Sandbox_POS_BroadcastIntervalMinutes": "Broadcast Interval (minutes)",
+    "Sandbox_POS_BroadcastIntervalMinutes_tooltip": "Time in game-minutes between POSnet broadcast transmissions. <BR> <BR> <INDENT:20> Lower values = more frequent operations. <BR> Range: 5–120. Default: 30",
+    "Sandbox_POS_MaxActiveOperations": "Max Active Operations",
+    "Sandbox_POS_MaxActiveOperations_tooltip": "Maximum number of concurrent operations that can be active in the log. <BR> <BR> <INDENT:20> New broadcasts will be suppressed when the limit is reached. <BR> Range: 1–10. Default: 3",
+    "Sandbox_POS_OperationExpiryDays": "Operation Expiry (days)",
+    "Sandbox_POS_OperationExpiryDays_tooltip": "Number of in-game days before an uncompleted operation expires and is removed from the log. <BR> <BR> <INDENT:20> Range: 1–30. Default: 7",
+    "Sandbox_POS_POSnetFrequency": "POSnet Frequency (Hz)",
+    "Sandbox_POS_POSnetFrequency_tooltip": "Radio frequency in Hz for POSnet broadcasts. <BR> <BR> <INDENT:20> Players must tune their radio to this frequency to receive operations. <BR> Range: 10000–500000. Default: 91500"
+}

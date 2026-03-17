@@ -1,0 +1,124 @@
+--  ________________________________________________________________________
+-- / Copyright (c) 2026 Phobos A. D'thorga                                \
+-- |                                                                        |
+-- |           /\_/\                                                         |
+-- |         =/ o o \=    Phobos' PZ Modding                                |
+-- |          (  V  )     All rights reserved.                              |
+-- |     /\  / \   / \                                                      |
+-- |    /  \/   '-'   \   This source code is part of the Phobos            |
+-- |   /  /  \  ^  /\  \  mod suite for Project Zomboid (Build 42).         |
+-- |  (__/    \_/ \/  \__)                                                  |
+-- |     |   | |  | |     Unauthorised copying, modification, or            |
+-- |     |___|_|  |_|     distribution of this file is prohibited.          |
+-- |                                                                        |
+-- \________________________________________________________________________/
+--
+
+---------------------------------------------------------------
+-- POS_BroadcastSystem.lua
+-- Server-side timed broadcast scheduling and transmission.
+--
+-- Generates new operations at configurable intervals and
+-- broadcasts them over the POSnet radio frequency.
+-- Clients receive the transmission via POS_RadioInterception.
+--
+-- Broadcast flow:
+--   Timer tick → MissionGenerator.generate() → serialize →
+--   sendServerCommand("POS", "NewOperation", data) →
+--   client OnServerCommand → RadioInterception.onTransmissionReceived()
+---------------------------------------------------------------
+
+require "PhobosLib"
+
+POS_BroadcastSystem = {}
+
+--- Last broadcast timestamp (real-time milliseconds).
+local lastBroadcastTime = 0
+
+--- Whether the broadcast system is active.
+local systemActive = false
+
+--- Start the broadcast system.
+function POS_BroadcastSystem.start()
+    if not POS_Sandbox.isBroadcastEnabled() then
+        PhobosLib.debug("POS", "Broadcasts disabled in sandbox — system not started")
+        return
+    end
+
+    systemActive = true
+    lastBroadcastTime = getTimestampMs()
+    PhobosLib.debug("POS", "Broadcast system started (interval: "
+        .. POS_Sandbox.getBroadcastIntervalMinutes() .. " min)")
+end
+
+--- Stop the broadcast system.
+function POS_BroadcastSystem.stop()
+    systemActive = false
+    PhobosLib.debug("POS", "Broadcast system stopped")
+end
+
+--- Generate and broadcast a new operation to all connected clients.
+--- @return boolean True if a broadcast was sent
+function POS_BroadcastSystem.broadcast()
+    if not systemActive then return false end
+
+    -- Pick a random online player as the generation context
+    local players = getOnlinePlayers()
+    if not players or players:size() == 0 then return false end
+    local player = players:get(ZombRand(players:size()))
+    if not player then return false end
+
+    local operation = POS_MissionGenerator.generate(player)
+    if not operation then
+        PhobosLib.debug("POS", "Mission generation failed — no broadcast sent")
+        return false
+    end
+
+    -- Broadcast to all clients via server command
+    sendServerCommand("POS", "NewOperation", {
+        operationData = operation,
+    })
+
+    PhobosLib.debug("POS", "Broadcast sent: " .. operation.id
+        .. " [" .. (operation.category or "?") .. "]")
+
+    return true
+end
+
+--- Tick handler — checks if it's time to broadcast.
+--- Runs every in-game minute; uses real-time interval.
+function POS_BroadcastSystem.onEveryOneMinute()
+    if not systemActive then return end
+
+    local now = getTimestampMs()
+    local intervalMs = POS_Sandbox.getBroadcastIntervalMinutes() * 60 * 1000
+
+    if (now - lastBroadcastTime) >= intervalMs then
+        POS_BroadcastSystem.broadcast()
+        lastBroadcastTime = now
+    end
+end
+
+--- Handle client command responses (reserved for future use).
+--- @param module string Command module name
+--- @param command string Command name
+--- @param player IsoPlayer Sending player
+--- @param args table Command arguments
+function POS_BroadcastSystem.onClientCommand(module, command, player, args)
+    if module ~= "POS" then return end
+
+    if command == "RequestOperation" then
+        -- Future: allow players to request a new operation on demand
+        PhobosLib.debug("POS", "Operation request from " .. (player:getUsername() or "?"))
+    end
+end
+
+--- Initialise the broadcast system on server start.
+function POS_BroadcastSystem.init()
+    POS_BroadcastSystem.start()
+    Events.EveryOneMinute.Add(POS_BroadcastSystem.onEveryOneMinute)
+    Events.OnClientCommand.Add(POS_BroadcastSystem.onClientCommand)
+    PhobosLib.debug("POS", "Broadcast system initialised")
+end
+
+Events.OnGameStart.Add(POS_BroadcastSystem.init)
