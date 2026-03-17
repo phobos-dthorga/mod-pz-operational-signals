@@ -17,6 +17,13 @@
 
 # Changelog
 
+## v0.3.0 — Boot Sequence + Resizable Windows (2026-03-18)
+
+- **DOS boot sequence**: Typewriter-style character-by-character boot animation on first terminal open per world-load.
+- **Resizable terminal**: Terminal window can be resized via drag handle (coexists with "Resize Any Window" mod).
+- **Click to skip**: Click anywhere during boot to skip straight to operations view.
+- **Game speed scaling**: Boot animation speed scales with game speed multiplier.
+
 ## v0.2.0 — Core Gameplay Loop (2026-03-18)
 
 - **Terminal UI**: Retro green-on-dark CRT-style terminal window with scanline effect.
