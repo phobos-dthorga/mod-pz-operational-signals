@@ -47,11 +47,7 @@ local MENU_OPTIONS = {
 local screen = {}
 screen.id = "MAIN_MENU"
 
---- Stored widget references for cleanup.
-local widgets = {}
-
 function screen.create(contentPanel, _params, terminal)
-    widgets = {}
     local W = POS_TerminalWidgets
     local pw = contentPanel:getWidth()
     local y = 0
@@ -61,11 +57,11 @@ function screen.create(contentPanel, _params, terminal)
     local btnX = 5
 
     -- Header
-    widgets.header = W.createLabel(contentPanel, 0, y,
+    W.createLabel(contentPanel, 0, y,
         safeGetText("UI_POS_MainMenuHeader"), C.textBright)
     y = y + lineH
 
-    widgets.sep1 = W.createSeparator(contentPanel, 0, y, 40)
+    W.createSeparator(contentPanel, 0, y, 40)
     y = y + lineH
 
     -- Connection info
@@ -73,37 +69,33 @@ function screen.create(contentPanel, _params, terminal)
     local freq = terminal and terminal.frequency or 91500
     local freqMHz = string.format("%.1f", freq / 1000)
 
-    widgets.connInfo = W.createLabel(contentPanel, 0, y,
+    W.createLabel(contentPanel, 0, y,
         "> " .. safeGetText("UI_POS_TerminalConnected", radioName), C.text)
     y = y + lineH
 
-    widgets.freqInfo = W.createLabel(contentPanel, 0, y,
+    W.createLabel(contentPanel, 0, y,
         "> " .. safeGetText("UI_POS_TerminalFrequency", freqMHz), C.text)
     y = y + lineH + 4
 
-    widgets.sep2 = W.createSeparator(contentPanel, 0, y, 40, "-")
+    W.createSeparator(contentPanel, 0, y, 40, "-")
     y = y + lineH + 4
 
     -- Menu option buttons
-    widgets.buttons = {}
     for i, opt in ipairs(MENU_OPTIONS) do
         local label = "[" .. i .. "] " .. safeGetText(opt.key)
 
         if opt.enabled then
-            local btn
             if opt.action == "shutdown" then
-                btn = W.createButton(contentPanel, btnX, y, btnW, btnH, label, nil,
+                W.createButton(contentPanel, btnX, y, btnW, btnH, label, nil,
                     function() POS_TerminalUI.closeTerminal() end)
             else
                 local targetScreen = opt.screen
-                btn = W.createButton(contentPanel, btnX, y, btnW, btnH, label, nil,
+                W.createButton(contentPanel, btnX, y, btnW, btnH, label, nil,
                     function() POS_ScreenManager.navigateTo(targetScreen) end)
             end
-            table.insert(widgets.buttons, btn)
         else
             local disabledLabel = "    " .. safeGetText(opt.key) .. "  (coming soon)"
-            local btn = W.createDisabledButton(contentPanel, btnX, y, btnW, btnH, disabledLabel)
-            table.insert(widgets.buttons, btn)
+            W.createDisabledButton(contentPanel, btnX, y, btnW, btnH, disabledLabel)
         end
 
         y = y + btnH + 4
@@ -111,19 +103,17 @@ function screen.create(contentPanel, _params, terminal)
 
     -- Footer
     y = y + 4
-    widgets.sep3 = W.createSeparator(contentPanel, 0, y, 40, "-")
+    W.createSeparator(contentPanel, 0, y, 40, "-")
     y = y + lineH
 
-    widgets.prompt = W.createLabel(contentPanel, 0, y,
+    W.createLabel(contentPanel, 0, y,
         safeGetText("UI_POS_MainMenuPrompt"), C.dim)
 end
 
 function screen.destroy()
-    -- clearPanel removes all children; widget references cleaned up
     if POS_TerminalUI.instance and POS_TerminalUI.instance.contentPanel then
         POS_TerminalWidgets.clearPanel(POS_TerminalUI.instance.contentPanel)
     end
-    widgets = {}
 end
 
 function screen.refresh(_params)

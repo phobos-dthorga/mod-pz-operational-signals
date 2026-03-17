@@ -43,10 +43,7 @@ local BBS = {
 local screen = {}
 screen.id = "BBS_LIST"
 
-local widgets = {}
-
 function screen.create(contentPanel, _params, _terminal)
-    widgets = {}
     local W = POS_TerminalWidgets
     local pw = contentPanel:getWidth()
     local y = 0
@@ -199,7 +196,6 @@ function screen.destroy()
     if POS_TerminalUI.instance and POS_TerminalUI.instance.contentPanel then
         POS_TerminalWidgets.clearPanel(POS_TerminalUI.instance.contentPanel)
     end
-    widgets = {}
 end
 
 function screen.refresh(_params)
