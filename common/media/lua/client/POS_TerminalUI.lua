@@ -361,6 +361,10 @@ function POS_TerminalUI:onMouseDown(x, y)
 end
 
 function POS_TerminalUI:onMouseDownOutside(x, y)
+    -- Guard: clearing children mid-click can cause PZ to dispatch
+    -- onMouseDownOutside for the removed ISButton. Don't close
+    -- the terminal if we're in the middle of a screen transition.
+    if POS_ScreenManager.navigating then return end
     self:close()
 end
 
@@ -549,12 +553,14 @@ function POS_TerminalUI.open(radioName, frequency, portablePC)
     ui:addToUIManager()
     ui:setVisible(true)
 
+    -- Set instance BEFORE resetTo so createWidgetScreen can find
+    -- the contentPanel via POS_TerminalUI.instance
+    POS_TerminalUI.instance = ui
+
     -- If skipping boot, go straight to main menu
     if ui.terminalState == "ready" then
         POS_ScreenManager.resetTo("MAIN_MENU")
     end
-
-    POS_TerminalUI.instance = ui
 end
 
 --- Close the POSnet terminal window.

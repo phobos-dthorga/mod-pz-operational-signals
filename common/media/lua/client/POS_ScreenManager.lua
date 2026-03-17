@@ -59,6 +59,11 @@ if POS_ScreenManager.dirty == nil then
     POS_ScreenManager.dirty = true
 end
 
+--- Navigation guard — true while a navigateTo/goBack/resetTo is in
+--- progress. Prevents onMouseDownOutside from closing the terminal
+--- when an ISButton is destroyed mid-click by clearChildren().
+POS_ScreenManager.navigating = false
+
 ---------------------------------------------------------------
 -- Screen registration
 ---------------------------------------------------------------
@@ -115,6 +120,8 @@ function POS_ScreenManager.navigateTo(screenId, params)
         return
     end
 
+    POS_ScreenManager.navigating = true
+
     -- Destroy current widget screen before switching
     destroyCurrentScreen()
 
@@ -134,6 +141,8 @@ function POS_ScreenManager.navigateTo(screenId, params)
     -- Create new widget screen (no-op for legacy screens)
     createWidgetScreen(screenId, params)
 
+    POS_ScreenManager.navigating = false
+
     PhobosLib.debug("POS", "[POS:ScreenMgr]",
         "navigated to: " .. screenId .. " (stack depth: "
         .. tostring(#POS_ScreenManager.navigationStack) .. ")")
@@ -143,6 +152,8 @@ end
 function POS_ScreenManager.goBack()
     local stack = POS_ScreenManager.navigationStack
     if #stack == 0 then return end
+
+    POS_ScreenManager.navigating = true
 
     -- Destroy current widget screen before going back
     destroyCurrentScreen()
@@ -156,6 +167,8 @@ function POS_ScreenManager.goBack()
     -- Create previous widget screen (no-op for legacy screens)
     createWidgetScreen(prev.screenId, prev.params)
 
+    POS_ScreenManager.navigating = false
+
     PhobosLib.debug("POS", "[POS:ScreenMgr]",
         "navigated back to: " .. prev.screenId)
 end
@@ -163,6 +176,7 @@ end
 --- Reset navigation to a specific screen, clearing the stack.
 ---@param screenId string Target screen ID
 function POS_ScreenManager.resetTo(screenId)
+    POS_ScreenManager.navigating = true
     -- Destroy current widget screen before reset
     destroyCurrentScreen()
     POS_ScreenManager.navigationStack = {}
