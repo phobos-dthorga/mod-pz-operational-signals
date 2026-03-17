@@ -26,6 +26,11 @@
 ---------------------------------------------------------------
 
 require "PhobosLib"
+require "POS_ScreenManager"
+require "POS_Screen_MainMenu"
+require "POS_Screen_BBS"
+require "POS_Screen_BBSPost"
+require "POS_Screen_Stockmarket"
 
 POS_TerminalUI = ISCollapsableWindow:derive("POS_TerminalUI")
 
@@ -61,10 +66,10 @@ end
 --- These define where the monitor's "screen" sits within the bezel texture.
 --- Values measured from the generated CRT bezel image.
 local BEZEL = {
-    left   = 0.14,
-    right  = 0.14,
-    top    = 0.11,
-    bottom = 0.28,
+    left   = 0.15,
+    right  = 0.15,
+    top    = 0.13,
+    bottom = 0.30,
 }
 
 --- Safe getText wrapper.
@@ -231,6 +236,15 @@ function POS_TerminalUI:createChildren()
         self.drawFrame = false
         self.background = false
     end
+
+    -- Register ESC key listener (closure captures self)
+    local ui = self
+    self._keyHandler = function(key)
+        if key == Keyboard.KEY_ESCAPE and ui:isVisible() then
+            ui:close()
+        end
+    end
+    Events.OnKeyPressed.Add(self._keyHandler)
 end
 
 function POS_TerminalUI:prerender()
@@ -269,14 +283,19 @@ end
 function POS_TerminalUI:render()
     ISCollapsableWindow.render(self)
 
+    -- Stencil clip all content to the screen area
+    local sx, sy, sw, sh = self:getScreenRect()
+    self:setStencilRect(sx, sy, sw, sh)
+
     if self.terminalState == "booting" then
         self:renderBoot()
     else
         self:renderScreen()
     end
 
+    self:clearStencilRect()
+
     -- Phosphor glow effect over screen area
-    local sx, sy, sw, sh = self:getScreenRect()
     self:drawRect(sx, sy, sw, sh,
         TERM.glow.a, TERM.glow.r, TERM.glow.g, TERM.glow.b)
 end
@@ -303,14 +322,16 @@ function POS_TerminalUI:onMouseDown(x, y)
     return ISCollapsableWindow.onMouseDown(self, x, y)
 end
 
-function POS_TerminalUI:onKeyPress(key)
-    if key == Keyboard.KEY_ESCAPE then
-        self:close()
-        return
-    end
+function POS_TerminalUI:onMouseDownOutside(x, y)
+    self:close()
 end
 
 function POS_TerminalUI:close()
+    -- Remove keyboard listener
+    if self._keyHandler then
+        Events.OnKeyPressed.Remove(self._keyHandler)
+        self._keyHandler = nil
+    end
     ISCollapsableWindow.close(self)
     POS_TerminalUI.instance = nil
 end
@@ -409,6 +430,8 @@ function POS_TerminalUI:finishBoot()
     hasBootedThisSession = true
     self.scrollOffset = 0
     POS_ScreenManager.resetTo("MAIN_MENU")
+    -- Force immediate rebuild so cachedLines is populated this frame
+    POS_ScreenManager.rebuildIfNeeded(self)
 end
 
 ---------------------------------------------------------------
@@ -417,6 +440,11 @@ end
 
 --- Render the current screen with throttled content rebuild.
 function POS_TerminalUI:renderScreen()
+    -- Defensive: if no screen is active, navigate to main menu
+    if not POS_ScreenManager.currentScreen then
+        POS_ScreenManager.resetTo("MAIN_MENU")
+    end
+
     -- Throttle content rebuild (every 30 frames ~ 2/sec)
     self.updateTick = self.updateTick + 1
     if self.updateTick >= 30 or POS_ScreenManager.dirty then
@@ -461,8 +489,8 @@ function POS_TerminalUI.open(radioName, frequency)
 
     local sw = getCore():getScreenWidth()
     local sh = getCore():getScreenHeight()
-    local w = 640
-    local h = 700
+    local w = 720
+    local h = 780
     local x = (sw - w) / 2
     local y = (sh - h) / 2
 

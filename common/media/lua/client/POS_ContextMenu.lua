@@ -79,7 +79,7 @@ local function onFillWorldObjectContextMenu(playerNum, context, worldObjects, te
         for _, worldObj in ipairs(objects) do
             if POS_ConnectionManager.isWorldRadio(worldObj) then
                 local canDo, reason = POS_ConnectionManager.canConnect(player, worldObj)
-                local label = safeGetText("ContextMenu_POS_Connect")
+                local label = safeGetText("UI_POS_ContextMenuConnect")
 
                 if canDo then
                     context:addOption(label, worldObjects, onConnectWorld, worldObj, player)
@@ -113,7 +113,7 @@ local function onFillInventoryObjectContextMenu(playerNum, context, items)
 
         if invItem and POS_ConnectionManager.isInventoryRadio(invItem) then
             local canDo, reason = POS_ConnectionManager.canConnect(player, invItem)
-            local label = safeGetText("ContextMenu_POS_Connect")
+            local label = safeGetText("UI_POS_ContextMenuConnect")
 
             if canDo then
                 context:addOption(label, items, onConnectInventory, invItem, player)

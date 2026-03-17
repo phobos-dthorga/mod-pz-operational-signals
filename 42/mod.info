@@ -1,6 +1,6 @@
 name=Phobos' Operational Signals
 id=PhobosOperationalSignals
-modversion=0.4.0
+modversion=0.4.1
 versionMin=42.15.0
 require=\PhobosLib
 loadModAfter=\PhobosLib,\PhobosChemistryPathways,\PhobosIndustrialPathology

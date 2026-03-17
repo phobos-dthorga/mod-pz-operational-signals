@@ -22,8 +22,8 @@
     "UI_POS_Difficulty_Hard": "High Priority",
     "UI_POS_Difficulty_Critical": "Critical",
 
-    "ContextMenu_POS_Connect": "Connect to POSnet",
-    "ContextMenu_POS_Disconnect": "Disconnect",
+    "UI_POS_ContextMenuConnect": "Connect to POSnet",
+    "UI_POS_ContextMenuDisconnect": "Disconnect",
 
     "UI_POS_RadioOff": "Radio is turned off.",
     "UI_POS_NoPower": "Radio has no power.",
