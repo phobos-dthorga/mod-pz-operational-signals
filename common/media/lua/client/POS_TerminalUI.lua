@@ -27,10 +27,6 @@
 
 require "PhobosLib"
 require "POS_ScreenManager"
-require "POS_Screen_MainMenu"
-require "POS_Screen_BBS"
-require "POS_Screen_BBSPost"
-require "POS_Screen_Stockmarket"
 
 POS_TerminalUI = ISCollapsableWindow:derive("POS_TerminalUI")
 

@@ -20,6 +20,7 @@
 ---------------------------------------------------------------
 
 require "PhobosLib"
+require "POS_ScreenManager"
 
 local function safeGetText(key, ...)
     local ok, result = pcall(getText, key, ...)

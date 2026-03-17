@@ -23,28 +23,37 @@
 
 require "PhobosLib"
 
-POS_ScreenManager = {}
+-- Guard: Screen files load alphabetically before this file and use
+-- require "POS_ScreenManager" to pull it in. If PZ's auto-loader then
+-- re-executes this file, we must not wipe already-registered screens.
+POS_ScreenManager = POS_ScreenManager or {}
 
 --- Registry of screen definitions keyed by screen ID.
 --- Each entry: { id, rebuildLines(terminal, params), onAction(terminal, actionId, data) }
-POS_ScreenManager.screens = {}
+POS_ScreenManager.screens = POS_ScreenManager.screens or {}
 
 --- Current screen ID.
-POS_ScreenManager.currentScreen = nil
+if POS_ScreenManager.currentScreen == nil then
+    POS_ScreenManager.currentScreen = nil
+end
 
 --- Current screen parameters (passed during navigateTo).
-POS_ScreenManager.currentParams = nil
+if POS_ScreenManager.currentParams == nil then
+    POS_ScreenManager.currentParams = nil
+end
 
 --- Navigation stack for "back" functionality.
 --- Each entry: { screenId, params }
-POS_ScreenManager.navigationStack = {}
+POS_ScreenManager.navigationStack = POS_ScreenManager.navigationStack or {}
 
 --- Current hit zones (populated by rebuildLines).
 --- Each entry: { lineIndex, actionId, data }
-POS_ScreenManager.hitZones = {}
+POS_ScreenManager.hitZones = POS_ScreenManager.hitZones or {}
 
 --- Dirty flag — set when screen needs rebuild.
-POS_ScreenManager.dirty = true
+if POS_ScreenManager.dirty == nil then
+    POS_ScreenManager.dirty = true
+end
 
 ---------------------------------------------------------------
 -- Screen registration
