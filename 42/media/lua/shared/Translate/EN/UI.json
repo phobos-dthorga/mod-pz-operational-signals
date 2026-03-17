@@ -27,7 +27,9 @@
 
     "UI_POS_RadioOff": "Radio is turned off.",
     "UI_POS_NoPower": "Radio has no power.",
-    "UI_POS_NoComputer": "No desktop computer nearby.",
+    "UI_POS_NoComputer": "No computer available.",
+
+    "Tooltip_POS_PortableComputer": "A bulky early-90s portable computer. <BR> With this in your inventory, connect to POSnet via any radio — no desktop terminal required. <BR> <BR> Battery drains while the terminal is open.",
 
     "UI_POS_TerminalHeader": "POSnet OPERATIONAL TERMINAL",
     "UI_POS_TerminalConnected": "Connected via %1",
@@ -43,8 +45,8 @@
 
     "UI_POS_GuideTitle": "Phobos' Operational Signals",
     "UI_POS_GuideIntro": "POSnet is a radio-driven procedural operations system. Intercept military broadcasts to receive field operations, then complete objectives to fulfil them.",
-    "UI_POS_GuideStep1": "1. Find a radio (any type) and a desktop computer.",
-    "UI_POS_GuideStep2": "2. Place the desktop computer near the radio (within 3 tiles).",
+    "UI_POS_GuideStep1": "1. Find a radio (any type) and a computer (desktop or portable).",
+    "UI_POS_GuideStep2": "2. Place a desktop computer near the radio (within 3 tiles), or carry a portable computer.",
     "UI_POS_GuideStep3": "3. Turn the radio on and ensure it has power.",
     "UI_POS_GuideStep4": "4. Right-click the radio and select 'Connect to POSnet'.",
     "UI_POS_GuideNote": "Operations are broadcast at regular intervals. Keep your terminal open to receive new missions.",

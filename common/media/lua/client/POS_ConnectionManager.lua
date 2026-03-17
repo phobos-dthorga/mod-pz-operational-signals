@@ -20,10 +20,13 @@
 --
 -- Validates that the player has the required equipment:
 --   1. A radio (world object or inventory item)
---   2. A vanilla desktop computer nearby
+--   2. A computer (desktop nearby OR portable computer in inventory)
 --
 -- Desktop Computer: Base.Mov_DesktopComputer
 --   Sprites: appliances_com_01_72 through appliances_com_01_75
+--
+-- Portable Computer: PhobosOperationalSignals.PortableComputer
+--   Replaces desktop requirement when carried in inventory.
 ---------------------------------------------------------------
 
 require "PhobosLib"
@@ -40,6 +43,9 @@ local DESKTOP_SPRITES = {
 
 --- Search radius for nearby desktop computers (tiles).
 local DESKTOP_SEARCH_RADIUS = 3
+
+--- Full item type for the POSnet portable computer.
+local PORTABLE_COMPUTER_TYPE = "PhobosOperationalSignals.PortableComputer"
 
 --- Check if an IsoObject has a desktop computer sprite.
 --- @param obj any IsoObject
@@ -74,6 +80,35 @@ function POS_ConnectionManager.isDesktopNearby(playerSquare)
     end)
 end
 
+--- Check if an inventory item is a POSnet portable computer.
+--- @param item any InventoryItem
+--- @return boolean
+function POS_ConnectionManager.isPortableComputer(item)
+    if not item then return false end
+    if not item.getFullType then return false end
+    return item:getFullType() == PORTABLE_COMPUTER_TYPE
+end
+
+--- Check if the player has a portable computer in their inventory.
+--- @param player any IsoPlayer
+--- @return boolean
+function POS_ConnectionManager.hasPortableComputer(player)
+    if not player then return false end
+    local inv = player:getInventory()
+    if not inv then return false end
+    return inv:containsTypeEval(PORTABLE_COMPUTER_TYPE)
+end
+
+--- Find the player's portable computer item (for battery drain tracking).
+--- @param player any IsoPlayer
+--- @return any|nil InventoryItem
+function POS_ConnectionManager.findPortableComputer(player)
+    if not player then return nil end
+    local inv = player:getInventory()
+    if not inv then return nil end
+    return inv:getFirstTypeEval(PORTABLE_COMPUTER_TYPE)
+end
+
 --- Check if a world object is a radio (IsoWaveSignal).
 --- @param obj any World object
 --- @return boolean
@@ -87,6 +122,7 @@ end
 --- @return boolean
 function POS_ConnectionManager.isInventoryRadio(item)
     if not item then return false end
+    if not item.getDeviceData then return false end
     local ok, result = pcall(function()
         return item:getDeviceData() ~= nil
     end)
@@ -98,6 +134,7 @@ end
 --- @return any|nil DeviceData
 function POS_ConnectionManager.getDeviceData(radioObj)
     if not radioObj then return nil end
+    if not radioObj.getDeviceData then return nil end
     local ok, dd = pcall(function()
         return radioObj:getDeviceData()
     end)
@@ -152,10 +189,12 @@ function POS_ConnectionManager.canConnect(player, radioObj)
         return false, "UI_POS_NoPower"
     end
 
-    -- Check desktop computer nearby
+    -- Check for computer access (desktop nearby OR portable in inventory)
     local playerSquare = PhobosLib.getSquareFromPlayer(player)
     if not POS_ConnectionManager.isDesktopNearby(playerSquare) then
-        return false, "UI_POS_NoComputer"
+        if not POS_ConnectionManager.hasPortableComputer(player) then
+            return false, "UI_POS_NoComputer"
+        end
     end
 
     return true, nil
@@ -189,8 +228,15 @@ function POS_ConnectionManager.connect(player, radioObj)
         end
     end)
 
+    -- Determine if using portable computer (for battery drain)
+    local portablePC = nil
+    local playerSquare = PhobosLib.getSquareFromPlayer(player)
+    if not POS_ConnectionManager.isDesktopNearby(playerSquare) then
+        portablePC = POS_ConnectionManager.findPortableComputer(player)
+    end
+
     local freq = POS_Sandbox.getPOSnetFrequency()
-    POS_TerminalUI.open(radioName, freq)
+    POS_TerminalUI.open(radioName, freq, portablePC)
 
     PhobosLib.debug("POS", "Connected to POSnet via " .. radioName)
 end

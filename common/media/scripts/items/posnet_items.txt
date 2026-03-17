@@ -1,0 +1,14 @@
+module PhobosOperationalSignals {
+
+    item PortableComputer {
+        DisplayCategory = Communications,
+        DisplayName = Portable Computer,
+        ItemType = base:normal,
+        Weight = 10.0,
+        Icon = Item_POS_PortableComputer,
+        Tooltip = Tooltip_POS_PortableComputer,
+        ConditionMax = 100,
+        Tags = Electronic,
+    }
+
+}

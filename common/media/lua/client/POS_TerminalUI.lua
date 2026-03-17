@@ -244,6 +244,26 @@ function POS_TerminalUI:createChildren()
 end
 
 function POS_TerminalUI:prerender()
+    -- Drain portable computer condition while terminal is open
+    if self.portableComputer then
+        local gt = getGameTime()
+        if gt then
+            local mult = gt:getMultiplier() or 1
+            self.portableDrainAccum = (self.portableDrainAccum or 0) + (mult / 1800)
+            if self.portableDrainAccum >= 1.0 then
+                self.portableDrainAccum = self.portableDrainAccum - 1.0
+                local cond = self.portableComputer:getCondition()
+                if cond and cond > 0 then
+                    self.portableComputer:setCondition(cond - 1)
+                else
+                    PhobosLib.debug("POS", "Portable computer battery depleted")
+                    POS_TerminalUI.closeTerminal()
+                    return
+                end
+            end
+        end
+    end
+
     local tex = getCRTBezel()
     if tex then
         -- Draw CRT bezel texture covering entire window (including title bar)
@@ -476,7 +496,7 @@ end
 --- Open the POSnet terminal window.
 --- @param radioName string Display name of the connected radio
 --- @param frequency number POSnet frequency in Hz
-function POS_TerminalUI.open(radioName, frequency)
+function POS_TerminalUI.open(radioName, frequency, portablePC)
     if POS_TerminalUI.instance then
         POS_TerminalUI.instance:setVisible(true)
         POS_TerminalUI.instance:addToUIManager()
@@ -493,6 +513,11 @@ function POS_TerminalUI.open(radioName, frequency)
     local ui = POS_TerminalUI:new(x, y, w, h)
     ui.radioName = radioName or "Radio"
     ui.frequency = frequency or POS_Sandbox.getPOSnetFrequency()
+
+    -- Track portable computer for battery drain
+    ui.portableComputer = portablePC
+    ui.portableDrainAccum = 0
+
     ui:initialise()
     ui:addToUIManager()
     ui:setVisible(true)

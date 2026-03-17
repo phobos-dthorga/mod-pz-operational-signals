@@ -64,6 +64,9 @@ read_globals = {
     "ISInventoryPaneContextMenu",
     "ISWorldObjectContextMenu",
 
+    -- PZ distribution system (loaded via require)
+    "ProceduralDistributions",
+
     -- PZ globals not in JavaDocs (must stay manual)
     "Events",
     "ArrayList",
