@@ -59,9 +59,12 @@ if POS_ScreenManager.dirty == nil then
     POS_ScreenManager.dirty = true
 end
 
---- Navigation guard — true while a navigateTo/goBack/resetTo is in
---- progress. Prevents onMouseDownOutside from closing the terminal
---- when an ISButton is destroyed mid-click by clearChildren().
+--- Navigation guard — set true during navigateTo/goBack/resetTo.
+--- Prevents onMouseDownOutside from closing the terminal when an
+--- ISButton is destroyed mid-click by clearChildren(). Cleared by
+--- POS_TerminalUI:prerender() on the next frame (NOT synchronously
+--- in the navigation function) because PZ dispatches onMouseDownOutside
+--- AFTER the ISButton callback returns.
 POS_ScreenManager.navigating = false
 
 ---------------------------------------------------------------
@@ -141,7 +144,9 @@ function POS_ScreenManager.navigateTo(screenId, params)
     -- Create new widget screen (no-op for legacy screens)
     createWidgetScreen(screenId, params)
 
-    POS_ScreenManager.navigating = false
+    -- NOTE: navigating flag is NOT cleared here — it persists until
+    -- POS_TerminalUI:prerender() on the next frame. This is intentional:
+    -- PZ dispatches onMouseDownOutside AFTER the ISButton callback returns.
 
     PhobosLib.debug("POS", "[POS:ScreenMgr]",
         "navigated to: " .. screenId .. " (stack depth: "
@@ -166,8 +171,6 @@ function POS_ScreenManager.goBack()
 
     -- Create previous widget screen (no-op for legacy screens)
     createWidgetScreen(prev.screenId, prev.params)
-
-    POS_ScreenManager.navigating = false
 
     PhobosLib.debug("POS", "[POS:ScreenMgr]",
         "navigated back to: " .. prev.screenId)

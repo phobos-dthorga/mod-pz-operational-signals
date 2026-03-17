@@ -275,6 +275,9 @@ function POS_TerminalUI:prerender()
         end
     end
 
+    -- Clear navigation guard from previous frame (see POS_ScreenManager)
+    POS_ScreenManager.navigating = false
+
     local tex = getCRTBezel()
     if tex then
         -- Draw CRT bezel texture covering entire window (behind child widgets)
