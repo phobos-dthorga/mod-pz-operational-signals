@@ -37,6 +37,9 @@ globals = {
     "POS_RadioInterception",
     "POS_OperationLog",
     "POS_BroadcastSystem",
+    "POS_ConnectionManager",
+    "POS_ContextMenu",
+    "POS_TerminalUI",
 }
 
 read_globals = {
@@ -48,6 +51,9 @@ read_globals = {
     "ISTimedActionQueue",
     "ISContextMenu",
     "ISToolTip",
+    "ISCollapsableWindow",
+    "ISRichTextPanel",
+    "ISPanel",
     "ISInventoryPage",
     "ISInventoryPaneContextMenu",
     "ISWorldObjectContextMenu",

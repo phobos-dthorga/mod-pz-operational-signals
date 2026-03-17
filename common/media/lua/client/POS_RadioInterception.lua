@@ -20,10 +20,7 @@
 --
 -- Registers the POSnet frequency as a custom radio channel
 -- via PZ's OnLoadRadioScripts callback. Listens for incoming
--- transmissions and routes them to the Operation Log.
---
--- The POSnet channel appears in the player's radio UI when
--- tuned to the configured frequency (default 91.5 MHz).
+-- server commands and routes operation data to the Operation Log.
 ---------------------------------------------------------------
 
 require "PhobosLib"
@@ -53,30 +50,42 @@ function POS_RadioInterception.onLoadRadioScripts(scriptManager, isNewGame)
     end
 end
 
---- Handle an incoming POSnet transmission.
---- Called when the broadcast system delivers a message to this client.
---- @param transmission table Transmission data with message, category, etc.
+--- Handle an incoming POSnet transmission from the server.
+--- Routes operation data to the Operation Log.
+--- @param transmission table Transmission data with operationData field
 function POS_RadioInterception.onTransmissionReceived(transmission)
     if not transmission then return end
 
-    -- Check if player is listening on the POSnet frequency
     local player = getSpecificPlayer(0)
     if not player then return end
 
-    local freq = POS_Sandbox.getPOSnetFrequency()
-    local radio = ZomboidRadio.getInstance()
-    if not radio then return end
+    PhobosLib.debug("POS", "Transmission received")
 
-    if not radio:PlayerListensChannel(freq) then
-        PhobosLib.debug("POS", "Player not tuned to POSnet — ignoring transmission")
-        return
-    end
-
-    PhobosLib.debug("POS", "Transmission received: " .. (transmission.message or "?"))
-
-    -- Route to operation log if it contains operation data
     if transmission.operationData and POS_OperationLog then
-        POS_OperationLog.addOperation(transmission.operationData)
+        local added = POS_OperationLog.addOperation(transmission.operationData)
+        if added then
+            PhobosLib.debug("POS", "Operation added: " .. (transmission.operationData.id or "?"))
+        end
+    end
+end
+
+--- Handle server commands sent to the POS module.
+--- @param module string Command module name
+--- @param command string Command name
+--- @param args table Command arguments
+local function onServerCommand(module, command, args)
+    if module ~= "POS" then return end
+
+    if command == "NewOperation" and args and args.operationData then
+        POS_RadioInterception.onTransmissionReceived(args)
+    end
+end
+
+--- Request a new operation from the server (future use).
+function POS_RadioInterception.requestOperation()
+    local player = getSpecificPlayer(0)
+    if player then
+        sendClientCommand(player, "POS", "RequestOperation", {})
     end
 end
 
@@ -89,6 +98,7 @@ end
 --- Initialise radio interception hooks.
 function POS_RadioInterception.init()
     Events.OnLoadRadioScripts.Add(POS_RadioInterception.onLoadRadioScripts)
+    Events.OnServerCommand.Add(onServerCommand)
     PhobosLib.debug("POS", "Radio interception initialised")
 end
 

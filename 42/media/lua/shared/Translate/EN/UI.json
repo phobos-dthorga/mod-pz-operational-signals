@@ -1,5 +1,6 @@
 {
     "__copyright": "Copyright (c) 2026 Phobos A. D'thorga. All rights reserved.",
+
     "UI_POS_OperationLog": "Operation Log",
     "UI_POS_ActiveOperations": "Active Operations",
     "UI_POS_CompletedOperations": "Completed Operations",
@@ -9,13 +10,42 @@
     "UI_POS_OperationComplete": "Operation Complete — POSnet acknowledges.",
     "UI_POS_OperationExpired": "Operation expired — window of opportunity has closed.",
     "UI_POS_BroadcastReceived": "POSnet broadcast received.",
+
     "UI_POS_Category_IndustrialRecovery": "Industrial Recovery",
     "UI_POS_Category_VehicleSalvage": "Vehicle Salvage",
     "UI_POS_Category_ScientificResearch": "Scientific Research",
     "UI_POS_Category_SurvivorAssistance": "Survivor Assistance",
     "UI_POS_Category_InfrastructureRepair": "Infrastructure Repair",
+
     "UI_POS_Difficulty_Easy": "Routine",
     "UI_POS_Difficulty_Medium": "Standard",
     "UI_POS_Difficulty_Hard": "High Priority",
-    "UI_POS_Difficulty_Critical": "Critical"
+    "UI_POS_Difficulty_Critical": "Critical",
+
+    "ContextMenu_POS_Connect": "Connect to POSnet",
+    "ContextMenu_POS_Disconnect": "Disconnect",
+
+    "UI_POS_RadioOff": "Radio is turned off.",
+    "UI_POS_NoPower": "Radio has no power.",
+    "UI_POS_NoComputer": "No desktop computer nearby.",
+
+    "UI_POS_TerminalHeader": "POSnet OPERATIONAL TERMINAL",
+    "UI_POS_TerminalConnected": "Connected via %1",
+    "UI_POS_TerminalFrequency": "Frequency: %1 MHz",
+    "UI_POS_TerminalActiveOps": "ACTIVE OPERATIONS:",
+    "UI_POS_TerminalNoOps": "No active operations.",
+    "UI_POS_TerminalAwaiting": "Awaiting broadcast...",
+    "UI_POS_TerminalObjStatus": "%1/%2 objectives complete",
+    "UI_POS_TerminalCompleted": "COMPLETED: %1",
+    "UI_POS_TerminalExpired": "EXPIRED: %1",
+
+    "UI_POS_NewBroadcast": "New POSnet broadcast received.",
+
+    "UI_POS_GuideTitle": "Phobos' Operational Signals",
+    "UI_POS_GuideIntro": "POSnet is a radio-driven procedural operations system. Intercept military broadcasts to receive field operations, then complete objectives to fulfil them.",
+    "UI_POS_GuideStep1": "1. Find a radio (any type) and a desktop computer.",
+    "UI_POS_GuideStep2": "2. Place the desktop computer near the radio (within 3 tiles).",
+    "UI_POS_GuideStep3": "3. Turn the radio on and ensure it has power.",
+    "UI_POS_GuideStep4": "4. Right-click the radio and select 'Connect to POSnet'.",
+    "UI_POS_GuideNote": "Operations are broadcast at regular intervals. Keep your terminal open to receive new missions."
 }
