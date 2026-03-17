@@ -51,7 +51,8 @@ read_globals = {
     -- PhobosLib (loaded via require)
     "PhobosLib",
 
-    -- PZ Lua classes (not in JavaDocs — pure Lua, must stay manual)
+    -- PZ Lua classes and enums (not in JavaDocs — pure Lua, must stay manual)
+    "Keyboard",
     "ISBaseTimedAction",
     "ISTimedActionQueue",
     "ISContextMenu",
