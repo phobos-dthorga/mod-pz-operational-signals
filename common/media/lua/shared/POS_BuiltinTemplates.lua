@@ -23,6 +23,8 @@
 -- POS_MissionTemplates.register().
 ---------------------------------------------------------------
 
+require "POS_MissionTemplates"
+
 local CAT = POS_MissionTemplates.CATEGORY
 local DIFF = POS_MissionTemplates.DIFFICULTY
 
