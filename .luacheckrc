@@ -20,6 +20,7 @@ unused_secondaries = false
 -- The primary value of luacheck for PZ modding is catching undefined
 -- globals (1XX) — typos in function names, missing requires, etc.
 ignore = {
+    "131",   -- unused global variable (PZ mods define namespace tables)
     "21.",   -- unused variable / argument / loop variable
     "22.",   -- variable accessed but never set
     "23.",   -- variable set but never used
