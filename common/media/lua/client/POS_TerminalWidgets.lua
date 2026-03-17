@@ -192,6 +192,52 @@ function POS_TerminalWidgets.createScrollPanel(parent, x, y, w, h)
     return panel
 end
 
+--- Create word-wrapped multi-line text as a series of ISLabels.
+--- Splits text at word boundaries to fit within maxChars per line.
+--- @param parent any ISPanel parent
+--- @param x number X position
+--- @param y number Starting Y position
+--- @param maxChars number Maximum characters per line
+--- @param text string Text to wrap
+--- @param colour table|nil {r,g,b} colour (defaults to terminal green)
+--- @return table Array of ISLabel widgets created
+--- @return number Final Y position after last line
+function POS_TerminalWidgets.createWrappedText(parent, x, y, maxChars, text, colour)
+    local labels = {}
+    local lineH = 18
+    local currentY = y
+    maxChars = maxChars or 38
+
+    if not text or text == "" then
+        return labels, currentY
+    end
+
+    local currentLine = ""
+    for word in string.gmatch(text, "%S+") do
+        if #currentLine == 0 then
+            currentLine = word
+        elseif #currentLine + 1 + #word <= maxChars then
+            currentLine = currentLine .. " " .. word
+        else
+            local label = POS_TerminalWidgets.createLabel(parent, x, currentY,
+                currentLine, colour)
+            table.insert(labels, label)
+            currentY = currentY + lineH
+            currentLine = word
+        end
+    end
+
+    -- Flush remaining text
+    if #currentLine > 0 then
+        local label = POS_TerminalWidgets.createLabel(parent, x, currentY,
+            currentLine, colour)
+        table.insert(labels, label)
+        currentY = currentY + lineH
+    end
+
+    return labels, currentY
+end
+
 --- Remove all children from a panel (used by screen destroy).
 --- Uses PZ's built-in ISUIElement:clearChildren() which resets
 --- the Lua children table and calls javaObject:ClearChildren().

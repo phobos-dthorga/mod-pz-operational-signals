@@ -192,11 +192,7 @@ function POS_TerminalUI:new(x, y, width, height)
     o.pin = true
     o.radioName = "Radio"
     o.frequency = 91500
-    o.scrollOffset = 0
-    o.maxScroll = 0
     o.updateTick = 0
-    o.cachedLines = {}
-    o._lineHeight = lineHeight()
 
     -- Boot sequence state
     if hasBootedThisSession then
@@ -338,13 +334,6 @@ function POS_TerminalUI:render()
         TERM.glow.a, TERM.glow.r, TERM.glow.g, TERM.glow.b)
 end
 
-function POS_TerminalUI:onMouseWheel(del)
-    local lh = lineHeight()
-    self.scrollOffset = self.scrollOffset + del * lh * 3
-    self.scrollOffset = math.max(0, math.min(self.scrollOffset, self.maxScroll))
-    return true
-end
-
 function POS_TerminalUI:onMouseDown(x, y)
     -- Close if click is outside window bounds (replaces onMouseDownOutside
     -- which was unreliable when ISButtons are destroyed mid-click)
@@ -359,11 +348,6 @@ function POS_TerminalUI:onMouseDown(x, y)
         return true
     end
 
-    -- Delegate to screen manager for hit-zone detection
-    if POS_ScreenManager and POS_ScreenManager.handleClick(self, x, y) then
-        return true
-    end
-
     return ISCollapsableWindow.onMouseDown(self, x, y)
 end
 
@@ -373,9 +357,9 @@ function POS_TerminalUI:close()
         Events.OnKeyPressed.Remove(self._keyHandler)
         self._keyHandler = nil
     end
-    -- Destroy current widget screen before closing
+    -- Destroy current screen widgets before closing
     local screen = POS_ScreenManager.screens[POS_ScreenManager.currentScreen]
-    if screen and screen.create and screen.destroy then
+    if screen and screen.destroy then
         pcall(screen.destroy)
     end
     ISCollapsableWindow.close(self)
@@ -474,49 +458,27 @@ end
 function POS_TerminalUI:finishBoot()
     self.terminalState = "ready"
     hasBootedThisSession = true
-    self.scrollOffset = 0
     POS_ScreenManager.resetTo("MAIN_MENU")
-    -- Force immediate rebuild so cachedLines is populated this frame
-    POS_ScreenManager.rebuildIfNeeded(self)
 end
 
 ---------------------------------------------------------------
--- Screen rendering (delegated to POS_ScreenManager)
+-- Screen refresh (widget content handled by child ISPanels)
 ---------------------------------------------------------------
 
---- Render the current screen with throttled content rebuild.
+--- Handle throttled screen refresh. Widget screens manage their
+--- own rendering via ISButton/ISLabel children in contentPanel.
 function POS_TerminalUI:renderScreen()
     -- Defensive: if no screen is active, navigate to main menu
     if not POS_ScreenManager.currentScreen then
         POS_ScreenManager.resetTo("MAIN_MENU")
     end
 
-    -- Throttle content rebuild (every 30 frames ~ 2/sec)
+    -- Throttle refresh check (every 30 frames ~ 2/sec)
     self.updateTick = self.updateTick + 1
     if self.updateTick >= 30 or POS_ScreenManager.dirty then
         self.updateTick = 0
-        POS_ScreenManager.rebuildIfNeeded(self)
+        POS_ScreenManager.refreshIfNeeded(self)
     end
-
-    -- Render cached terminal lines
-    local sx, sy, sw, sh = self:getScreenRect()
-    local pad = SCREEN_PAD
-    local x = sx + pad
-    local drawY = sy + pad - self.scrollOffset
-    local lh = lineHeight()
-
-    for _, line in ipairs(self.cachedLines) do
-        if drawY + lh > sy and drawY < sy + sh then
-            local c = line.colour or TERM.text
-            self:drawText(line.text, x, drawY, c.r, c.g, c.b, 1.0, FONT)
-        end
-        drawY = drawY + lh
-    end
-
-    -- Track max scroll
-    local contentHeight = #self.cachedLines * lh
-    local viewHeight = sh - pad * 2
-    self.maxScroll = math.max(0, contentHeight - viewHeight)
 end
 
 ---------------------------------------------------------------

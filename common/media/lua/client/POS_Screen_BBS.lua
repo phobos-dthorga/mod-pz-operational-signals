@@ -18,10 +18,12 @@
 -- POS_Screen_BBS.lua
 -- BBS listing screen for the POSnet terminal.
 -- Shows open investment opportunities and active player investments.
+-- Widget-based: uses ISButton/ISLabel children in contentPanel.
 ---------------------------------------------------------------
 
 require "PhobosLib"
 require "POS_ScreenManager"
+require "POS_TerminalWidgets"
 
 local function safeGetText(key, ...)
     local ok, result = pcall(getText, key, ...)
@@ -29,13 +31,11 @@ local function safeGetText(key, ...)
     return key
 end
 
-local TERM = {
-    text   = { r = 0.20, g = 0.90, b = 0.20 },
-    dim    = { r = 0.12, g = 0.50, b = 0.12 },
-    header = { r = 0.30, g = 1.00, b = 0.30 },
-    warn   = { r = 0.90, g = 0.80, b = 0.10 },
-    err    = { r = 0.90, g = 0.25, b = 0.20 },
-    good   = { r = 0.20, g = 0.90, b = 0.50 },
+local C = POS_TerminalWidgets.COLOURS
+
+--- Additional colours used by BBS screen.
+local BBS = {
+    good = { r = 0.20, g = 0.90, b = 0.50, a = 1.0 },
 }
 
 ---------------------------------------------------------------
@@ -43,18 +43,33 @@ local TERM = {
 local screen = {}
 screen.id = "BBS_LIST"
 
-function screen.rebuildLines(_terminal, _params)
-    local lines = {}
-    local hitZones = {}
+local widgets = {}
+
+function screen.create(contentPanel, _params, _terminal)
+    widgets = {}
+    local W = POS_TerminalWidgets
+    local pw = contentPanel:getWidth()
+    local y = 0
+    local lineH = 20
+    local btnH = 28
+    local btnW = pw - 10
+    local btnX = 5
 
     -- Header
-    table.insert(lines, { text = safeGetText("UI_POS_BBS_Header"), colour = TERM.header })
-    table.insert(lines, { text = string.rep("=", 40), colour = TERM.dim })
-    table.insert(lines, { text = "", colour = TERM.text })
+    W.createLabel(contentPanel, 0, y,
+        safeGetText("UI_POS_BBS_Header"), C.textBright)
+    y = y + lineH
 
-    -- Investment opportunities section
-    table.insert(lines, { text = safeGetText("UI_POS_BBS_OpenInvestments"), colour = TERM.header })
-    table.insert(lines, { text = string.rep("-", 40), colour = TERM.dim })
+    W.createSeparator(contentPanel, 0, y, 40)
+    y = y + lineH
+
+    -- ── Open investment opportunities ──
+    W.createLabel(contentPanel, 0, y,
+        safeGetText("UI_POS_BBS_OpenInvestments"), C.textBright)
+    y = y + lineH
+
+    W.createSeparator(contentPanel, 0, y, 40, "-")
+    y = y + lineH
 
     local opportunities = {}
     if POS_InvestmentLog then
@@ -62,32 +77,36 @@ function screen.rebuildLines(_terminal, _params)
     end
 
     if #opportunities == 0 then
-        table.insert(lines, { text = "", colour = TERM.text })
-        table.insert(lines, { text = "  " .. safeGetText("UI_POS_BBS_NoOpportunities"), colour = TERM.dim })
-        table.insert(lines, { text = "", colour = TERM.text })
+        W.createLabel(contentPanel, 8, y,
+            safeGetText("UI_POS_BBS_NoOpportunities"), C.dim)
+        y = y + lineH
     else
-        table.insert(lines, { text = "", colour = TERM.text })
         for i, opp in ipairs(opportunities) do
             local riskPct = string.format("%.0f%%", (opp.displayedRisk or 0) * 100)
             local returnX = string.format("%.1fx", opp.returnMultiplier or 1)
             local label = "[" .. i .. "] " .. (opp.posterName or "???")
-                .. " — $" .. (opp.principalMin or 0) .. "-$" .. (opp.principalMax or 0)
+                .. " -- $" .. (opp.principalMin or 0) .. "-$" .. (opp.principalMax or 0)
                 .. " (" .. returnX .. ", ~" .. riskPct .. " risk)"
 
-            local lineIdx = #lines + 1
-            table.insert(lines, { text = label, colour = TERM.text })
-            table.insert(hitZones, {
-                lineIndex = lineIdx,
-                actionId = "viewPost",
-                data = { opportunityId = opp.id },
-            })
+            local oppId = opp.id
+            W.createButton(contentPanel, btnX, y, btnW, btnH, label, nil,
+                function()
+                    POS_ScreenManager.navigateTo("BBS_POST_VIEW",
+                        { opportunityId = oppId })
+                end)
+            y = y + btnH + 4
         end
-        table.insert(lines, { text = "", colour = TERM.text })
     end
 
-    -- Active investments section
-    table.insert(lines, { text = safeGetText("UI_POS_BBS_YourInvestments"), colour = TERM.header })
-    table.insert(lines, { text = string.rep("-", 40), colour = TERM.dim })
+    y = y + 4
+
+    -- ── Active investments ──
+    W.createLabel(contentPanel, 0, y,
+        safeGetText("UI_POS_BBS_YourInvestments"), C.textBright)
+    y = y + lineH
+
+    W.createSeparator(contentPanel, 0, y, 40, "-")
+    y = y + lineH
 
     local investments = {}
     if POS_InvestmentLog then
@@ -95,10 +114,10 @@ function screen.rebuildLines(_terminal, _params)
     end
 
     if #investments == 0 then
-        table.insert(lines, { text = "", colour = TERM.text })
-        table.insert(lines, { text = "  " .. safeGetText("UI_POS_BBS_NoInvestments"), colour = TERM.dim })
+        W.createLabel(contentPanel, 8, y,
+            safeGetText("UI_POS_BBS_NoInvestments"), C.dim)
+        y = y + lineH
     else
-        table.insert(lines, { text = "", colour = TERM.text })
         local gameTime = getGameTime()
         local currentDay = gameTime and gameTime:getNightsSurvived() or 0
 
@@ -106,14 +125,15 @@ function screen.rebuildLines(_terminal, _params)
             local daysLeft = (inv.maturityDay or 0) - currentDay
             if daysLeft < 0 then daysLeft = 0 end
             local line = "  " .. (inv.posterName or "???")
-                .. " — $" .. (inv.principalAmount or 0)
+                .. " -- $" .. (inv.principalAmount or 0)
                 .. " -> $" .. (inv.returnAmount or 0)
                 .. " (" .. daysLeft .. "d left)"
-            table.insert(lines, { text = line, colour = TERM.warn })
+            W.createLabel(contentPanel, 0, y, line, C.warn)
+            y = y + lineH
         end
     end
 
-    -- Recent results section
+    -- ── Recent results ──
     local matured = {}
     local defaulted = {}
     if POS_InvestmentLog then
@@ -122,12 +142,16 @@ function screen.rebuildLines(_terminal, _params)
     end
 
     if #matured > 0 or #defaulted > 0 then
-        table.insert(lines, { text = "", colour = TERM.text })
-        table.insert(lines, { text = safeGetText("UI_POS_BBS_RecentResults"), colour = TERM.header })
-        table.insert(lines, { text = string.rep("-", 40), colour = TERM.dim })
-        table.insert(lines, { text = "", colour = TERM.text })
+        y = y + 4
 
-        -- Show last 5 results (most recent first)
+        W.createLabel(contentPanel, 0, y,
+            safeGetText("UI_POS_BBS_RecentResults"), C.textBright)
+        y = y + lineH
+
+        W.createSeparator(contentPanel, 0, y, 40, "-")
+        y = y + lineH
+
+        -- Collect and show last 5 results (most recent first)
         local results = {}
         for _, inv in ipairs(matured) do
             table.insert(results, { inv = inv, status = "matured" })
@@ -136,7 +160,6 @@ function screen.rebuildLines(_terminal, _params)
             table.insert(results, { inv = inv, status = "defaulted" })
         end
 
-        -- Show up to 5
         local shown = 0
         for i = #results, 1, -1 do
             if shown >= 5 then break end
@@ -144,40 +167,47 @@ function screen.rebuildLines(_terminal, _params)
             local prefix, colour
             if r.status == "matured" then
                 prefix = "  [OK] "
-                colour = TERM.good
+                colour = BBS.good
             else
                 prefix = "  [!!] "
-                colour = TERM.err
+                colour = C.error
             end
             local line = prefix .. (r.inv.posterName or "???")
-                .. " — $" .. (r.inv.principalAmount or 0)
+                .. " -- $" .. (r.inv.principalAmount or 0)
             if r.status == "matured" then
                 line = line .. " -> $" .. (r.inv.returnAmount or 0) .. " PAID"
             else
                 line = line .. " DEFAULTED"
             end
-            table.insert(lines, { text = line, colour = colour })
+            W.createLabel(contentPanel, 0, y, line, colour)
+            y = y + lineH
             shown = shown + 1
         end
     end
 
     -- Footer
-    table.insert(lines, { text = "", colour = TERM.text })
-    table.insert(lines, { text = string.rep("-", 40), colour = TERM.dim })
-    table.insert(lines, { text = "", colour = TERM.text })
+    y = y + 4
+    W.createSeparator(contentPanel, 0, y, 40, "-")
+    y = y + lineH + 4
 
-    local backIdx = #lines + 1
-    table.insert(lines, { text = "[0] " .. safeGetText("UI_POS_BackPrompt"), colour = TERM.text })
-    table.insert(hitZones, { lineIndex = backIdx, actionId = "back" })
-
-    return lines, hitZones
+    W.createButton(contentPanel, btnX, y, btnW, btnH,
+        "[0] " .. safeGetText("UI_POS_BackPrompt"), nil,
+        function() POS_ScreenManager.goBack() end)
 end
 
-function screen.onAction(_terminal, actionId, data)
-    if actionId == "back" then
-        POS_ScreenManager.goBack()
-    elseif actionId == "viewPost" and data and data.opportunityId then
-        POS_ScreenManager.navigateTo("BBS_POST_VIEW", { opportunityId = data.opportunityId })
+function screen.destroy()
+    if POS_TerminalUI.instance and POS_TerminalUI.instance.contentPanel then
+        POS_TerminalWidgets.clearPanel(POS_TerminalUI.instance.contentPanel)
+    end
+    widgets = {}
+end
+
+function screen.refresh(_params)
+    -- Dynamic data — full rebuild via destroy + create
+    local terminal = POS_TerminalUI.instance
+    if terminal and terminal.contentPanel then
+        screen.destroy()
+        screen.create(terminal.contentPanel, _params, terminal)
     end
 end
 
