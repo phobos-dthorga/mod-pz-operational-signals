@@ -17,8 +17,11 @@
 ---------------------------------------------------------------
 -- POS_ScreenManager.lua
 -- Screen state machine for the POSnet terminal.
--- Manages screen registry, navigation stack, content building,
--- and clickable hit-zone detection.
+-- Manages screen registry, navigation stack, and content.
+--
+-- Supports two screen types (backward compatible):
+--   Legacy: { id, rebuildLines(), onAction() }  — line-based
+--   Widget: { id, create(), destroy(), refresh() } — widget-based
 ---------------------------------------------------------------
 
 require "PhobosLib"
@@ -29,7 +32,8 @@ require "PhobosLib"
 POS_ScreenManager = POS_ScreenManager or {}
 
 --- Registry of screen definitions keyed by screen ID.
---- Each entry: { id, rebuildLines(terminal, params), onAction(terminal, actionId, data) }
+--- Legacy: { id, rebuildLines(terminal, params), onAction(terminal, actionId, data) }
+--- Widget: { id, create(contentPanel, params, terminal), destroy(), refresh(params) }
 POS_ScreenManager.screens = POS_ScreenManager.screens or {}
 
 --- Current screen ID.
@@ -59,8 +63,35 @@ end
 -- Screen registration
 ---------------------------------------------------------------
 
+--- Check if a screen definition uses the widget-based lifecycle.
+---@param screen table Screen definition
+---@return boolean True if widget-based (has create/destroy)
+local function isWidgetScreen(screen)
+    return screen and screen.create ~= nil
+end
+
+--- Destroy the current widget-based screen (if applicable).
+local function destroyCurrentScreen()
+    local screen = POS_ScreenManager.screens[POS_ScreenManager.currentScreen]
+    if screen and isWidgetScreen(screen) and screen.destroy then
+        pcall(screen.destroy)
+    end
+end
+
+--- Create a widget-based screen in the content panel.
+---@param screenId string Screen ID to create
+---@param params table|nil Screen parameters
+local function createWidgetScreen(screenId, params)
+    local screen = POS_ScreenManager.screens[screenId]
+    if not screen or not isWidgetScreen(screen) then return end
+    local terminal = POS_TerminalUI and POS_TerminalUI.instance
+    if not terminal or not terminal.contentPanel then return end
+    pcall(screen.create, terminal.contentPanel, params, terminal)
+end
+
 --- Register a screen definition.
----@param definition table { id, rebuildLines(terminal, params), onAction(terminal, actionId, data) }
+--- Supports both legacy (rebuildLines/onAction) and widget (create/destroy/refresh).
+---@param definition table Screen definition with id field
 function POS_ScreenManager.registerScreen(definition)
     if not definition or not definition.id then
         print("[POS:ScreenMgr] registerScreen: missing id")
@@ -84,6 +115,9 @@ function POS_ScreenManager.navigateTo(screenId, params)
         return
     end
 
+    -- Destroy current widget screen before switching
+    destroyCurrentScreen()
+
     -- Push current screen to stack (if we have one)
     if POS_ScreenManager.currentScreen then
         table.insert(POS_ScreenManager.navigationStack, {
@@ -97,6 +131,9 @@ function POS_ScreenManager.navigateTo(screenId, params)
     POS_ScreenManager.dirty = true
     POS_ScreenManager.hitZones = {}
 
+    -- Create new widget screen (no-op for legacy screens)
+    createWidgetScreen(screenId, params)
+
     PhobosLib.debug("POS", "[POS:ScreenMgr]",
         "navigated to: " .. screenId .. " (stack depth: "
         .. tostring(#POS_ScreenManager.navigationStack) .. ")")
@@ -107,11 +144,17 @@ function POS_ScreenManager.goBack()
     local stack = POS_ScreenManager.navigationStack
     if #stack == 0 then return end
 
+    -- Destroy current widget screen before going back
+    destroyCurrentScreen()
+
     local prev = table.remove(stack)
     POS_ScreenManager.currentScreen = prev.screenId
     POS_ScreenManager.currentParams = prev.params
     POS_ScreenManager.dirty = true
     POS_ScreenManager.hitZones = {}
+
+    -- Create previous widget screen (no-op for legacy screens)
+    createWidgetScreen(prev.screenId, prev.params)
 
     PhobosLib.debug("POS", "[POS:ScreenMgr]",
         "navigated back to: " .. prev.screenId)
@@ -120,6 +163,8 @@ end
 --- Reset navigation to a specific screen, clearing the stack.
 ---@param screenId string Target screen ID
 function POS_ScreenManager.resetTo(screenId)
+    -- Destroy current widget screen before reset
+    destroyCurrentScreen()
     POS_ScreenManager.navigationStack = {}
     POS_ScreenManager.currentScreen = nil
     POS_ScreenManager.currentParams = nil
@@ -132,6 +177,8 @@ end
 
 --- Rebuild lines if dirty. Called by POS_TerminalUI each frame
 --- (throttled to every 30 frames by the terminal itself).
+--- Widget-based screens handle their own content via child widgets,
+--- so this only runs for legacy line-based screens.
 ---@param terminal table POS_TerminalUI instance
 ---@return table Array of {text, colour} lines
 function POS_ScreenManager.rebuildIfNeeded(terminal)
@@ -140,6 +187,19 @@ function POS_ScreenManager.rebuildIfNeeded(terminal)
     end
 
     local screen = POS_ScreenManager.screens[POS_ScreenManager.currentScreen]
+
+    -- Widget screens: call refresh instead of rebuildLines
+    if screen and isWidgetScreen(screen) then
+        if screen.refresh then
+            pcall(screen.refresh, POS_ScreenManager.currentParams)
+        end
+        terminal.cachedLines = {}
+        POS_ScreenManager.hitZones = {}
+        POS_ScreenManager.dirty = false
+        return terminal.cachedLines
+    end
+
+    -- Legacy screens: rebuild lines as before
     if not screen or not screen.rebuildLines then
         terminal.cachedLines = {}
         POS_ScreenManager.hitZones = {}
@@ -173,7 +233,10 @@ function POS_ScreenManager.handleClick(terminal, mouseX, mouseY)
     local screen = POS_ScreenManager.screens[POS_ScreenManager.currentScreen]
     if not screen then return false end
 
-    -- Calculate which line was clicked using screen rect
+    -- Widget screens handle clicks via their own ISButton/ISPanel children
+    if isWidgetScreen(screen) then return false end
+
+    -- Legacy: calculate which line was clicked using screen rect
     local sx, sy, sw, sh = terminal:getScreenRect()
     local pad = 8  -- matches SCREEN_PAD in POS_TerminalUI
     local lh = terminal._lineHeight or 16

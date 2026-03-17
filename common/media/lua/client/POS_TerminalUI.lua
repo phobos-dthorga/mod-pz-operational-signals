@@ -26,6 +26,7 @@
 ---------------------------------------------------------------
 
 require "PhobosLib"
+require "ISUI/ISPanel"
 require "POS_ScreenManager"
 
 POS_TerminalUI = ISCollapsableWindow:derive("POS_TerminalUI")
@@ -233,6 +234,16 @@ function POS_TerminalUI:createChildren()
         self.background = false
     end
 
+    -- Create content panel for widget-based screens
+    local sx, sy, sw, sh = self:getScreenRect()
+    local pad = SCREEN_PAD
+    self.contentPanel = ISPanel:new(sx + pad, sy + pad, sw - pad * 2, sh - pad * 2)
+    self.contentPanel.backgroundColor = { r = 0, g = 0, b = 0, a = 0 }
+    self.contentPanel.borderColor = { r = 0, g = 0, b = 0, a = 0 }
+    self.contentPanel:initialise()
+    self.contentPanel:instantiate()
+    self:addChild(self.contentPanel)
+
     -- Register ESC key listener (closure captures self)
     local ui = self
     self._keyHandler = function(key)
@@ -266,26 +277,15 @@ function POS_TerminalUI:prerender()
 
     local tex = getCRTBezel()
     if tex then
-        -- Draw CRT bezel texture covering entire window (including title bar)
+        -- Draw CRT bezel texture covering entire window (behind child widgets)
         self:drawTextureScaled(tex, 0, 0, self.width, self.height, 1.0, 1, 1, 1)
-
-        -- Scanline effect within screen area only
-        local sx, sy, sw, sh = self:getScreenRect()
-        for y = sy, sy + sh - 1, 3 do
-            self:drawRect(sx, y, sw, 1,
-                TERM.scan.a, TERM.scan.r, TERM.scan.g, TERM.scan.b)
-        end
+        -- Scanlines are drawn in render() so they overlay child widgets
     else
         -- Fallback: original programmatic rendering
         ISCollapsableWindow.prerender(self)
         local th = self:titleBarHeight()
         self:drawRect(0, th, self.width, self.height - th,
             TERM.bg.a, TERM.bg.r, TERM.bg.g, TERM.bg.b)
-
-        for y = th, self.height - 1, 3 do
-            self:drawRect(0, y, self.width, 1,
-                TERM.scan.a, TERM.scan.r, TERM.scan.g, TERM.scan.b)
-        end
 
         -- Inner border (fallback only)
         local pad = 8
@@ -294,13 +294,29 @@ function POS_TerminalUI:prerender()
         self:drawRectBorder(bx, by, bw, bh,
             TERM.border.a, TERM.border.r, TERM.border.g, TERM.border.b)
     end
+
+    -- Reposition content panel on resize
+    if self.contentPanel then
+        local sx, sy, sw, sh = self:getScreenRect()
+        local cpad = SCREEN_PAD
+        self.contentPanel:setX(sx + cpad)
+        self.contentPanel:setY(sy + cpad)
+        self.contentPanel:setWidth(sw - cpad * 2)
+        self.contentPanel:setHeight(sh - cpad * 2)
+    end
 end
 
 function POS_TerminalUI:render()
     ISCollapsableWindow.render(self)
 
-    -- Stencil clip all content to the screen area
     local sx, sy, sw, sh = self:getScreenRect()
+
+    -- Hide content panel during boot (boot uses drawText directly)
+    if self.contentPanel then
+        self.contentPanel:setVisible(self.terminalState == "ready")
+    end
+
+    -- Stencil clip drawText content to the screen area
     self:setStencilRect(sx, sy, sw, sh)
 
     if self.terminalState == "booting" then
@@ -310,6 +326,12 @@ function POS_TerminalUI:render()
     end
 
     self:clearStencilRect()
+
+    -- Scanline effect OVER widget children (CRT glass look)
+    for y = sy, sy + sh - 1, 3 do
+        self:drawRect(sx, y, sw, 1,
+            TERM.scan.a, TERM.scan.r, TERM.scan.g, TERM.scan.b)
+    end
 
     -- Phosphor glow effect over screen area
     self:drawRect(sx, sy, sw, sh,
@@ -347,6 +369,11 @@ function POS_TerminalUI:close()
     if self._keyHandler then
         Events.OnKeyPressed.Remove(self._keyHandler)
         self._keyHandler = nil
+    end
+    -- Destroy current widget screen before closing
+    local screen = POS_ScreenManager.screens[POS_ScreenManager.currentScreen]
+    if screen and screen.create and screen.destroy then
+        pcall(screen.destroy)
     end
     ISCollapsableWindow.close(self)
     POS_TerminalUI.instance = nil

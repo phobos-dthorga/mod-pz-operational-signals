@@ -17,11 +17,12 @@
 ---------------------------------------------------------------
 -- POS_Screen_MainMenu.lua
 -- Main menu screen for the POSnet terminal BBS.
--- Displays 5 options: BBS, IRC, Journal, Profile, Stockmarket.
+-- Widget-based: uses ISButton/ISLabel children in contentPanel.
 ---------------------------------------------------------------
 
 require "PhobosLib"
 require "POS_ScreenManager"
+require "POS_TerminalWidgets"
 
 local function safeGetText(key, ...)
     local ok, result = pcall(getText, key, ...)
@@ -29,21 +30,15 @@ local function safeGetText(key, ...)
     return key
 end
 
---- Terminal colour references (must match POS_TerminalUI).
-local TERM = {
-    text   = { r = 0.20, g = 0.90, b = 0.20 },
-    dim    = { r = 0.12, g = 0.50, b = 0.12 },
-    header = { r = 0.30, g = 1.00, b = 0.30 },
-    warn   = { r = 0.90, g = 0.80, b = 0.10 },
-}
+local C = POS_TerminalWidgets.COLOURS
 
 --- Menu options with target screen IDs.
 local MENU_OPTIONS = {
-    { key = "UI_POS_MainMenuOption_BBS",     screen = "BBS_LIST",                 enabled = true },
-    { key = "UI_POS_MainMenuOption_IRC",     screen = "IRC_LIST",                 enabled = false },
-    { key = "UI_POS_MainMenuOption_Journal", screen = "JOURNAL",                  enabled = false },
-    { key = "UI_POS_MainMenuOption_Profile", screen = "PROFILE",                  enabled = false },
-    { key = "UI_POS_MainMenuOption_Stock",   screen = "STOCKMARKET_PLACEHOLDER",  enabled = true },
+    { key = "UI_POS_MainMenuOption_BBS",      screen = "BBS_LIST",                enabled = true },
+    { key = "UI_POS_MainMenuOption_IRC",      screen = "IRC_LIST",                enabled = false },
+    { key = "UI_POS_MainMenuOption_Journal",  screen = "JOURNAL",                 enabled = false },
+    { key = "UI_POS_MainMenuOption_Profile",  screen = "PROFILE",                 enabled = false },
+    { key = "UI_POS_MainMenuOption_Stock",    screen = "STOCKMARKET_PLACEHOLDER", enabled = true },
     { key = "UI_POS_MainMenuOption_Shutdown", screen = nil,                       enabled = true, action = "shutdown" },
 }
 
@@ -52,67 +47,87 @@ local MENU_OPTIONS = {
 local screen = {}
 screen.id = "MAIN_MENU"
 
-function screen.rebuildLines(terminal, _params)
-    local lines = {}
-    local hitZones = {}
+--- Stored widget references for cleanup.
+local widgets = {}
+
+function screen.create(contentPanel, _params, terminal)
+    widgets = {}
+    local W = POS_TerminalWidgets
+    local pw = contentPanel:getWidth()
+    local y = 0
+    local lineH = 20
+    local btnH = 28
+    local btnW = pw - 10
+    local btnX = 5
 
     -- Header
-    table.insert(lines, { text = safeGetText("UI_POS_MainMenuHeader"), colour = TERM.header })
-    table.insert(lines, { text = string.rep("=", 40), colour = TERM.dim })
-    table.insert(lines, { text = "", colour = TERM.text })
+    widgets.header = W.createLabel(contentPanel, 0, y,
+        safeGetText("UI_POS_MainMenuHeader"), C.textBright)
+    y = y + lineH
+
+    widgets.sep1 = W.createSeparator(contentPanel, 0, y, 40)
+    y = y + lineH
 
     -- Connection info
-    table.insert(lines, {
-        text = "> " .. safeGetText("UI_POS_TerminalConnected", terminal.radioName or "Radio"),
-        colour = TERM.text
-    })
-    local freqMHz = string.format("%.1f", (terminal.frequency or 91500) / 1000)
-    table.insert(lines, {
-        text = "> " .. safeGetText("UI_POS_TerminalFrequency", freqMHz),
-        colour = TERM.text
-    })
-    table.insert(lines, { text = "", colour = TERM.text })
-    table.insert(lines, { text = string.rep("-", 40), colour = TERM.dim })
-    table.insert(lines, { text = "", colour = TERM.text })
+    local radioName = terminal and terminal.radioName or "Radio"
+    local freq = terminal and terminal.frequency or 91500
+    local freqMHz = string.format("%.1f", freq / 1000)
 
-    -- Menu options
+    widgets.connInfo = W.createLabel(contentPanel, 0, y,
+        "> " .. safeGetText("UI_POS_TerminalConnected", radioName), C.text)
+    y = y + lineH
+
+    widgets.freqInfo = W.createLabel(contentPanel, 0, y,
+        "> " .. safeGetText("UI_POS_TerminalFrequency", freqMHz), C.text)
+    y = y + lineH + 4
+
+    widgets.sep2 = W.createSeparator(contentPanel, 0, y, 40, "-")
+    y = y + lineH + 4
+
+    -- Menu option buttons
+    widgets.buttons = {}
     for i, opt in ipairs(MENU_OPTIONS) do
-        local label = safeGetText(opt.key)
-        local colour = opt.enabled and TERM.text or TERM.dim
-        local prefix = opt.enabled and ("[" .. i .. "] ") or ("    ")
-        local suffix = opt.enabled and "" or "  (coming soon)"
-
-        local lineIdx = #lines + 1
-        table.insert(lines, { text = prefix .. label .. suffix, colour = colour })
+        local label = "[" .. i .. "] " .. safeGetText(opt.key)
 
         if opt.enabled then
-            local actionId = opt.action or "navigate"
-            table.insert(hitZones, {
-                lineIndex = lineIdx,
-                actionId  = actionId,
-                data      = { screen = opt.screen },
-            })
+            local btn
+            if opt.action == "shutdown" then
+                btn = W.createButton(contentPanel, btnX, y, btnW, btnH, label, nil,
+                    function() POS_TerminalUI.closeTerminal() end)
+            else
+                local targetScreen = opt.screen
+                btn = W.createButton(contentPanel, btnX, y, btnW, btnH, label, nil,
+                    function() POS_ScreenManager.navigateTo(targetScreen) end)
+            end
+            table.insert(widgets.buttons, btn)
+        else
+            local disabledLabel = "    " .. safeGetText(opt.key) .. "  (coming soon)"
+            local btn = W.createDisabledButton(contentPanel, btnX, y, btnW, btnH, disabledLabel)
+            table.insert(widgets.buttons, btn)
         end
+
+        y = y + btnH + 4
     end
 
     -- Footer
-    table.insert(lines, { text = "", colour = TERM.text })
-    table.insert(lines, { text = string.rep("-", 40), colour = TERM.dim })
-    table.insert(lines, { text = "", colour = TERM.text })
-    table.insert(lines, {
-        text = safeGetText("UI_POS_MainMenuPrompt"),
-        colour = TERM.dim
-    })
+    y = y + 4
+    widgets.sep3 = W.createSeparator(contentPanel, 0, y, 40, "-")
+    y = y + lineH
 
-    return lines, hitZones
+    widgets.prompt = W.createLabel(contentPanel, 0, y,
+        safeGetText("UI_POS_MainMenuPrompt"), C.dim)
 end
 
-function screen.onAction(terminal, actionId, data)
-    if actionId == "navigate" and data and data.screen then
-        POS_ScreenManager.navigateTo(data.screen)
-    elseif actionId == "shutdown" then
-        POS_TerminalUI.closeTerminal()
+function screen.destroy()
+    -- clearPanel removes all children; widget references cleaned up
+    if POS_TerminalUI.instance and POS_TerminalUI.instance.contentPanel then
+        POS_TerminalWidgets.clearPanel(POS_TerminalUI.instance.contentPanel)
     end
+    widgets = {}
+end
+
+function screen.refresh(_params)
+    -- Static screen — no dynamic data to refresh
 end
 
 ---------------------------------------------------------------

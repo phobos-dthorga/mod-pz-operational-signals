@@ -45,6 +45,7 @@ globals = {
     "POS_InvestmentGenerator",
     "POS_InvestmentResolver",
     "POS_InvestmentLog",
+    "POS_TerminalWidgets",
 }
 
 read_globals = {
@@ -60,6 +61,11 @@ read_globals = {
     "ISCollapsableWindow",
     "ISRichTextPanel",
     "ISPanel",
+    "ISButton",
+    "ISLabel",
+    "ISTextEntryBox",
+    "ISScrollingListBox",
+    "ISImage",
     "ISInventoryPage",
     "ISInventoryPaneContextMenu",
     "ISWorldObjectContextMenu",
