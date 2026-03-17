@@ -275,9 +275,6 @@ function POS_TerminalUI:prerender()
         end
     end
 
-    -- Clear navigation guard from previous frame (see POS_ScreenManager)
-    POS_ScreenManager.navigating = false
-
     local tex = getCRTBezel()
     if tex then
         -- Draw CRT bezel texture covering entire window (behind child widgets)
@@ -349,6 +346,13 @@ function POS_TerminalUI:onMouseWheel(del)
 end
 
 function POS_TerminalUI:onMouseDown(x, y)
+    -- Close if click is outside window bounds (replaces onMouseDownOutside
+    -- which was unreliable when ISButtons are destroyed mid-click)
+    if x < 0 or y < 0 or x > self.width or y > self.height then
+        self:close()
+        return true
+    end
+
     -- Click to skip boot sequence
     if self.terminalState == "booting" then
         self:finishBoot()
@@ -361,14 +365,6 @@ function POS_TerminalUI:onMouseDown(x, y)
     end
 
     return ISCollapsableWindow.onMouseDown(self, x, y)
-end
-
-function POS_TerminalUI:onMouseDownOutside(x, y)
-    -- Guard: clearing children mid-click can cause PZ to dispatch
-    -- onMouseDownOutside for the removed ISButton. Don't close
-    -- the terminal if we're in the middle of a screen transition.
-    if POS_ScreenManager.navigating then return end
-    self:close()
 end
 
 function POS_TerminalUI:close()

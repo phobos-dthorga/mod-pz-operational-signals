@@ -59,14 +59,6 @@ if POS_ScreenManager.dirty == nil then
     POS_ScreenManager.dirty = true
 end
 
---- Navigation guard — set true during navigateTo/goBack/resetTo.
---- Prevents onMouseDownOutside from closing the terminal when an
---- ISButton is destroyed mid-click by clearChildren(). Cleared by
---- POS_TerminalUI:prerender() on the next frame (NOT synchronously
---- in the navigation function) because PZ dispatches onMouseDownOutside
---- AFTER the ISButton callback returns.
-POS_ScreenManager.navigating = false
-
 ---------------------------------------------------------------
 -- Screen registration
 ---------------------------------------------------------------
@@ -123,8 +115,6 @@ function POS_ScreenManager.navigateTo(screenId, params)
         return
     end
 
-    POS_ScreenManager.navigating = true
-
     -- Destroy current widget screen before switching
     destroyCurrentScreen()
 
@@ -144,10 +134,6 @@ function POS_ScreenManager.navigateTo(screenId, params)
     -- Create new widget screen (no-op for legacy screens)
     createWidgetScreen(screenId, params)
 
-    -- NOTE: navigating flag is NOT cleared here — it persists until
-    -- POS_TerminalUI:prerender() on the next frame. This is intentional:
-    -- PZ dispatches onMouseDownOutside AFTER the ISButton callback returns.
-
     PhobosLib.debug("POS", "[POS:ScreenMgr]",
         "navigated to: " .. screenId .. " (stack depth: "
         .. tostring(#POS_ScreenManager.navigationStack) .. ")")
@@ -157,8 +143,6 @@ end
 function POS_ScreenManager.goBack()
     local stack = POS_ScreenManager.navigationStack
     if #stack == 0 then return end
-
-    POS_ScreenManager.navigating = true
 
     -- Destroy current widget screen before going back
     destroyCurrentScreen()
@@ -179,7 +163,6 @@ end
 --- Reset navigation to a specific screen, clearing the stack.
 ---@param screenId string Target screen ID
 function POS_ScreenManager.resetTo(screenId)
-    POS_ScreenManager.navigating = true
     -- Destroy current widget screen before reset
     destroyCurrentScreen()
     POS_ScreenManager.navigationStack = {}
