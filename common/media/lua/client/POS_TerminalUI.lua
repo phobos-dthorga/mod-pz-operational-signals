@@ -18,10 +18,10 @@
 -- POS_TerminalUI.lua
 -- Retro early-90s computer terminal UI for POSnet.
 --
--- Displays active operations, objectives, and status in a
--- green-on-dark monospace terminal style. On first open per
--- world-load, plays a DOS-style boot sequence with typewriter
--- character-by-character reveal.
+-- Hosts the CRT-style window with scanline effect. Content
+-- rendering is delegated to POS_ScreenManager which drives
+-- a multi-screen BBS state machine. On first open per
+-- world-load, plays a DOS-style boot sequence.
 ---------------------------------------------------------------
 
 require "PhobosLib"
@@ -146,6 +146,7 @@ function POS_TerminalUI:new(x, y, width, height)
     o.maxScroll = 0
     o.updateTick = 0
     o.cachedLines = {}
+    o._lineHeight = lineHeight()
 
     -- Boot sequence state
     if hasBootedThisSession then
@@ -202,7 +203,7 @@ function POS_TerminalUI:render()
     if self.terminalState == "booting" then
         self:renderBoot()
     else
-        self:renderOperations()
+        self:renderScreen()
     end
 end
 
@@ -219,6 +220,12 @@ function POS_TerminalUI:onMouseDown(x, y)
         self:finishBoot()
         return true
     end
+
+    -- Delegate to screen manager for hit-zone detection
+    if POS_ScreenManager and POS_ScreenManager.handleClick(self, x, y) then
+        return true
+    end
+
     return ISCollapsableWindow.onMouseDown(self, x, y)
 end
 
@@ -315,25 +322,25 @@ function POS_TerminalUI:renderBoot()
     end
 end
 
---- Complete the boot sequence and transition to ready state.
+--- Complete the boot sequence and transition to main menu.
 function POS_TerminalUI:finishBoot()
     self.terminalState = "ready"
     hasBootedThisSession = true
     self.scrollOffset = 0
-    self:rebuildLines()
+    POS_ScreenManager.resetTo("MAIN_MENU")
 end
 
 ---------------------------------------------------------------
--- Operations rendering (normal terminal view)
+-- Screen rendering (delegated to POS_ScreenManager)
 ---------------------------------------------------------------
 
---- Render the operations view with throttled content rebuild.
-function POS_TerminalUI:renderOperations()
+--- Render the current screen with throttled content rebuild.
+function POS_TerminalUI:renderScreen()
     -- Throttle content rebuild (every 30 frames ~ 2/sec)
     self.updateTick = self.updateTick + 1
-    if self.updateTick >= 30 then
+    if self.updateTick >= 30 or POS_ScreenManager.dirty then
         self.updateTick = 0
-        self:rebuildLines()
+        POS_ScreenManager.rebuildIfNeeded(self)
     end
 
     -- Render cached terminal lines
@@ -355,108 +362,6 @@ function POS_TerminalUI:renderOperations()
     local contentHeight = #self.cachedLines * lh
     local viewHeight = self.height - th - pad * 2
     self.maxScroll = math.max(0, contentHeight - viewHeight)
-end
-
----------------------------------------------------------------
--- Terminal content
----------------------------------------------------------------
-
---- Rebuild the cached terminal line buffer.
-function POS_TerminalUI:rebuildLines()
-    local lines = {}
-
-    -- Header block
-    table.insert(lines, { text = safeGetText("UI_POS_TerminalHeader"), colour = TERM.header })
-    table.insert(lines, { text = string.rep("=", 40), colour = TERM.dim })
-    table.insert(lines, {
-        text = "> " .. safeGetText("UI_POS_TerminalConnected", self.radioName),
-        colour = TERM.text
-    })
-
-    local freqMHz = string.format("%.1f", self.frequency / 1000)
-    table.insert(lines, {
-        text = "> " .. safeGetText("UI_POS_TerminalFrequency", freqMHz),
-        colour = TERM.text
-    })
-    table.insert(lines, { text = "", colour = TERM.text })
-
-    -- Active operations
-    local ops = {}
-    if POS_OperationLog then
-        ops = POS_OperationLog.getByStatus("active")
-    end
-
-    table.insert(lines, { text = safeGetText("UI_POS_TerminalActiveOps"), colour = TERM.header })
-    table.insert(lines, { text = string.rep("-", 40), colour = TERM.dim })
-
-    if #ops == 0 then
-        table.insert(lines, { text = "  " .. safeGetText("UI_POS_TerminalNoOps"), colour = TERM.dim })
-    else
-        for idx, op in ipairs(ops) do
-            -- Category and difficulty
-            local catKey = "UI_POS_Category_" .. (op.category or "IndustrialRecovery")
-            local diffKey = "UI_POS_Difficulty_" .. (op.difficulty or "easy")
-            local catName = safeGetText(catKey)
-            local diffName = safeGetText(diffKey)
-
-            table.insert(lines, {
-                text = "  [" .. idx .. "] " .. catName .. " - " .. diffName,
-                colour = TERM.text
-            })
-
-            -- Objective progress
-            if op.objectives then
-                local done = 0
-                local total = #op.objectives
-                for _, obj in ipairs(op.objectives) do
-                    if obj.completed then done = done + 1 end
-                end
-                table.insert(lines, {
-                    text = "      " .. safeGetText("UI_POS_TerminalObjStatus", tostring(done), tostring(total)),
-                    colour = done == total and TERM.header or TERM.dim
-                })
-
-                -- List individual objectives
-                for _, obj in ipairs(op.objectives) do
-                    local marker = obj.completed and "[x]" or "[ ]"
-                    local desc = obj.description or "?"
-                    local c = obj.completed and TERM.dim or TERM.text
-                    table.insert(lines, { text = "      " .. marker .. " " .. desc, colour = c })
-                end
-            end
-
-            -- Expiry info
-            if op.expiryDay then
-                local gameTime = getGameTime()
-                local currentDay = gameTime and gameTime:getNightsSurvived() or 0
-                local remaining = op.expiryDay - currentDay
-                if remaining <= 1 then
-                    table.insert(lines, {
-                        text = "      ! Expires soon",
-                        colour = TERM.warn
-                    })
-                end
-            end
-
-            table.insert(lines, { text = "", colour = TERM.text })
-        end
-    end
-
-    -- Summary counts
-    table.insert(lines, { text = string.rep("-", 40), colour = TERM.dim })
-    local counts = POS_OperationLog and POS_OperationLog.getCounts() or {}
-    local completed = counts.completed or 0
-    local expired = counts.expired or 0
-    table.insert(lines, {
-        text = safeGetText("UI_POS_TerminalCompleted", tostring(completed))
-            .. "  " .. safeGetText("UI_POS_TerminalExpired", tostring(expired)),
-        colour = TERM.dim
-    })
-
-    table.insert(lines, { text = "", colour = TERM.text })
-    table.insert(lines, { text = "> " .. safeGetText("UI_POS_TerminalAwaiting"), colour = TERM.dim })
-
-    self.cachedLines = lines
 end
 
 ---------------------------------------------------------------
@@ -487,8 +392,9 @@ function POS_TerminalUI.open(radioName, frequency)
     ui:addToUIManager()
     ui:setVisible(true)
 
+    -- If skipping boot, go straight to main menu
     if ui.terminalState == "ready" then
-        ui:rebuildLines()
+        POS_ScreenManager.resetTo("MAIN_MENU")
     end
 
     POS_TerminalUI.instance = ui

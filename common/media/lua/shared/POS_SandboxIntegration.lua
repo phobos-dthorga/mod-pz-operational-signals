@@ -47,3 +47,51 @@ end
 function POS_Sandbox.getPOSnetFrequency()
     return PhobosLib.getSandboxVar("POS", "POSnetFrequency", 91500)
 end
+
+---------------------------------------------------------------
+-- Investment sandbox accessors
+---------------------------------------------------------------
+
+function POS_Sandbox.isInvestmentEnabled()
+    return PhobosLib.getSandboxVar("POS", "EnableInvestments", true)
+end
+
+function POS_Sandbox.getInvestmentMinPaybackDays()
+    return PhobosLib.getSandboxVar("POS", "InvestmentMinPaybackDays", 14)
+end
+
+function POS_Sandbox.getInvestmentMaxPaybackDays()
+    return PhobosLib.getSandboxVar("POS", "InvestmentMaxPaybackDays", 90)
+end
+
+function POS_Sandbox.getInvestmentMinBaseRisk()
+    return PhobosLib.getSandboxVar("POS", "InvestmentMinBaseRisk", 20)
+end
+
+function POS_Sandbox.getInvestmentMaxBaseRisk()
+    return PhobosLib.getSandboxVar("POS", "InvestmentMaxBaseRisk", 35)
+end
+
+function POS_Sandbox.getInvestmentRandomRiskPct()
+    return PhobosLib.getSandboxVar("POS", "InvestmentRandomRiskPct", 15)
+end
+
+function POS_Sandbox.getInvestmentObfuscationPct()
+    return PhobosLib.getSandboxVar("POS", "InvestmentObfuscationPct", 33)
+end
+
+function POS_Sandbox.getInvestmentMinReturn()
+    return PhobosLib.getSandboxVar("POS", "InvestmentMinReturn", 130)
+end
+
+function POS_Sandbox.getInvestmentMaxReturn()
+    return PhobosLib.getSandboxVar("POS", "InvestmentMaxReturn", 250)
+end
+
+function POS_Sandbox.getMaxActiveInvestments()
+    return PhobosLib.getSandboxVar("POS", "MaxActiveInvestments", 5)
+end
+
+function POS_Sandbox.getInvestmentBroadcastMins()
+    return PhobosLib.getSandboxVar("POS", "InvestmentBroadcastMins", 60)
+end

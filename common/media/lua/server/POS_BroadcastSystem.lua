@@ -35,6 +35,9 @@ POS_BroadcastSystem = {}
 --- Last broadcast timestamp (real-time milliseconds).
 local lastBroadcastTime = 0
 
+--- Last investment broadcast timestamp (real-time milliseconds).
+local lastInvestmentBroadcastTime = 0
+
 --- Whether the broadcast system is active.
 local systemActive = false
 
@@ -47,6 +50,7 @@ function POS_BroadcastSystem.start()
 
     systemActive = true
     lastBroadcastTime = getTimestampMs()
+    lastInvestmentBroadcastTime = getTimestampMs()
     PhobosLib.debug("POS", "Broadcast system started (interval: "
         .. POS_Sandbox.getBroadcastIntervalMinutes() .. " min)")
 end
@@ -85,17 +89,53 @@ function POS_BroadcastSystem.broadcast()
     return true
 end
 
+--- Generate and broadcast a new investment opportunity to all connected clients.
+--- @return boolean True if a broadcast was sent
+function POS_BroadcastSystem.broadcastInvestment()
+    if not systemActive then return false end
+    if not POS_Sandbox.isInvestmentEnabled() then return false end
+
+    local opportunity = POS_InvestmentGenerator.generate()
+    if not opportunity then
+        PhobosLib.debug("POS", "Investment generation failed — no broadcast sent")
+        return false
+    end
+
+    -- Broadcast to all clients via server command
+    sendServerCommand("POS", "NewInvestment", {
+        investmentData = opportunity,
+    })
+
+    PhobosLib.debug("POS", "Investment broadcast sent: " .. opportunity.id
+        .. " (poster=" .. (opportunity.posterName or "?") .. ")")
+
+    return true
+end
+
 --- Tick handler — checks if it's time to broadcast.
 --- Runs every in-game minute; uses real-time interval.
 function POS_BroadcastSystem.onEveryOneMinute()
     if not systemActive then return end
 
     local now = getTimestampMs()
-    local intervalMs = POS_Sandbox.getBroadcastIntervalMinutes() * 60 * 1000
 
+    -- Operation broadcasts
+    local intervalMs = POS_Sandbox.getBroadcastIntervalMinutes() * 60 * 1000
     if (now - lastBroadcastTime) >= intervalMs then
         POS_BroadcastSystem.broadcast()
         lastBroadcastTime = now
+    end
+
+    -- Investment broadcasts (separate timer)
+    local invIntervalMs = POS_Sandbox.getInvestmentBroadcastMins() * 60 * 1000
+    if (now - lastInvestmentBroadcastTime) >= invIntervalMs then
+        POS_BroadcastSystem.broadcastInvestment()
+        lastInvestmentBroadcastTime = now
+    end
+
+    -- Investment maturity resolution
+    if POS_InvestmentResolver then
+        POS_InvestmentResolver.resolveMatured()
     end
 end
 
@@ -110,6 +150,14 @@ function POS_BroadcastSystem.onClientCommand(module, command, player, args)
     if command == "RequestOperation" then
         -- Future: allow players to request a new operation on demand
         PhobosLib.debug("POS", "Operation request from " .. (player:getUsername() or "?"))
+    elseif command == "PlayerInvested" and args then
+        if POS_InvestmentResolver then
+            POS_InvestmentResolver.onPlayerInvested(player, args)
+        end
+    elseif command == "RequestPendingPayouts" then
+        if POS_InvestmentResolver then
+            POS_InvestmentResolver.onRequestPendingPayouts(player)
+        end
     end
 end
 

@@ -53,3 +53,111 @@ option POS.POSnetFrequency
     page = POS_Sandbox,
     translation = POS_POSnetFrequency,
 }
+
+option POS.EnableInvestments
+{
+    type = boolean,
+    default = true,
+    page = POS_Sandbox,
+    translation = POS_EnableInvestments,
+}
+
+option POS.InvestmentMinPaybackDays
+{
+    type = integer,
+    default = 14,
+    min = 7,
+    max = 60,
+    page = POS_Sandbox,
+    translation = POS_InvestmentMinPaybackDays,
+}
+
+option POS.InvestmentMaxPaybackDays
+{
+    type = integer,
+    default = 90,
+    min = 30,
+    max = 180,
+    page = POS_Sandbox,
+    translation = POS_InvestmentMaxPaybackDays,
+}
+
+option POS.InvestmentMinBaseRisk
+{
+    type = integer,
+    default = 20,
+    min = 5,
+    max = 50,
+    page = POS_Sandbox,
+    translation = POS_InvestmentMinBaseRisk,
+}
+
+option POS.InvestmentMaxBaseRisk
+{
+    type = integer,
+    default = 35,
+    min = 15,
+    max = 80,
+    page = POS_Sandbox,
+    translation = POS_InvestmentMaxBaseRisk,
+}
+
+option POS.InvestmentRandomRiskPct
+{
+    type = integer,
+    default = 15,
+    min = 0,
+    max = 50,
+    page = POS_Sandbox,
+    translation = POS_InvestmentRandomRiskPct,
+}
+
+option POS.InvestmentObfuscationPct
+{
+    type = integer,
+    default = 33,
+    min = 0,
+    max = 50,
+    page = POS_Sandbox,
+    translation = POS_InvestmentObfuscationPct,
+}
+
+option POS.InvestmentMinReturn
+{
+    type = integer,
+    default = 130,
+    min = 110,
+    max = 200,
+    page = POS_Sandbox,
+    translation = POS_InvestmentMinReturn,
+}
+
+option POS.InvestmentMaxReturn
+{
+    type = integer,
+    default = 250,
+    min = 150,
+    max = 500,
+    page = POS_Sandbox,
+    translation = POS_InvestmentMaxReturn,
+}
+
+option POS.MaxActiveInvestments
+{
+    type = integer,
+    default = 5,
+    min = 1,
+    max = 20,
+    page = POS_Sandbox,
+    translation = POS_MaxActiveInvestments,
+}
+
+option POS.InvestmentBroadcastMins
+{
+    type = integer,
+    default = 60,
+    min = 15,
+    max = 240,
+    page = POS_Sandbox,
+    translation = POS_InvestmentBroadcastMins,
+}

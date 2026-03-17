@@ -41,6 +41,10 @@ globals = {
     "POS_ConnectionManager",
     "POS_ContextMenu",
     "POS_TerminalUI",
+    "POS_ScreenManager",
+    "POS_InvestmentGenerator",
+    "POS_InvestmentResolver",
+    "POS_InvestmentLog",
 }
 
 read_globals = {

@@ -78,6 +78,34 @@ local function onServerCommand(module, command, args)
 
     if command == "NewOperation" and args and args.operationData then
         POS_RadioInterception.onTransmissionReceived(args)
+    elseif command == "NewInvestment" and args and args.investmentData then
+        if POS_InvestmentLog then
+            local added = POS_InvestmentLog.addOpportunity(args.investmentData)
+            if added then
+                PhobosLib.debug("POS", "Investment opportunity received: "
+                    .. (args.investmentData.id or "?"))
+            end
+        end
+    elseif command == "InvestmentResolved" and args then
+        if POS_InvestmentLog then
+            local record = POS_InvestmentLog.resolveInvestment(
+                args.investmentId, args.status)
+            if record and args.status == "matured" and args.returnAmount then
+                -- Pay out the return to the player
+                local player = getSpecificPlayer(0)
+                if player then
+                    PhobosLib.addMoney(player, args.returnAmount)
+                    PhobosLib.debug("POS", "Investment matured — $"
+                        .. args.returnAmount .. " added to inventory")
+                end
+            elseif record and args.status == "defaulted" then
+                PhobosLib.debug("POS", "Investment defaulted — $"
+                    .. (record.principalAmount or 0) .. " lost")
+            end
+        end
+    elseif command == "InvestmentAcknowledged" and args then
+        PhobosLib.debug("POS", "Server acknowledged investment: "
+            .. (args.investmentId or "?"))
     end
 end
 
