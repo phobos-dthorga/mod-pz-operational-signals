@@ -47,27 +47,27 @@ function screen.create(contentPanel, _params, _terminal)
     local btnX = 5
 
     -- Header
-    widgets.header = W.createLabel(contentPanel, 0, y,
+    W.createLabel(contentPanel, 0, y,
         safeGetText("UI_POS_Stock_Header"), C.textBright)
     y = y + lineH
 
-    widgets.sep1 = W.createSeparator(contentPanel, 0, y, 40)
+    W.createSeparator(contentPanel, 0, y, 40)
     y = y + lineH * 2
 
     -- Coming soon message
-    widgets.comingSoon = W.createLabel(contentPanel, 20, y,
+    W.createLabel(contentPanel, 20, y,
         safeGetText("UI_POS_Stock_ComingSoon"), C.warn)
     y = y + lineH * 2
 
-    widgets.message = W.createLabel(contentPanel, 8, y,
+    W.createLabel(contentPanel, 8, y,
         safeGetText("UI_POS_Stock_Message"), C.dim)
     y = y + lineH * 3
 
     -- Footer
-    widgets.sep2 = W.createSeparator(contentPanel, 0, y, 40, "-")
+    W.createSeparator(contentPanel, 0, y, 40, "-")
     y = y + lineH + 4
 
-    widgets.backBtn = W.createButton(contentPanel, btnX, y, btnW, btnH,
+    W.createButton(contentPanel, btnX, y, btnW, btnH,
         "[0] " .. safeGetText("UI_POS_BackPrompt"), nil,
         function() POS_ScreenManager.goBack() end)
 end
