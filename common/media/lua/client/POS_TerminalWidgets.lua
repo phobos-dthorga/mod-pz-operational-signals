@@ -193,21 +193,12 @@ function POS_TerminalWidgets.createScrollPanel(parent, x, y, w, h)
 end
 
 --- Remove all children from a panel (used by screen destroy).
+--- Uses PZ's built-in ISUIElement:clearChildren() which resets
+--- the Lua children table and calls javaObject:ClearChildren().
 --- @param panel any ISPanel
 function POS_TerminalWidgets.clearPanel(panel)
     if not panel then return end
-    -- ISUIElement stores children in self.javaObject child list
-    -- Safest approach: collect then remove
-    local children = {}
-    if panel.getChildren then
-        local jChildren = panel:getChildren()
-        if jChildren then
-            for i = 0, jChildren:size() - 1 do
-                table.insert(children, jChildren:get(i))
-            end
-        end
-    end
-    for _, child in ipairs(children) do
-        panel:removeChild(child)
+    if panel.clearChildren then
+        panel:clearChildren()
     end
 end
