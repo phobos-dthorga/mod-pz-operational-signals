@@ -1,100 +1,70 @@
 [h1]Changelog[/h1]
 
-[h2]v0.8.0 — 2026-03-18 (Preview Release)[/h2]
-[b]Screen stack architecture, 3-column layout, power consumption[/b]
-
-[u]Screen Stack Architecture[/u]
+[h2]v0.9.0 — Market Intelligence & Passive Recon (Preview)[/h2]
 [list]
-[*] New POS_API — public screen registration with validation, guards, and extension support
-[*] New POS_Registry — central screen + menu category storage with filtered queries
-[*] New POS_MenuBuilder — dynamic menu generation from registry (replaces hardcoded menus)
-[*] shouldShow / canOpen guard system — screens declare access requirements
-[*] Declarative requires: connected, minSignal, bands — enforced automatically
-[*] onEnter / onExit lifecycle hooks for screen state management
-[*] Breadcrumb navigation path displayed in content header
-[*] Dot-namespaced screen IDs (pos.main, pos.bbs.operations, etc.)
-[*] Menu categories with sortOrder for clean hierarchy
-[*] tryRegisterScreen() for third-party extension safety
-[*] MainMenu + BBS Hub now generate menus dynamically from the registry
+[*] Scanner radio passive recon — all 12 vanilla radios enhanced with 4-tier system
+[*] Terminal UI overflow guards and text truncation
+[*] Exit button on root screens, Back button consistency
+[*] Comprehensive loot table expansion (17 → 44 distribution entries)
+[*] Critical fix: sendServerCommand SP compatibility
+[*] Critical fix: weightFn missing in item selection
+[*] Sandbox tooltip %% display fix
+[*] PhobosLib 1.38.0 dependency (text truncation utilities)
 [/list]
 
-[u]3-Column Terminal Layout[/u]
+[h2]v0.8.0 — Persistence Migration & VHS Tapes[/h2]
 [list]
-[*] NavPanel (left sidebar) — persistent navigation with signal indicator + menu items
-[*] ContextPanel (right sidebar) — screen-specific detail inspector
-[*] Responsive: ContextPanel auto-collapses below 900px window width
-[*] Stencil clipping on all panels prevents content bleed-over
-[*] 5 screens provide context data: Operations, Deliveries, Investments, Negotiate, BBS
-[*] Sandbox toggles: EnableNavPanel, EnableContextPanel
+[*] World-scoped Global ModData persistence (Phase A-E migration)
+[*] Server-authoritative economy with daily tick
+[*] Passive recon devices: camcorder, field logger, data calculator
+[*] VHS-C tapes: 4 quality tiers, crafting, degradation, recycling
+[*] VHS tape review at TV CraftBench entity
+[*] Intel gathering cooldown (per-location, 12-day default)
+[*] 4-state context menu for intel gathering
+[*] Dynamic note tooltip showing category-specific items
+[*] Append-only event logs for market auditing
+[*] 11 item icons generated via gpt-image-1
+[*] Client snapshot protocol for multiplayer
+[*] Server input validation and admin commands
 [/list]
 
-[u]Terminal Power Consumption[/u]
+[h2]v0.7.0 — Market Intelligence Engine[/h2]
 [list]
-[*] Desktop terminals consume generator fuel while open (0.15%/min default)
-[*] Grid power is free — drain only applies when grid is off
-[*] Terminal auto-closes with message on power failure
-[*] Connection blocked when desktop has no electricity
-[*] Cross-mod drain detection — highest rate wins, no stacking
-[*] Sandbox: TerminalPowerDrainRate (0 = disabled)
+[*] Item pool system (5,105 vanilla items mapped to 11 commodity categories)
+[*] Price engine with day-to-day drift, reputation-scaled variance, speculation
+[*] 18 sub-categories with weighted selection
+[*] 13 sandbox options for market weighting and category control
+[*] PhobosLib.weightedRandom() and weightedRandomMultiple() utilities
 [/list]
 
-[u]Code Quality[/u]
+[h2]v0.6.0 — Code Quality Audit[/h2]
 [list]
-[*] POS_Constants — centralised cross-file constants (commands, screen IDs, item types, modData keys)
-[*] POS_TerminalWidgets — shared layout helpers (initLayout, drawHeader, drawFooter, defaultDestroy)
-[*] All magic numbers and strings extracted to named constants across 35+ files
-[*] 5 new sandbox options from magic number audit (delivery expiry, scan radii, investment variance/floor)
-[*] safeGetText() canonicalised in PhobosLib (was duplicated 13 times)
-[*] ~200 lines of boilerplate eliminated via shared helpers
+[*] POS_Constants.lua centralised (24 cross-file constants)
+[*] 35 files refactored — magic numbers and strings extracted
+[*] 5 new sandbox options (delivery expiry, scan radii, investment variance)
+[*] COLOURS palette delegation to POS_TerminalTheme
 [/list]
 
-[h2]v0.7.0 — 2026-03-18[/h2]
-[b]AZAS dual-band, frequency validation, signal strength[/b]
-
+[h2]v0.5.0 — Screen Stack & Terminal Layout[/h2]
 [list]
-[*] Hard dependency on AZAS Frequency Index — dynamic per-world frequencies
-[*] Dual-band registration: POSnet_Operations (amateur) + POSnet_Tactical (military)
-[*] Radio must be tuned to correct frequency to connect
-[*] Desktop computers display POSnet frequencies for reference
-[*] Band determines content access: amateur = Tier I-II, tactical = Tier III-IV
-[*] Signal strength system: inverse square law from radio TransmitRange
-[*] Signal gates access below threshold + scales rewards 50-100%
-[*] 3 sandbox options: EnableSignalStrength, SignalReferencePower, MinSignalThreshold
-[*] Street addresses via PhobosLib_Address.resolveAddress()
-[*] [MAP] button on active missions opens PZ world map at target location
-[*] Retroactive building + mailbox scan on first mod load (250-tile radius)
+[*] 3-column terminal layout (NavPanel, ContentPanel, ContextPanel)
+[*] Screen stack architecture with API, registry, and guard system
+[*] Terminal power consumption (generator fuel drain)
+[*] AZAS Frequency Index integration (dual-band registration)
+[*] Signal strength system (inverse square law from TransmitRange)
+[*] CRT bezel texture and 4 colour themes
 [/list]
 
-[h2]v0.6.0 — 2026-03-18[/h2]
-[b]BBS hub, cancellation, negotiation, pagination[/b]
-
+[h2]v0.4.0 — BBS & Investments[/h2]
 [list]
-[*] BBS hub sub-menu — Investments, Operations, Courier under one roof
-[*] Mission cancellation at any stage — Tier I free, Tiers II-IV scale upward
-[*] Negotiation system — haggle reward/deadline before accepting
-[*] Reputation-weighted success (30-85%) with max 3 attempts
-[*] PhobosLib_Pagination widget in BBS, Operations, Deliveries screens
-[*] replaceCurrent() avoids back-stack pollution for pagination
-[*] Investment detail view with accept/decline
-[*] Delivery context menu for package pickup/dropoff
-[*] Recon scanner with photograph → field report pipeline
-[*] Unified reputation framework with 5 tiers (0-2500)
-[*] 4 crafting categories: recon photography, field reporting
+[*] BBS Hub with investments, operations, and courier sections
+[*] Investment system with risk/reward simulation
+[*] Mission negotiation and cancellation
+[*] Pagination support via PhobosLib_Pagination
+[*] Street address resolution via Paper Trails
 [/list]
 
-[h2]v0.5.0 — 2026-03-18[/h2]
-[b]Portable computer, themes, terminal sizing[/b]
-
-[list]
-[*] Portable Computer — 10 kg, rare world loot, battery drains while terminal open
-[*] 4 colour themes: Classic Green, Amber, Cool White, IBM Blue
-[*] 4 font sizes: Small, Medium, Code, Large
-[*] Font-scale-with-window option (independent of PZ settings)
-[*] Terminal window resizable with minimum 720x780
-[/list]
-
-[h2]v0.3.0 — 2026-03-18[/h2]
-[b]Boot sequence + resizable windows[/b]
+[h2]v0.3.0 — Boot Sequence & Resizable Windows[/h2]
 
 [list]
 [*] DOS-style boot animation with typewriter character reveal on first terminal open per world-load
@@ -103,8 +73,7 @@
 [*] Boot animation speed scales with game speed multiplier
 [/list]
 
-[h2]v0.2.0 — 2026-03-18[/h2]
-[b]Core gameplay loop + terminal UI[/b]
+[h2]v0.2.0 — Core Gameplay Loop & Terminal UI[/h2]
 
 [list]
 [*] Retro CRT-style terminal UI — green monospace text on dark background with scanline effect
@@ -116,8 +85,7 @@
 [*] Welcome guide popup explaining setup and usage
 [/list]
 
-[h2]v0.1.0 — 2026-03-18[/h2]
-[b]Initial scaffold[/b]
+[h2]v0.1.0 — Initial Scaffold[/h2]
 
 [list]
 [*] POSnet radio channel registration at configurable frequency

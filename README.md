@@ -17,67 +17,60 @@
 
 # Phobos' Operational Signals (POSnet)
 
-A radio-driven procedural operations system for Project Zomboid Build 42. Players equipped with radios can intercept transmissions from the POSnet (Phobos Operational Signals Network), generating field operations that encourage exploration across Knox Country.
+A radio-driven procedural operations and market intelligence system for Project Zomboid Build 42. Intercept POSnet transmissions, gather field intelligence with 90s-era recon devices, trade commodity data via VHS tapes, and deploy into the field.
 
 ## Status
 
-**v0.1.0** — Initial scaffold. Core architecture in place, mission system under development.
+**v0.9.0** — Preview release. Core systems functional: terminal UI, operations/delivery/investment missions, market intelligence engine, passive reconnaissance devices, scanner radio, VHS tape pipeline, and server-authoritative economy. Active development.
 
 ## Requirements
 
 | Dependency | Type | Notes |
 |------------|------|-------|
-| [PhobosLib](https://steamcommunity.com/sharedfiles/filedetails/?id=3668598865) | Required | Shared utility library for all Phobos mods |
+| [PhobosLib](https://steamcommunity.com/sharedfiles/filedetails/?id=3668598865) | Required | Shared utility library (1.38.0+) |
+| AZAS Frequency Index | Required | Dynamic per-world radio frequencies |
+| [Phobos Chemistry Pathways](https://steamcommunity.com/sharedfiles/filedetails/?id=3668197831) | Optional | Cross-mod market categories |
+| Paper Trails | Optional | Street address resolution for missions |
 
 ## Core Systems
 
-### Radio Interception
-Hook into PZ's native radio system to deliver POSnet broadcasts on a dedicated frequency. Players must tune in to receive operations.
+### POSnet Terminal
+CRT-style terminal interface with 4 colour themes, 3-column layout (nav/content/context panels), boot sequence, and screen stack architecture. Connects via desktop computer (within 3 tiles of radio) or portable computer (inventory). Signal strength based on radio hardware via inverse square law.
 
-### Mission Generator
-Procedural mission generation with weighted category selection, location scouting, and difficulty scaling based on game day and player skills.
+### Operations & Missions
+Procedural recon, delivery, and courier missions via BBS. Investment opportunities with risk/reward simulation. Mission negotiation (reputation-weighted success chance) and cancellation with tier-scaled penalties. 5 reputation tiers gate content access.
 
-### Operation Log
-In-game journal tracking active, completed, and expired operations. Accessible via context menu or keybind.
+### Market Intelligence
+Commodity market simulation with 11 categories and 18 sub-categories. 5,105 vanilla items mapped to categories. Day-to-day price drift with supply/demand speculation. Reputation-scaled price accuracy across 5 tiers. Server-authoritative economy with daily tick.
 
-### Broadcast Message System
-Diegetic radio transmissions with colour-coded speaker identities, signal strength simulation, and atmospheric message formatting.
+### Passive Reconnaissance Devices
+- **Recon Camcorder** -- equippable, highest quality visual recon, requires VHS tape
+- **Field Survey Logger** -- equippable, environmental metadata, silent operation
+- **Scanner Radio** -- all 12 vanilla radios enhanced with 4-tier passive scanning
+- **Data Calculator** -- compile raw data into higher-quality reports
+- **VHS-C Tapes** -- physical intelligence storage (4 quality tiers), crafting (repair, splice, improvise), review at TV stations
 
-### Completion Detection
-Event-driven objective tracking: item acquisition, location visits, entity interactions, and timed survival objectives.
+### Data Persistence
+World-scoped Global ModData for shared economy (6 containers). Tiny player-bound state (reputation, cash, watchlist, alerts). Append-only event logs with capped rolling windows to prevent save bloat.
 
-## Mission Categories
-
-| Category | Description |
-|----------|-------------|
-| Industrial Recovery | Salvage equipment and materials from factories and warehouses |
-| Vehicle Salvage | Locate and recover specific vehicles or vehicle parts |
-| Scientific Research | Collect specimens, samples, or data from designated locations |
-| Survivor Assistance | Deliver supplies or clear threats near survivor locations |
-| Infrastructure Repair | Restore power, water, or structural integrity at key sites |
-
-## Modules
-
-| Module | Side | Description |
-|--------|------|-------------|
-| `POS_SandboxIntegration` | Shared | Sandbox option accessors |
-| `POS_RadioInterception` | Client | Radio frequency registration and broadcast delivery |
-| `POS_MissionGenerator` | Shared | Procedural mission creation and template system |
-| `POS_MissionTemplates` | Shared | Mission category definitions and objective templates |
-| `POS_OperationLog` | Client | In-game operation journal UI and persistence |
-| `POS_BroadcastSystem` | Server | Timed broadcast scheduling and transmission |
-| `POS_CompletionDetector` | Shared | Objective tracking and completion event handling |
+### AZAS Frequency Index
+Dual-band registration: POSnet_Operations (amateur) and POSnet_Tactical (military). Radio must be tuned to the correct frequency. Band determines content access (amateur = Tier I-II, tactical = Tier III-IV).
 
 ## Sandbox Options
 
-| Option | Default | Description |
-|--------|---------|-------------|
-| Enable Debug Logging | false | PhobosLib debug output for POSnet modules |
-| Enable POSnet Broadcasts | true | Master toggle for the entire system |
-| Broadcast Interval (minutes) | 30 | Time between POSnet transmissions |
-| Max Active Operations | 3 | Maximum concurrent operations in the log |
-| Operation Expiry (days) | 7 | Days before an uncompleted operation expires |
-| POSnet Frequency | 91500 | Radio frequency for POSnet broadcasts (Hz) |
+60+ configurable options covering:
+
+| Category | Examples |
+|----------|----------|
+| Broadcasts | Interval, max active operations, expiry |
+| Missions | Reputation tiers, reward multiplier, cancellation penalties |
+| Investments | Payback range, risk variance, obfuscation, return multipliers |
+| Deliveries | Distance range, road factor, expiry |
+| Markets | Category weights, drift, broadcast quality, intel freshness |
+| Recon Devices | Scan radii, intervals, camcorder noise, tape degradation |
+| VHS Tapes | Crafting toggle, foraging toggle, review time |
+| Economy | Daily tick, event logs, rolling caps |
+| Terminal | Font size, colour theme, power drain, nav/context panels |
 
 ## Project Layout
 
@@ -88,8 +81,8 @@ mod-pz-operational-signals/
 │   ├── media/
 │   │   ├── lua/
 │   │   │   ├── shared/               # Shared Lua modules
-│   │   │   ├── client/               # Client-only Lua (radio UI, journal)
-│   │   │   └── server/               # Server-only Lua (broadcast scheduling)
+│   │   │   ├── client/               # Client-only Lua (terminal, recon, context menus)
+│   │   │   └── server/               # Server-only Lua (broadcast, economy tick)
 │   │   ├── scripts/                  # Item/recipe definitions
 │   │   ├── textures/                 # Icons (128x128 RGBA PNG)
 │   │   └── sandbox-options.txt       # Sandbox option definitions
@@ -110,7 +103,7 @@ git config core.hooksPath .githooks
 
 ### Bump version
 ```bash
-./scripts/bump-version.sh 0.2.0
+./scripts/bump-version.sh 0.9.0
 ```
 
 ### Run luacheck
@@ -130,3 +123,4 @@ luacheck common/media/lua/
 - [Security Policy](SECURITY.md)
 - [Versioning Policy](VERSIONING.md)
 - [PhobosLib on Steam Workshop](https://steamcommunity.com/sharedfiles/filedetails/?id=3668598865)
+- [POSnet on Steam Workshop](https://steamcommunity.com/sharedfiles/filedetails/?id=3686788646)
