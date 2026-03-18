@@ -317,3 +317,60 @@ end
 function POS_Sandbox.getMarketBroadcastQuality()
     return PhobosLib.getSandboxVar("POS", "MarketBroadcastQuality", 50)
 end
+
+---------------------------------------------------------------
+-- Item selection & category weighting sandbox accessors
+---------------------------------------------------------------
+
+function POS_Sandbox.getEnableCategoryWeighting()
+    return PhobosLib.getSandboxVar("POS", "EnableCategoryWeighting", true)
+end
+
+function POS_Sandbox.getEnableItemLevelIntel()
+    return PhobosLib.getSandboxVar("POS", "EnableItemLevelIntel", true)
+end
+
+function POS_Sandbox.getItemSelectionPoolSize()
+    return PhobosLib.getSandboxVar("POS", "ItemSelectionPoolSize", 3)
+end
+
+function POS_Sandbox.getBroadcastItemsPerPacket()
+    return PhobosLib.getSandboxVar("POS", "BroadcastItemsPerPacket", 2)
+end
+
+function POS_Sandbox.getReputationAffectsVariance()
+    return PhobosLib.getSandboxVar("POS", "ReputationAffectsVariance", true)
+end
+
+function POS_Sandbox.getDailyPriceDriftPct()
+    return PhobosLib.getSandboxVar("POS", "DailyPriceDriftPct", 2)
+end
+
+function POS_Sandbox.getEssentialGoodsPriority()
+    return PhobosLib.getSandboxVar("POS", "EssentialGoodsPriority", true)
+end
+
+--- Returns fuel category weight as float (sandbox stores as integer, ÷100).
+function POS_Sandbox.getWeightFuel()
+    return PhobosLib.getSandboxVar("POS", "WeightFuel", 150) / 100
+end
+
+function POS_Sandbox.getWeightMedicine()
+    return PhobosLib.getSandboxVar("POS", "WeightMedicine", 140) / 100
+end
+
+function POS_Sandbox.getWeightFood()
+    return PhobosLib.getSandboxVar("POS", "WeightFood", 100) / 100
+end
+
+function POS_Sandbox.getWeightAmmunition()
+    return PhobosLib.getSandboxVar("POS", "WeightAmmunition", 130) / 100
+end
+
+function POS_Sandbox.getWeightTools()
+    return PhobosLib.getSandboxVar("POS", "WeightTools", 90) / 100
+end
+
+function POS_Sandbox.getWeightRadio()
+    return PhobosLib.getSandboxVar("POS", "WeightRadio", 60) / 100
+end

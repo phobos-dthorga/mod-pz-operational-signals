@@ -76,6 +76,8 @@ globals = {
     "POS_MarketBroadcaster",
     "POS_CrossModMarkets",
     "POS_TraderIntegration",
+    "POS_ItemPool",
+    "POS_PriceEngine",
 }
 
 read_globals = {

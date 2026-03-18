@@ -116,6 +116,13 @@ missions, windows, and sandbox options. All new features must comply.
 - Boolean toggles for feature gates; integer sliders for tunable values.
 - All sandbox options must have translated labels and tooltips.
 
+### 3.1 Weight Threshold Rule
+
+When exposing category or sub-category weights as sandbox options, only those with
+a default weight ≥ 0.5 should be included. This prevents the sandbox options panel
+from becoming monolithic. Low-weight categories (cosmetic items, junk) use their
+coded defaults silently.
+
 ---
 
 ## 4. Translation
@@ -597,3 +604,39 @@ At 1170px default, usable height is ~667px (~33 lines at 20px lineH).
   `PhobosLib_Pagination`'s `maxHeight` option.
 - Headers + footers + breadcrumbs should not exceed ~6 lines combined.
 - Screens should test at the minimum window height (780px, ~22 usable lines).
+
+---
+
+## 10. Item Selection & Market Intelligence
+
+### 10.1 Weight-Based Selection
+
+All item selection in the market system uses `PhobosLib.weightedRandom()` with
+category/sub-category weights. Higher-weight categories appear more frequently
+in both field reconnaissance and broadcasts.
+
+### 10.2 Off-Category Chance
+
+A small randomness factor (`POS_Constants.ITEM_POOL_OFF_CATEGORY_CHANCE`, default 5%)
+introduces items from unrelated categories. This simulates the unpredictable nature
+of post-apocalyptic trade and prevents market data from being perfectly predictable.
+
+### 10.3 Reputation Influence
+
+Player reputation tier scales price variance:
+- Low reputation → wide variance (prices are unreliable estimates)
+- High reputation → tight variance (prices are accurate)
+
+This is controlled by the `ReputationAffectsVariance` sandbox option.
+
+### 10.4 Essential Goods Priority
+
+When enabled (`EssentialGoodsPriority` sandbox option), essential categories
+(fuel, medicine, food) receive a 1.5× broadcast frequency multiplier, making
+survival-critical market data more available to players.
+
+### 10.5 Sub-Category Drill-Down
+
+Terminal screens allow filtering by sub-category (e.g., "Rifle Ammo" within
+"Ammunition"). This adds one navigation level but keeps screens uncluttered
+with 4-5 sub-categories per parent, paginated if needed.

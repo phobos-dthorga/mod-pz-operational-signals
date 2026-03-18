@@ -58,6 +58,7 @@ end
 
 --- Add a new intel record.
 --- @param record table Intel record (see schema in market-exchange-design.md)
+---   Optional fields: items (table of {fullType, price}), sourceTier ("field"|"broadcast"), quality (0-100)
 --- @return boolean success
 function POS_MarketDatabase.addRecord(record)
     if not record or not record.id then return false end
@@ -65,6 +66,16 @@ function POS_MarketDatabase.addRecord(record)
     -- Duplicate check
     for i = 1, #store do
         if store[i].id == record.id then return false end
+    end
+    -- Preserve optional extended fields
+    if record.items ~= nil and type(record.items) ~= "table" then
+        record.items = nil
+    end
+    if record.sourceTier and record.sourceTier ~= "field" and record.sourceTier ~= "broadcast" then
+        record.sourceTier = nil
+    end
+    if record.quality then
+        record.quality = math.max(0, math.min(100, tonumber(record.quality) or 0))
     end
     table.insert(store, record)
     PhobosLib.debug("POS", "[POS:MarketDB]",
@@ -110,7 +121,8 @@ function POS_MarketDatabase.getSummary(categoryId)
 
     if #records == 0 then return summary end
 
-    local total = 0
+    local weightedTotal = 0
+    local totalWeight = 0
     local sources = {}
 
     for _, r in ipairs(records) do
@@ -121,7 +133,15 @@ function POS_MarketDatabase.getSummary(categoryId)
             if not summary.high or r.price > summary.high then
                 summary.high = r.price
             end
-            total = total + r.price
+            -- Weight by sourceTier: field=1.0, broadcast=0.7, default=0.85
+            local w = 0.85
+            if r.sourceTier == "field" then
+                w = 1.0
+            elseif r.sourceTier == "broadcast" then
+                w = 0.7
+            end
+            weightedTotal = weightedTotal + (r.price * w)
+            totalWeight = totalWeight + w
         end
         if r.source then
             sources[r.source] = true
@@ -131,12 +151,8 @@ function POS_MarketDatabase.getSummary(categoryId)
         end
     end
 
-    local priceCount = 0
-    for _, r in ipairs(records) do
-        if r.price then priceCount = priceCount + 1 end
-    end
-    if priceCount > 0 then
-        summary.avg = math.floor((total / priceCount) * 100 + 0.5) / 100
+    if totalWeight > 0 then
+        summary.avg = math.floor((weightedTotal / totalWeight) * 100 + 0.5) / 100
     end
 
     -- Count distinct sources
@@ -210,6 +226,47 @@ function POS_MarketDatabase.getPriceHistory(categoryId, days)
     table.sort(history, function(a, b) return a.day < b.day end)
 
     return history
+end
+
+--- Get item-level data aggregated from records that have an items field.
+--- @param categoryId string
+--- @param maxAgeDays number|nil Override max age (default: sandbox setting)
+--- @return table[] Array of { fullType, avgPrice, priceCount, lastSeen }
+function POS_MarketDatabase.getItemRecords(categoryId, maxAgeDays)
+    local records = POS_MarketDatabase.getRecords(categoryId, maxAgeDays)
+    local itemMap = {}
+
+    for _, r in ipairs(records) do
+        if r.items and type(r.items) == "table" then
+            for _, item in ipairs(r.items) do
+                if item.fullType and item.price then
+                    local entry = itemMap[item.fullType]
+                    if not entry then
+                        entry = { fullType = item.fullType, totalPrice = 0, priceCount = 0, lastSeen = 0 }
+                        itemMap[item.fullType] = entry
+                    end
+                    entry.totalPrice = entry.totalPrice + item.price
+                    entry.priceCount = entry.priceCount + 1
+                    if (r.recordedDay or 0) > entry.lastSeen then
+                        entry.lastSeen = r.recordedDay or 0
+                    end
+                end
+            end
+        end
+    end
+
+    local result = {}
+    for _, entry in pairs(itemMap) do
+        table.insert(result, {
+            fullType = entry.fullType,
+            avgPrice = math.floor((entry.totalPrice / entry.priceCount) * 100 + 0.5) / 100,
+            priceCount = entry.priceCount,
+            lastSeen = entry.lastSeen,
+        })
+    end
+    table.sort(result, function(a, b) return a.fullType < b.fullType end)
+
+    return result
 end
 
 --- Get all known traders (across all categories).

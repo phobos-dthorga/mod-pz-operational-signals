@@ -129,5 +129,44 @@
     "Sandbox_POS_EnableMarketBroadcasts": "Enable Market Broadcasts",
     "Sandbox_POS_EnableMarketBroadcasts_tooltip": "When enabled, the server periodically broadcasts market intel data to all players. <BR> <BR> <INDENT:20> Broadcast data is lower quality than field-gathered notes. <BR> Default: ON",
     "Sandbox_POS_MarketBroadcastQuality": "Market Broadcast Quality (%)",
-    "Sandbox_POS_MarketBroadcastQuality_tooltip": "Quality of server-broadcast market intel (0–100). <BR> <BR> <INDENT:20> Higher values produce more reliable broadcast data. <BR> Field-gathered notes are always higher quality than broadcasts. <BR> Range: 0–100. Default: 50"
+    "Sandbox_POS_MarketBroadcastQuality_tooltip": "Quality of server-broadcast market intel (0–100). <BR> <BR> <INDENT:20> Higher values produce more reliable broadcast data. <BR> Field-gathered notes are always higher quality than broadcasts. <BR> Range: 0–100. Default: 50",
+
+    "Sandbox_POS_EnableCategoryWeighting": "Enable Category Weighting",
+    "Sandbox_POS_EnableCategoryWeighting_tooltip": "When enabled, commodity categories are weighted by importance. <BR> <BR> <INDENT:20> Essential goods (fuel, medicine, food) appear more frequently in broadcasts and intel. <BR> When disabled, all categories are equally likely. <BR> Default: ON",
+
+    "Sandbox_POS_EnableItemLevelIntel": "Enable Item-Level Intel",
+    "Sandbox_POS_EnableItemLevelIntel_tooltip": "When enabled, market notes track specific items within categories. <BR> <BR> <INDENT:20> Field notes will contain 1-5 specific items with individual prices. <BR> When disabled, only category-level prices are recorded. <BR> Default: ON",
+
+    "Sandbox_POS_ItemSelectionPoolSize": "Items Per Recon Note",
+    "Sandbox_POS_ItemSelectionPoolSize_tooltip": "Number of specific items recorded per field reconnaissance note. <BR> <BR> <INDENT:20> Higher values give more detailed market intelligence per action. <BR> Range: 1-5. Default: 3",
+
+    "Sandbox_POS_BroadcastItemsPerPacket": "Items Per Broadcast",
+    "Sandbox_POS_BroadcastItemsPerPacket_tooltip": "Number of specific items included in each market broadcast. <BR> <BR> <INDENT:20> Higher values provide more data but broadcast intel is less accurate than field notes. <BR> Range: 1-5. Default: 2",
+
+    "Sandbox_POS_ReputationAffectsVariance": "Reputation Affects Price Accuracy",
+    "Sandbox_POS_ReputationAffectsVariance_tooltip": "When enabled, higher reputation tiers produce more accurate price estimates. <BR> <BR> <INDENT:20> Tier 1 (Untrusted): 1.5x variance (wide, inaccurate) <BR> Tier 3 (Trusted): 1.0x (baseline) <BR> Tier 5 (Legendary): 0.6x (very accurate) <BR> When disabled, all players get baseline accuracy. <BR> Default: ON",
+
+    "Sandbox_POS_DailyPriceDriftPct": "Daily Price Drift (%)",
+    "Sandbox_POS_DailyPriceDriftPct_tooltip": "Maximum percentage that commodity prices can drift per game day. <BR> <BR> <INDENT:20> Higher values create more volatile markets. 0 = prices never drift. <BR> Drift direction is influenced by supply/demand intel from player reconnaissance. <BR> Range: 0-10. Default: 2",
+
+    "Sandbox_POS_EssentialGoodsPriority": "Essential Goods Priority",
+    "Sandbox_POS_EssentialGoodsPriority_tooltip": "When enabled, essential categories (fuel, medicine, food) are broadcast 1.5x more frequently. <BR> <BR> <INDENT:20> This makes survival-critical market data more available to players. <BR> When disabled, all categories broadcast at their base frequency. <BR> Default: ON",
+
+    "Sandbox_POS_WeightFuel": "Fuel Category Weight",
+    "Sandbox_POS_WeightFuel_tooltip": "Selection weight for the Fuel commodity category (divided by 100). <BR> <BR> <INDENT:20> Higher values make fuel appear more often in market data. <BR> 150 = 1.5x importance. Range: 10-300. Default: 150",
+
+    "Sandbox_POS_WeightMedicine": "Medicine Category Weight",
+    "Sandbox_POS_WeightMedicine_tooltip": "Selection weight for the Medicine commodity category (divided by 100). <BR> <BR> <INDENT:20> Higher values make medical supplies appear more often. <BR> 140 = 1.4x importance. Range: 10-300. Default: 140",
+
+    "Sandbox_POS_WeightFood": "Food Category Weight",
+    "Sandbox_POS_WeightFood_tooltip": "Selection weight for the Food commodity category (divided by 100). <BR> <BR> <INDENT:20> 100 = baseline importance. Range: 10-300. Default: 100",
+
+    "Sandbox_POS_WeightAmmunition": "Ammunition Category Weight",
+    "Sandbox_POS_WeightAmmunition_tooltip": "Selection weight for the Ammunition commodity category (divided by 100). <BR> <BR> <INDENT:20> 130 = 1.3x importance. Range: 10-300. Default: 130",
+
+    "Sandbox_POS_WeightTools": "Tools Category Weight",
+    "Sandbox_POS_WeightTools_tooltip": "Selection weight for the Tools commodity category (divided by 100). <BR> <BR> <INDENT:20> 90 = 0.9x importance. Range: 10-300. Default: 90",
+
+    "Sandbox_POS_WeightRadio": "Radio/Electronics Category Weight",
+    "Sandbox_POS_WeightRadio_tooltip": "Selection weight for the Radio/Electronics commodity category (divided by 100). <BR> <BR> <INDENT:20> 60 = 0.6x importance. Range: 10-300. Default: 60"
 }

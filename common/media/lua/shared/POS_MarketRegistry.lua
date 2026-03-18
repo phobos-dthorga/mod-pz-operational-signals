@@ -26,10 +26,11 @@ require "POS_Constants"
 POS_MarketRegistry = POS_MarketRegistry or {}
 
 local categories = {}
+local subCategories = {}
 local dataProviders = {}
 
 --- Register a commodity category for the market system.
---- @param def table { id (string), labelKey (string), sortOrder (number), shouldShow (function|nil) }
+--- @param def table { id, labelKey, sortOrder, shouldShow, weight, volatility, broadcastFrequencyMult, isEssential }
 function POS_MarketRegistry.registerCategory(def)
     assert(type(def) == "table", "registerCategory: definition must be a table")
     assert(type(def.id) == "string", "registerCategory: 'id' is required")
@@ -45,9 +46,87 @@ function POS_MarketRegistry.registerCategory(def)
         labelKey = def.labelKey,
         sortOrder = def.sortOrder or 1000,
         shouldShow = def.shouldShow,
+        weight = def.weight or 1.0,
+        volatility = def.volatility or 1.0,
+        broadcastFrequencyMult = def.broadcastFrequencyMult or 1.0,
+        isEssential = def.isEssential or false,
     }
 
     PhobosLib.debug("POS", "[POS:MarketReg]", "Registered category: " .. def.id)
+end
+
+--- Register a sub-category within a parent commodity category.
+--- @param def table { id, parentCategory, labelKey, weight, displayCategories, namePatterns }
+function POS_MarketRegistry.registerSubCategory(def)
+    assert(type(def) == "table", "registerSubCategory: definition must be a table")
+    assert(type(def.id) == "string", "registerSubCategory: 'id' is required")
+    assert(type(def.parentCategory) == "string", "registerSubCategory: 'parentCategory' is required")
+
+    if not subCategories[def.parentCategory] then
+        subCategories[def.parentCategory] = {}
+    end
+
+    subCategories[def.parentCategory][def.id] = {
+        id = def.id,
+        parentCategory = def.parentCategory,
+        labelKey = def.labelKey or ("UI_POS_Market_SubCat_" .. def.id),
+        weight = def.weight or 1.0,
+        displayCategories = def.displayCategories,
+        namePatterns = def.namePatterns,
+    }
+
+    PhobosLib.debug("POS", "[POS:MarketReg]",
+        "Registered sub-category '" .. def.id .. "' under '" .. def.parentCategory .. "'")
+end
+
+--- Get all sub-categories for a parent category.
+--- @param categoryId string
+--- @return table[] Array of sub-category definitions
+function POS_MarketRegistry.getSubCategories(categoryId)
+    local subs = subCategories[categoryId]
+    if not subs then return {} end
+    local result = {}
+    for _, sub in pairs(subs) do
+        table.insert(result, sub)
+    end
+    return result
+end
+
+--- Get visible sub-categories for a parent category (filtered by context).
+--- @param categoryId string
+--- @param ctx table|nil Context with sandbox/player info
+--- @return table[] Filtered array of sub-category definitions
+function POS_MarketRegistry.getVisibleSubCategories(categoryId, ctx)
+    local allSubs = POS_MarketRegistry.getSubCategories(categoryId)
+    if not ctx then return allSubs end
+
+    local result = {}
+    for _, sub in ipairs(allSubs) do
+        -- Sub-categories are visible by default; extend filtering here as needed
+        table.insert(result, sub)
+    end
+    return result
+end
+
+--- Get the weight for a category (checks sandbox override first).
+--- @param categoryId string
+--- @return number
+function POS_MarketRegistry.getCategoryWeight(categoryId)
+    -- Check sandbox override
+    if POS_Sandbox and POS_Sandbox.getCategoryWeight then
+        local override = POS_Sandbox.getCategoryWeight(categoryId)
+        if override then return override end
+    end
+    local cat = categories[categoryId]
+    return cat and cat.weight or 1.0
+end
+
+--- Get the volatility for a category.
+--- @param categoryId string
+--- @return number
+function POS_MarketRegistry.getCategoryVolatility(categoryId)
+    local cat = categories[categoryId]
+    return cat and cat.volatility or 1.0
 end
 
 --- Register a data provider for a commodity category.
@@ -120,12 +199,17 @@ end
 -- Default commodity categories
 ---------------------------------------------------------------
 
-POS_MarketRegistry.registerCategory({ id = "fuel",       labelKey = "UI_POS_Market_Cat_Fuel",       sortOrder = 10 })
-POS_MarketRegistry.registerCategory({ id = "medicine",   labelKey = "UI_POS_Market_Cat_Medicine",   sortOrder = 20 })
-POS_MarketRegistry.registerCategory({ id = "food",       labelKey = "UI_POS_Market_Cat_Food",       sortOrder = 30 })
-POS_MarketRegistry.registerCategory({ id = "ammunition", labelKey = "UI_POS_Market_Cat_Ammunition", sortOrder = 40 })
-POS_MarketRegistry.registerCategory({ id = "tools",      labelKey = "UI_POS_Market_Cat_Tools",      sortOrder = 50 })
-POS_MarketRegistry.registerCategory({ id = "radio",      labelKey = "UI_POS_Market_Cat_Radio",      sortOrder = 60 })
+POS_MarketRegistry.registerCategory({ id = "fuel",       labelKey = "UI_POS_Market_Cat_Fuel",       sortOrder = 10, weight = 1.5, volatility = 1.3, broadcastFrequencyMult = 1.2, isEssential = true })
+POS_MarketRegistry.registerCategory({ id = "medicine",   labelKey = "UI_POS_Market_Cat_Medicine",   sortOrder = 20, weight = 1.4, volatility = 0.8, broadcastFrequencyMult = 1.1, isEssential = true })
+POS_MarketRegistry.registerCategory({ id = "weapons",    labelKey = "UI_POS_Market_Cat_Weapons",    sortOrder = 25, weight = 1.1, volatility = 1.2, isEssential = false })
+POS_MarketRegistry.registerCategory({ id = "food",       labelKey = "UI_POS_Market_Cat_Food",       sortOrder = 30, weight = 1.0, volatility = 1.0, broadcastFrequencyMult = 1.0, isEssential = true })
+POS_MarketRegistry.registerCategory({ id = "survival",   labelKey = "UI_POS_Market_Cat_Survival",   sortOrder = 35, weight = 0.8, volatility = 0.9, isEssential = false })
+POS_MarketRegistry.registerCategory({ id = "ammunition", labelKey = "UI_POS_Market_Cat_Ammunition", sortOrder = 40, weight = 1.3, volatility = 1.5, broadcastFrequencyMult = 0.8, isEssential = false })
+POS_MarketRegistry.registerCategory({ id = "tools",      labelKey = "UI_POS_Market_Cat_Tools",      sortOrder = 50, weight = 0.9, volatility = 0.7, broadcastFrequencyMult = 0.7, isEssential = false })
+POS_MarketRegistry.registerCategory({ id = "clothing",   labelKey = "UI_POS_Market_Cat_Clothing",   sortOrder = 55, weight = 0.5, volatility = 0.5, isEssential = false })
+POS_MarketRegistry.registerCategory({ id = "radio",      labelKey = "UI_POS_Market_Cat_Radio",      sortOrder = 60, weight = 0.6, volatility = 1.0, broadcastFrequencyMult = 0.5, isEssential = false })
+POS_MarketRegistry.registerCategory({ id = "literature", labelKey = "UI_POS_Market_Cat_Literature", sortOrder = 65, weight = 0.3, volatility = 0.3, isEssential = false })
+POS_MarketRegistry.registerCategory({ id = "miscellaneous", labelKey = "UI_POS_Market_Cat_Misc",    sortOrder = 99, weight = 0.1, volatility = 0.5, isEssential = false })
 
 ---------------------------------------------------------------
 -- Screen navigation categories (registered when POS_API available)

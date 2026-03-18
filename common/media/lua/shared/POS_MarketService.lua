@@ -151,3 +151,12 @@ function POS_MarketService.getExchangeOverview()
         sentimentKey = POS_MarketService.getSentimentKey(sentiment),
     }
 end
+
+--- Get item-level commodity data for a category.
+--- @param categoryId string
+--- @return table[] Array of { fullType, avgPrice, priceCount, lastSeen }
+function POS_MarketService.getCommodityItems(categoryId)
+    if not POS_MarketDatabase then return {} end
+    local records = POS_MarketDatabase.getItemRecords(categoryId)
+    return records or {}
+end

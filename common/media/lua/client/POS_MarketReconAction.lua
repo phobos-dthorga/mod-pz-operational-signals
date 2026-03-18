@@ -65,8 +65,17 @@ local function generateSourceName(location)
 end
 
 --- Generate a randomised price for a category.
-local function generatePrice(categoryId)
-    -- Base prices per category (reasonable post-apocalypse values)
+--- Uses POS_PriceEngine when available, falls back to hardcoded base prices.
+local function generatePrice(categoryId, ctx)
+    if POS_PriceEngine and POS_PriceEngine.generatePrice then
+        -- Pick a representative item for category-level price
+        local items = POS_ItemPool and POS_ItemPool.getItemsForCategory(categoryId)
+        if items and #items > 0 then
+            local item = items[ZombRand(#items) + 1]
+            return POS_PriceEngine.generatePrice(item.fullType, categoryId, ctx)
+        end
+    end
+    -- Fallback to existing logic if pool not ready
     local basePrices = {
         fuel = 8.0, medicine = 12.0, food = 5.0,
         ammunition = 15.0, tools = 10.0, radio = 20.0,
@@ -74,7 +83,8 @@ local function generatePrice(categoryId)
         specimens = 25.0, biohazard = 30.0,
     }
     local base = basePrices[categoryId] or 10.0
-    local variance = base * 0.3  -- +/-30%
+    local variancePct = POS_Constants.PRICE_BASE_VARIANCE_PCT / 100
+    local variance = base * variancePct
     local price = base + (ZombRand(math.floor(variance * 200)) - variance * 100) / 100
     return math.floor(price * 100 + 0.5) / 100
 end
@@ -170,15 +180,32 @@ function POS_MarketReconAction:perform()
     -- Create Raw Market Note
     local note = inv:AddItem(POS_Constants.ITEM_RAW_MARKET_NOTE)
     if note then
+        local ctx = { sourceTier = "field" }
         local md = note:getModData()
         md[POS_Constants.MD_NOTE_TYPE] = "market"
         md[POS_Constants.MD_NOTE_CATEGORY] = self.categoryId
         md[POS_Constants.MD_NOTE_SOURCE] = generateSourceName(self.location)
         md[POS_Constants.MD_NOTE_LOCATION] = self.location
-        md[POS_Constants.MD_NOTE_PRICE] = generatePrice(self.categoryId)
+        md[POS_Constants.MD_NOTE_PRICE] = generatePrice(self.categoryId, ctx)
         md[POS_Constants.MD_NOTE_STOCK] = generateStock()
         md[POS_Constants.MD_NOTE_RECORDED] = getGameTime():getNightsSurvived()
         md[POS_Constants.MD_NOTE_CONFIDENCE] = confidence
+
+        -- Store item-level data from POS_ItemPool + POS_PriceEngine
+        local poolSize = POS_Sandbox and POS_Sandbox.getItemSelectionPoolSize
+            and POS_Sandbox.getItemSelectionPoolSize() or 3
+        local selectedItems = POS_ItemPool and POS_ItemPool.selectItems(self.categoryId, poolSize, ctx)
+        if selectedItems and #selectedItems > 0
+                and POS_PriceEngine and POS_PriceEngine.generatePrices then
+            local prices = POS_PriceEngine.generatePrices(selectedItems, self.categoryId, ctx)
+            if prices and #prices > 0 then
+                local itemData = {}
+                for i, p in ipairs(prices) do
+                    itemData[i] = p.fullType .. ":" .. tostring(p.price)
+                end
+                md[POS_Constants.MD_NOTE_ITEMS] = table.concat(itemData, "|")
+            end
+        end
     end
 
     PhobosLib.debug("POS", "[POS:ReconAction]",

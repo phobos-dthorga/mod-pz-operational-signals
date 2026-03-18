@@ -160,6 +160,7 @@ POS_Constants.MD_NOTE_PRICE      = "POS_Price"
 POS_Constants.MD_NOTE_STOCK      = "POS_Stock"
 POS_Constants.MD_NOTE_RECORDED   = "POS_RecordedDay"
 POS_Constants.MD_NOTE_CONFIDENCE = "POS_Confidence"
+POS_Constants.MD_NOTE_ITEMS      = "POS_NoteItems"
 
 POS_Constants.MD_REPORT_TYPE     = "POS_ReportType"
 POS_Constants.MD_REPORT_REGION   = "POS_Region"
@@ -183,3 +184,28 @@ POS_Constants.MARKET_COMPILE_MIN_RECORDS  = 3
 ---------------------------------------------------------------
 
 POS_Constants.CMD_MARKET_BROADCAST = "MarketBroadcast"
+
+---------------------------------------------------------------
+-- Item pool constants
+---------------------------------------------------------------
+
+POS_Constants.ITEM_POOL_WEIGHT_PRECISION     = 1000
+POS_Constants.ITEM_POOL_OFF_CATEGORY_CHANCE  = 5
+POS_Constants.ITEM_POOL_MIN_BASE_PRICE       = 0.50
+POS_Constants.ITEM_POOL_WEIGHT_MULTIPLIER    = 2.0
+POS_Constants.ITEM_POOL_CONDITION_MULTIPLIER = 1.5
+
+---------------------------------------------------------------
+-- Price engine constants
+---------------------------------------------------------------
+
+POS_Constants.PRICE_BASE_VARIANCE_PCT      = 30
+POS_Constants.PRICE_BROADCAST_VARIANCE_PCT = 50
+POS_Constants.PRICE_DRIFT_SEED_MULTIPLIER  = 31
+POS_Constants.PRICE_DRIFT_RANGE            = 200
+POS_Constants.PRICE_DRIFT_DIVISOR          = 5000
+POS_Constants.PRICE_INTEL_BIAS_MAX         = 0.02
+POS_Constants.PRICE_MIN_OUTPUT             = 0.01
+
+-- Reputation variance multipliers (indexed by tier 1-5)
+POS_Constants.REP_VARIANCE_MULTIPLIERS = { 1.5, 1.2, 1.0, 0.8, 0.6 }

@@ -343,5 +343,40 @@
     "UI_POS_Exchange_RadioIndex": "Radio Equipment Index",
 
     "Tooltip_POS_RawMarketNote": "Handwritten observations on local market conditions. <BR> Upload at a POSnet terminal to add to the intel database.",
-    "Tooltip_POS_CompiledMarketReport": "A compiled analysis of commodity prices and availability. <BR> Generated from multiple field notes for a single commodity."
+    "Tooltip_POS_CompiledMarketReport": "A compiled analysis of commodity prices and availability. <BR> Generated from multiple field notes for a single commodity.",
+
+    "UI_POS_Market_Cat_Survival": "Survival",
+    "UI_POS_Market_Cat_Weapons": "Weapons",
+    "UI_POS_Market_Cat_Clothing": "Clothing",
+    "UI_POS_Market_Cat_Literature": "Literature",
+    "UI_POS_Market_Cat_Misc": "Miscellaneous",
+
+    "UI_POS_Market_Sub_RifleAmmo": "Rifle Ammunition",
+    "UI_POS_Market_Sub_ShotgunAmmo": "Shotgun Shells",
+    "UI_POS_Market_Sub_PistolAmmo": "Pistol Rounds",
+    "UI_POS_Market_Sub_Explosives": "Explosives",
+    "UI_POS_Market_Sub_FirstAid": "First Aid",
+    "UI_POS_Market_Sub_Bandages": "Bandages",
+    "UI_POS_Market_Sub_WoundCare": "Wound Care",
+    "UI_POS_Market_Sub_CannedFood": "Canned Food",
+    "UI_POS_Market_Sub_FreshFood": "Fresh Produce",
+    "UI_POS_Market_Sub_DryGoods": "Dry Goods",
+    "UI_POS_Market_Sub_Beverages": "Beverages",
+    "UI_POS_Market_Sub_HandTools": "Hand Tools",
+    "UI_POS_Market_Sub_BuildingMaterials": "Building Materials",
+    "UI_POS_Market_Sub_VehicleParts": "Vehicle Parts",
+    "UI_POS_Market_Sub_GardeningSupplies": "Gardening Supplies",
+    "UI_POS_Market_Sub_Firearms": "Firearms",
+    "UI_POS_Market_Sub_MeleeWeapons": "Melee Weapons",
+    "UI_POS_Market_Sub_CraftedWeapons": "Crafted Weapons",
+
+    "UI_POS_Market_ItemPool": "Items Tracked",
+    "UI_POS_Market_PriceVariance": "Variance",
+    "UI_POS_Market_Speculation": "Speculation",
+    "UI_POS_Market_DayDrift": "Daily Drift",
+    "UI_POS_Market_EssentialGoods": "Essential",
+    "UI_POS_Market_JunkItems": "Miscellaneous",
+    "UI_POS_Market_SubCategory": "Sub-Category",
+    "UI_POS_Market_ViewAll": "View All",
+    "UI_POS_Market_FilterBy": "Filter by Sub-Category"
 }

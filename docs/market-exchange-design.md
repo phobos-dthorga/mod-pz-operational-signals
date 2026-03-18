@@ -327,3 +327,213 @@ These items build ON TOP of the framework and are deferred to feature work:
 - Server-side market data broadcasting
 - Physical item trading at world contacts
 - Biomass mod tie-in (paper production → market notes)
+
+---
+
+## 13. Item Selection Engine
+
+The `POS_ItemPool` module manages the pool of tradeable items at runtime.
+
+### Architecture
+
+On `Events.OnGameStart`, the item pool queries `ScriptManager.instance:getAllItems()` to
+build a runtime map of all game items → commodity categories → sub-categories.
+
+### DisplayCategory → Commodity Category Mapping
+
+| DisplayCategory | Commodity Category | Default Weight |
+|-----------------|-------------------|---------------|
+| (fuel patterns) | fuel | 1.5 |
+| FirstAid, Wound, Bandage | medicine | 1.4 |
+| Food, Cooking, CookingWeapon | food | 1.0 |
+| Ammo, Explosives, WeaponPart | ammunition | 1.3 |
+| Tool, ToolWeapon, Material, RecipeResource, VehicleMaintenance, Gardening | tools | 0.9 |
+| Electronics, Communications, LightSource | radio | 0.6 |
+| Camping, Fishing, Trapping, WaterContainer | survival | 0.8 |
+| Weapon, WeaponCrafted, various *Weapon categories | weapons | 1.1 |
+| Clothing, ProtectiveGear | clothing | 0.5 |
+| Literature, SkillBook, Cartography | literature | 0.3 |
+| Everything else | miscellaneous | 0.1 |
+
+Fuel items have no dedicated DisplayCategory and are detected by fullType name patterns
+(Gasoline, Petrol, Propane, Kerosene, MotorOil, FuelCan).
+
+### Base Price Formula
+
+```
+basePrice = max(0.50, itemWeight × 2.0 × categoryMultiplier × conditionMultiplier)
+```
+
+Where:
+- `itemWeight` = physical weight from item script (default 1.0)
+- `categoryMultiplier` = per-category scaling (fuel=1.5, medicine=1.3, junk=0.3)
+- `conditionMultiplier` = 1.5 if item has ConditionMax, 1.0 otherwise
+
+### Selection Pipeline
+
+1. `POS_ItemPool.selectItems(categoryId, count, ctx)` is called
+2. Item pool for category is retrieved
+3. 5% chance (`POS_Constants.ITEM_POOL_OFF_CATEGORY_CHANCE`) of including one off-category item
+4. `PhobosLib.weightedRandomMultiple()` selects `count` items by sub-category weight
+5. Selected items returned with fullType and basePrice
+
+### Cross-Mod Registration
+
+Other mods can register items via `POS_ItemPool.registerItem(fullType, categoryId, basePrice)`.
+PCP items are registered when PCP is detected as active.
+
+---
+
+## 14. Price Engine
+
+The `POS_PriceEngine` module generates realistic market prices with drift, speculation, and
+reputation scaling.
+
+### Price Formula
+
+```
+finalPrice = basePrice × volatility × (1 + dayDrift) × (1 + supplyDemand) × (1 + variance × repMult)
+```
+
+### Day-to-Day Drift (Speculation)
+
+Prices drift daily using a deterministic seeded random walk:
+- Seed = hash(categoryId) + gameDay × 31
+- Base drift: ±2% per day (configurable via `DailyPriceDriftPct` sandbox option)
+- Intel bias: low-stock records push prices upward (+2% max)
+- Drift is per-category, per-world (not per-player)
+
+### Reputation-Scaled Variance
+
+| Tier | Name | Variance Multiplier |
+|------|------|-------------------|
+| 1 | Untrusted | 1.5× (wide, inaccurate) |
+| 2 | Known | 1.2× |
+| 3 | Trusted | 1.0× (baseline) |
+| 4 | Established | 0.8× |
+| 5 | Legendary | 0.6× (very accurate) |
+
+Controlled by `ReputationAffectsVariance` sandbox option.
+
+### Source Tier Variance
+
+| Source | Variance |
+|--------|----------|
+| Field (recon action) | ±30% |
+| Broadcast (radio) | ±50% |
+
+### Supply/Demand Factor
+
+Intel density from `POS_MarketDatabase.getSummary()` affects prices:
+- More sources = more stable (closer to true price)
+- Fewer sources = wider uncertainty
+- Range: ±10% based on source count relative to baseline (5)
+
+---
+
+## 15. Sub-Category System
+
+Each commodity category contains sub-categories that group items by type, allowing
+drill-down filtering in terminal screens.
+
+### Sub-Category Definition
+
+```lua
+{
+    id = "rifle_ammo",
+    parentCategory = "ammunition",
+    labelKey = "UI_POS_Market_Sub_RifleAmmo",
+    weight = 1.3,
+    displayCategories = {},
+    namePatterns = { "Rifle", "308", "223", "3030", "556" },
+}
+```
+
+### Registration
+
+`POS_MarketRegistry.registerSubCategory(def)` stores sub-categories associated with
+their parent. `POS_ItemPool` assigns items to sub-categories during init.
+
+### Terminal UI
+
+The Commodity Detail screen offers:
+- **View All**: See all items in the category (default)
+- **Filter by sub-category**: Drill into a specific sub-group
+
+### Current Sub-Categories
+
+| Parent | Sub-Category | Weight | Matching |
+|--------|-------------|--------|----------|
+| ammunition | rifle_ammo | 1.3 | Rifle, 308, 223, 3030, 556 |
+| ammunition | shotgun_ammo | 1.2 | Shotgun, Gauge |
+| ammunition | pistol_ammo | 1.0 | Pistol, 9mm, 45, 38 |
+| ammunition | explosives | 0.8 | DisplayCategory: Explosives |
+| medicine | first_aid | 1.5 | DisplayCategory: FirstAid |
+| medicine | bandages | 1.0 | DisplayCategory: Bandage |
+| medicine | wound_care | 0.8 | DisplayCategory: Wound |
+| food | canned_food | 1.2 | Canned, TinCan in name |
+| food | fresh_food | 0.8 | Perishable items |
+| food | dry_goods | 1.0 | Rice, Pasta, Flour, Sugar, Coffee |
+| food | beverages | 0.6 | Pop, Soda, Beer, Wine, Whiskey, Water |
+| tools | hand_tools | 1.2 | DisplayCategory: Tool |
+| tools | building_materials | 1.0 | DisplayCategory: Material |
+| tools | vehicle_parts | 0.9 | DisplayCategory: VehicleMaintenance |
+| tools | gardening | 0.7 | DisplayCategory: Gardening |
+| weapons | firearms | 1.3 | Pistol, Rifle, Shotgun in name |
+| weapons | melee | 0.8 | Other weapon categories |
+| weapons | crafted | 0.6 | DisplayCategory: WeaponCrafted |
+
+---
+
+## 16. Category & Sub-Category Weights
+
+### Default Category Weights
+
+| Category | Weight | Volatility | Broadcast Freq | Essential |
+|----------|--------|-----------|---------------|-----------|
+| fuel | 1.5 | 1.3 | 1.2× | Yes |
+| medicine | 1.4 | 0.8 | 1.1× | Yes |
+| food | 1.0 | 1.0 | 1.0× | Yes |
+| ammunition | 1.3 | 1.5 | 0.8× | No |
+| weapons | 1.1 | 1.2 | 0.8× | No |
+| tools | 0.9 | 0.7 | 0.7× | No |
+| survival | 0.8 | 0.9 | 0.8× | No |
+| radio | 0.6 | 1.0 | 0.5× | No |
+| clothing | 0.5 | 0.5 | 0.5× | No |
+| literature | 0.3 | 0.3 | 0.3× | No |
+| miscellaneous | 0.1 | 0.5 | 0.2× | No |
+
+### Sandbox Override Pattern
+
+Category weights are exposed as sandbox options stored as integers (÷100):
+- `WeightFuel` default 150 → 1.50
+- `WeightMedicine` default 140 → 1.40
+- etc.
+
+`POS_MarketRegistry.getCategoryWeight()` checks sandbox first, then falls back to registered default.
+
+---
+
+## 17. Sandbox Weight Overrides
+
+### Category Weight Options
+
+Only categories with default weight ≥ 0.5 are exposed as sandbox options
+(6 of 11 categories). This prevents monolithic settings lists.
+
+Exposed: Fuel, Medicine, Food, Ammunition, Tools, Radio.
+Not exposed (use defaults): Weapons, Survival, Clothing, Literature, Miscellaneous.
+
+### Sub-Category Weight Options
+
+**Rule**: Only sub-categories with default weight ≥ 0.5 would get sandbox overrides.
+This is reserved for future implementation if player feedback demands finer control.
+Currently, sub-category weights are set at registration and not sandbox-configurable.
+
+### Runtime Propagation
+
+1. Server/SP loads sandbox values on game start
+2. `POS_MarketRegistry.getCategoryWeight()` reads sandbox accessor → returns float
+3. `POS_ItemPool.selectItems()` uses `PhobosLib.weightedRandom()` with weight from registry
+4. `POS_MarketBroadcaster.generatePacket()` uses weighted selection for category choice
+5. `POS_PriceEngine.generatePrice()` reads `getCategoryVolatility()` for price calculation

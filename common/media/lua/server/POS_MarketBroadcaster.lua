@@ -72,11 +72,29 @@ end
 --- Generate a single market intel broadcast packet.
 --- @return table|nil Broadcast data or nil on failure
 function POS_MarketBroadcaster.generatePacket()
-    local allIds = POS_MarketRegistry.getAllCategoryIds()
-    if #allIds == 0 then return nil end
+    -- Weighted category selection
+    local allCats = POS_MarketRegistry.getVisibleCategories()
+    local categoryId
 
-    -- Pick a random category
-    local categoryId = allIds[ZombRand(#allIds) + 1]
+    if PhobosLib and PhobosLib.weightedRandom then
+        local selected = PhobosLib.weightedRandom(allCats, function(cat)
+            local w = cat.weight or 1.0
+            local bfm = cat.broadcastFrequencyMult or 1.0
+            if cat.isEssential and POS_Sandbox and POS_Sandbox.getEssentialGoodsPriority
+                    and POS_Sandbox.getEssentialGoodsPriority() then
+                w = w * 1.5
+            end
+            return w * bfm
+        end)
+        categoryId = selected and selected.id
+    end
+
+    -- Fallback to uniform random if weighted selection unavailable
+    if not categoryId then
+        local allIds = POS_MarketRegistry.getAllCategoryIds()
+        if #allIds == 0 then return nil end
+        categoryId = allIds[ZombRand(#allIds) + 1]
+    end
 
     -- Generate broadcast source name
     local srcIdx = ZombRand(#BROADCAST_SOURCES) + 1
@@ -97,7 +115,7 @@ function POS_MarketBroadcaster.generatePacket()
     local gt = getGameTime and getGameTime()
     if gt then currentDay = gt:getNightsSurvived() end
 
-    return {
+    local packet = {
         id = "POS_BCAST_" .. tostring(getTimestampMs()),
         categoryId = categoryId,
         source = source,
@@ -107,6 +125,21 @@ function POS_MarketBroadcaster.generatePacket()
         recordedDay = currentDay,
         confidence = confidence,
     }
+
+    -- Generate item-level data for the packet
+    local itemsPerPacket = POS_Sandbox and POS_Sandbox.getBroadcastItemsPerPacket
+        and POS_Sandbox.getBroadcastItemsPerPacket() or 2
+    local selectedItems = POS_ItemPool and POS_ItemPool.selectItems(
+        categoryId, itemsPerPacket, { sourceTier = "broadcast" })
+    if selectedItems and #selectedItems > 0 then
+        local prices = POS_PriceEngine and POS_PriceEngine.generatePrices(
+            selectedItems, categoryId, { sourceTier = "broadcast" })
+        if prices then
+            packet.items = prices
+        end
+    end
+
+    return packet
 end
 
 --- Broadcast market data to all connected clients.
