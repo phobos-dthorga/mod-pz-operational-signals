@@ -20,6 +20,7 @@
 ---------------------------------------------------------------
 
 require "PhobosLib"
+require "POS_TerminalWidgets"
 
 --- Default guide popup window width.
 local GUIDE_POPUP_WIDTH = 620
@@ -27,28 +28,22 @@ local GUIDE_POPUP_WIDTH = 620
 --- Default guide popup window height.
 local GUIDE_POPUP_HEIGHT = 500
 
-local function safeGetText(key)
-    local ok, result = pcall(getText, key)
-    if ok and result then return result end
-    return key
-end
-
 PhobosLib.registerGuidePopup("POS", {
-    title = safeGetText("UI_POS_GuideTitle"),
+    title = POS_TerminalWidgets.safeGetText("UI_POS_GuideTitle"),
     width = GUIDE_POPUP_WIDTH,
     height = GUIDE_POPUP_HEIGHT,
     buildContent = function()
         local lines = {}
-        table.insert(lines, " <RGB:0.3,1.0,0.3> " .. safeGetText("UI_POS_GuideTitle"))
+        table.insert(lines, " <RGB:0.3,1.0,0.3> " .. POS_TerminalWidgets.safeGetText("UI_POS_GuideTitle"))
         table.insert(lines, " ")
-        table.insert(lines, " <RGB:0.9,0.9,0.9> " .. safeGetText("UI_POS_GuideIntro"))
+        table.insert(lines, " <RGB:0.9,0.9,0.9> " .. POS_TerminalWidgets.safeGetText("UI_POS_GuideIntro"))
         table.insert(lines, " ")
-        table.insert(lines, " <RGB:0.6,1.0,0.6> " .. safeGetText("UI_POS_GuideStep1"))
-        table.insert(lines, " <RGB:0.6,1.0,0.6> " .. safeGetText("UI_POS_GuideStep2"))
-        table.insert(lines, " <RGB:0.6,1.0,0.6> " .. safeGetText("UI_POS_GuideStep3"))
-        table.insert(lines, " <RGB:0.6,1.0,0.6> " .. safeGetText("UI_POS_GuideStep4"))
+        table.insert(lines, " <RGB:0.6,1.0,0.6> " .. POS_TerminalWidgets.safeGetText("UI_POS_GuideStep1"))
+        table.insert(lines, " <RGB:0.6,1.0,0.6> " .. POS_TerminalWidgets.safeGetText("UI_POS_GuideStep2"))
+        table.insert(lines, " <RGB:0.6,1.0,0.6> " .. POS_TerminalWidgets.safeGetText("UI_POS_GuideStep3"))
+        table.insert(lines, " <RGB:0.6,1.0,0.6> " .. POS_TerminalWidgets.safeGetText("UI_POS_GuideStep4"))
         table.insert(lines, " ")
-        table.insert(lines, " <RGB:0.7,0.7,0.7> " .. safeGetText("UI_POS_GuideNote"))
+        table.insert(lines, " <RGB:0.7,0.7,0.7> " .. POS_TerminalWidgets.safeGetText("UI_POS_GuideNote"))
         return table.concat(lines, " <LINE> ")
     end,
     backgroundColor = { r = 0.05, g = 0.08, b = 0.05, a = 0.95 },

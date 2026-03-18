@@ -25,14 +25,6 @@ require "POS_Constants"
 require "POS_ScreenManager"
 require "POS_TerminalWidgets"
 
-local function safeGetText(key, ...)
-    local ok, result = pcall(getText, key, ...)
-    if ok and result then return result end
-    return key
-end
-
-local C = POS_TerminalWidgets.COLOURS
-
 ---------------------------------------------------------------
 
 local screen = {}
@@ -40,44 +32,28 @@ screen.id = POS_Constants.SCREEN_STOCKMARKET
 
 function screen.create(contentPanel, _params, _terminal)
     local W = POS_TerminalWidgets
-    local pw = contentPanel:getWidth()
-    local y = 0
-    local lineH = 20
-    local btnH = 28
-    local btnW = pw - 10
-    local btnX = 5
+    local C = W.COLOURS
+    local ctx = W.initLayout(contentPanel)
 
     -- Header
-    W.createLabel(contentPanel, 0, y,
-        safeGetText("UI_POS_Stock_Header"), C.textBright)
-    y = y + lineH
+    W.drawHeader(ctx, "UI_POS_Stock_Header")
 
-    W.createSeparator(contentPanel, 0, y, 40)
-    y = y + lineH * 2
+    ctx.y = ctx.y + ctx.lineH
 
     -- Coming soon message
-    W.createLabel(contentPanel, 20, y,
-        safeGetText("UI_POS_Stock_ComingSoon"), C.warn)
-    y = y + lineH * 2
+    W.createLabel(ctx.panel, 20, ctx.y,
+        W.safeGetText("UI_POS_Stock_ComingSoon"), C.warn)
+    ctx.y = ctx.y + ctx.lineH * 2
 
-    W.createLabel(contentPanel, 8, y,
-        safeGetText("UI_POS_Stock_Message"), C.dim)
-    y = y + lineH * 3
+    W.createLabel(ctx.panel, 8, ctx.y,
+        W.safeGetText("UI_POS_Stock_Message"), C.dim)
+    ctx.y = ctx.y + ctx.lineH * 3
 
     -- Footer
-    W.createSeparator(contentPanel, 0, y, 40, "-")
-    y = y + lineH + 4
-
-    W.createButton(contentPanel, btnX, y, btnW, btnH,
-        "[0] " .. safeGetText("UI_POS_BackPrompt"), nil,
-        function() POS_ScreenManager.goBack() end)
+    W.drawFooter(ctx)
 end
 
-function screen.destroy()
-    if POS_TerminalUI.instance and POS_TerminalUI.instance.contentPanel then
-        POS_TerminalWidgets.clearPanel(POS_TerminalUI.instance.contentPanel)
-    end
-end
+screen.destroy = POS_TerminalWidgets.defaultDestroy
 
 function screen.refresh(_params)
     -- Static screen — no dynamic data

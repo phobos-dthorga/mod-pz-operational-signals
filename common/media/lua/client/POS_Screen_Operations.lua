@@ -34,14 +34,7 @@ require "POS_OperationLog"
 require "PhobosLib_Pagination"
 require "PhobosLib_Address"
 
-local function safeGetText(key, ...)
-    local ok, result = pcall(getText, key, ...)
-    if ok and result then return result end
-    return key
-end
-
 local C = POS_TerminalWidgets.COLOURS
-local GOOD = { r = 0.20, g = 0.90, b = 0.50, a = 1.0 }
 
 local function formatLocation(x, y)
     if PhobosLib_Address and PhobosLib_Address.resolveAddress then
@@ -137,20 +130,11 @@ screen.id = POS_Constants.SCREEN_OPERATIONS
 
 function screen.create(contentPanel, _params, _terminal)
     local W = POS_TerminalWidgets
-    local pw = contentPanel:getWidth()
-    local y = 0
-    local lineH = 20
-    local btnH = 28
-    local btnW = pw - 10
-    local btnX = 5
+    local C = W.COLOURS
+    local ctx = W.initLayout(contentPanel)
 
     -- Header
-    W.createLabel(contentPanel, 0, y,
-        safeGetText("UI_POS_Ops_Header"), C.textBright)
-    y = y + lineH
-
-    W.createSeparator(contentPanel, 0, y, 40)
-    y = y + lineH
+    W.drawHeader(ctx, "UI_POS_Ops_Header")
 
     -- Player reputation + tier
     local player = getSpecificPlayer(0)
@@ -159,70 +143,70 @@ function screen.create(contentPanel, _params, _terminal)
     local cap = POS_Sandbox and POS_Sandbox.getReputationCap
         and POS_Sandbox.getReputationCap() or 2500
 
-    W.createLabel(contentPanel, 0, y,
-        "  " .. safeGetText("UI_POS_Ops_Reputation") .. ": "
+    W.createLabel(ctx.panel, 0, ctx.y,
+        "  " .. W.safeGetText("UI_POS_Ops_Reputation") .. ": "
         .. rep .. " / " .. cap
-        .. " [" .. safeGetText(tierDef and tierDef.key or "UI_POS_Rep_Tier_Untrusted") .. "]",
+        .. " [" .. W.safeGetText(tierDef and tierDef.key or "UI_POS_Rep_Tier_Untrusted") .. "]",
         C.text)
-    y = y + lineH + 4
+    ctx.y = ctx.y + ctx.lineH + 4
 
     -- ── Active recon ──
     local active = getActiveRecon()
 
     if active then
-        W.createLabel(contentPanel, 0, y,
-            safeGetText("UI_POS_Ops_ActiveMission"), C.textBright)
-        y = y + lineH
+        W.createLabel(ctx.panel, 0, ctx.y,
+            W.safeGetText("UI_POS_Ops_ActiveMission"), C.textBright)
+        ctx.y = ctx.y + ctx.lineH
 
-        W.createSeparator(contentPanel, 0, y, 40, "-")
-        y = y + lineH
+        W.createSeparator(ctx.panel, 0, ctx.y, 40, "-")
+        ctx.y = ctx.y + ctx.lineH
 
         local tierColour = TIER_COLOURS[active.tier or 1] or C.text
 
-        W.createLabel(contentPanel, 8, y,
-            safeGetText(active.nameKey or "???"), tierColour)
-        y = y + lineH
+        W.createLabel(ctx.panel, 8, ctx.y,
+            W.safeGetText(active.nameKey or "???"), tierColour)
+        ctx.y = ctx.y + ctx.lineH
 
         local obj = active.objectives[1]
-        W.createLabel(contentPanel, 8, y,
-            "  " .. safeGetText("UI_POS_Ops_Target") .. ": "
+        W.createLabel(ctx.panel, 8, ctx.y,
+            "  " .. W.safeGetText("UI_POS_Ops_Target") .. ": "
             .. formatLocation(obj.targetBuildingX, obj.targetBuildingY), C.text)
-        y = y + lineH
+        ctx.y = ctx.y + ctx.lineH
 
         -- Show on Map button
         local mapTargetX = obj.targetBuildingX
         local mapTargetY = obj.targetBuildingY
-        W.createButton(contentPanel, btnX, y, btnW, btnH,
-            safeGetText("UI_POS_Ops_ShowOnMap"), nil,
+        W.createButton(ctx.panel, ctx.btnX, ctx.y, ctx.btnW, ctx.btnH,
+            W.safeGetText("UI_POS_Ops_ShowOnMap"), nil,
             function()
                 PhobosLib.showOnWorldMap(0, mapTargetX, mapTargetY, 20.0)
             end)
-        y = y + btnH + 4
+        ctx.y = ctx.y + ctx.btnH + 4
 
         -- Multi-step status
         local status
         if obj.notesWritten then
-            status = safeGetText("UI_POS_Ops_Status_ReturnToTerminal")
+            status = W.safeGetText("UI_POS_Ops_Status_ReturnToTerminal")
         elseif obj.photographed then
-            status = safeGetText("UI_POS_Ops_Status_NotesNeeded")
+            status = W.safeGetText("UI_POS_Ops_Status_NotesNeeded")
         elseif obj.entered then
-            status = safeGetText("UI_POS_Ops_Status_Photographed")
+            status = W.safeGetText("UI_POS_Ops_Status_Photographed")
         else
-            status = safeGetText("UI_POS_Ops_Status_Pending")
+            status = W.safeGetText("UI_POS_Ops_Status_Pending")
         end
-        W.createLabel(contentPanel, 8, y,
-            "  " .. safeGetText("UI_POS_Ops_Status") .. ": " .. status, C.text)
-        y = y + lineH
+        W.createLabel(ctx.panel, 8, ctx.y,
+            "  " .. W.safeGetText("UI_POS_Ops_Status") .. ": " .. status, C.text)
+        ctx.y = ctx.y + ctx.lineH
 
-        W.createLabel(contentPanel, 8, y,
-            "  " .. safeGetText("UI_POS_Delivery_Reward") .. ": $"
+        W.createLabel(ctx.panel, 8, ctx.y,
+            "  " .. W.safeGetText("UI_POS_Delivery_Reward") .. ": $"
             .. (active.scaledReward or "???"), C.warn)
-        y = y + lineH
+        ctx.y = ctx.y + ctx.lineH
 
-        W.createLabel(contentPanel, 8, y,
-            "  " .. safeGetText("UI_POS_Ops_Reputation") .. ": +"
+        W.createLabel(ctx.panel, 8, ctx.y,
+            "  " .. W.safeGetText("UI_POS_Ops_Reputation") .. ": +"
             .. POS_RewardCalculator.scaleReputation(active.baseReputation or 0), C.dim)
-        y = y + lineH
+        ctx.y = ctx.y + ctx.lineH
 
         -- Turn In Report button — shown when player has matching FieldReport
         if obj.notesWritten then
@@ -247,12 +231,12 @@ function screen.create(contentPanel, _params, _terminal)
             end
 
             if hasReport then
-                y = y + 4
+                ctx.y = ctx.y + 4
                 local activeId = active.id
                 local activeReward = active.scaledReward or 0
                 local activeRep = active.baseReputation or 0
-                W.createButton(contentPanel, btnX, y, btnW, btnH,
-                    safeGetText("UI_POS_Ops_TurnIn"), nil,
+                W.createButton(ctx.panel, ctx.btnX, ctx.y, ctx.btnW, ctx.btnH,
+                    W.safeGetText("UI_POS_Ops_TurnIn"), nil,
                     function()
                         local p = getSpecificPlayer(0)
                         if not p then return end
@@ -295,13 +279,13 @@ function screen.create(contentPanel, _params, _terminal)
                             if op then op.status = "completed" end
                         end
 
-                        p:Say(safeGetText("UI_POS_Ops_TurnInComplete",
+                        p:Say(W.safeGetText("UI_POS_Ops_TurnInComplete",
                             tostring(activeReward),
                             tostring(POS_RewardCalculator.scaleReputation(activeRep))))
 
                         POS_ScreenManager.markDirty()
                     end)
-                y = y + btnH + 4
+                ctx.y = ctx.y + ctx.btnH + 4
             end
         end
 
@@ -309,50 +293,50 @@ function screen.create(contentPanel, _params, _terminal)
         local cancelPenalty = POS_RewardCalculator.previewCancellationPenalty(active)
         local cancelLabel
         if cancelPenalty <= 0 then
-            cancelLabel = safeGetText("UI_POS_Cancel_NoPenalty")
+            cancelLabel = W.safeGetText("UI_POS_Cancel_NoPenalty")
         else
-            cancelLabel = safeGetText("UI_POS_Cancel_WithPenalty",
+            cancelLabel = W.safeGetText("UI_POS_Cancel_WithPenalty",
                 tostring(cancelPenalty))
         end
         local cancelActiveId = active.id
-        W.createButton(contentPanel, btnX, y, btnW, btnH, cancelLabel, nil,
+        W.createButton(ctx.panel, ctx.btnX, ctx.y, ctx.btnW, ctx.btnH, cancelLabel, nil,
             function()
                 POS_OperationLog.cancelOperation(cancelActiveId)
                 POS_ScreenManager.markDirty()
             end)
-        y = y + btnH + 4
+        ctx.y = ctx.y + ctx.btnH + 4
 
-        y = y + 4
+        ctx.y = ctx.y + 4
     else
         -- ── Available operations ──
-        W.createLabel(contentPanel, 0, y,
-            safeGetText("UI_POS_Ops_Available"), C.textBright)
-        y = y + lineH
+        W.createLabel(ctx.panel, 0, ctx.y,
+            W.safeGetText("UI_POS_Ops_Available"), C.textBright)
+        ctx.y = ctx.y + ctx.lineH
 
-        W.createSeparator(contentPanel, 0, y, 40, "-")
-        y = y + lineH
+        W.createSeparator(ctx.panel, 0, ctx.y, 40, "-")
+        ctx.y = ctx.y + ctx.lineH
 
         local available = getAvailableRecons()
 
         if #available == 0 then
             local cacheCount = POS_BuildingCache.getCacheCount()
             if cacheCount == 0 then
-                W.createLabel(contentPanel, 8, y,
-                    safeGetText("UI_POS_Ops_NeedBuildings"), C.dim)
+                W.createLabel(ctx.panel, 8, ctx.y,
+                    W.safeGetText("UI_POS_Ops_NeedBuildings"), C.dim)
             else
-                W.createLabel(contentPanel, 8, y,
-                    safeGetText("UI_POS_Ops_NoAvailable"), C.dim)
+                W.createLabel(ctx.panel, 8, ctx.y,
+                    W.safeGetText("UI_POS_Ops_NoAvailable"), C.dim)
             end
-            y = y + lineH
+            ctx.y = ctx.y + ctx.lineH
         else
             local currentPage = (_params and _params.opsPage) or 1
-            y = PhobosLib_Pagination.create(contentPanel, {
+            ctx.y = PhobosLib_Pagination.create(ctx.panel, {
                 items = available,
                 pageSize = 5,
                 currentPage = currentPage,
-                x = btnX,
-                y = y,
-                width = btnW,
+                x = ctx.btnX,
+                y = ctx.y,
+                width = ctx.btnW,
                 colours = {
                     text = C.text, dim = C.dim,
                     bgDark = C.bgDark, bgHover = C.bgHover,
@@ -361,10 +345,10 @@ function screen.create(contentPanel, _params, _terminal)
                 renderItem = function(parent, rx, ry, rw, op, _idx)
                     local tierLabel = "T" .. (op.tier or "?")
                     local label = "[" .. tierLabel .. "] "
-                        .. safeGetText(op.nameKey or "???")
+                        .. W.safeGetText(op.nameKey or "???")
                         .. " — $" .. (op.scaledReward or "???")
                     local opId = op.id
-                    W.createButton(parent, rx, ry, rw, btnH, label, nil,
+                    W.createButton(parent, rx, ry, rw, ctx.btnH, label, nil,
                         function()
                             -- Route through negotiate screen if enabled
                             local negotiateEnabled = POS_Sandbox
@@ -387,7 +371,7 @@ function screen.create(contentPanel, _params, _terminal)
                                 end
                             end
                         end)
-                    return btnH + 4
+                    return ctx.btnH + 4
                 end,
                 onPageChange = function(newPage)
                     POS_ScreenManager.replaceCurrent(POS_Constants.SCREEN_OPERATIONS,
@@ -400,13 +384,13 @@ function screen.create(contentPanel, _params, _terminal)
     -- ── Completed operations ──
     local completed = getCompletedRecons()
     if #completed > 0 then
-        y = y + 4
-        W.createLabel(contentPanel, 0, y,
-            safeGetText("UI_POS_Ops_Recent"), C.textBright)
-        y = y + lineH
+        ctx.y = ctx.y + 4
+        W.createLabel(ctx.panel, 0, ctx.y,
+            W.safeGetText("UI_POS_Ops_Recent"), C.textBright)
+        ctx.y = ctx.y + ctx.lineH
 
-        W.createSeparator(contentPanel, 0, y, 40, "-")
-        y = y + lineH
+        W.createSeparator(ctx.panel, 0, ctx.y, 40, "-")
+        ctx.y = ctx.y + ctx.lineH
 
         local shown = 0
         for i = #completed, 1, -1 do
@@ -414,36 +398,22 @@ function screen.create(contentPanel, _params, _terminal)
             local op = completed[i]
             local tierColour = TIER_COLOURS[op.tier or 1] or C.text
             local line = "  [OK] [T" .. (op.tier or "?") .. "] "
-                .. safeGetText(op.nameKey or "???")
+                .. W.safeGetText(op.nameKey or "???")
                 .. " — $" .. (op.scaledReward or "?")
-            W.createLabel(contentPanel, 0, y, line, GOOD)
-            y = y + lineH
+            W.createLabel(ctx.panel, 0, ctx.y, line, C.success)
+            ctx.y = ctx.y + ctx.lineH
             shown = shown + 1
         end
     end
 
     -- Footer
-    y = y + 4
-    W.createSeparator(contentPanel, 0, y, 40, "-")
-    y = y + lineH + 4
-
-    W.createButton(contentPanel, btnX, y, btnW, btnH,
-        "[0] " .. safeGetText("UI_POS_BackPrompt"), nil,
-        function() POS_ScreenManager.goBack() end)
+    W.drawFooter(ctx)
 end
 
-function screen.destroy()
-    if POS_TerminalUI.instance and POS_TerminalUI.instance.contentPanel then
-        POS_TerminalWidgets.clearPanel(POS_TerminalUI.instance.contentPanel)
-    end
-end
+screen.destroy = POS_TerminalWidgets.defaultDestroy
 
 function screen.refresh(params)
-    local terminal = POS_TerminalUI.instance
-    if terminal and terminal.contentPanel then
-        screen.destroy()
-        screen.create(terminal.contentPanel, params, terminal)
-    end
+    POS_TerminalWidgets.dynamicRefresh(screen, params)
 end
 
 ---------------------------------------------------------------

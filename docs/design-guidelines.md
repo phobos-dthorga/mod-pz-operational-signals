@@ -200,3 +200,72 @@ Missions must only target locations the player has already explored:
   enabling POSnet. Gated by modData flags (`POS_BuildingScanDone`,
   `POS_MailboxScanDone`).
 - Any future mission generators must enforce this constraint.
+
+---
+
+## 7. Screen Implementation Standards
+
+### 7.1 Layout Initialisation
+
+All screens **must** use `POS_TerminalWidgets.initLayout(contentPanel)` to obtain a
+layout context (`ctx`) rather than declaring local layout variables. The context
+provides:
+
+| Field      | Type   | Description                                    |
+|------------|--------|------------------------------------------------|
+| `ctx.panel`| ISPanel| The content panel reference                    |
+| `ctx.pw`   | number | Panel width                                    |
+| `ctx.y`    | number | Current Y cursor (mutable — advance after each element) |
+| `ctx.lineH`| number | Line height derived from actual font metrics   |
+| `ctx.btnH` | number | Standard button height (`lineH + 8`)           |
+| `ctx.btnW` | number | Standard button width (`pw - 10`)              |
+| `ctx.btnX` | number | Standard button X offset (`5`)                 |
+
+**Never hardcode line height to 20 or any other pixel value.** All vertical
+spacing must derive from `ctx.lineH` to adapt to font size changes.
+
+### 7.2 Screen Structure
+
+Every screen must follow this structure:
+
+1. **`screen.create(contentPanel, _params, _terminal)`**:
+   - Call `W.initLayout(contentPanel)` to get `ctx`
+   - Call `W.drawHeader(ctx, "UI_POS_<Screen>_Header")` to render title
+   - Render screen-specific content using `ctx` values
+   - Call `W.drawFooter(ctx)` for non-root screens (adds separator + back button)
+
+2. **`screen.destroy`** — assign `POS_TerminalWidgets.defaultDestroy` directly:
+   ```lua
+   screen.destroy = POS_TerminalWidgets.defaultDestroy
+   ```
+
+3. **`screen.refresh`** — for screens that rebuild on refresh, use:
+   ```lua
+   function screen.refresh(_params)
+       POS_TerminalWidgets.dynamicRefresh(screen, _params)
+   end
+   ```
+   For static screens, use an empty function:
+   ```lua
+   function screen.refresh(_params) end
+   ```
+
+### 7.3 No Duplicate Utilities
+
+- **`safeGetText()`** — use `POS_TerminalWidgets.safeGetText()`. Never redefine
+  locally. In screen files where `W = POS_TerminalWidgets`, use `W.safeGetText()`.
+  In non-screen files, use `POS_TerminalWidgets.safeGetText()` directly.
+- **Colours** — use `POS_TerminalWidgets.COLOURS.*`. Never define local colour
+  tables that duplicate existing palette entries (e.g. use `C.success` instead of
+  defining a local "success green").
+- **Destroy/refresh patterns** — use the shared helpers. Never copy-paste the
+  `clearPanel` or `destroy+create` patterns.
+
+### 7.4 Constants
+
+- Cross-file strings (commands, screen IDs, item types, modData keys) must use
+  `POS_Constants.*` — never inline string literals.
+- Per-file magic numbers must be extracted to `local UPPER_CASE` constants at the
+  top of the file, after requires.
+- Values that affect game balance should be sandbox-configurable if the benefit is
+  MEDIUM or higher. Use `POS_Sandbox` accessors with the constant as fallback.

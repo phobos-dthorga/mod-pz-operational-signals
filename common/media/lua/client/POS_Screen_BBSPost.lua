@@ -29,12 +29,6 @@ require "POS_Constants"
 require "POS_ScreenManager"
 require "POS_TerminalWidgets"
 
-local function safeGetText(key, ...)
-    local ok, result = pcall(getText, key, ...)
-    if ok and result then return result end
-    return key
-end
-
 local C = POS_TerminalWidgets.COLOURS
 
 ---------------------------------------------------------------
@@ -165,56 +159,47 @@ screen.id = POS_Constants.SCREEN_BBS_POST
 
 function screen.create(contentPanel, params, _terminal)
     local W = POS_TerminalWidgets
-    local pw = contentPanel:getWidth()
-    local y = 0
-    local lineH = 20
-    local btnH = 28
-    local btnW = pw - 10
-    local btnX = 5
+    local C = W.COLOURS
+    local ctx = W.initLayout(contentPanel)
 
     -- Error: no opportunity specified
     if not params or not params.opportunityId then
-        W.createLabel(contentPanel, 0, y, "ERROR: No opportunity specified.", C.error)
-        y = y + lineH + 4
-        W.createButton(contentPanel, btnX, y, btnW, btnH,
-            "[0] " .. safeGetText("UI_POS_BackPrompt"), nil,
+        W.createLabel(ctx.panel, 0, ctx.y, "ERROR: No opportunity specified.", C.error)
+        ctx.y = ctx.y + ctx.lineH + 4
+        W.createButton(ctx.panel, ctx.btnX, ctx.y, ctx.btnW, ctx.btnH,
+            "[0] " .. W.safeGetText("UI_POS_BackPrompt"), nil,
             function() POS_ScreenManager.goBack() end)
         return
     end
 
     local opp = POS_InvestmentLog and POS_InvestmentLog.getOpportunity(params.opportunityId)
     if not opp then
-        W.createLabel(contentPanel, 0, y, "ERROR: Opportunity not found.", C.error)
-        y = y + lineH + 4
-        W.createButton(contentPanel, btnX, y, btnW, btnH,
-            "[0] " .. safeGetText("UI_POS_BackPrompt"), nil,
+        W.createLabel(ctx.panel, 0, ctx.y, "ERROR: Opportunity not found.", C.error)
+        ctx.y = ctx.y + ctx.lineH + 4
+        W.createButton(ctx.panel, ctx.btnX, ctx.y, ctx.btnW, ctx.btnH,
+            "[0] " .. W.safeGetText("UI_POS_BackPrompt"), nil,
             function() POS_ScreenManager.goBack() end)
         return
     end
 
     -- Header
-    W.createLabel(contentPanel, 0, y,
-        safeGetText("UI_POS_BBS_PostHeader"), C.textBright)
-    y = y + lineH
-
-    W.createSeparator(contentPanel, 0, y, 40)
-    y = y + lineH
+    W.drawHeader(ctx, "UI_POS_BBS_PostHeader")
 
     -- Poster info
-    W.createLabel(contentPanel, 0, y,
-        safeGetText("UI_POS_BBS_PostedBy") .. " " .. (opp.posterName or "???")
+    W.createLabel(ctx.panel, 0, ctx.y,
+        W.safeGetText("UI_POS_BBS_PostedBy") .. " " .. (opp.posterName or "???")
         .. " <" .. (opp.posterHandle or "???") .. ">", C.text)
-    y = y + lineH * 2
+    ctx.y = ctx.y + ctx.lineH * 2
 
     -- Description (word-wrapped, quoted)
-    local desc = safeGetText(opp.descriptionKey or "UI_POS_BBS_InvDesc_TradeRoute")
+    local desc = W.safeGetText(opp.descriptionKey or "UI_POS_BBS_InvDesc_TradeRoute")
     local quotedDesc = "\"" .. desc .. "\""
-    local _, endY = W.createWrappedText(contentPanel, 8, y, 38, quotedDesc, C.dim)
-    y = endY + lineH
+    local _, endY = W.createWrappedText(ctx.panel, 8, ctx.y, 38, quotedDesc, C.dim)
+    ctx.y = endY + ctx.lineH
 
     -- Investment terms
-    W.createSeparator(contentPanel, 0, y, 40, "-")
-    y = y + lineH
+    W.createSeparator(ctx.panel, 0, ctx.y, 40, "-")
+    ctx.y = ctx.y + ctx.lineH
 
     local riskPct = string.format("~%.0f%%", (opp.displayedRisk or 0) * 100)
     local returnX = string.format("%.1fx", opp.returnMultiplier or 1)
@@ -224,29 +209,29 @@ function screen.create(contentPanel, params, _terminal)
     local daysToExpiry = (opp.expiryDay or 0) - currentDay
     if daysToExpiry < 0 then daysToExpiry = 0 end
 
-    W.createLabel(contentPanel, 0, y,
-        "  " .. safeGetText("UI_POS_BBS_Payback") .. ":   "
-        .. (opp.paybackDays or "?") .. " " .. safeGetText("UI_POS_BBS_Days"), C.text)
-    y = y + lineH
+    W.createLabel(ctx.panel, 0, ctx.y,
+        "  " .. W.safeGetText("UI_POS_BBS_Payback") .. ":   "
+        .. (opp.paybackDays or "?") .. " " .. W.safeGetText("UI_POS_BBS_Days"), C.text)
+    ctx.y = ctx.y + ctx.lineH
 
-    W.createLabel(contentPanel, 0, y,
-        "  " .. safeGetText("UI_POS_BBS_EstRisk") .. ":  " .. riskPct, C.warn)
-    y = y + lineH
+    W.createLabel(ctx.panel, 0, ctx.y,
+        "  " .. W.safeGetText("UI_POS_BBS_EstRisk") .. ":  " .. riskPct, C.warn)
+    ctx.y = ctx.y + ctx.lineH
 
-    W.createLabel(contentPanel, 0, y,
-        "  " .. safeGetText("UI_POS_BBS_Return") .. ":    " .. returnX
-        .. " " .. safeGetText("UI_POS_BBS_YourInvestment"), C.text)
-    y = y + lineH
+    W.createLabel(ctx.panel, 0, ctx.y,
+        "  " .. W.safeGetText("UI_POS_BBS_Return") .. ":    " .. returnX
+        .. " " .. W.safeGetText("UI_POS_BBS_YourInvestment"), C.text)
+    ctx.y = ctx.y + ctx.lineH
 
-    W.createLabel(contentPanel, 0, y,
-        "  " .. safeGetText("UI_POS_BBS_MinMax") .. ":   $"
+    W.createLabel(ctx.panel, 0, ctx.y,
+        "  " .. W.safeGetText("UI_POS_BBS_MinMax") .. ":   $"
         .. (opp.principalMin or 0) .. " - $" .. (opp.principalMax or 0), C.text)
-    y = y + lineH
+    ctx.y = ctx.y + ctx.lineH
 
-    W.createLabel(contentPanel, 0, y,
-        "  " .. safeGetText("UI_POS_BBS_Expires") .. ":  "
-        .. daysToExpiry .. " " .. safeGetText("UI_POS_BBS_Days"), C.text)
-    y = y + lineH * 2
+    W.createLabel(ctx.panel, 0, ctx.y,
+        "  " .. W.safeGetText("UI_POS_BBS_Expires") .. ":  "
+        .. daysToExpiry .. " " .. W.safeGetText("UI_POS_BBS_Days"), C.text)
+    ctx.y = ctx.y + ctx.lineH * 2
 
     -- Player's cash
     local player = getSpecificPlayer(0)
@@ -255,70 +240,55 @@ function screen.create(contentPanel, params, _terminal)
         playerCash = PhobosLib.countPlayerMoney(player)
     end
 
-    W.createLabel(contentPanel, 0, y,
-        "  " .. safeGetText("UI_POS_BBS_YourCash") .. ": $" .. playerCash, C.text)
-    y = y + lineH
+    W.createLabel(ctx.panel, 0, ctx.y,
+        "  " .. W.safeGetText("UI_POS_BBS_YourCash") .. ": $" .. playerCash, C.text)
+    ctx.y = ctx.y + ctx.lineH
 
     -- Max active investments check
     local maxActive = POS_Sandbox.getMaxActiveInvestments()
     local activeCount = POS_InvestmentLog and POS_InvestmentLog.countActiveInvestments() or 0
 
     if activeCount >= maxActive then
-        y = y + 4
-        W.createLabel(contentPanel, 8, y,
-            safeGetText("UI_POS_BBS_MaxInvestments"), C.error)
-        y = y + lineH
+        ctx.y = ctx.y + 4
+        W.createLabel(ctx.panel, 8, ctx.y,
+            W.safeGetText("UI_POS_BBS_MaxInvestments"), C.error)
+        ctx.y = ctx.y + ctx.lineH
     elseif playerCash < (opp.principalMin or 50) then
-        y = y + 4
-        W.createLabel(contentPanel, 8, y,
-            safeGetText("UI_POS_BBS_CantAfford"), C.error)
-        y = y + lineH
+        ctx.y = ctx.y + 4
+        W.createLabel(ctx.panel, 8, ctx.y,
+            W.safeGetText("UI_POS_BBS_CantAfford"), C.error)
+        ctx.y = ctx.y + ctx.lineH
     else
         -- Investment tier buttons
-        y = y + 4
-        W.createSeparator(contentPanel, 0, y, 40, "-")
-        y = y + lineH + 4
+        ctx.y = ctx.y + 4
+        W.createSeparator(ctx.panel, 0, ctx.y, 40, "-")
+        ctx.y = ctx.y + ctx.lineH + 4
 
         local tiers = generateTiers(opp, playerCash)
         for i, amount in ipairs(tiers) do
             local returnAmt = math.floor(amount * (opp.returnMultiplier or 1))
-            local label = "[" .. i .. "] " .. safeGetText("UI_POS_BBS_Invest")
+            local label = "[" .. i .. "] " .. W.safeGetText("UI_POS_BBS_Invest")
                 .. " $" .. amount .. " (return: $" .. returnAmt .. ")"
 
             local investOppId = opp.id
             local investAmt = amount
             local investReturn = returnAmt
-            W.createButton(contentPanel, btnX, y, btnW, btnH, label, nil,
+            W.createButton(ctx.panel, ctx.btnX, ctx.y, ctx.btnW, ctx.btnH, label, nil,
                 function()
                     performInvestment(investOppId, investAmt, investReturn)
                 end)
-            y = y + btnH + 4
+            ctx.y = ctx.y + ctx.btnH + 4
         end
     end
 
-    -- Back button
-    y = y + 4
-    W.createSeparator(contentPanel, 0, y, 40, "-")
-    y = y + lineH + 4
-
-    W.createButton(contentPanel, btnX, y, btnW, btnH,
-        "[0] " .. safeGetText("UI_POS_BackPrompt"), nil,
-        function() POS_ScreenManager.goBack() end)
+    -- Footer
+    W.drawFooter(ctx)
 end
 
-function screen.destroy()
-    if POS_TerminalUI.instance and POS_TerminalUI.instance.contentPanel then
-        POS_TerminalWidgets.clearPanel(POS_TerminalUI.instance.contentPanel)
-    end
-end
+screen.destroy = POS_TerminalWidgets.defaultDestroy
 
 function screen.refresh(params)
-    -- Dynamic data — full rebuild via destroy + create
-    local terminal = POS_TerminalUI.instance
-    if terminal and terminal.contentPanel then
-        screen.destroy()
-        screen.create(terminal.contentPanel, params, terminal)
-    end
+    POS_TerminalWidgets.dynamicRefresh(screen, params)
 end
 
 ---------------------------------------------------------------

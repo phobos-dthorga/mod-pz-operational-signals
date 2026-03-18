@@ -44,6 +44,7 @@ POS_TerminalWidgets.COLOURS = {
     bgHover    = { r = 0.05, g = 0.15, b = 0.05, a = 0.8 },
     border     = { r = 0.15, g = 0.50, b = 0.15, a = 0.8 },
     borderDim  = { r = 0.08, g = 0.25, b = 0.08, a = 0.5 },
+    success     = { r = 0.20, g = 0.90, b = 0.50, a = 1.0 },
     transparent = { r = 0, g = 0, b = 0, a = 0 },
 }
 
@@ -246,5 +247,87 @@ function POS_TerminalWidgets.clearPanel(panel)
     if not panel then return end
     if panel.clearChildren then
         panel:clearChildren()
+    end
+end
+
+---------------------------------------------------------------
+-- Shared screen helpers
+-- These eliminate boilerplate that was previously duplicated
+-- across every screen file. See docs/design-guidelines.md §7.
+---------------------------------------------------------------
+
+--- Safe getText wrapper — returns the key itself on failure.
+--- @param key string Translation key
+--- @return string
+function POS_TerminalWidgets.safeGetText(key, ...)
+    local ok, result = pcall(getText, key, ...)
+    if ok and result then return result end
+    return key
+end
+
+--- Initialise standard layout variables from a content panel.
+--- Returns a context table used by drawHeader, drawFooter, and
+--- screen-specific layout code. Line height is derived from
+--- actual font metrics rather than hardcoded.
+--- @param contentPanel any ISPanel
+--- @return table ctx Layout context
+function POS_TerminalWidgets.initLayout(contentPanel)
+    local lineH = getTextManager():getFontHeight(UIFont.Code) + 2
+    local pw = contentPanel:getWidth()
+    return {
+        panel = contentPanel,
+        pw    = pw,
+        y     = 0,
+        lineH = lineH,
+        btnH  = lineH + 8,
+        btnW  = pw - 10,
+        btnX  = 5,
+    }
+end
+
+--- Draw a standard screen header (bright title + separator).
+--- Mutates ctx.y.
+--- @param ctx table Layout context from initLayout
+--- @param headerKey string Translation key for the header text
+function POS_TerminalWidgets.drawHeader(ctx, headerKey)
+    local W = POS_TerminalWidgets
+    W.createLabel(ctx.panel, 0, ctx.y, W.safeGetText(headerKey), C.textBright)
+    ctx.y = ctx.y + ctx.lineH
+    W.createSeparator(ctx.panel, 0, ctx.y, 40)
+    ctx.y = ctx.y + ctx.lineH + 4
+end
+
+--- Draw a standard screen footer (separator + [0] Back button).
+--- Mutates ctx.y. Only for non-root screens.
+--- @param ctx table Layout context from initLayout
+function POS_TerminalWidgets.drawFooter(ctx)
+    local W = POS_TerminalWidgets
+    ctx.y = ctx.y + 4
+    W.createSeparator(ctx.panel, 0, ctx.y, 40, "-")
+    ctx.y = ctx.y + ctx.lineH + 4
+    W.createButton(ctx.panel, ctx.btnX, ctx.y, ctx.btnW, ctx.btnH,
+        "[0] " .. W.safeGetText("UI_POS_BackPrompt"), nil,
+        function() POS_ScreenManager.goBack() end)
+    ctx.y = ctx.y + ctx.btnH + 4
+end
+
+--- Standard destroy function for screens.
+--- Clears all children from the terminal content panel.
+function POS_TerminalWidgets.defaultDestroy()
+    if POS_TerminalUI and POS_TerminalUI.instance
+       and POS_TerminalUI.instance.contentPanel then
+        POS_TerminalWidgets.clearPanel(POS_TerminalUI.instance.contentPanel)
+    end
+end
+
+--- Standard refresh for dynamic screens (destroy + recreate).
+--- @param screen table Screen table with create/destroy methods
+--- @param params table|nil Parameters to pass to create
+function POS_TerminalWidgets.dynamicRefresh(screen, params)
+    screen.destroy()
+    if POS_TerminalUI and POS_TerminalUI.instance
+       and POS_TerminalUI.instance.contentPanel then
+        screen.create(POS_TerminalUI.instance.contentPanel, params,
+            POS_TerminalUI.instance)
     end
 end

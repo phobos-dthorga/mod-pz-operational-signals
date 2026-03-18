@@ -27,12 +27,6 @@ require "POS_TerminalWidgets"
 require "POS_OperationLog"
 require "POS_InvestmentLog"
 
-local function safeGetText(key, ...)
-    local ok, result = pcall(getText, key, ...)
-    if ok and result then return result end
-    return key
-end
-
 ---------------------------------------------------------------
 
 local screen = {}
@@ -40,21 +34,11 @@ screen.id = POS_Constants.SCREEN_BBS_HUB
 
 function screen.create(contentPanel, _params, _terminal)
     local W = POS_TerminalWidgets
-    local C = POS_TerminalWidgets.COLOURS
-    local pw = contentPanel:getWidth()
-    local y = 0
-    local lineH = 20
-    local btnH = 28
-    local btnW = pw - 10
-    local btnX = 5
+    local C = W.COLOURS
+    local ctx = W.initLayout(contentPanel)
 
     -- Header
-    W.createLabel(contentPanel, 0, y,
-        safeGetText("UI_POS_BBSHub_Header"), C.textBright)
-    y = y + lineH
-
-    W.createSeparator(contentPanel, 0, y, 40)
-    y = y + lineH + 4
+    W.drawHeader(ctx, "UI_POS_BBSHub_Header")
 
     -- Active counts by type
     local investCount = 0
@@ -114,31 +98,20 @@ function screen.create(contentPanel, _params, _terminal)
     for i, opt in ipairs(options) do
         local countStr = ""
         if opt.count > 0 then
-            countStr = "  " .. safeGetText("UI_POS_BBSHub_ActiveCount", tostring(opt.count))
+            countStr = "  " .. W.safeGetText("UI_POS_BBSHub_ActiveCount", tostring(opt.count))
         end
-        local label = "[" .. i .. "] " .. safeGetText(opt.key) .. countStr
+        local label = "[" .. i .. "] " .. W.safeGetText(opt.key) .. countStr
         local targetScreen = opt.screen
-        W.createButton(contentPanel, btnX, y, btnW, btnH, label, nil,
+        W.createButton(ctx.panel, ctx.btnX, ctx.y, ctx.btnW, ctx.btnH, label, nil,
             function() POS_ScreenManager.navigateTo(targetScreen) end)
-        y = y + btnH + 4
+        ctx.y = ctx.y + ctx.btnH + 4
     end
 
-    -- Back button
-    y = y + 4
-    W.createSeparator(contentPanel, 0, y, 40, "-")
-    y = y + lineH + 4
-
-    W.createButton(contentPanel, btnX, y, btnW, btnH,
-        "[0] " .. safeGetText("UI_POS_BackPrompt"), nil,
-        function() POS_ScreenManager.goBack() end)
+    -- Footer
+    W.drawFooter(ctx)
 end
 
-function screen.destroy()
-    if POS_TerminalUI and POS_TerminalUI.instance
-       and POS_TerminalUI.instance.contentPanel then
-        POS_TerminalWidgets.clearPanel(POS_TerminalUI.instance.contentPanel)
-    end
-end
+screen.destroy = POS_TerminalWidgets.defaultDestroy
 
 function screen.refresh(_params)
     -- Static screen — no dynamic refresh needed

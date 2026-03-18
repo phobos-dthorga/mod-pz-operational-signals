@@ -27,19 +27,6 @@ require "POS_ScreenManager"
 require "POS_TerminalWidgets"
 require "PhobosLib_Pagination"
 
-local function safeGetText(key, ...)
-    local ok, result = pcall(getText, key, ...)
-    if ok and result then return result end
-    return key
-end
-
-local C = POS_TerminalWidgets.COLOURS
-
---- Additional colours used by BBS screen.
-local BBS = {
-    good = { r = 0.20, g = 0.90, b = 0.50, a = 1.0 },
-}
-
 ---------------------------------------------------------------
 
 local screen = {}
@@ -47,28 +34,19 @@ screen.id = POS_Constants.SCREEN_BBS_LIST
 
 function screen.create(contentPanel, _params, _terminal)
     local W = POS_TerminalWidgets
-    local pw = contentPanel:getWidth()
-    local y = 0
-    local lineH = 20
-    local btnH = 28
-    local btnW = pw - 10
-    local btnX = 5
+    local C = W.COLOURS
+    local ctx = W.initLayout(contentPanel)
 
     -- Header
-    W.createLabel(contentPanel, 0, y,
-        safeGetText("UI_POS_BBS_Header"), C.textBright)
-    y = y + lineH
-
-    W.createSeparator(contentPanel, 0, y, 40)
-    y = y + lineH
+    W.drawHeader(ctx, "UI_POS_BBS_Header")
 
     -- ── Open investment opportunities ──
-    W.createLabel(contentPanel, 0, y,
-        safeGetText("UI_POS_BBS_OpenInvestments"), C.textBright)
-    y = y + lineH
+    W.createLabel(ctx.panel, 0, ctx.y,
+        W.safeGetText("UI_POS_BBS_OpenInvestments"), C.textBright)
+    ctx.y = ctx.y + ctx.lineH
 
-    W.createSeparator(contentPanel, 0, y, 40, "-")
-    y = y + lineH
+    W.createSeparator(ctx.panel, 0, ctx.y, 40, "-")
+    ctx.y = ctx.y + ctx.lineH
 
     local opportunities = {}
     if POS_InvestmentLog then
@@ -88,18 +66,18 @@ function screen.create(contentPanel, _params, _terminal)
     end
 
     if #opportunities == 0 then
-        W.createLabel(contentPanel, 8, y,
-            safeGetText("UI_POS_BBS_NoOpportunities"), C.dim)
-        y = y + lineH
+        W.createLabel(ctx.panel, 8, ctx.y,
+            W.safeGetText("UI_POS_BBS_NoOpportunities"), C.dim)
+        ctx.y = ctx.y + ctx.lineH
     else
         local currentPage = (_params and _params.bbsPage) or 1
-        y = PhobosLib_Pagination.create(contentPanel, {
+        ctx.y = PhobosLib_Pagination.create(ctx.panel, {
             items = opportunities,
             pageSize = 5,
             currentPage = currentPage,
-            x = btnX,
-            y = y,
-            width = btnW,
+            x = ctx.btnX,
+            y = ctx.y,
+            width = ctx.btnW,
             colours = {
                 text = C.text, dim = C.dim,
                 bgDark = C.bgDark, bgHover = C.bgHover,
@@ -112,12 +90,12 @@ function screen.create(contentPanel, _params, _terminal)
                     .. " -- $" .. (opp.principalMin or 0) .. "-$" .. (opp.principalMax or 0)
                     .. " (" .. returnX .. ", ~" .. riskPct .. " risk)"
                 local oppId = opp.id
-                W.createButton(parent, rx, ry, rw, btnH, label, nil,
+                W.createButton(parent, rx, ry, rw, ctx.btnH, label, nil,
                     function()
                         POS_ScreenManager.navigateTo(POS_Constants.SCREEN_BBS_POST,
                             { opportunityId = oppId })
                     end)
-                return btnH + 4
+                return ctx.btnH + 4
             end,
             onPageChange = function(newPage)
                 POS_ScreenManager.replaceCurrent(POS_Constants.SCREEN_BBS_LIST,
@@ -126,15 +104,15 @@ function screen.create(contentPanel, _params, _terminal)
         })
     end
 
-    y = y + 4
+    ctx.y = ctx.y + 4
 
     -- ── Active investments ──
-    W.createLabel(contentPanel, 0, y,
-        safeGetText("UI_POS_BBS_YourInvestments"), C.textBright)
-    y = y + lineH
+    W.createLabel(ctx.panel, 0, ctx.y,
+        W.safeGetText("UI_POS_BBS_YourInvestments"), C.textBright)
+    ctx.y = ctx.y + ctx.lineH
 
-    W.createSeparator(contentPanel, 0, y, 40, "-")
-    y = y + lineH
+    W.createSeparator(ctx.panel, 0, ctx.y, 40, "-")
+    ctx.y = ctx.y + ctx.lineH
 
     local investments = {}
     if POS_InvestmentLog then
@@ -142,9 +120,9 @@ function screen.create(contentPanel, _params, _terminal)
     end
 
     if #investments == 0 then
-        W.createLabel(contentPanel, 8, y,
-            safeGetText("UI_POS_BBS_NoInvestments"), C.dim)
-        y = y + lineH
+        W.createLabel(ctx.panel, 8, ctx.y,
+            W.safeGetText("UI_POS_BBS_NoInvestments"), C.dim)
+        ctx.y = ctx.y + ctx.lineH
     else
         local gameTime = getGameTime()
         local currentDay = gameTime and gameTime:getNightsSurvived() or 0
@@ -156,8 +134,8 @@ function screen.create(contentPanel, _params, _terminal)
                 .. " -- $" .. (inv.principalAmount or 0)
                 .. " -> $" .. (inv.returnAmount or 0)
                 .. " (" .. daysLeft .. "d left)"
-            W.createLabel(contentPanel, 0, y, line, C.warn)
-            y = y + lineH
+            W.createLabel(ctx.panel, 0, ctx.y, line, C.warn)
+            ctx.y = ctx.y + ctx.lineH
         end
     end
 
@@ -170,14 +148,14 @@ function screen.create(contentPanel, _params, _terminal)
     end
 
     if #matured > 0 or #defaulted > 0 then
-        y = y + 4
+        ctx.y = ctx.y + 4
 
-        W.createLabel(contentPanel, 0, y,
-            safeGetText("UI_POS_BBS_RecentResults"), C.textBright)
-        y = y + lineH
+        W.createLabel(ctx.panel, 0, ctx.y,
+            W.safeGetText("UI_POS_BBS_RecentResults"), C.textBright)
+        ctx.y = ctx.y + ctx.lineH
 
-        W.createSeparator(contentPanel, 0, y, 40, "-")
-        y = y + lineH
+        W.createSeparator(ctx.panel, 0, ctx.y, 40, "-")
+        ctx.y = ctx.y + ctx.lineH
 
         -- Collect and show last 5 results (most recent first)
         local results = {}
@@ -195,7 +173,7 @@ function screen.create(contentPanel, _params, _terminal)
             local prefix, colour
             if r.status == "matured" then
                 prefix = "  [OK] "
-                colour = BBS.good
+                colour = C.success
             else
                 prefix = "  [!!] "
                 colour = C.error
@@ -207,35 +185,20 @@ function screen.create(contentPanel, _params, _terminal)
             else
                 line = line .. " DEFAULTED"
             end
-            W.createLabel(contentPanel, 0, y, line, colour)
-            y = y + lineH
+            W.createLabel(ctx.panel, 0, ctx.y, line, colour)
+            ctx.y = ctx.y + ctx.lineH
             shown = shown + 1
         end
     end
 
     -- Footer
-    y = y + 4
-    W.createSeparator(contentPanel, 0, y, 40, "-")
-    y = y + lineH + 4
-
-    W.createButton(contentPanel, btnX, y, btnW, btnH,
-        "[0] " .. safeGetText("UI_POS_BackPrompt"), nil,
-        function() POS_ScreenManager.goBack() end)
+    W.drawFooter(ctx)
 end
 
-function screen.destroy()
-    if POS_TerminalUI.instance and POS_TerminalUI.instance.contentPanel then
-        POS_TerminalWidgets.clearPanel(POS_TerminalUI.instance.contentPanel)
-    end
-end
+screen.destroy = POS_TerminalWidgets.defaultDestroy
 
 function screen.refresh(_params)
-    -- Dynamic data — full rebuild via destroy + create
-    local terminal = POS_TerminalUI.instance
-    if terminal and terminal.contentPanel then
-        screen.destroy()
-        screen.create(terminal.contentPanel, _params, terminal)
-    end
+    POS_TerminalWidgets.dynamicRefresh(screen, _params)
 end
 
 ---------------------------------------------------------------

@@ -25,6 +25,7 @@
 
 require "PhobosLib"
 require "POS_Constants"
+require "POS_TerminalWidgets"
 
 POS_ReconScanner = POS_ReconScanner or {}
 
@@ -36,12 +37,6 @@ local ROOM_ENTRY_THRESHOLD = 100
 
 --- Tick counter.
 local tickCounter = 0
-
-local function safeGetText(key, ...)
-    local ok, result = pcall(getText, key, ...)
-    if ok and result then return result end
-    return key
-end
 
 --- Find the active recon operation with entered=true, photographed=false.
 ---@return table|nil The active recon operation, or nil
@@ -146,7 +141,7 @@ local function onTick()
     obj.photographed = true
 
     -- Notify player
-    player:Say(safeGetText("UI_POS_Ops_PhotoCaptured"))
+    player:Say(POS_TerminalWidgets.safeGetText("UI_POS_Ops_PhotoCaptured"))
 
     PhobosLib.debug("POS", "[ReconScanner] Photograph captured for " .. recon.id)
 

@@ -29,6 +29,7 @@ require "PhobosLib"
 require "POS_Constants"
 require "ISUI/ISPanel"
 require "POS_ScreenManager"
+require "POS_TerminalWidgets"
 
 POS_TerminalUI = ISCollapsableWindow:derive("POS_TerminalUI")
 
@@ -69,13 +70,6 @@ local BEZEL = {
     top    = 0.13,
     bottom = 0.30,
 }
-
---- Safe getText wrapper.
-local function safeGetText(key, ...)
-    local ok, result = pcall(getText, key, ...)
-    if ok and result then return result end
-    return key
-end
 
 --- Font for terminal text.
 local FONT = UIFont.Code

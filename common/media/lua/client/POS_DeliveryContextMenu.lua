@@ -27,12 +27,7 @@
 require "PhobosLib"
 require "POS_MailboxScanner"
 require "POS_PathTracker"
-
-local function safeGetText(key, ...)
-    local ok, result = pcall(getText, key, ...)
-    if ok and result then return result end
-    return key
-end
+require "POS_TerminalWidgets"
 
 --- Coordinate tolerance for matching player position to mailbox (tiles).
 local COORD_TOLERANCE = 3
@@ -84,7 +79,7 @@ local function onCollectPackage(worldObjects, player, operation)
     POS_PathTracker.startTracking(operation.id)
 
     -- Notify player
-    player:Say(safeGetText("UI_POS_Delivery_Status_InTransit"))
+    player:Say(POS_TerminalWidgets.safeGetText("UI_POS_Delivery_Status_InTransit"))
 
     PhobosLib.debug("POS", "[Delivery] Collected package for " .. operation.id)
 
@@ -106,7 +101,7 @@ local function onDeliverPackage(worldObjects, player, operation)
     -- Verify player still has the item
     local item = inv:getFirstTypeRecurse(obj.itemType)
     if not item then
-        player:Say(safeGetText("UI_POS_Delivery_NoItem"))
+        player:Say(POS_TerminalWidgets.safeGetText("UI_POS_Delivery_NoItem"))
         return
     end
 
@@ -131,7 +126,7 @@ local function onDeliverPackage(worldObjects, player, operation)
     end
 
     -- Notify player
-    player:Say(safeGetText("UI_POS_Delivery_Completed", tostring(finalReward)))
+    player:Say(POS_TerminalWidgets.safeGetText("UI_POS_Delivery_Completed", tostring(finalReward)))
 
     PhobosLib.debug("POS", "[Delivery] Delivered " .. operation.id
         .. " — actual distance: " .. math.floor(actualDistance)
@@ -197,7 +192,7 @@ local function onFillWorldObjectContextMenu(playerIndex, context, worldObjects)
     if not obj.pickedUp
        and coordsMatch(mailboxX, mailboxY, obj.pickupX, obj.pickupY) then
         context:addOption(
-            safeGetText("UI_POS_Delivery_CollectPackage"),
+            POS_TerminalWidgets.safeGetText("UI_POS_Delivery_CollectPackage"),
             worldObjects, onCollectPackage, player, delivery)
     end
 
@@ -208,7 +203,7 @@ local function onFillWorldObjectContextMenu(playerIndex, context, worldObjects)
         local inv = player:getInventory()
         if inv and inv:getFirstTypeRecurse(obj.itemType) then
             context:addOption(
-                safeGetText("UI_POS_Delivery_DeliverPackage"),
+                POS_TerminalWidgets.safeGetText("UI_POS_Delivery_DeliverPackage"),
                 worldObjects, onDeliverPackage, player, delivery)
         end
     end

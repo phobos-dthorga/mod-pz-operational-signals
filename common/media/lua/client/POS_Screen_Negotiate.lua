@@ -34,12 +34,6 @@ require "POS_MapMarkers"
 require "POS_OperationLog"
 require "PhobosLib_Address"
 
-local function safeGetText(key, ...)
-    local ok, result = pcall(getText, key, ...)
-    if ok and result then return result end
-    return key
-end
-
 ---------------------------------------------------------------
 -- Negotiation mechanics
 ---------------------------------------------------------------
@@ -80,23 +74,18 @@ screen.id = POS_Constants.SCREEN_NEGOTIATE
 
 function screen.create(contentPanel, params, _terminal)
     local W = POS_TerminalWidgets
-    local C = POS_TerminalWidgets.COLOURS
-    local pw = contentPanel:getWidth()
-    local y = 0
-    local lineH = 20
-    local btnH = 28
-    local btnW = pw - 10
-    local btnX = 5
+    local C = W.COLOURS
+    local ctx = W.initLayout(contentPanel)
 
     local opId = params and params.operationId
     if not opId then
-        W.createLabel(contentPanel, 0, y, "ERROR: No operation specified.", C.error)
+        W.createLabel(ctx.panel, 0, ctx.y, "ERROR: No operation specified.", C.error)
         return
     end
 
     local op = POS_OperationLog.get(opId)
     if not op then
-        W.createLabel(contentPanel, 0, y, "ERROR: Operation not found.", C.error)
+        W.createLabel(ctx.panel, 0, ctx.y, "ERROR: Operation not found.", C.error)
         return
     end
 
@@ -122,17 +111,12 @@ function screen.create(contentPanel, params, _terminal)
     local lastResult = params and params.lastResult
 
     -- Header
-    W.createLabel(contentPanel, 0, y,
-        safeGetText("UI_POS_Negotiate_Header"), C.textBright)
-    y = y + lineH
-
-    W.createSeparator(contentPanel, 0, y, 40)
-    y = y + lineH
+    W.drawHeader(ctx, "UI_POS_Negotiate_Header")
 
     -- Mission details
-    W.createLabel(contentPanel, 8, y,
-        safeGetText(op.nameKey or "???"), C.text)
-    y = y + lineH
+    W.createLabel(ctx.panel, 8, ctx.y,
+        W.safeGetText(op.nameKey or "???"), C.text)
+    ctx.y = ctx.y + ctx.lineH
 
     if obj then
         local targetStr
@@ -148,7 +132,7 @@ function screen.create(contentPanel, params, _terminal)
             else
                 locStr = math.floor(obj.pickupX or 0) .. ", " .. math.floor(obj.pickupY or 0)
             end
-            targetStr = safeGetText("UI_POS_Delivery_Pickup") .. ": " .. locStr
+            targetStr = W.safeGetText("UI_POS_Delivery_Pickup") .. ": " .. locStr
         else
             local locStr = "???"
             if PhobosLib_Address and PhobosLib_Address.resolveAddress then
@@ -161,70 +145,70 @@ function screen.create(contentPanel, params, _terminal)
             else
                 locStr = math.floor(obj.targetBuildingX or 0) .. ", " .. math.floor(obj.targetBuildingY or 0)
             end
-            targetStr = safeGetText("UI_POS_Ops_Target") .. ": " .. locStr
+            targetStr = W.safeGetText("UI_POS_Ops_Target") .. ": " .. locStr
         end
-        W.createLabel(contentPanel, 8, y, "  " .. targetStr, C.dim)
-        y = y + lineH
+        W.createLabel(ctx.panel, 8, ctx.y, "  " .. targetStr, C.dim)
+        ctx.y = ctx.y + ctx.lineH
     end
 
-    y = y + 4
-    W.createSeparator(contentPanel, 0, y, 40, "-")
-    y = y + lineH
+    ctx.y = ctx.y + 4
+    W.createSeparator(ctx.panel, 0, ctx.y, 40, "-")
+    ctx.y = ctx.y + ctx.lineH
 
     -- Current offer
-    W.createLabel(contentPanel, 0, y,
-        safeGetText("UI_POS_Negotiate_CurrentOffer"), C.textBright)
-    y = y + lineH
+    W.createLabel(ctx.panel, 0, ctx.y,
+        W.safeGetText("UI_POS_Negotiate_CurrentOffer"), C.textBright)
+    ctx.y = ctx.y + ctx.lineH
 
     local reward = isDelivery and (op.estimatedReward or 0) or (op.scaledReward or 0)
-    W.createLabel(contentPanel, 8, y,
-        "  " .. safeGetText("UI_POS_Delivery_Reward") .. ": $" .. reward, C.warn)
-    y = y + lineH
+    W.createLabel(ctx.panel, 8, ctx.y,
+        "  " .. W.safeGetText("UI_POS_Delivery_Reward") .. ": $" .. reward, C.warn)
+    ctx.y = ctx.y + ctx.lineH
 
     if op.expiryDay then
         local gameTime = getGameTime()
         local currentDay = gameTime and gameTime:getNightsSurvived() or 0
         local daysLeft = (op.expiryDay or 0) - currentDay
         if daysLeft < 0 then daysLeft = 0 end
-        W.createLabel(contentPanel, 8, y,
-            "  " .. safeGetText("UI_POS_Delivery_ExpiresIn", tostring(daysLeft)), C.dim)
-        y = y + lineH
+        W.createLabel(ctx.panel, 8, ctx.y,
+            "  " .. W.safeGetText("UI_POS_Delivery_ExpiresIn", tostring(daysLeft)), C.dim)
+        ctx.y = ctx.y + ctx.lineH
     end
 
     if not isDelivery and op.baseReputation then
-        W.createLabel(contentPanel, 8, y,
-            "  " .. safeGetText("UI_POS_Ops_Reputation") .. ": +"
+        W.createLabel(ctx.panel, 8, ctx.y,
+            "  " .. W.safeGetText("UI_POS_Ops_Reputation") .. ": +"
             .. POS_RewardCalculator.scaleReputation(op.baseReputation), C.dim)
-        y = y + lineH
+        ctx.y = ctx.y + ctx.lineH
     end
 
     -- Negotiation status
-    y = y + 4
-    W.createLabel(contentPanel, 0, y,
-        safeGetText("UI_POS_Negotiate_AttemptsLeft", tostring(attemptsLeft))
+    ctx.y = ctx.y + 4
+    W.createLabel(ctx.panel, 0, ctx.y,
+        W.safeGetText("UI_POS_Negotiate_AttemptsLeft", tostring(attemptsLeft))
         .. "  (" .. chance .. "%)", C.dim)
-    y = y + lineH
+    ctx.y = ctx.y + ctx.lineH
 
     -- Last result feedback
     if lastResult == "success" then
-        W.createLabel(contentPanel, 0, y,
-            safeGetText("UI_POS_Negotiate_Success"), C.textBright)
-        y = y + lineH
+        W.createLabel(ctx.panel, 0, ctx.y,
+            W.safeGetText("UI_POS_Negotiate_Success"), C.textBright)
+        ctx.y = ctx.y + ctx.lineH
     elseif lastResult == "failed" then
-        W.createLabel(contentPanel, 0, y,
-            safeGetText("UI_POS_Negotiate_Failed"), C.error)
-        y = y + lineH
+        W.createLabel(ctx.panel, 0, ctx.y,
+            W.safeGetText("UI_POS_Negotiate_Failed"), C.error)
+        ctx.y = ctx.y + ctx.lineH
     end
 
-    y = y + 4
-    W.createSeparator(contentPanel, 0, y, 40, "-")
-    y = y + lineH + 4
+    ctx.y = ctx.y + 4
+    W.createSeparator(ctx.panel, 0, ctx.y, 40, "-")
+    ctx.y = ctx.y + ctx.lineH + 4
 
     -- Negotiation buttons (if attempts remain)
     if attemptsLeft > 0 then
         -- [1] Request higher pay
-        W.createButton(contentPanel, btnX, y, btnW, btnH,
-            "[1] " .. safeGetText("UI_POS_Negotiate_HigherPay"), nil,
+        W.createButton(ctx.panel, ctx.btnX, ctx.y, ctx.btnW, ctx.btnH,
+            "[1] " .. W.safeGetText("UI_POS_Negotiate_HigherPay"), nil,
             function()
                 op.negotiationAttempts = op.negotiationAttempts + 1
                 if rollSuccess(chance) then
@@ -246,11 +230,11 @@ function screen.create(contentPanel, params, _terminal)
                         { operationId = opId, lastResult = "failed" })
                 end
             end)
-        y = y + btnH + 4
+        ctx.y = ctx.y + ctx.btnH + 4
 
         -- [2] Request more time
-        W.createButton(contentPanel, btnX, y, btnW, btnH,
-            "[2] " .. safeGetText("UI_POS_Negotiate_MoreTime"), nil,
+        W.createButton(ctx.panel, ctx.btnX, ctx.y, ctx.btnW, ctx.btnH,
+            "[2] " .. W.safeGetText("UI_POS_Negotiate_MoreTime"), nil,
             function()
                 op.negotiationAttempts = op.negotiationAttempts + 1
                 if rollSuccess(chance) then
@@ -272,16 +256,16 @@ function screen.create(contentPanel, params, _terminal)
                         { operationId = opId, lastResult = "failed" })
                 end
             end)
-        y = y + btnH + 4
+        ctx.y = ctx.y + ctx.btnH + 4
     else
-        W.createLabel(contentPanel, 0, y,
-            safeGetText("UI_POS_Negotiate_MaxAttempts"), C.warn)
-        y = y + lineH + 4
+        W.createLabel(ctx.panel, 0, ctx.y,
+            W.safeGetText("UI_POS_Negotiate_MaxAttempts"), C.warn)
+        ctx.y = ctx.y + ctx.lineH + 4
     end
 
     -- [3] Accept current terms
-    W.createButton(contentPanel, btnX, y, btnW, btnH,
-        "[3] " .. safeGetText("UI_POS_Negotiate_Accept"), nil,
+    W.createButton(ctx.panel, ctx.btnX, ctx.y, ctx.btnW, ctx.btnH,
+        "[3] " .. W.safeGetText("UI_POS_Negotiate_Accept"), nil,
         function()
             op.status = "active"
             -- Place waypoint for recon
@@ -291,23 +275,18 @@ function screen.create(contentPanel, params, _terminal)
             POS_ScreenManager.markDirty()
             POS_ScreenManager.goBack()
         end)
-    y = y + btnH + 4
+    ctx.y = ctx.y + ctx.btnH + 4
 
     -- [0] Decline
-    W.createButton(contentPanel, btnX, y, btnW, btnH,
-        "[0] " .. safeGetText("UI_POS_Negotiate_Decline"), nil,
+    W.createButton(ctx.panel, ctx.btnX, ctx.y, ctx.btnW, ctx.btnH,
+        "[0] " .. W.safeGetText("UI_POS_Negotiate_Decline"), nil,
         function() POS_ScreenManager.goBack() end)
 end
 
-function screen.destroy()
-    if POS_TerminalUI and POS_TerminalUI.instance
-       and POS_TerminalUI.instance.contentPanel then
-        POS_TerminalWidgets.clearPanel(POS_TerminalUI.instance.contentPanel)
-    end
-end
+screen.destroy = POS_TerminalWidgets.defaultDestroy
 
 function screen.refresh(_params)
-    -- Stateful screen — no auto-refresh
+    POS_TerminalWidgets.dynamicRefresh(screen, _params)
 end
 
 ---------------------------------------------------------------

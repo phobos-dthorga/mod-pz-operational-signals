@@ -33,14 +33,7 @@ require "POS_OperationLog"
 require "PhobosLib_Pagination"
 require "PhobosLib_Address"
 
-local function safeGetText(key, ...)
-    local ok, result = pcall(getText, key, ...)
-    if ok and result then return result end
-    return key
-end
-
 local C = POS_TerminalWidgets.COLOURS
-local BBS_GOOD = { r = 0.20, g = 0.90, b = 0.50, a = 1.0 }
 
 local function formatLocation(x, y)
     if PhobosLib_Address and PhobosLib_Address.resolveAddress then
@@ -122,121 +115,112 @@ screen.id = POS_Constants.SCREEN_DELIVERIES
 
 function screen.create(contentPanel, _params, _terminal)
     local W = POS_TerminalWidgets
-    local pw = contentPanel:getWidth()
-    local y = 0
-    local lineH = 20
-    local btnH = 28
-    local btnW = pw - 10
-    local btnX = 5
+    local C = W.COLOURS
+    local ctx = W.initLayout(contentPanel)
 
     -- Header
-    W.createLabel(contentPanel, 0, y,
-        safeGetText("UI_POS_Delivery_Header"), C.textBright)
-    y = y + lineH
-
-    W.createSeparator(contentPanel, 0, y, 40)
-    y = y + lineH
+    W.drawHeader(ctx, "UI_POS_Delivery_Header")
 
     -- ── Active delivery ──
     local active = getActiveDelivery()
 
     if active then
-        W.createLabel(contentPanel, 0, y,
-            safeGetText("UI_POS_Delivery_Active"), C.textBright)
-        y = y + lineH
+        W.createLabel(ctx.panel, 0, ctx.y,
+            W.safeGetText("UI_POS_Delivery_Active"), C.textBright)
+        ctx.y = ctx.y + ctx.lineH
 
-        W.createSeparator(contentPanel, 0, y, 40, "-")
-        y = y + lineH
+        W.createSeparator(ctx.panel, 0, ctx.y, 40, "-")
+        ctx.y = ctx.y + ctx.lineH
 
         local obj = active.objectives[1]
 
         -- Status
         local status
         if not obj.pickedUp then
-            status = safeGetText("UI_POS_Delivery_Status_AwaitingPickup")
+            status = W.safeGetText("UI_POS_Delivery_Status_AwaitingPickup")
         else
-            status = safeGetText("UI_POS_Delivery_Status_InTransit")
+            status = W.safeGetText("UI_POS_Delivery_Status_InTransit")
         end
-        W.createLabel(contentPanel, 8, y, "  Status: " .. status, C.text)
-        y = y + lineH
+        W.createLabel(ctx.panel, 8, ctx.y, "  Status: " .. status, C.text)
+        ctx.y = ctx.y + ctx.lineH
 
         -- Item
-        W.createLabel(contentPanel, 8, y,
-            "  " .. safeGetText("UI_POS_Delivery_Item") .. ": "
+        W.createLabel(ctx.panel, 8, ctx.y,
+            "  " .. W.safeGetText("UI_POS_Delivery_Item") .. ": "
             .. (obj.itemType or "???"), C.text)
-        y = y + lineH
+        ctx.y = ctx.y + ctx.lineH
 
         -- Pickup location
-        W.createLabel(contentPanel, 8, y,
-            "  " .. safeGetText("UI_POS_Delivery_Pickup") .. ": "
+        W.createLabel(ctx.panel, 8, ctx.y,
+            "  " .. W.safeGetText("UI_POS_Delivery_Pickup") .. ": "
             .. formatLocation(obj.pickupX, obj.pickupY), C.text)
-        y = y + lineH
+        ctx.y = ctx.y + ctx.lineH
 
         -- Dropoff location
-        W.createLabel(contentPanel, 8, y,
-            "  " .. safeGetText("UI_POS_Delivery_Dropoff") .. ": "
+        W.createLabel(ctx.panel, 8, ctx.y,
+            "  " .. W.safeGetText("UI_POS_Delivery_Dropoff") .. ": "
             .. formatLocation(obj.dropoffX, obj.dropoffY), C.text)
-        y = y + lineH
+        ctx.y = ctx.y + ctx.lineH
 
         -- Show on Map button (shows relevant location based on delivery state)
         local mapX = obj.pickedUp and obj.dropoffX or obj.pickupX
         local mapY = obj.pickedUp and obj.dropoffY or obj.pickupY
-        W.createButton(contentPanel, btnX, y, btnW, btnH,
-            safeGetText("UI_POS_Delivery_ShowOnMap"), nil,
+        W.createButton(ctx.panel, ctx.btnX, ctx.y, ctx.btnW, ctx.btnH,
+            W.safeGetText("UI_POS_Delivery_ShowOnMap"), nil,
             function()
                 PhobosLib.showOnWorldMap(0, mapX, mapY, 20.0)
             end)
-        y = y + btnH + 4
+        ctx.y = ctx.y + ctx.btnH + 4
 
         -- Straight-line distance
-        W.createLabel(contentPanel, 8, y,
-            "  " .. safeGetText("UI_POS_Delivery_Distance") .. ": "
+        W.createLabel(ctx.panel, 8, ctx.y,
+            "  " .. W.safeGetText("UI_POS_Delivery_Distance") .. ": "
             .. math.floor(active.straightLineDistance or 0) .. " "
-            .. safeGetText("UI_POS_Delivery_Tiles"), C.dim)
-        y = y + lineH
+            .. W.safeGetText("UI_POS_Delivery_Tiles"), C.dim)
+        ctx.y = ctx.y + ctx.lineH
 
         -- Distance walked/driven so far
         if obj.pickedUp then
             local walked = POS_PathTracker.getDistance(active.id)
-            W.createLabel(contentPanel, 8, y,
-                "  " .. safeGetText("UI_POS_Delivery_DistanceWalked") .. ": "
+            W.createLabel(ctx.panel, 8, ctx.y,
+                "  " .. W.safeGetText("UI_POS_Delivery_DistanceWalked") .. ": "
                 .. math.floor(walked) .. " "
-                .. safeGetText("UI_POS_Delivery_Tiles"), C.dim)
-            y = y + lineH
+                .. W.safeGetText("UI_POS_Delivery_Tiles"), C.dim)
+            ctx.y = ctx.y + ctx.lineH
         end
 
         -- Estimated reward
-        W.createLabel(contentPanel, 8, y,
-            "  " .. safeGetText("UI_POS_Delivery_Reward") .. ": ~$"
+        W.createLabel(ctx.panel, 8, ctx.y,
+            "  " .. W.safeGetText("UI_POS_Delivery_Reward") .. ": ~$"
             .. (active.estimatedReward or "???"), C.warn)
-        y = y + lineH
+        ctx.y = ctx.y + ctx.lineH
 
         -- Cancel button
         local cancelPenalty = POS_RewardCalculator.previewCancellationPenalty(active)
         local cancelLabel
         if cancelPenalty <= 0 then
-            cancelLabel = safeGetText("UI_POS_Cancel_NoPenalty")
+            cancelLabel = W.safeGetText("UI_POS_Cancel_NoPenalty")
         else
-            cancelLabel = safeGetText("UI_POS_Cancel_WithPenalty",
+            cancelLabel = W.safeGetText("UI_POS_Cancel_WithPenalty",
                 tostring(cancelPenalty))
         end
         local cancelActiveId = active.id
-        W.createButton(contentPanel, btnX, y, btnW, btnH, cancelLabel, nil,
+        W.createButton(ctx.panel, ctx.btnX, ctx.y, ctx.btnW, ctx.btnH, cancelLabel, nil,
             function()
                 POS_OperationLog.cancelOperation(cancelActiveId)
                 POS_ScreenManager.markDirty()
             end)
-        y = y + btnH + 4
+        ctx.y = ctx.y + ctx.btnH + 4
 
-        y = y + 4
+        ctx.y = ctx.y + 4
     else
         -- ── Available deliveries ──
-        W.createLabel(contentPanel, 0, y,
-            safeGetText("UI_POS_Delivery_Available"), C.textBright)
-        y = y + lineH
+        W.createLabel(ctx.panel, 0, ctx.y,
+            W.safeGetText("UI_POS_Delivery_Available"), C.textBright)
+        ctx.y = ctx.y + ctx.lineH
 
-        W.createSeparator(contentPanel, 0, y, 40, "-")
-        y = y + lineH
+        W.createSeparator(ctx.panel, 0, ctx.y, 40, "-")
+        ctx.y = ctx.y + ctx.lineH
 
         local available = getAvailableDeliveries()
 
@@ -244,26 +228,26 @@ function screen.create(contentPanel, _params, _terminal)
             local cacheCount = POS_MailboxScanner
                 and POS_MailboxScanner.getCacheCount() or 0
             if cacheCount < 2 then
-                W.createLabel(contentPanel, 8, y,
-                    safeGetText("UI_POS_Delivery_NeedMailboxes"), C.dim)
-                y = y + lineH
-                W.createLabel(contentPanel, 8, y,
-                    safeGetText("UI_POS_Delivery_MailboxCount",
+                W.createLabel(ctx.panel, 8, ctx.y,
+                    W.safeGetText("UI_POS_Delivery_NeedMailboxes"), C.dim)
+                ctx.y = ctx.y + ctx.lineH
+                W.createLabel(ctx.panel, 8, ctx.y,
+                    W.safeGetText("UI_POS_Delivery_MailboxCount",
                         tostring(cacheCount)), C.dim)
             else
-                W.createLabel(contentPanel, 8, y,
-                    safeGetText("UI_POS_Delivery_NoAvailable"), C.dim)
+                W.createLabel(ctx.panel, 8, ctx.y,
+                    W.safeGetText("UI_POS_Delivery_NoAvailable"), C.dim)
             end
-            y = y + lineH
+            ctx.y = ctx.y + ctx.lineH
         else
             local currentPage = (_params and _params.delPage) or 1
-            y = PhobosLib_Pagination.create(contentPanel, {
+            ctx.y = PhobosLib_Pagination.create(ctx.panel, {
                 items = available,
                 pageSize = 5,
                 currentPage = currentPage,
-                x = btnX,
-                y = y,
-                width = btnW,
+                x = ctx.btnX,
+                y = ctx.y,
+                width = ctx.btnW,
                 colours = {
                     text = C.text, dim = C.dim,
                     bgDark = C.bgDark, bgHover = C.bgHover,
@@ -273,10 +257,10 @@ function screen.create(contentPanel, _params, _terminal)
                     local dObj = op.objectives[1]
                     local label = (dObj.itemType or "Package")
                         .. " — ~" .. math.floor(op.estimatedRoadDistance or 0) .. " "
-                        .. safeGetText("UI_POS_Delivery_Tiles")
+                        .. W.safeGetText("UI_POS_Delivery_Tiles")
                         .. " — ~$" .. (op.estimatedReward or "???")
                     local opId = op.id
-                    W.createButton(parent, rx, ry, rw, btnH, label, nil,
+                    W.createButton(parent, rx, ry, rw, ctx.btnH, label, nil,
                         function()
                             local negotiateEnabled = POS_Sandbox
                                 and POS_Sandbox.isNegotiationEnabled
@@ -294,7 +278,7 @@ function screen.create(contentPanel, _params, _terminal)
                                 end
                             end
                         end)
-                    return btnH + 4
+                    return ctx.btnH + 4
                 end,
                 onPageChange = function(newPage)
                     POS_ScreenManager.replaceCurrent(POS_Constants.SCREEN_DELIVERIES,
@@ -307,13 +291,13 @@ function screen.create(contentPanel, _params, _terminal)
     -- ── Completed deliveries ──
     local completed = getCompletedDeliveries()
     if #completed > 0 then
-        y = y + 4
-        W.createLabel(contentPanel, 0, y,
-            safeGetText("UI_POS_Delivery_Recent"), C.textBright)
-        y = y + lineH
+        ctx.y = ctx.y + 4
+        W.createLabel(ctx.panel, 0, ctx.y,
+            W.safeGetText("UI_POS_Delivery_Recent"), C.textBright)
+        ctx.y = ctx.y + ctx.lineH
 
-        W.createSeparator(contentPanel, 0, y, 40, "-")
-        y = y + lineH
+        W.createSeparator(ctx.panel, 0, ctx.y, 40, "-")
+        ctx.y = ctx.y + ctx.lineH
 
         local shown = 0
         for i = #completed, 1, -1 do
@@ -323,36 +307,21 @@ function screen.create(contentPanel, _params, _terminal)
             local dist = op.actualDistance or op.straightLineDistance or 0
             local line = "  [OK] $" .. reward
                 .. " — " .. math.floor(dist) .. " "
-                .. safeGetText("UI_POS_Delivery_Tiles")
-            W.createLabel(contentPanel, 0, y, line, BBS_GOOD)
-            y = y + lineH
+                .. W.safeGetText("UI_POS_Delivery_Tiles")
+            W.createLabel(ctx.panel, 0, ctx.y, line, C.success)
+            ctx.y = ctx.y + ctx.lineH
             shown = shown + 1
         end
     end
 
     -- Footer
-    y = y + 4
-    W.createSeparator(contentPanel, 0, y, 40, "-")
-    y = y + lineH + 4
-
-    W.createButton(contentPanel, btnX, y, btnW, btnH,
-        "[0] " .. safeGetText("UI_POS_BackPrompt"), nil,
-        function() POS_ScreenManager.goBack() end)
+    W.drawFooter(ctx)
 end
 
-function screen.destroy()
-    if POS_TerminalUI.instance and POS_TerminalUI.instance.contentPanel then
-        POS_TerminalWidgets.clearPanel(POS_TerminalUI.instance.contentPanel)
-    end
-end
+screen.destroy = POS_TerminalWidgets.defaultDestroy
 
 function screen.refresh(params)
-    -- Dynamic data — full rebuild
-    local terminal = POS_TerminalUI.instance
-    if terminal and terminal.contentPanel then
-        screen.destroy()
-        screen.create(terminal.contentPanel, params, terminal)
-    end
+    POS_TerminalWidgets.dynamicRefresh(screen, params)
 end
 
 ---------------------------------------------------------------
