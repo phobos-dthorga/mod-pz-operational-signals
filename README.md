@@ -21,16 +21,26 @@ A radio-driven procedural operations and market intelligence system for Project 
 
 ## Status
 
-**v0.9.0** — Preview release. Core systems functional: terminal UI, operations/delivery/investment missions, market intelligence engine, passive reconnaissance devices, scanner radio, VHS tape pipeline, and server-authoritative economy. Active development.
+**v0.10.0** — Preview release. Core systems functional: terminal UI, operations/delivery/investment missions, market intelligence engine, passive reconnaissance devices, scanner radio, VHS tape pipeline, server-authoritative economy, danger detection, and externalized data caches. Active development.
 
 ## Requirements
 
-| Dependency | Type | Notes |
-|------------|------|-------|
-| [PhobosLib](https://steamcommunity.com/sharedfiles/filedetails/?id=3668598865) | Required | Shared utility library (1.38.0+) |
-| AZAS Frequency Index | Required | Dynamic per-world radio frequencies |
-| [Phobos Chemistry Pathways](https://steamcommunity.com/sharedfiles/filedetails/?id=3668197831) | Optional | Cross-mod market categories |
-| Paper Trails | Optional | Street address resolution for missions |
+| Dependency | Version | Notes |
+|------------|---------|-------|
+| [PhobosLib](https://steamcommunity.com/sharedfiles/filedetails/?id=3668598865) | 1.40.0+ | Shared utility library (danger detection, weighted random, tooltips, text utils) |
+| [AZAS Frequency Index](https://steamcommunity.com/sharedfiles/filedetails/?id=3350937757) | Latest | Dynamic per-world radio frequency assignment |
+
+## Soft Dependencies
+
+These mods are **not required** but POSnet detects them at runtime and enables additional features when present.
+
+| Dependency | Integration |
+|------------|-------------|
+| [Phobos Chemistry Pathways](https://steamcommunity.com/sharedfiles/filedetails/?id=3668197831) | Cross-mod market categories (chemicals, lab equipment) |
+| [Phobos Industrial Pathology](https://steamcommunity.com/sharedfiles/filedetails/?id=3686101131) | Cross-mod specimen and pathology market data |
+| [Paper Trails](https://steamcommunity.com/sharedfiles/filedetails/?id=3646157770) | Street address resolution for mission briefings and map waypoints |
+| [Moodle Framework](https://steamcommunity.com/sharedfiles/filedetails/?id=3340065917) | Custom moodle display for intel gathering status |
+| [Dynamic Trading](https://steamcommunity.com/sharedfiles/filedetails/?id=3311230444) | Trader archetype integration for market vendor NPCs |
 
 ## Core Systems
 
@@ -50,8 +60,11 @@ Commodity market simulation with 11 categories and 18 sub-categories. 5,105 vani
 - **Data Calculator** -- compile raw data into higher-quality reports
 - **VHS-C Tapes** -- physical intelligence storage (4 quality tiers), crafting (repair, splice, improvise), review at TV stations
 
+### Safety & Intelligence Quality
+Danger detection gates intel gathering and passive recon when threats are nearby (zombies, fire, combat) via `PhobosLib.isDangerNearby()`. 5-state context menu with colour-coded status. Dynamic note tooltips show observed items and prices. Journal/document system for in-game readable intelligence reports. Per-location intel cooldown prevents exploitation.
+
 ### Data Persistence
-World-scoped Global ModData for shared economy (6 containers). Tiny player-bound state (reputation, cash, watchlist, alerts). Append-only event logs with capped rolling windows to prevent save bloat.
+World-scoped Global ModData for shared economy (6 containers). Tiny player-bound state (reputation, cash, watchlist, alerts). Building/mailbox caches externalized to flat files for scalability. Append-only event logs with capped rolling windows to prevent save bloat. Auto-migration from legacy data formats.
 
 ### AZAS Frequency Index
 Dual-band registration: POSnet_Operations (amateur) and POSnet_Tactical (military). Radio must be tuned to the correct frequency. Band determines content access (amateur = Tier I-II, tactical = Tier III-IV).
@@ -103,7 +116,7 @@ git config core.hooksPath .githooks
 
 ### Bump version
 ```bash
-./scripts/bump-version.sh 0.9.0
+./scripts/bump-version.sh 0.10.0
 ```
 
 ### Run luacheck
