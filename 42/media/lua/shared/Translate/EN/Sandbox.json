@@ -222,5 +222,8 @@
     "Sandbox_POS_EnableVHSCrafting_tooltip": "When enabled, players can repair, splice, and improvise VHS tapes from scavenged materials. <BR> <BR> <INDENT:20> Default: ON",
 
     "Sandbox_POS_EnableForagingTapes": "Enable Tape Foraging",
-    "Sandbox_POS_EnableForagingTapes_tooltip": "When enabled, damaged VHS tapes and magnetic tape scraps can be found while foraging in urban areas. <BR> <BR> <INDENT:20> Default: ON"
+    "Sandbox_POS_EnableForagingTapes_tooltip": "When enabled, damaged VHS tapes and magnetic tape scraps can be found while foraging in urban areas. <BR> <BR> <INDENT:20> Default: ON",
+
+    "Sandbox_POS_IntelCooldownDays": "Intel Gathering Cooldown",
+    "Sandbox_POS_IntelCooldownDays_tooltip": "Number of in-game days before the same location can be surveyed again for market intel. <BR> <BR> <INDENT:20> Prevents repeat-farming at the same building. <BR> Approaches but does not exceed the intel freshness decay period. <BR> Range: 3-14. Default: 12"
 }

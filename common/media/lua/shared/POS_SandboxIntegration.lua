@@ -454,3 +454,11 @@ end
 function POS_Sandbox.getEnableForagingTapes()
     return PhobosLib.getSandboxVar("POS", "EnableForagingTapes", true)
 end
+
+---------------------------------------------------------------
+-- Intel gathering cooldown
+---------------------------------------------------------------
+
+function POS_Sandbox.getIntelCooldownDays()
+    return PhobosLib.getSandboxVar("POS", "IntelCooldownDays", 12)
+end

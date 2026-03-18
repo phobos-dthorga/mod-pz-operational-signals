@@ -387,5 +387,18 @@
     "UI_POS_Recon_DeviceActive": "Passive recon active",
     "UI_POS_Recon_UploadComplete": "Recon upload complete",
     "UI_POS_Recon_NoTape": "No usable VHS tape found",
-    "UI_POS_Recon_NoBattery": "Device battery depleted"
+    "UI_POS_Recon_NoBattery": "Device battery depleted",
+
+    "UI_POS_Market_GatherIntel_Ready": "Gather intel about local market conditions at this location.",
+    "UI_POS_Market_GatherIntel_Cooldown": "Intel recently gathered here. Available in",
+    "UI_POS_Market_GatherIntel_MissingItems": "Requires: pen or pencil + paper in inventory.",
+    "UI_POS_Market_GatherIntel_WrongLocation": "No recognizable commercial or institutional area nearby.",
+
+    "UI_POS_NoteTooltip_Category": "Intel Category",
+    "UI_POS_NoteTooltip_Location": "Location",
+    "UI_POS_NoteTooltip_Confidence": "Confidence",
+    "UI_POS_NoteTooltip_Price": "Price Estimate",
+    "UI_POS_NoteTooltip_Stock": "Stock Level",
+    "UI_POS_NoteTooltip_Items": "Items Observed",
+    "UI_POS_NoteTooltip_Recorded": "Recorded"
 }

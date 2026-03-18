@@ -25,6 +25,7 @@ require "PhobosLib"
 require "POS_Constants"
 require "POS_RoomCategoryMap"
 require "POS_Reputation"
+require "POS_NoteTooltip"
 require "TimedActions/ISBaseTimedAction"
 
 POS_MarketReconAction = ISBaseTimedAction:derive("POS_MarketReconAction")
@@ -191,6 +192,15 @@ function POS_MarketReconAction:perform()
         md[POS_Constants.MD_NOTE_RECORDED] = getGameTime():getNightsSurvived()
         md[POS_Constants.MD_NOTE_CONFIDENCE] = confidence
 
+        -- Record visit timestamp for cooldown
+        local sq = player:getSquare()
+        if sq then
+            local bx = math.floor(sq:getX())
+            local by = math.floor(sq:getY())
+            local visitKey = POS_Constants.INTEL_VISIT_KEY_PREFIX .. tostring(bx) .. "_" .. tostring(by)
+            player:getModData()[visitKey] = getGameTime():getNightsSurvived()
+        end
+
         -- Store item-level data from POS_ItemPool + POS_PriceEngine
         local poolSize = POS_Sandbox and POS_Sandbox.getItemSelectionPoolSize
             and POS_Sandbox.getItemSelectionPoolSize() or 3
@@ -205,6 +215,11 @@ function POS_MarketReconAction:perform()
                 end
                 md[POS_Constants.MD_NOTE_ITEMS] = table.concat(itemData, "|")
             end
+        end
+
+        -- Apply dynamic tooltip
+        if POS_NoteTooltip and POS_NoteTooltip.applyToNote then
+            POS_NoteTooltip.applyToNote(note)
         end
     end
 

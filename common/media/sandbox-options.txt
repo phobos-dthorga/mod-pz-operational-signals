@@ -857,3 +857,13 @@ option POS.EnableForagingTapes
     page = POS_Sandbox,
     translation = POS_EnableForagingTapes,
 }
+
+option POS.IntelCooldownDays
+{
+    type = integer,
+    default = 12,
+    min = 3,
+    max = 14,
+    page = POS_Sandbox,
+    translation = POS_IntelCooldownDays,
+}

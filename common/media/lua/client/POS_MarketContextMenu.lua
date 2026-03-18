@@ -83,7 +83,7 @@ end
 function POS_MarketContextMenu.onFillWorldObjectContextMenu(playerNum, context, worldobjects, test)
     if test then return end
 
-    -- Check if market system is enabled
+    -- Master toggle
     if POS_Sandbox and POS_Sandbox.getEnableMarkets and not POS_Sandbox.getEnableMarkets() then
         return
     end
@@ -91,31 +91,77 @@ function POS_MarketContextMenu.onFillWorldObjectContextMenu(playerNum, context, 
     local player = getSpecificPlayer(playerNum)
     if not player then return end
 
-    -- Check if player has required materials
-    if not hasWritingTool(player) or not hasPaper(player) then return end
-
-    -- Check if player is in a mapped building
+    -- Determine state
     local category, location = getRoomCategory(player)
-    if not category then return end
+    local hasTools = hasWritingTool(player)
+    local hasPaperItem = hasPaper(player)
 
-    -- Add context menu option
+    -- Build label
+    local baseLabel = PhobosLib.safeGetText("UI_POS_Market_GatherIntel")
     local catLabel = ""
-    local catDef = POS_MarketRegistry and POS_MarketRegistry.getCategory(category)
-    if catDef then
-        catLabel = " (" .. PhobosLib.safeGetText(catDef.labelKey) .. ")"
+    if category then
+        local catDef = POS_MarketRegistry and POS_MarketRegistry.getCategory(category)
+        if catDef then
+            catLabel = " (" .. PhobosLib.safeGetText(catDef.labelKey) .. ")"
+        end
     end
 
+    -- Determine state and tooltip
+    local state = "ready"
+    local tooltipText = ""
+    local daysLeft = 0
+
+    if not category then
+        state = "wrong_location"
+        tooltipText = PhobosLib.safeGetText("UI_POS_Market_GatherIntel_WrongLocation")
+    elseif not hasTools or not hasPaperItem then
+        state = "missing_items"
+        tooltipText = PhobosLib.safeGetText("UI_POS_Market_GatherIntel_MissingItems")
+    else
+        -- Check cooldown
+        local sq = player:getSquare()
+        if sq then
+            local bx = math.floor(sq:getX())
+            local by = math.floor(sq:getY())
+            local visitKey = POS_Constants.INTEL_VISIT_KEY_PREFIX .. tostring(bx) .. "_" .. tostring(by)
+            local lastVisitDay = player:getModData()[visitKey] or -999
+            local currentDay = getGameTime():getNightsSurvived()
+            local cooldownDays = POS_Sandbox and POS_Sandbox.getIntelCooldownDays
+                and POS_Sandbox.getIntelCooldownDays() or POS_Constants.INTEL_COOLDOWN_DAYS_DEFAULT
+            local daysSince = currentDay - lastVisitDay
+
+            if daysSince < cooldownDays then
+                state = "cooldown"
+                daysLeft = cooldownDays - daysSince
+                tooltipText = PhobosLib.safeGetText("UI_POS_Market_GatherIntel_Cooldown")
+                    .. " " .. tostring(math.ceil(daysLeft)) .. " day(s)."
+            else
+                state = "ready"
+                tooltipText = PhobosLib.safeGetText("UI_POS_Market_GatherIntel_Ready")
+            end
+        end
+    end
+
+    -- Add option (always visible)
     local option = context:addOption(
-        PhobosLib.safeGetText("UI_POS_Market_GatherIntel") .. catLabel,
+        baseLabel .. catLabel,
         worldobjects, function()
-            ISTimedActionQueue.add(
-                POS_MarketReconAction:new(player, category, location)
-            )
+            if state == "ready" then
+                ISTimedActionQueue.add(
+                    POS_MarketReconAction:new(player, category, location)
+                )
+            end
         end
     )
 
+    -- Set unavailable for non-ready states
+    if state ~= "ready" then
+        option.notAvailable = true
+    end
+
+    -- Tooltip
     local tooltip = ISWorldObjectContextMenu.addToolTip()
-    tooltip.description = PhobosLib.safeGetText("UI_POS_Market_GatherIntel_Tooltip")
+    tooltip.description = tooltipText
     option.toolTip = tooltip
 end
 

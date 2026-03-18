@@ -438,3 +438,17 @@ POS_Constants.MD_TAPE_REGION      = "POS_TapeRegion"
 POS_Constants.MD_TAPE_DURATION    = "POS_TapeDuration"
 POS_Constants.MD_TAPE_ENTRY_COUNT = "POS_TapeEntryCount"
 POS_Constants.MD_TAPE_WEAR        = "POS_TapeWear"
+
+---------------------------------------------------------------
+-- Intel gathering cooldown
+---------------------------------------------------------------
+
+POS_Constants.INTEL_COOLDOWN_DAYS_DEFAULT = 12
+POS_Constants.INTEL_VISIT_KEY_PREFIX      = "POS_IntelVisit_"
+POS_Constants.INTEL_CLEANUP_MULTIPLIER    = 2
+
+---------------------------------------------------------------
+-- VHS tape event log linking
+---------------------------------------------------------------
+
+POS_Constants.MD_TAPE_ID = "POS_TapeId"

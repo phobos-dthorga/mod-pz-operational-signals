@@ -80,24 +80,29 @@ function POS_TapeManager.recordEntry(item, entry)
     local md = PhobosLib.getModData(item)
     if not md then return false end
 
-    -- Initialize tape modData if needed
-    md[POS_Constants.MD_TAPE_ENTRY_COUNT] = (tonumber(md[POS_Constants.MD_TAPE_ENTRY_COUNT]) or 0) + 1
-
-    -- Store entries as pipe-delimited string to keep modData lean
-    local existing = md[POS_Constants.MD_TAPE_ENTRIES] or ""
-    local entryStr = tostring(entry.roomType or "unknown")
-        .. ":" .. tostring(entry.x or 0)
-        .. ":" .. tostring(entry.y or 0)
-        .. ":" .. tostring(entry.day or 0)
-        .. ":" .. tostring(entry.confidence or 50)
-
-    if existing ~= "" then
-        md[POS_Constants.MD_TAPE_ENTRIES] = existing .. "|" .. entryStr
-    else
-        md[POS_Constants.MD_TAPE_ENTRIES] = entryStr
+    -- Ensure tape has a unique ID
+    if not md[POS_Constants.MD_TAPE_ID] then
+        md[POS_Constants.MD_TAPE_ID] = "tape_" .. tostring(ZombRand(1000000000))
     end
 
-    -- Update region tracking
+    -- Increment entry count
+    md[POS_Constants.MD_TAPE_ENTRY_COUNT] = (tonumber(md[POS_Constants.MD_TAPE_ENTRY_COUNT]) or 0) + 1
+
+    -- Store full entry data in event log (not in item modData)
+    if POS_EventLog and POS_EventLog.append then
+        POS_EventLog.append(
+            "recon",                          -- system
+            "tape_entry",                     -- eventType
+            entry.roomType or "unknown",      -- entityId
+            entry.region or "",               -- regionId
+            md[POS_Constants.MD_TAPE_ID],     -- actorId (tape ID for linking)
+            0,                                -- qty
+            entry.confidence or 50,           -- priceBps (repurposed for confidence)
+            tostring(entry.x or 0) .. "," .. tostring(entry.y or 0)  -- cause (coordinates)
+        )
+    end
+
+    -- Update region tracking (summary in modData)
     if entry.region and not md[POS_Constants.MD_TAPE_REGION] then
         md[POS_Constants.MD_TAPE_REGION] = entry.region
     end
