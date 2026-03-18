@@ -1,5 +1,7 @@
 {
     "__copyright": "Copyright (c) 2026 Phobos A. D'thorga. All rights reserved.",
 
-    "PhobosOperationalSignals.PortableComputer": "Portable Computer"
+    "PhobosOperationalSignals.PortableComputer": "Portable Computer",
+    "PhobosOperationalSignals.ReconPhotograph": "Recon Photograph",
+    "PhobosOperationalSignals.FieldReport": "POSnet Field Report"
 }
