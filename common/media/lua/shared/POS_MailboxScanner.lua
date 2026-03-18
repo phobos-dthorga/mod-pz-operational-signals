@@ -16,8 +16,11 @@
 
 ---------------------------------------------------------------
 -- POS_MailboxScanner.lua
--- Scans loaded world chunks for mailbox/postbox IsoObjects
--- by matching their tile sprite names.
+-- Player-discovered mailbox cache for delivery missions.
+--
+-- Mailboxes are cached in player modData as they are discovered
+-- through right-click interaction (POS_DeliveryContextMenu).
+-- The cache persists across saves and grows as the player explores.
 --
 -- Sprite IDs sourced from Paper Trails mod research:
 --   Residential mailboxes: street_decoration_01_18..21
@@ -42,16 +45,62 @@ POS_MailboxScanner.MAILBOX_SPRITES = {
     "street_decoration_01_11",
 }
 
---- Find all mailbox objects in loaded chunks within radius of a point.
---- Delegates to PhobosLib.findWorldObjectsBySprite().
----@param centerX number World X coordinate
----@param centerY number World Y coordinate
----@param radius number  Search radius in tiles
----@return table Array of { object, x, y, z }
-function POS_MailboxScanner.findNearbyMailboxes(centerX, centerY, radius)
-    return PhobosLib.findWorldObjectsBySprite(
-        centerX, centerY, radius, POS_MailboxScanner.MAILBOX_SPRITES)
+--- ModData key for the mailbox cache.
+local CACHE_KEY = "POS_DiscoveredMailboxes"
+
+--- Minimum distance between two cached mailboxes to avoid duplicates (tiles).
+local DEDUP_RADIUS = 3
+
+---------------------------------------------------------------
+-- Cache management
+---------------------------------------------------------------
+
+--- Get the discovered mailbox cache from player modData.
+--- Each entry: { x = number, y = number }
+---@return table Array of { x, y } positions
+function POS_MailboxScanner.getCache()
+    local player = getSpecificPlayer(0)
+    if not player then return {} end
+    local md = player:getModData()
+    if not md then return {} end
+    md[CACHE_KEY] = md[CACHE_KEY] or {}
+    return md[CACHE_KEY]
 end
+
+--- Add a mailbox position to the discovery cache.
+--- Deduplicates against existing entries within DEDUP_RADIUS.
+---@param x number World X coordinate
+---@param y number World Y coordinate
+---@return boolean True if added (not a duplicate)
+function POS_MailboxScanner.addToCache(x, y)
+    local cache = POS_MailboxScanner.getCache()
+
+    -- Check for nearby duplicate
+    for _, entry in ipairs(cache) do
+        if math.abs(entry.x - x) <= DEDUP_RADIUS
+           and math.abs(entry.y - y) <= DEDUP_RADIUS then
+            return false  -- Already known
+        end
+    end
+
+    table.insert(cache, { x = x, y = y })
+
+    PhobosLib.debug("POS", "[MailboxScanner] Discovered mailbox at "
+        .. math.floor(x) .. ", " .. math.floor(y)
+        .. " (total: " .. #cache .. ")")
+
+    return true
+end
+
+--- Get total count of discovered mailboxes.
+---@return number
+function POS_MailboxScanner.getCacheCount()
+    return #POS_MailboxScanner.getCache()
+end
+
+---------------------------------------------------------------
+-- Sprite detection
+---------------------------------------------------------------
 
 --- Check if a sprite name is a mailbox sprite.
 ---@param spriteName string Sprite name to check
@@ -64,22 +113,23 @@ function POS_MailboxScanner.isMailboxSprite(spriteName)
     return false
 end
 
---- Select a valid pair of mailboxes for a delivery mission.
---- Finds mailboxes near the player and picks a pair whose
---- straight-line distance falls within the configured range.
----
---- The straight-line distance is divided by ROAD_FACTOR to
---- estimate road distance for distance constraint filtering.
----
----@param playerX number Player world X
----@param playerY number Player world Y
----@param scanRadius number Search radius in tiles
----@return table|nil { pickup={x,y}, dropoff={x,y}, straightLine=n } or nil
-function POS_MailboxScanner.selectDeliveryPair(playerX, playerY, scanRadius)
-    local mailboxes = POS_MailboxScanner.findNearbyMailboxes(
-        playerX, playerY, scanRadius)
+---------------------------------------------------------------
+-- Pair selection (from cache)
+---------------------------------------------------------------
 
-    if #mailboxes < 2 then return nil end
+--- Select a valid pair of mailboxes for a delivery mission.
+--- Uses the player-discovered cache rather than scanning loaded chunks.
+---
+---@return table|nil { pickup={x,y}, dropoff={x,y}, straightLine=n } or nil
+function POS_MailboxScanner.selectDeliveryPair()
+    local cache = POS_MailboxScanner.getCache()
+
+    if #cache < 2 then
+        PhobosLib.debug("POS",
+            "[MailboxScanner] Not enough discovered mailboxes ("
+            .. #cache .. "), need at least 2")
+        return nil
+    end
 
     local roadFactor = POS_Sandbox and POS_Sandbox.getDeliveryRoadFactor
         and POS_Sandbox.getDeliveryRoadFactor() or 1.3
@@ -92,11 +142,11 @@ function POS_MailboxScanner.selectDeliveryPair(playerX, playerY, scanRadius)
     local minStraight = minRoad / roadFactor
     local maxStraight = maxRoad / roadFactor
 
-    -- Try random pairs (up to 50 attempts) to find a valid distance
-    local attempts = math.min(50, #mailboxes * (#mailboxes - 1))
+    -- Try random pairs (up to 100 attempts) for ideal distance
+    local attempts = math.min(100, #cache * (#cache - 1))
     for _ = 1, attempts do
-        local a = mailboxes[ZombRand(#mailboxes) + 1]
-        local b = mailboxes[ZombRand(#mailboxes) + 1]
+        local a = cache[ZombRand(#cache) + 1]
+        local b = cache[ZombRand(#cache) + 1]
 
         if a ~= b then
             local dist = PhobosLib.euclideanDistance(a.x, a.y, b.x, b.y)
@@ -110,28 +160,35 @@ function POS_MailboxScanner.selectDeliveryPair(playerX, playerY, scanRadius)
         end
     end
 
-    -- Fallback: pick the pair closest to target range midpoint
-    local targetStraight = (minStraight + maxStraight) / 2
+    -- Fallback: pick the best pair from whatever we have.
+    -- Prefer the longest distance available (more interesting missions).
     local bestPair = nil
-    local bestDelta = math.huge
+    local bestDist = 0
 
-    for i = 1, #mailboxes do
-        for j = i + 1, math.min(i + 20, #mailboxes) do
+    -- Sample pairs (limit iterations for large caches)
+    local maxI = math.min(#cache, 50)
+    for i = 1, maxI do
+        for j = i + 1, math.min(i + 30, #cache) do
             local dist = PhobosLib.euclideanDistance(
-                mailboxes[i].x, mailboxes[i].y,
-                mailboxes[j].x, mailboxes[j].y)
-            if dist >= minStraight * 0.7 then
-                local delta = math.abs(dist - targetStraight)
-                if delta < bestDelta then
-                    bestDelta = delta
-                    bestPair = {
-                        pickup = { x = mailboxes[i].x, y = mailboxes[i].y },
-                        dropoff = { x = mailboxes[j].x, y = mailboxes[j].y },
-                        straightLine = dist,
-                    }
-                end
+                cache[i].x, cache[i].y,
+                cache[j].x, cache[j].y)
+            -- Accept any pair with at least 20 tiles separation
+            if dist > bestDist and dist >= 20 then
+                bestDist = dist
+                bestPair = {
+                    pickup = { x = cache[i].x, y = cache[i].y },
+                    dropoff = { x = cache[j].x, y = cache[j].y },
+                    straightLine = dist,
+                }
             end
         end
+    end
+
+    if bestPair then
+        PhobosLib.debug("POS",
+            "[MailboxScanner] Fallback pair: "
+            .. math.floor(bestPair.straightLine) .. " tiles (target: "
+            .. math.floor(minStraight) .. "-" .. math.floor(maxStraight) .. ")")
     end
 
     return bestPair

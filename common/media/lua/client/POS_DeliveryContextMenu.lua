@@ -180,6 +180,9 @@ local function onFillWorldObjectContextMenu(playerIndex, context, worldObjects)
 
     if not mailboxX then return end  -- Not a mailbox
 
+    -- Auto-discover: cache this mailbox position for future deliveries
+    POS_MailboxScanner.addToCache(mailboxX, mailboxY)
+
     -- Check for active delivery
     local delivery = getActiveDelivery()
     if not delivery then return end
@@ -209,3 +212,29 @@ local function onFillWorldObjectContextMenu(playerIndex, context, worldObjects)
 end
 
 Events.OnFillWorldObjectContextMenu.Add(onFillWorldObjectContextMenu)
+
+---------------------------------------------------------------
+-- Passive mailbox discovery — scan nearby area periodically
+---------------------------------------------------------------
+
+--- Scan a small radius around the player for mailboxes and cache them.
+--- Runs every in-game minute to passively build the discovery cache.
+local function onPassiveMailboxScan()
+    if not POS_Sandbox or not POS_Sandbox.isDeliveryEnabled() then return end
+
+    local player = getSpecificPlayer(0)
+    if not player then return end
+
+    local px = math.floor(player:getX())
+    local py = math.floor(player:getY())
+
+    -- Scan a small 30-tile radius (cheap, loaded chunks only)
+    local found = PhobosLib.findWorldObjectsBySprite(
+        px, py, 30, POS_MailboxScanner.MAILBOX_SPRITES)
+
+    for _, entry in ipairs(found) do
+        POS_MailboxScanner.addToCache(entry.x, entry.y)
+    end
+end
+
+Events.EveryOneMinute.Add(onPassiveMailboxScan)

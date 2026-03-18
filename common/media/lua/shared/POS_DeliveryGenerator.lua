@@ -33,9 +33,6 @@ POS_DeliveryGenerator = POS_DeliveryGenerator or {}
 local MIN_REWARD = 1000
 local MAX_REWARD = 2500
 
---- Default scan radius for finding mailboxes (tiles).
-local DEFAULT_SCAN_RADIUS = 800
-
 --- Calculate reward from road distance (linear interpolation).
 --- Called at accept time with estimated distance, and again at
 --- completion with actual PathTracker distance.
@@ -56,17 +53,14 @@ function POS_DeliveryGenerator.calculateReward(roadDistance)
 end
 
 --- Generate a delivery operation for a player.
---- Scans for mailbox pairs in loaded chunks near the player,
---- selects a valid pair, and creates an operation table.
----@param player any IsoPlayer
+--- Selects a mailbox pair from the player-discovered cache
+--- and creates an operation table with distance-based reward.
+---@param player any IsoPlayer (unused — cache is player-specific)
 ---@return table|nil Operation table, or nil if no valid pair found
 function POS_DeliveryGenerator.generate(player)
     if not player then return nil end
 
-    local px = player:getX()
-    local py = player:getY()
-    local pair = POS_MailboxScanner.selectDeliveryPair(
-        px, py, DEFAULT_SCAN_RADIUS)
+    local pair = POS_MailboxScanner.selectDeliveryPair()
 
     if not pair then
         PhobosLib.debug("POS", "[DeliveryGen] No valid mailbox pair found")

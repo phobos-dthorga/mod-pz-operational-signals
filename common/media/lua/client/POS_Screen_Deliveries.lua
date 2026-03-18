@@ -199,8 +199,19 @@ function screen.create(contentPanel, _params, _terminal)
         local available = getAvailableDeliveries()
 
         if #available == 0 then
-            W.createLabel(contentPanel, 8, y,
-                safeGetText("UI_POS_Delivery_NoAvailable"), C.dim)
+            local cacheCount = POS_MailboxScanner
+                and POS_MailboxScanner.getCacheCount() or 0
+            if cacheCount < 2 then
+                W.createLabel(contentPanel, 8, y,
+                    safeGetText("UI_POS_Delivery_NeedMailboxes"), C.dim)
+                y = y + lineH
+                W.createLabel(contentPanel, 8, y,
+                    safeGetText("UI_POS_Delivery_MailboxCount",
+                        tostring(cacheCount)), C.dim)
+            else
+                W.createLabel(contentPanel, 8, y,
+                    safeGetText("UI_POS_Delivery_NoAvailable"), C.dim)
+            end
             y = y + lineH
         else
             for i, op in ipairs(available) do

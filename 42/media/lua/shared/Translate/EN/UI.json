@@ -121,5 +121,7 @@
     "UI_POS_Delivery_Expired": "Delivery expired.",
     "UI_POS_Delivery_NoItem": "You don't have the package.",
     "UI_POS_Delivery_Tiles": "tiles",
-    "UI_POS_Delivery_ExpiresIn": "Expires in %1 days"
+    "UI_POS_Delivery_ExpiresIn": "Expires in %1 days",
+    "UI_POS_Delivery_NeedMailboxes": "Explore the world to discover mailboxes first.",
+    "UI_POS_Delivery_MailboxCount": "Mailboxes discovered: %1 (need at least 2)"
 }
