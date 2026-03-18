@@ -640,3 +640,43 @@ survival-critical market data more available to players.
 Terminal screens allow filtering by sub-category (e.g., "Rifle Ammo" within
 "Ammunition"). This adds one navigation level but keeps screens uncluttered
 with 4-5 sub-categories per parent, paginated if needed.
+
+---
+
+## 11. Passive Recon Device Rules
+
+### 11.1 Device Equip Requirement
+
+Passive scanning only activates when a device is equipped in the appropriate slot.
+Merely carrying the device in inventory provides a confidence bonus to manual
+note-taking but does NOT trigger passive scanning.
+
+| Device | Equip Slot | Passive Scan | Carry Bonus |
+|--------|-----------|--------------|-------------|
+| Recon Camcorder | Secondary hand | Yes | +15% confidence |
+| Field Survey Logger | Belt/holster | Yes | +10% confidence |
+| Data Calculator | N/A | N/A | +5% confidence |
+| Vanilla Radio | N/A (must be ON) | Yes | N/A |
+
+### 11.2 VHS Tape Rules
+
+- Tapes are the primary storage medium for passive recon data
+- Each tape has a fixed capacity (20/15/8/4 entries by quality tier)
+- Tapes degrade with each upload-and-erase cycle (sandbox-configurable rate)
+- Tapes become "Worn" when degradation reaches 100% and must be recycled
+- VHS tapes CANNOT be used with the Data Calculator (user requirement)
+- Minimum continuous operation: 3 in-game days per tape (sandbox-configurable)
+
+### 11.3 Performance Rules
+
+- Passive scanning runs on EveryOneMinute (NOT EveryTick)
+- Only one device scans per minute cycle (staggered if multiple equipped)
+- Buildings already on current tape are skipped (deduplication)
+- Chunk-based detection avoids scanning stationary players repeatedly
+
+### 11.4 Scanner Radio Specifics
+
+- NOT a new item -- vanilla radios gain passive scanning via POSnet
+- Radio MUST be powered on (consuming battery) to scan
+- Uses existing AZAS frequency system and POS_RadioPower inverse square law
+- Generates rumors, distress calls, supply sightings (lower confidence than field devices)
