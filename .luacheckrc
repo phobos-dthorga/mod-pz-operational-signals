@@ -53,6 +53,9 @@ globals = {
     "POS_RewardCalculator",
     "POS_BuildingCache",
     "POS_ReconGenerator",
+    "POS_ReconScanner",
+    "POS_CraftCallbacks",
+    "POS_MapMarkers",
 }
 
 read_globals = {

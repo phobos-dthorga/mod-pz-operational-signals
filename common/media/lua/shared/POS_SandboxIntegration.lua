@@ -157,3 +157,11 @@ end
 function POS_Sandbox.getInvestmentRepPerHundred()
     return PhobosLib.getSandboxVar("POS", "InvestmentRepPerHundred", 10)
 end
+
+function POS_Sandbox.getWritingDamageChance()
+    return PhobosLib.getSandboxVar("POS", "WritingDamageChance", 20)
+end
+
+function POS_Sandbox.getWritingDamageAmount()
+    return PhobosLib.getSandboxVar("POS", "WritingDamageAmount", 7)
+end

@@ -28,6 +28,7 @@ require "POS_Reputation"
 require "POS_ReconGenerator"
 require "POS_RewardCalculator"
 require "POS_BuildingCache"
+require "POS_MapMarkers"
 
 local function safeGetText(key, ...)
     local ok, result = pcall(getText, key, ...)
@@ -162,11 +163,19 @@ function screen.create(contentPanel, _params, _terminal)
             .. math.floor(obj.targetBuildingY), C.text)
         y = y + lineH
 
+        -- Multi-step status
+        local status
+        if obj.notesWritten then
+            status = safeGetText("UI_POS_Ops_Status_ReturnToTerminal")
+        elseif obj.photographed then
+            status = safeGetText("UI_POS_Ops_Status_NotesNeeded")
+        elseif obj.entered then
+            status = safeGetText("UI_POS_Ops_Status_Photographed")
+        else
+            status = safeGetText("UI_POS_Ops_Status_Pending")
+        end
         W.createLabel(contentPanel, 8, y,
-            "  " .. safeGetText("UI_POS_Ops_Status") .. ": "
-            .. (obj.entered
-                and safeGetText("UI_POS_Ops_Status_Entered")
-                or safeGetText("UI_POS_Ops_Status_Pending")), C.text)
+            "  " .. safeGetText("UI_POS_Ops_Status") .. ": " .. status, C.text)
         y = y + lineH
 
         W.createLabel(contentPanel, 8, y,
@@ -178,6 +187,87 @@ function screen.create(contentPanel, _params, _terminal)
             "  " .. safeGetText("UI_POS_Ops_Reputation") .. ": +"
             .. POS_RewardCalculator.scaleReputation(active.baseReputation or 0), C.dim)
         y = y + lineH
+
+        -- Turn In Report button — shown when player has matching FieldReport
+        if obj.notesWritten then
+            local hasReport = false
+            local player2 = getSpecificPlayer(0)
+            if player2 then
+                local inv = player2:getInventory()
+                if inv then
+                    pcall(function()
+                        local items = inv:getItemsFromFullType("PhobosOperationalSignals.FieldReport")
+                        if items then
+                            for i = 0, items:size() - 1 do
+                                local item = items:get(i)
+                                local md = item:getModData()
+                                if md and md.POS_OperationId == active.id then
+                                    hasReport = true
+                                end
+                            end
+                        end
+                    end)
+                end
+            end
+
+            if hasReport then
+                y = y + 4
+                local activeId = active.id
+                local activeReward = active.scaledReward or 0
+                local activeRep = active.baseReputation or 0
+                W.createButton(contentPanel, btnX, y, btnW, btnH,
+                    safeGetText("UI_POS_Ops_TurnIn"), nil,
+                    function()
+                        local p = getSpecificPlayer(0)
+                        if not p then return end
+
+                        -- Remove the FieldReport from inventory
+                        local pInv = p:getInventory()
+                        if pInv then
+                            pcall(function()
+                                local reportItems = pInv:getItemsFromFullType(
+                                    "PhobosOperationalSignals.FieldReport")
+                                if reportItems then
+                                    for i = 0, reportItems:size() - 1 do
+                                        local rItem = reportItems:get(i)
+                                        local rMd = rItem:getModData()
+                                        if rMd and rMd.POS_OperationId == activeId then
+                                            pInv:Remove(rItem)
+                                            break
+                                        end
+                                    end
+                                end
+                            end)
+                        end
+
+                        -- Pay reward and grant reputation
+                        POS_RewardCalculator.payReward(p, activeReward, activeRep)
+
+                        -- Remove map marker
+                        if POS_MapMarkers then
+                            POS_MapMarkers.removeMarker(activeId)
+                        end
+
+                        -- Complete the operation
+                        if POS_OperationLog then
+                            local op = POS_OperationLog.get(activeId)
+                            if op and op.objectives and op.objectives[1] then
+                                op.objectives[1].completed = true
+                            end
+                            -- Note: don't call completeOperation() here as it would
+                            -- double-pay. Just set status directly.
+                            if op then op.status = "completed" end
+                        end
+
+                        p:Say(safeGetText("UI_POS_Ops_TurnInComplete",
+                            tostring(activeReward),
+                            tostring(POS_RewardCalculator.scaleReputation(activeRep))))
+
+                        POS_ScreenManager.markDirty()
+                    end)
+                y = y + btnH + 4
+            end
+        end
 
         y = y + 4
     else
@@ -216,6 +306,10 @@ function screen.create(contentPanel, _params, _terminal)
                             local operation = POS_OperationLog.get(opId)
                             if operation then
                                 operation.status = "active"
+                                -- Place waypoint on world map
+                                if POS_MapMarkers then
+                                    POS_MapMarkers.placeMarker(operation)
+                                end
                                 POS_ScreenManager.markDirty()
                             end
                         end

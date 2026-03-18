@@ -176,5 +176,20 @@
     "UI_POS_Recon_Mall": "Mall Interior Mapping",
     "UI_POS_Recon_Mall_Desc": "Record commercial density and salvage potential.",
     "UI_POS_Recon_Military": "Military Checkpoint Survey",
-    "UI_POS_Recon_Military_Desc": "Identify weapons caches and tactical supplies."
+    "UI_POS_Recon_Military_Desc": "Identify weapons caches and tactical supplies.",
+
+    "UI_POS_Ops_TurnIn": "Turn In Report",
+    "UI_POS_Ops_TurnInComplete": "Report submitted. Reward: $%1, Rep: +%2",
+    "UI_POS_Ops_TargetLocated": "Target located.",
+    "UI_POS_Ops_PhotoCaptured": "Photograph captured.",
+    "UI_POS_Ops_NeedCamera": "You need a camera to photograph the target.",
+    "UI_POS_Ops_PenDamaged": "Your writing implement shows wear.",
+    "UI_POS_Ops_Status_Photographed": "Take photograph (need camera)",
+    "UI_POS_Ops_Status_NotesNeeded": "Craft field report",
+    "UI_POS_Ops_Status_ReturnToTerminal": "Return to terminal",
+
+    "Tooltip_POS_ReconPhotograph": "A photograph of a POSnet reconnaissance target. <BR> Combine with paper and a pen to write field notes.",
+    "Tooltip_POS_FieldReport": "Handwritten field observations for a POSnet operation. <BR> Return to a terminal to submit.",
+    "DisplayName_POS_ReconPhotograph": "Recon Photograph",
+    "DisplayName_POS_FieldReport": "POSnet Field Report"
 }

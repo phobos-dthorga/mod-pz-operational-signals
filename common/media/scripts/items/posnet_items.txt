@@ -11,4 +11,22 @@ module PhobosOperationalSignals {
         Tags = Electronic,
     }
 
+    item ReconPhotograph {
+        DisplayCategory = Junk,
+        DisplayName = Recon Photograph,
+        ItemType = base:normal,
+        Weight = 0.05,
+        Icon = Item_POS_ReconPhotograph,
+        Tooltip = Tooltip_POS_ReconPhotograph,
+    }
+
+    item FieldReport {
+        DisplayCategory = Literature,
+        DisplayName = POSnet Field Report,
+        ItemType = base:normal,
+        Weight = 0.1,
+        Icon = Notebook,
+        Tooltip = Tooltip_POS_FieldReport,
+    }
+
 }

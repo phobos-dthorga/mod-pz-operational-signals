@@ -1,0 +1,20 @@
+module PhobosOperationalSignals {
+
+    craftRecipe CraftFieldReport
+    {
+        -- Inputs
+        item 1 PhobosOperationalSignals.ReconPhotograph,
+        item 1 [Base.SheetPaper2;Base.Notebook],
+        item keep 1 [Base.Pen;Base.Pencil;Base.RedPen;Base.BluePen;Base.GreenPen],
+
+        -- Output
+        result PhobosOperationalSignals.FieldReport 1,
+
+        -- Properties
+        time 300,
+        category PhobosFieldOps,
+        needToBeLearn false,
+        OnCreate POS_CraftCallbacks.onCreateFieldReport,
+    }
+
+}

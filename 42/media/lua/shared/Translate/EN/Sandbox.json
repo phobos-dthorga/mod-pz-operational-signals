@@ -63,5 +63,10 @@
     "Sandbox_POS_ExpiryReputationPenalty": "Operation Expiry Penalty",
     "Sandbox_POS_ExpiryReputationPenalty_tooltip": "Reputation lost when an accepted operation expires. <BR> <BR> <INDENT:20> Set to 0 to disable expiry penalties. <BR> Range: 0–100. Default: 25",
     "Sandbox_POS_InvestmentRepPerHundred": "Investment Rep per $100",
-    "Sandbox_POS_InvestmentRepPerHundred_tooltip": "Reputation gained per $100 invested when an investment matures successfully. <BR> <BR> <INDENT:20> Defaulted investments apply a minor negative equivalent. <BR> Range: 0–50. Default: 10"
+    "Sandbox_POS_InvestmentRepPerHundred_tooltip": "Reputation gained per $100 invested when an investment matures successfully. <BR> <BR> <INDENT:20> Defaulted investments apply a minor negative equivalent. <BR> Range: 0–50. Default: 10",
+
+    "Sandbox_POS_WritingDamageChance": "Writing Damage Chance (%)",
+    "Sandbox_POS_WritingDamageChance_tooltip": "Percentage chance that a pen or pencil takes condition damage when crafting field reports. <BR> <BR> <INDENT:20> Set to 0 to disable writing implement wear. <BR> Range: 0–100. Default: 20",
+    "Sandbox_POS_WritingDamageAmount": "Writing Damage Amount",
+    "Sandbox_POS_WritingDamageAmount_tooltip": "Average condition loss per damage event on writing implements. <BR> <BR> <INDENT:20> Actual loss varies ±2 around this value. <BR> Range: 1–20. Default: 7"
 }
