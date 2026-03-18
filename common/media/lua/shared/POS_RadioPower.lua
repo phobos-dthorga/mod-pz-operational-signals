@@ -78,12 +78,17 @@ function POS_RadioPower.getRewardMultiplier(signalStrength)
     return 0.5 + 0.5 * clamped
 end
 
+--- Signal quality thresholds.
+local SIGNAL_EXCELLENT = 0.8
+local SIGNAL_GOOD = 0.5
+local SIGNAL_WEAK = 0.25
+
 --- Get a translation key describing signal quality.
 ---@param signalStrength number 0.0 to 1.0
 ---@return string translationKey
 function POS_RadioPower.getQualityKey(signalStrength)
-    if signalStrength >= 0.8 then return "UI_POS_Signal_Excellent" end
-    if signalStrength >= 0.5 then return "UI_POS_Signal_Good" end
-    if signalStrength >= 0.25 then return "UI_POS_Signal_Weak" end
+    if signalStrength >= SIGNAL_EXCELLENT then return "UI_POS_Signal_Excellent" end
+    if signalStrength >= SIGNAL_GOOD then return "UI_POS_Signal_Good" end
+    if signalStrength >= SIGNAL_WEAK then return "UI_POS_Signal_Weak" end
     return "UI_POS_Signal_Critical"
 end

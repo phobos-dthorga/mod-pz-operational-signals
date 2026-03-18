@@ -22,6 +22,7 @@
 ---------------------------------------------------------------
 
 require "PhobosLib"
+require "POS_Constants"
 require "POS_ScreenManager"
 require "POS_TerminalWidgets"
 require "POS_Reputation"
@@ -132,7 +133,7 @@ end
 ---------------------------------------------------------------
 
 local screen = {}
-screen.id = "OPERATIONS"
+screen.id = POS_Constants.SCREEN_OPERATIONS
 
 function screen.create(contentPanel, _params, _terminal)
     local W = POS_TerminalWidgets
@@ -231,12 +232,12 @@ function screen.create(contentPanel, _params, _terminal)
                 local inv = player2:getInventory()
                 if inv then
                     pcall(function()
-                        local items = inv:getItemsFromFullType("PhobosOperationalSignals.FieldReport")
+                        local items = inv:getItemsFromFullType(POS_Constants.ITEM_FIELD_REPORT)
                         if items then
                             for i = 0, items:size() - 1 do
                                 local item = items:get(i)
                                 local md = item:getModData()
-                                if md and md.POS_OperationId == active.id then
+                                if md and md[POS_Constants.MD_OPERATION_ID] == active.id then
                                     hasReport = true
                                 end
                             end
@@ -261,7 +262,7 @@ function screen.create(contentPanel, _params, _terminal)
                         if pInv then
                             pcall(function()
                                 local reportItems = pInv:getItemsFromFullType(
-                                    "PhobosOperationalSignals.FieldReport")
+                                    POS_Constants.ITEM_FIELD_REPORT)
                                 if reportItems then
                                     for i = 0, reportItems:size() - 1 do
                                         local rItem = reportItems:get(i)
@@ -370,7 +371,7 @@ function screen.create(contentPanel, _params, _terminal)
                                 and POS_Sandbox.isNegotiationEnabled
                                 and POS_Sandbox.isNegotiationEnabled()
                             if negotiateEnabled then
-                                POS_ScreenManager.navigateTo("NEGOTIATE",
+                                POS_ScreenManager.navigateTo(POS_Constants.SCREEN_NEGOTIATE,
                                     { operationId = opId })
                             else
                                 -- Direct accept (negotiation disabled)
@@ -389,7 +390,7 @@ function screen.create(contentPanel, _params, _terminal)
                     return btnH + 4
                 end,
                 onPageChange = function(newPage)
-                    POS_ScreenManager.replaceCurrent("OPERATIONS",
+                    POS_ScreenManager.replaceCurrent(POS_Constants.SCREEN_OPERATIONS,
                         { opsPage = newPage })
                 end,
             })

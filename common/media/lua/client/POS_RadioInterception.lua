@@ -24,6 +24,7 @@
 ---------------------------------------------------------------
 
 require "PhobosLib"
+require "POS_Constants"
 
 POS_RadioInterception = {}
 
@@ -86,11 +87,11 @@ end
 --- @param command string Command name
 --- @param args table Command arguments
 local function onServerCommand(module, command, args)
-    if module ~= "POS" then return end
+    if module ~= POS_Constants.CMD_MODULE then return end
 
-    if command == "NewOperation" and args and args.operationData then
+    if command == POS_Constants.CMD_NEW_OPERATION and args and args.operationData then
         POS_RadioInterception.onTransmissionReceived(args)
-    elseif command == "NewInvestment" and args and args.investmentData then
+    elseif command == POS_Constants.CMD_NEW_INVESTMENT and args and args.investmentData then
         if POS_InvestmentLog then
             local added = POS_InvestmentLog.addOpportunity(args.investmentData)
             if added then
@@ -98,7 +99,7 @@ local function onServerCommand(module, command, args)
                     .. (args.investmentData.id or "?"))
             end
         end
-    elseif command == "InvestmentResolved" and args then
+    elseif command == POS_Constants.CMD_INVESTMENT_RESOLVED and args then
         if POS_InvestmentLog then
             local record = POS_InvestmentLog.resolveInvestment(
                 args.investmentId, args.status)
@@ -115,7 +116,7 @@ local function onServerCommand(module, command, args)
                     .. (record.principalAmount or 0) .. " lost")
             end
         end
-    elseif command == "InvestmentAcknowledged" and args then
+    elseif command == POS_Constants.CMD_INVESTMENT_ACK and args then
         PhobosLib.debug("POS", "Server acknowledged investment: "
             .. (args.investmentId or "?"))
     end
@@ -125,7 +126,7 @@ end
 function POS_RadioInterception.requestOperation()
     local player = getSpecificPlayer(0)
     if player then
-        sendClientCommand(player, "POS", "RequestOperation", {})
+        sendClientCommand(player, POS_Constants.CMD_MODULE, POS_Constants.CMD_REQUEST_OPERATION, {})
     end
 end
 

@@ -59,6 +59,7 @@ globals = {
     "POS_TerminalTheme",
     "POS_AZASIntegration",
     "POS_RadioPower",
+    "POS_Constants",
 }
 
 read_globals = {

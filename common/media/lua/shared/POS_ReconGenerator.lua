@@ -31,6 +31,9 @@ require "POS_RewardCalculator"
 
 POS_ReconGenerator = POS_ReconGenerator or {}
 
+--- Maximum attempts to find a target type with a cached building.
+local MAX_TARGET_ATTEMPTS = 10
+
 ---------------------------------------------------------------
 -- Target catalogue — 16 recon targets across 4 tiers
 ---------------------------------------------------------------
@@ -219,7 +222,7 @@ function POS_ReconGenerator.generate(player)
     if #targets == 0 then return nil end
 
     -- Shuffle and try each target type until we find a cached building
-    for _ = 1, math.min(10, #targets) do
+    for _ = 1, math.min(MAX_TARGET_ATTEMPTS, #targets) do
         local target = targets[ZombRand(#targets) + 1]
 
         local buildings = POS_BuildingCache.findByAnyRoom(target.roomDefs)

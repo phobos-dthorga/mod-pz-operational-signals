@@ -27,6 +27,7 @@
 ---------------------------------------------------------------
 
 require "PhobosLib"
+require "POS_Constants"
 
 POS_InvestmentLog = {}
 
@@ -245,7 +246,7 @@ function POS_InvestmentLog.init()
     -- Request any pending payouts from server (offline resolution)
     local player = getSpecificPlayer(0)
     if player then
-        sendClientCommand(player, "POS", "RequestPendingPayouts", {})
+        sendClientCommand(player, POS_Constants.CMD_MODULE, POS_Constants.CMD_REQUEST_PAYOUTS, {})
     end
 
     PhobosLib.debug("POS", "Investment log initialised")

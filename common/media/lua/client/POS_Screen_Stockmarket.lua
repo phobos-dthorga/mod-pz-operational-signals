@@ -21,6 +21,7 @@
 ---------------------------------------------------------------
 
 require "PhobosLib"
+require "POS_Constants"
 require "POS_ScreenManager"
 require "POS_TerminalWidgets"
 
@@ -35,7 +36,7 @@ local C = POS_TerminalWidgets.COLOURS
 ---------------------------------------------------------------
 
 local screen = {}
-screen.id = "STOCKMARKET_PLACEHOLDER"
+screen.id = POS_Constants.SCREEN_STOCKMARKET
 
 function screen.create(contentPanel, _params, _terminal)
     local W = POS_TerminalWidgets

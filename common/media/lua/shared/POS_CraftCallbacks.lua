@@ -23,6 +23,7 @@
 ---------------------------------------------------------------
 
 require "PhobosLib"
+require "POS_Constants"
 
 POS_CraftCallbacks = POS_CraftCallbacks or {}
 
@@ -51,10 +52,10 @@ function POS_CraftCallbacks.onCreateFieldReport(items, result, player)
     -- Transfer operation ID from photograph modData to report
     local operationId = nil
     PhobosLib.iterateItems(items, function(item)
-        if item and item:getFullType() == "PhobosOperationalSignals.ReconPhotograph" then
+        if item and item:getFullType() == POS_Constants.ITEM_RECON_PHOTOGRAPH then
             local md = item:getModData()
-            if md and md.POS_OperationId then
-                operationId = md.POS_OperationId
+            if md and md[POS_Constants.MD_OPERATION_ID] then
+                operationId = md[POS_Constants.MD_OPERATION_ID]
             end
         end
     end)
@@ -62,7 +63,7 @@ function POS_CraftCallbacks.onCreateFieldReport(items, result, player)
     if operationId then
         local md = result:getModData()
         if md then
-            md.POS_OperationId = operationId
+            md[POS_Constants.MD_OPERATION_ID] = operationId
         end
         PhobosLib.debug("POS", "[CraftCallback] Field report created for operation: " .. operationId)
     end

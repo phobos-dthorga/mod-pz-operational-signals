@@ -39,6 +39,12 @@ local FONT_MAP = {
     [4] = UIFont.Large,
 }
 
+--- Width threshold below which font is scaled down one step.
+local FONT_SCALE_SMALL_WIDTH = 600
+
+--- Width threshold above which font is scaled up one step.
+local FONT_SCALE_LARGE_WIDTH = 900
+
 --- Get the configured terminal font.
 ---@param windowWidth number|nil Current window width for scaling (optional)
 ---@return any UIFont enum value
@@ -49,9 +55,9 @@ function POS_TerminalTheme.getFont(windowWidth)
     -- Font-to-window scaling (if enabled)
     if windowWidth and POS_Sandbox and POS_Sandbox.isFontScaleWithWindow
        and POS_Sandbox.isFontScaleWithWindow() then
-        if windowWidth < 600 then
+        if windowWidth < FONT_SCALE_SMALL_WIDTH then
             sizeIdx = math.max(1, sizeIdx - 1)
-        elseif windowWidth > 900 then
+        elseif windowWidth > FONT_SCALE_LARGE_WIDTH then
             sizeIdx = math.min(4, sizeIdx + 1)
         end
     end

@@ -44,6 +44,30 @@ function POS_Sandbox.getOperationExpiryDays()
     return PhobosLib.getSandboxVar("POS", "OperationExpiryDays", 7)
 end
 
+function POS_Sandbox.getDeliveryExpiryDays()
+    return PhobosLib.getSandboxVar("POS", "DeliveryExpiryDays", 3)
+end
+
+function POS_Sandbox.getInitialScanRadius()
+    return PhobosLib.getSandboxVar("POS", "InitialScanRadius", 250)
+end
+
+function POS_Sandbox.getPassiveScanRadius()
+    return PhobosLib.getSandboxVar("POS", "PassiveScanRadius", 50)
+end
+
+--- Returns variance as float (sandbox stores as integer 0-30 %).
+function POS_Sandbox.getInvestmentReturnVariance()
+    local pct = PhobosLib.getSandboxVar("POS", "InvestmentReturnVariance", 10)
+    return pct / 100
+end
+
+--- Returns min return as float (sandbox stores as integer 100-150 %).
+function POS_Sandbox.getInvestmentMinReturnPct()
+    local pct = PhobosLib.getSandboxVar("POS", "InvestmentMinReturnPct", 110)
+    return pct / 100
+end
+
 --- POSnet frequency — now delegated to AZAS integration.
 --- Returns the operations band frequency (backward compat).
 function POS_Sandbox.getPOSnetFrequency()

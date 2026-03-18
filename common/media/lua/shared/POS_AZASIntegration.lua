@@ -25,6 +25,7 @@
 ---------------------------------------------------------------
 
 require "PhobosLib"
+require "POS_Constants"
 
 POS_AZASIntegration = {}
 
@@ -34,18 +35,18 @@ POS_AZASIntegration = {}
 
 AZAS_STATIONS = AZAS_STATIONS or {}
 
-AZAS_STATIONS["POSnet_Operations"] = {
-    id           = "POSnet_Operations",
+AZAS_STATIONS[POS_Constants.AZAS_OPS_KEY] = {
+    id           = POS_Constants.AZAS_OPS_KEY,
     name         = "POSnet Operations Network",
     device_type  = "amateur",
-    frequency_request = 130000,
+    frequency_request = POS_Constants.AZAS_DEFAULT_OPS_FREQ,
 }
 
-AZAS_STATIONS["POSnet_Tactical"] = {
-    id           = "POSnet_Tactical",
+AZAS_STATIONS[POS_Constants.AZAS_TAC_KEY] = {
+    id           = POS_Constants.AZAS_TAC_KEY,
     name         = "POSnet Tactical Network",
     device_type  = "military",
-    frequency_request = 155000,
+    frequency_request = POS_Constants.AZAS_DEFAULT_TAC_FREQ,
 }
 
 PhobosLib.debug("POS", "[AZAS] Registered POSnet_Operations (amateur, req 130.0 kHz)"
@@ -64,13 +65,13 @@ function POS_AZASIntegration.getOperationsFrequency()
     if cachedOpsFreq then return cachedOpsFreq end
     if AZAS_FrequencyIndex and AZAS_FrequencyIndex.assignFrequency then
         local freq = AZAS_FrequencyIndex.assignFrequency(
-            "POSnet_Operations", "amateur", 130000)
+            POS_Constants.AZAS_OPS_KEY, "amateur", POS_Constants.AZAS_DEFAULT_OPS_FREQ)
         if freq then
             cachedOpsFreq = freq
             return freq
         end
     end
-    return 130000
+    return POS_Constants.AZAS_DEFAULT_OPS_FREQ
 end
 
 --- Get the AZAS-assigned frequency for the Tactical (military) station.
@@ -79,13 +80,13 @@ function POS_AZASIntegration.getTacticalFrequency()
     if cachedTacFreq then return cachedTacFreq end
     if AZAS_FrequencyIndex and AZAS_FrequencyIndex.assignFrequency then
         local freq = AZAS_FrequencyIndex.assignFrequency(
-            "POSnet_Tactical", "military", 155000)
+            POS_Constants.AZAS_TAC_KEY, "military", POS_Constants.AZAS_DEFAULT_TAC_FREQ)
         if freq then
             cachedTacFreq = freq
             return freq
         end
     end
-    return 155000
+    return POS_Constants.AZAS_DEFAULT_TAC_FREQ
 end
 
 --- Backward-compatible accessor (returns operations frequency).

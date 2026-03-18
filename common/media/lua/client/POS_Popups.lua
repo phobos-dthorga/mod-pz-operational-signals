@@ -21,6 +21,12 @@
 
 require "PhobosLib"
 
+--- Default guide popup window width.
+local GUIDE_POPUP_WIDTH = 620
+
+--- Default guide popup window height.
+local GUIDE_POPUP_HEIGHT = 500
+
 local function safeGetText(key)
     local ok, result = pcall(getText, key)
     if ok and result then return result end
@@ -29,8 +35,8 @@ end
 
 PhobosLib.registerGuidePopup("POS", {
     title = safeGetText("UI_POS_GuideTitle"),
-    width = 620,
-    height = 500,
+    width = GUIDE_POPUP_WIDTH,
+    height = GUIDE_POPUP_HEIGHT,
     buildContent = function()
         local lines = {}
         table.insert(lines, " <RGB:0.3,1.0,0.3> " .. safeGetText("UI_POS_GuideTitle"))

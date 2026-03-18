@@ -29,6 +29,7 @@
 ---------------------------------------------------------------
 
 require "PhobosLib"
+require "POS_Constants"
 
 POS_BroadcastSystem = {}
 
@@ -40,6 +41,9 @@ local lastInvestmentBroadcastTime = 0
 
 --- Whether the broadcast system is active.
 local systemActive = false
+
+--- Delay in game-minutes before the first investment broadcast fires.
+local FIRST_INVESTMENT_DELAY_MINS = 5
 
 --- Start the broadcast system.
 function POS_BroadcastSystem.start()
@@ -54,7 +58,7 @@ function POS_BroadcastSystem.start()
     -- Offset investment timer so the first broadcast fires after ~5 game-minutes
     -- instead of the full interval (default 60 min), improving first-time experience.
     local invIntervalMs = POS_Sandbox.getInvestmentBroadcastMins() * 60 * 1000
-    local firstInvDelayMs = 5 * 60 * 1000  -- 5 game-minutes
+    local firstInvDelayMs = FIRST_INVESTMENT_DELAY_MINS * 60 * 1000
     lastInvestmentBroadcastTime = now - invIntervalMs + firstInvDelayMs
     PhobosLib.debug("POS", "Broadcast system started (interval: "
         .. POS_Sandbox.getBroadcastIntervalMinutes() .. " min)")
@@ -84,7 +88,7 @@ function POS_BroadcastSystem.broadcast()
     end
 
     -- Broadcast to all clients via server command
-    sendServerCommand("POS", "NewOperation", {
+    sendServerCommand(POS_Constants.CMD_MODULE, POS_Constants.CMD_NEW_OPERATION, {
         operationData = operation,
     })
 
@@ -107,7 +111,7 @@ function POS_BroadcastSystem.broadcastInvestment()
     end
 
     -- Broadcast to all clients via server command
-    sendServerCommand("POS", "NewInvestment", {
+    sendServerCommand(POS_Constants.CMD_MODULE, POS_Constants.CMD_NEW_INVESTMENT, {
         investmentData = opportunity,
     })
 
@@ -150,16 +154,16 @@ end
 --- @param player IsoPlayer Sending player
 --- @param args table Command arguments
 function POS_BroadcastSystem.onClientCommand(module, command, player, args)
-    if module ~= "POS" then return end
+    if module ~= POS_Constants.CMD_MODULE then return end
 
-    if command == "RequestOperation" then
+    if command == POS_Constants.CMD_REQUEST_OPERATION then
         -- Future: allow players to request a new operation on demand
         PhobosLib.debug("POS", "Operation request from " .. (player:getUsername() or "?"))
-    elseif command == "PlayerInvested" and args then
+    elseif command == POS_Constants.CMD_PLAYER_INVESTED and args then
         if POS_InvestmentResolver then
             POS_InvestmentResolver.onPlayerInvested(player, args)
         end
-    elseif command == "RequestPendingPayouts" then
+    elseif command == POS_Constants.CMD_REQUEST_PAYOUTS then
         if POS_InvestmentResolver then
             POS_InvestmentResolver.onRequestPendingPayouts(player)
         end

@@ -25,6 +25,7 @@
 ---------------------------------------------------------------
 
 require "PhobosLib"
+require "POS_Constants"
 require "POS_ScreenManager"
 require "POS_TerminalWidgets"
 
@@ -141,7 +142,7 @@ local function performInvestment(oppId, amount, returnAmount)
     POS_InvestmentLog.markOpportunityFunded(opp.id)
 
     -- Notify server for resolution tracking
-    sendClientCommand(player, "POS", "PlayerInvested", {
+    sendClientCommand(player, POS_Constants.CMD_MODULE, POS_Constants.CMD_PLAYER_INVESTED, {
         investmentId = opp.id,
         principalAmount = amount,
         returnAmount = returnAmount,
@@ -160,7 +161,7 @@ end
 ---------------------------------------------------------------
 
 local screen = {}
-screen.id = "BBS_POST_VIEW"
+screen.id = POS_Constants.SCREEN_BBS_POST
 
 function screen.create(contentPanel, params, _terminal)
     local W = POS_TerminalWidgets

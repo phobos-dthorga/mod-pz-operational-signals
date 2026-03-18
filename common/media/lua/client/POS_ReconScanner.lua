@@ -24,11 +24,15 @@
 ---------------------------------------------------------------
 
 require "PhobosLib"
+require "POS_Constants"
 
 POS_ReconScanner = POS_ReconScanner or {}
 
 --- Scan interval in ticks (~3 seconds at 30 FPS).
 local SCAN_INTERVAL = 90
+
+--- Distance threshold for considering a player "at" the target building (tiles).
+local ROOM_ENTRY_THRESHOLD = 100
 
 --- Tick counter.
 local tickCounter = 0
@@ -69,7 +73,7 @@ local function isInTargetRoom(player, objective)
             local px, py = player:getX(), player:getY()
             local bx = objective.targetBuildingX or 0
             local by = objective.targetBuildingY or 0
-            if math.abs(px - bx) + math.abs(py - by) < 100 then
+            if math.abs(px - bx) + math.abs(py - by) < ROOM_ENTRY_THRESHOLD then
                 return true
             end
         end
@@ -105,11 +109,11 @@ local function pushPhotograph(player, operationId)
     local inv = player:getInventory()
     if not inv then return end
 
-    local photo = inv:AddItem("PhobosOperationalSignals.ReconPhotograph")
+    local photo = inv:AddItem(POS_Constants.ITEM_RECON_PHOTOGRAPH)
     if photo then
         local md = photo:getModData()
         if md then
-            md.POS_OperationId = operationId
+            md[POS_Constants.MD_OPERATION_ID] = operationId
         end
     end
 end

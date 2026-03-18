@@ -25,6 +25,7 @@
 ---------------------------------------------------------------
 
 require "PhobosLib"
+require "POS_Constants"
 require "POS_ScreenManager"
 require "POS_TerminalWidgets"
 require "POS_Reputation"
@@ -75,7 +76,7 @@ end
 ---------------------------------------------------------------
 
 local screen = {}
-screen.id = "NEGOTIATE"
+screen.id = POS_Constants.SCREEN_NEGOTIATE
 
 function screen.create(contentPanel, params, _terminal)
     local W = POS_TerminalWidgets
@@ -238,10 +239,10 @@ function screen.create(contentPanel, params, _terminal)
                         op.expiryDay = op.expiryDay - 1
                     end
                     op.negotiated = true
-                    POS_ScreenManager.replaceCurrent("NEGOTIATE",
+                    POS_ScreenManager.replaceCurrent(POS_Constants.SCREEN_NEGOTIATE,
                         { operationId = opId, lastResult = "success" })
                 else
-                    POS_ScreenManager.replaceCurrent("NEGOTIATE",
+                    POS_ScreenManager.replaceCurrent(POS_Constants.SCREEN_NEGOTIATE,
                         { operationId = opId, lastResult = "failed" })
                 end
             end)
@@ -264,10 +265,10 @@ function screen.create(contentPanel, params, _terminal)
                         op.expiryDay = op.expiryDay + 2
                     end
                     op.negotiated = true
-                    POS_ScreenManager.replaceCurrent("NEGOTIATE",
+                    POS_ScreenManager.replaceCurrent(POS_Constants.SCREEN_NEGOTIATE,
                         { operationId = opId, lastResult = "success" })
                 else
-                    POS_ScreenManager.replaceCurrent("NEGOTIATE",
+                    POS_ScreenManager.replaceCurrent(POS_Constants.SCREEN_NEGOTIATE,
                         { operationId = opId, lastResult = "failed" })
                 end
             end)

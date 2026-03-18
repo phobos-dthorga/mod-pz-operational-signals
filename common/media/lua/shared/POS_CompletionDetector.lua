@@ -118,6 +118,9 @@ end)
 -- and reads notesWritten flag (set by craft callback).
 -- Completion is NOT automatic — player must turn in at terminal.
 ---------------------------------------------------------------
+--- Distance threshold for considering a player "at" the target building (tiles).
+local ROOM_ENTRY_THRESHOLD = 100
+
 POS_CompletionDetector.registerChecker("recon", function(player, obj)
     if obj.completed then return true end
     if not obj.targetRoomDefs or not obj.targetBuildingX then return false end
@@ -131,7 +134,7 @@ POS_CompletionDetector.registerChecker("recon", function(player, obj)
                     local bx, by = obj.targetBuildingX, obj.targetBuildingY
                     local px, py = player:getX(), player:getY()
                     local dist = math.abs(px - bx) + math.abs(py - by)
-                    if dist < 100 then
+                    if dist < ROOM_ENTRY_THRESHOLD then
                         obj.entered = true
                         -- Notification handled by POS_ReconScanner
                     end

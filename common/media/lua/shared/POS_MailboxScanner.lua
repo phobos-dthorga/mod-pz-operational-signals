@@ -51,6 +51,24 @@ local CACHE_KEY = "POS_DiscoveredMailboxes"
 --- Minimum distance between two cached mailboxes to avoid duplicates (tiles).
 local DEDUP_RADIUS = 3
 
+--- Scan radius for the one-time initial mailbox scan (tiles).
+local INITIAL_SCAN_RADIUS = 250
+
+--- Maximum random pair attempts for ideal-distance matching.
+local MAX_PAIR_ATTEMPTS = 100
+
+--- Maximum mailbox indices to sample in the fallback pair search.
+local MAX_CACHE_SAMPLE = 50
+
+--- Maximum inner-loop range when checking pairs in the fallback search.
+local MAX_PAIR_CHECK = 30
+
+--- Minimum separation between two mailboxes to form a valid pair (tiles).
+local MIN_PAIR_DISTANCE = 20
+
+--- ModData flag key for gating the one-time initial scan.
+local INITIAL_SCAN_FLAG = "POS_MailboxScanDone"
+
 ---------------------------------------------------------------
 -- Cache management
 ---------------------------------------------------------------
@@ -126,7 +144,7 @@ function POS_MailboxScanner.initialScan()
 
     local md = player:getModData()
     if not md then return end
-    if md.POS_MailboxScanDone then return end
+    if md[INITIAL_SCAN_FLAG] then return end
 
     if not POS_Sandbox or not POS_Sandbox.isDeliveryEnabled
        or not POS_Sandbox.isDeliveryEnabled() then return end
@@ -135,8 +153,10 @@ function POS_MailboxScanner.initialScan()
     local py = math.floor(player:getY())
 
     -- Large radius scan (loaded chunks)
+    local scanRadius = POS_Sandbox and POS_Sandbox.getInitialScanRadius
+        and POS_Sandbox.getInitialScanRadius() or INITIAL_SCAN_RADIUS
     local found = PhobosLib.findWorldObjectsBySprite(
-        px, py, 250, POS_MailboxScanner.MAILBOX_SPRITES)
+        px, py, scanRadius, POS_MailboxScanner.MAILBOX_SPRITES)
 
     local added = 0
     for _, entry in ipairs(found) do
@@ -145,7 +165,7 @@ function POS_MailboxScanner.initialScan()
         end
     end
 
-    md.POS_MailboxScanDone = true
+    md[INITIAL_SCAN_FLAG] = true
 
     PhobosLib.debug("POS", "[MailboxScanner] Initial scan complete: "
         .. added .. " new mailboxes from " .. #found .. " found")
@@ -181,7 +201,7 @@ function POS_MailboxScanner.selectDeliveryPair()
     local maxStraight = maxRoad / roadFactor
 
     -- Try random pairs (up to 100 attempts) for ideal distance
-    local attempts = math.min(100, #cache * (#cache - 1))
+    local attempts = math.min(MAX_PAIR_ATTEMPTS, #cache * (#cache - 1))
     for _ = 1, attempts do
         local a = cache[ZombRand(#cache) + 1]
         local b = cache[ZombRand(#cache) + 1]
@@ -204,14 +224,14 @@ function POS_MailboxScanner.selectDeliveryPair()
     local bestDist = 0
 
     -- Sample pairs (limit iterations for large caches)
-    local maxI = math.min(#cache, 50)
+    local maxI = math.min(#cache, MAX_CACHE_SAMPLE)
     for i = 1, maxI do
-        for j = i + 1, math.min(i + 30, #cache) do
+        for j = i + 1, math.min(i + MAX_PAIR_CHECK, #cache) do
             local dist = PhobosLib.euclideanDistance(
                 cache[i].x, cache[i].y,
                 cache[j].x, cache[j].y)
             -- Accept any pair with at least 20 tiles separation
-            if dist > bestDist and dist >= 20 then
+            if dist > bestDist and dist >= MIN_PAIR_DISTANCE then
                 bestDist = dist
                 bestPair = {
                     pickup = { x = cache[i].x, y = cache[i].y },

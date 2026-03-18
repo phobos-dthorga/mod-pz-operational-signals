@@ -31,10 +31,17 @@
 ---------------------------------------------------------------
 
 require "PhobosLib"
+require "POS_Constants"
 
 POS_InvestmentResolver = {}
 
 local PENDING_KEY = "POS_PendingResolutions"
+
+--- Precision for ZombRand-based probability rolls.
+local RESOLUTION_PRECISION = 10000
+
+--- ModData key prefix for per-player pending payouts.
+local PAYOUT_KEY_PREFIX = "POS_PendingPayouts_"
 
 ---------------------------------------------------------------
 -- World modData accessors
@@ -54,7 +61,7 @@ end
 ---@param username string Player username
 ---@return table Array of payout records
 local function getPendingPayouts(username)
-    local key = "POS_PendingPayouts_" .. username
+    local key = PAYOUT_KEY_PREFIX .. username
     local gmd = ModData.getOrCreate(key)
     if not gmd.entries then
         gmd.entries = {}
@@ -109,7 +116,7 @@ function POS_InvestmentResolver.resolveMatured()
         local entry = pending[i]
         if entry.status == "pending" and entry.maturityDay <= currentDay then
             -- Roll against actualRisk
-            local roll = ZombRand(10000) / 10000  -- [0, 1)
+            local roll = ZombRand(RESOLUTION_PRECISION) / RESOLUTION_PRECISION  -- [0, 1)
             local status
             local returnAmount = 0
 
@@ -134,7 +141,7 @@ function POS_InvestmentResolver.resolveMatured()
                 for j = 0, players:size() - 1 do
                     local p = players:get(j)
                     if p and p:getUsername() == entry.username then
-                        sendServerCommand(p, "POS", "InvestmentResolved", {
+                        sendServerCommand(p, POS_Constants.CMD_MODULE, POS_Constants.CMD_INVESTMENT_RESOLVED, {
                             investmentId = entry.investmentId,
                             status = status,
                             returnAmount = returnAmount,
@@ -179,12 +186,12 @@ function POS_InvestmentResolver.deliverPendingPayouts(player)
     local username = player:getUsername()
     if not username then return end
 
-    local key = "POS_PendingPayouts_" .. username
+    local key = PAYOUT_KEY_PREFIX .. username
     local gmd = ModData.getOrCreate(key)
     if not gmd.entries or #gmd.entries == 0 then return end
 
     for _, payout in ipairs(gmd.entries) do
-        sendServerCommand(player, "POS", "InvestmentResolved", {
+        sendServerCommand(player, POS_Constants.CMD_MODULE, POS_Constants.CMD_INVESTMENT_RESOLVED, {
             investmentId = payout.investmentId,
             status = payout.status,
             returnAmount = payout.returnAmount,
@@ -219,7 +226,7 @@ function POS_InvestmentResolver.onPlayerInvested(player, args)
     )
 
     -- Acknowledge back to client
-    sendServerCommand(player, "POS", "InvestmentAcknowledged", {
+    sendServerCommand(player, POS_Constants.CMD_MODULE, POS_Constants.CMD_INVESTMENT_ACK, {
         investmentId = args.investmentId,
     })
 end

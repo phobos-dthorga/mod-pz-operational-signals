@@ -22,6 +22,7 @@
 ---------------------------------------------------------------
 
 require "PhobosLib"
+require "POS_Constants"
 require "POS_ScreenManager"
 require "POS_TerminalWidgets"
 require "PhobosLib_Pagination"
@@ -42,7 +43,7 @@ local BBS = {
 ---------------------------------------------------------------
 
 local screen = {}
-screen.id = "BBS_LIST"
+screen.id = POS_Constants.SCREEN_BBS_LIST
 
 function screen.create(contentPanel, _params, _terminal)
     local W = POS_TerminalWidgets
@@ -113,13 +114,13 @@ function screen.create(contentPanel, _params, _terminal)
                 local oppId = opp.id
                 W.createButton(parent, rx, ry, rw, btnH, label, nil,
                     function()
-                        POS_ScreenManager.navigateTo("BBS_POST_VIEW",
+                        POS_ScreenManager.navigateTo(POS_Constants.SCREEN_BBS_POST,
                             { opportunityId = oppId })
                     end)
                 return btnH + 4
             end,
             onPageChange = function(newPage)
-                POS_ScreenManager.replaceCurrent("BBS_LIST",
+                POS_ScreenManager.replaceCurrent(POS_Constants.SCREEN_BBS_LIST,
                     { bbsPage = newPage })
             end,
         })

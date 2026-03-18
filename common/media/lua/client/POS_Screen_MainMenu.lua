@@ -21,6 +21,7 @@
 ---------------------------------------------------------------
 
 require "PhobosLib"
+require "POS_Constants"
 require "POS_ScreenManager"
 require "POS_TerminalWidgets"
 require "POS_Reputation"
@@ -36,18 +37,18 @@ local C = POS_TerminalWidgets.COLOURS
 
 --- Menu options with target screen IDs.
 local MENU_OPTIONS = {
-    { key = "UI_POS_MainMenuOption_BBS",        screen = "BBS_HUB",                 enabled = true },
-    { key = "UI_POS_MainMenuOption_IRC",        screen = "IRC_LIST",                enabled = false },
-    { key = "UI_POS_MainMenuOption_Journal",    screen = "JOURNAL",                 enabled = false },
-    { key = "UI_POS_MainMenuOption_Profile",    screen = "PROFILE",                 enabled = false },
-    { key = "UI_POS_MainMenuOption_Stock",      screen = "STOCKMARKET_PLACEHOLDER", enabled = true },
+    { key = "UI_POS_MainMenuOption_BBS",        screen = POS_Constants.SCREEN_BBS_HUB,    enabled = true },
+    { key = "UI_POS_MainMenuOption_IRC",        screen = "IRC_LIST",                     enabled = false },
+    { key = "UI_POS_MainMenuOption_Journal",    screen = "JOURNAL",                      enabled = false },
+    { key = "UI_POS_MainMenuOption_Profile",    screen = "PROFILE",                      enabled = false },
+    { key = "UI_POS_MainMenuOption_Stock",      screen = POS_Constants.SCREEN_STOCKMARKET, enabled = true },
     { key = "UI_POS_MainMenuOption_Shutdown",   screen = nil,                       enabled = true, action = "shutdown" },
 }
 
 ---------------------------------------------------------------
 
 local screen = {}
-screen.id = "MAIN_MENU"
+screen.id = POS_Constants.SCREEN_MAIN_MENU
 
 function screen.create(contentPanel, _params, terminal)
     local W = POS_TerminalWidgets

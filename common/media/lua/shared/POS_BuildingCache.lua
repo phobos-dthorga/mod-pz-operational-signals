@@ -24,6 +24,7 @@
 ---------------------------------------------------------------
 
 require "PhobosLib"
+require "POS_Constants"
 
 POS_BuildingCache = POS_BuildingCache or {}
 
@@ -32,6 +33,15 @@ local CACHE_KEY = "POS_DiscoveredBuildings"
 
 --- Minimum distance between cached buildings to avoid duplicates (tiles).
 local DEDUP_RADIUS = 10
+
+--- Scan radius for the one-time initial building scan (tiles).
+local INITIAL_SCAN_RADIUS = 250
+
+--- Scan radius for passive periodic scans (tiles).
+local PASSIVE_SCAN_RADIUS = 50
+
+--- ModData flag key for gating the one-time initial scan.
+local INITIAL_SCAN_FLAG = "POS_BuildingScanDone"
 
 ---------------------------------------------------------------
 -- Cache management
@@ -163,7 +173,7 @@ function POS_BuildingCache.initialScan()
 
     local md = player:getModData()
     if not md then return end
-    if md.POS_BuildingScanDone then return end
+    if md[INITIAL_SCAN_FLAG] then return end
 
     if not POS_Sandbox or not POS_Sandbox.isReconEnabled
        or not POS_Sandbox.isReconEnabled() then return end
@@ -172,8 +182,10 @@ function POS_BuildingCache.initialScan()
     local py = math.floor(player:getY())
 
     -- Large radius scan (loaded chunks, typically ~300 tiles in SP)
+    local scanRadius = POS_Sandbox and POS_Sandbox.getInitialScanRadius
+        and POS_Sandbox.getInitialScanRadius() or INITIAL_SCAN_RADIUS
     local buildings = PhobosLib.findNearbyBuildings(
-        px, py, 250, POS_BuildingCache.RECON_ROOMS)
+        px, py, scanRadius, POS_BuildingCache.RECON_ROOMS)
 
     local added = 0
     for _, b in ipairs(buildings) do
@@ -182,7 +194,7 @@ function POS_BuildingCache.initialScan()
         end
     end
 
-    md.POS_BuildingScanDone = true
+    md[INITIAL_SCAN_FLAG] = true
 
     PhobosLib.debug("POS", "[BuildingCache] Initial scan complete: "
         .. added .. " new buildings from " .. #buildings .. " found")
@@ -200,8 +212,10 @@ function POS_BuildingCache.passiveScan()
     local px = math.floor(player:getX())
     local py = math.floor(player:getY())
 
+    local scanRadius = POS_Sandbox and POS_Sandbox.getPassiveScanRadius
+        and POS_Sandbox.getPassiveScanRadius() or PASSIVE_SCAN_RADIUS
     local buildings = PhobosLib.findNearbyBuildings(
-        px, py, 50, POS_BuildingCache.RECON_ROOMS)
+        px, py, scanRadius, POS_BuildingCache.RECON_ROOMS)
 
     for _, b in ipairs(buildings) do
         POS_BuildingCache.addToCache(b.x, b.y, b.matchingRooms)

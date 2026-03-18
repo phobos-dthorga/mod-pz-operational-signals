@@ -26,6 +26,7 @@
 ---------------------------------------------------------------
 
 require "PhobosLib"
+require "POS_Constants"
 require "ISUI/ISPanel"
 require "POS_ScreenManager"
 
@@ -458,7 +459,7 @@ end
 function POS_TerminalUI:finishBoot()
     self.terminalState = "ready"
     hasBootedThisSession = true
-    POS_ScreenManager.resetTo("MAIN_MENU")
+    POS_ScreenManager.resetTo(POS_Constants.SCREEN_MAIN_MENU)
 end
 
 ---------------------------------------------------------------
@@ -470,7 +471,7 @@ end
 function POS_TerminalUI:renderScreen()
     -- Defensive: if no screen is active, navigate to main menu
     if not POS_ScreenManager.currentScreen then
-        POS_ScreenManager.resetTo("MAIN_MENU")
+        POS_ScreenManager.resetTo(POS_Constants.SCREEN_MAIN_MENU)
     end
 
     -- Throttle refresh check (every 30 frames ~ 2/sec)
@@ -522,7 +523,7 @@ function POS_TerminalUI.open(radioName, frequency, portablePC, signalStrength, b
 
     -- If skipping boot, go straight to main menu
     if ui.terminalState == "ready" then
-        POS_ScreenManager.resetTo("MAIN_MENU")
+        POS_ScreenManager.resetTo(POS_Constants.SCREEN_MAIN_MENU)
     end
 end
 

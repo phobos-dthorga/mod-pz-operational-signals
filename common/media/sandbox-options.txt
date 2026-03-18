@@ -62,6 +62,56 @@ option POS.OperationExpiryDays
     translation = POS_OperationExpiryDays,
 }
 
+option POS.DeliveryExpiryDays
+{
+    type = integer,
+    default = 3,
+    min = 1,
+    max = 14,
+    page = POS_Sandbox,
+    translation = POS_DeliveryExpiryDays,
+}
+
+option POS.InitialScanRadius
+{
+    type = integer,
+    default = 250,
+    min = 50,
+    max = 500,
+    page = POS_Sandbox,
+    translation = POS_InitialScanRadius,
+}
+
+option POS.PassiveScanRadius
+{
+    type = integer,
+    default = 50,
+    min = 20,
+    max = 150,
+    page = POS_Sandbox,
+    translation = POS_PassiveScanRadius,
+}
+
+option POS.InvestmentReturnVariance
+{
+    type = integer,
+    default = 10,
+    min = 0,
+    max = 30,
+    page = POS_Sandbox,
+    translation = POS_InvestmentReturnVariance,
+}
+
+option POS.InvestmentMinReturnPct
+{
+    type = integer,
+    default = 110,
+    min = 100,
+    max = 150,
+    page = POS_Sandbox,
+    translation = POS_InvestmentMinReturnPct,
+}
+
 option POS.EnableSignalStrength
 {
     type = boolean,

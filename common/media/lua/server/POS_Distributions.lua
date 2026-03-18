@@ -24,6 +24,7 @@
 require "Items/ItemPicker"
 require "Items/Distributions"
 require "Items/ProceduralDistributions"
+require "POS_Constants"
 
 -----------------------------------------------------
 -- Nil-guarded distribution helper.
@@ -43,7 +44,7 @@ end
 -- Very rare find — rewards exploration of offices,
 -- military bases, electronics stores, and police stations.
 -----------------------------------------------------
-local PC = "PhobosOperationalSignals.PortableComputer"
+local PC = POS_Constants.ITEM_PORTABLE_COMPUTER
 
 -- Electronics stores — most likely find location
 dist("ElectronicStoreComputers",  PC, 0.8)

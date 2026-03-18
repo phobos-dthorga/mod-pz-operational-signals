@@ -33,6 +33,9 @@ POS_DeliveryGenerator = POS_DeliveryGenerator or {}
 local MIN_REWARD = 1000
 local MAX_REWARD = 2500
 
+--- Number of days after creation before a delivery expires.
+local DELIVERY_EXPIRY_DAYS = 3
+
 --- Calculate reward from road distance (linear interpolation).
 --- Called at accept time with estimated distance, and again at
 --- completion with actual PathTracker distance.
@@ -97,7 +100,8 @@ function POS_DeliveryGenerator.generate(player)
         estimatedRoadDistance = estimatedRoad,
         estimatedReward = estimatedReward,
         createdDay = currentDay,
-        expiryDay = currentDay + 3,
+        expiryDay = currentDay + (POS_Sandbox and POS_Sandbox.getDeliveryExpiryDays
+            and POS_Sandbox.getDeliveryExpiryDays() or DELIVERY_EXPIRY_DAYS),
     }
 
     PhobosLib.debug("POS", "[DeliveryGen] Generated delivery: "

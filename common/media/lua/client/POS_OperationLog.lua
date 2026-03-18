@@ -27,6 +27,7 @@
 ---------------------------------------------------------------
 
 require "PhobosLib"
+require "POS_Constants"
 
 POS_OperationLog = {}
 
@@ -179,12 +180,12 @@ function POS_OperationLog.cancelOperation(operationId)
             local inv = player:getInventory()
             if not inv then return end
             local items = inv:getItemsFromFullType(
-                "PhobosOperationalSignals.POSnetPackage")
+                POS_Constants.ITEM_POSNET_PACKAGE)
             if items then
                 for i = 0, items:size() - 1 do
                     local item = items:get(i)
                     local md = item:getModData()
-                    if md and md.POS_OperationId == operationId then
+                    if md and md[POS_Constants.MD_OPERATION_ID] == operationId then
                         inv:Remove(item)
                         break
                     end

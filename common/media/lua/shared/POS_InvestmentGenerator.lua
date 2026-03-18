@@ -73,6 +73,12 @@ local function lerp(a, b, t)
     return a + (b - a) * t
 end
 
+--- Variance range applied to the return multiplier.
+local RETURN_VARIANCE = 0.1
+
+--- Minimum floor for the return multiplier (always at least 10% profit).
+local MIN_RETURN_MULTIPLIER = 1.1
+
 --- Generate a random float between min and max using ZombRand.
 --- ZombRand(n) returns integer [0, n). We use a large range for precision.
 local function randFloat(minVal, maxVal)
@@ -118,8 +124,12 @@ function POS_InvestmentGenerator.calculateRisk(paybackDays)
 
     -- Return multiplier: higher risk → higher reward
     local baseReturn = lerp(minReturn, maxReturn, t)
-    local returnMultiplier = baseReturn + randFloat(-0.1, 0.1)
-    returnMultiplier = math.max(1.1, returnMultiplier)  -- always at least 10% return
+    local variance = POS_Sandbox and POS_Sandbox.getInvestmentReturnVariance
+        and POS_Sandbox.getInvestmentReturnVariance() or RETURN_VARIANCE
+    local minRet = POS_Sandbox and POS_Sandbox.getInvestmentMinReturnPct
+        and POS_Sandbox.getInvestmentMinReturnPct() or MIN_RETURN_MULTIPLIER
+    local returnMultiplier = baseReturn + randFloat(-variance, variance)
+    returnMultiplier = math.max(minRet, returnMultiplier)
 
     return {
         actualRisk = actualRisk,

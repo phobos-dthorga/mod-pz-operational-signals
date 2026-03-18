@@ -23,6 +23,7 @@
 ---------------------------------------------------------------
 
 require "PhobosLib"
+require "POS_Constants"
 require "POS_ScreenManager"
 require "POS_TerminalWidgets"
 require "POS_PathTracker"
@@ -117,7 +118,7 @@ end
 ---------------------------------------------------------------
 
 local screen = {}
-screen.id = "DELIVERIES"
+screen.id = POS_Constants.SCREEN_DELIVERIES
 
 function screen.create(contentPanel, _params, _terminal)
     local W = POS_TerminalWidgets
@@ -281,7 +282,7 @@ function screen.create(contentPanel, _params, _terminal)
                                 and POS_Sandbox.isNegotiationEnabled
                                 and POS_Sandbox.isNegotiationEnabled()
                             if negotiateEnabled then
-                                POS_ScreenManager.navigateTo("NEGOTIATE",
+                                POS_ScreenManager.navigateTo(POS_Constants.SCREEN_NEGOTIATE,
                                     { operationId = opId })
                             else
                                 if POS_OperationLog and POS_OperationLog.get then
@@ -296,7 +297,7 @@ function screen.create(contentPanel, _params, _terminal)
                     return btnH + 4
                 end,
                 onPageChange = function(newPage)
-                    POS_ScreenManager.replaceCurrent("DELIVERIES",
+                    POS_ScreenManager.replaceCurrent(POS_Constants.SCREEN_DELIVERIES,
                         { delPage = newPage })
                 end,
             })

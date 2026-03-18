@@ -30,6 +30,7 @@
 ---------------------------------------------------------------
 
 require "PhobosLib"
+require "POS_Constants"
 
 POS_ConnectionManager = {}
 
@@ -45,7 +46,7 @@ local DESKTOP_SPRITES = {
 local DESKTOP_SEARCH_RADIUS = 3
 
 --- Full item type for the POSnet portable computer.
-local PORTABLE_COMPUTER_TYPE = "PhobosOperationalSignals.PortableComputer"
+local PORTABLE_COMPUTER_TYPE = POS_Constants.ITEM_PORTABLE_COMPUTER
 
 --- Check if an IsoObject has a desktop computer sprite.
 --- @param obj any IsoObject

@@ -37,6 +37,9 @@ end
 --- Coordinate tolerance for matching player position to mailbox (tiles).
 local COORD_TOLERANCE = 3
 
+--- Scan radius for passive periodic mailbox discovery (tiles).
+local PASSIVE_SCAN_RADIUS = 30
+
 --- Check if coordinates match within tolerance.
 ---@param x1 number
 ---@param y1 number
@@ -230,7 +233,7 @@ local function onPassiveMailboxScan()
 
     -- Scan a small 30-tile radius (cheap, loaded chunks only)
     local found = PhobosLib.findWorldObjectsBySprite(
-        px, py, 30, POS_MailboxScanner.MAILBOX_SPRITES)
+        px, py, PASSIVE_SCAN_RADIUS, POS_MailboxScanner.MAILBOX_SPRITES)
 
     for _, entry in ipairs(found) do
         POS_MailboxScanner.addToCache(entry.x, entry.y)

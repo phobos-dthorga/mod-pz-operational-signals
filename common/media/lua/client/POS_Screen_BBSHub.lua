@@ -21,6 +21,7 @@
 ---------------------------------------------------------------
 
 require "PhobosLib"
+require "POS_Constants"
 require "POS_ScreenManager"
 require "POS_TerminalWidgets"
 require "POS_OperationLog"
@@ -35,7 +36,7 @@ end
 ---------------------------------------------------------------
 
 local screen = {}
-screen.id = "BBS_HUB"
+screen.id = POS_Constants.SCREEN_BBS_HUB
 
 function screen.create(contentPanel, _params, _terminal)
     local W = POS_TerminalWidgets
@@ -83,29 +84,29 @@ function screen.create(contentPanel, _params, _terminal)
         -- Civilian band: investments, deliveries, Tier I-II operations
         table.insert(options, {
             key = "UI_POS_BBSHub_Investments",
-            screen = "BBS_LIST",
+            screen = POS_Constants.SCREEN_BBS_LIST,
             count = investCount,
         })
         table.insert(options, {
             key = "UI_POS_BBSHub_Operations",
-            screen = "OPERATIONS",
+            screen = POS_Constants.SCREEN_OPERATIONS,
             count = reconCount,
         })
         table.insert(options, {
             key = "UI_POS_BBSHub_Courier",
-            screen = "DELIVERIES",
+            screen = POS_Constants.SCREEN_DELIVERIES,
             count = deliveryCount,
         })
     elseif band == "tactical" then
         -- Military band: Tier III-IV operations + investments
         table.insert(options, {
             key = "UI_POS_BBSHub_Investments",
-            screen = "BBS_LIST",
+            screen = POS_Constants.SCREEN_BBS_LIST,
             count = investCount,
         })
         table.insert(options, {
             key = "UI_POS_BBSHub_Operations",
-            screen = "OPERATIONS",
+            screen = POS_Constants.SCREEN_OPERATIONS,
             count = reconCount,
         })
     end

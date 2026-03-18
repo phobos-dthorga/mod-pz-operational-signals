@@ -27,6 +27,12 @@ require "PhobosLib"
 
 POS_RewardCalculator = POS_RewardCalculator or {}
 
+--- Cancellation penalty multiplier step per tier above I.
+local TIER_MULTIPLIER_STEP = 0.5
+
+--- Discount applied to cancellation penalty when player has made progress.
+local PROGRESS_DISCOUNT = 0.75
+
 --- Scale a base currency reward by the global RewardMultiplier.
 ---@param baseReward number Base reward in dollars
 ---@return number Scaled reward (integer)
@@ -133,7 +139,7 @@ function POS_RewardCalculator.applyCancellationPenalty(player, operation)
     end
 
     -- Tier scaling: II=0.5x, III=1.0x, IV=1.5x
-    local tierMultiplier = (tier - 1) * 0.5
+    local tierMultiplier = (tier - 1) * TIER_MULTIPLIER_STEP
     local penalty = math.floor(basePenalty * tierMultiplier)
 
     -- Progress discount: -25% if player started objectives
@@ -141,7 +147,7 @@ function POS_RewardCalculator.applyCancellationPenalty(player, operation)
         local hasProgress = obj.entered or obj.photographed
             or obj.notesWritten or obj.pickedUp
         if hasProgress then
-            penalty = math.floor(penalty * 0.75)
+            penalty = math.floor(penalty * PROGRESS_DISCOUNT)
         end
     end
 
@@ -183,14 +189,14 @@ function POS_RewardCalculator.previewCancellationPenalty(operation)
             and POS_Sandbox.getBaseCancelPenalty() or 30
     end
 
-    local tierMultiplier = (tier - 1) * 0.5
+    local tierMultiplier = (tier - 1) * TIER_MULTIPLIER_STEP
     local penalty = math.floor(basePenalty * tierMultiplier)
 
     if obj then
         local hasProgress = obj.entered or obj.photographed
             or obj.notesWritten or obj.pickedUp
         if hasProgress then
-            penalty = math.floor(penalty * 0.75)
+            penalty = math.floor(penalty * PROGRESS_DISCOUNT)
         end
     end
 
