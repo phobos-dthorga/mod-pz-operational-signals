@@ -299,6 +299,17 @@ function POS_PassiveRecon.onEveryOneMinute()
     local player = getSpecificPlayer(0)
     if not player then return end
 
+    -- Danger detection gate
+    if PhobosLib and PhobosLib.isDangerNearby then
+        local radius = POS_Sandbox and POS_Sandbox.getDangerCheckRadius
+            and POS_Sandbox.getDangerCheckRadius()
+            or POS_Constants.DANGER_CHECK_RADIUS
+        if PhobosLib.isDangerNearby(player, radius) then
+            PhobosLib.debug("POS", "[PassiveRecon] Scanning paused — danger nearby")
+            return
+        end
+    end
+
     -- Get all registered devices
     local allDevices = POS_ReconDeviceRegistry.getAll()
 

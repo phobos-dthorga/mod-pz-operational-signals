@@ -106,38 +106,50 @@ function POS_MarketContextMenu.onFillWorldObjectContextMenu(playerNum, context, 
         end
     end
 
-    -- Determine state and tooltip
-    local state = "ready"
+    -- Determine state and tooltip (6-state priority system)
+    local state = POS_Constants.INTEL_STATE_READY
     local tooltipText = ""
     local daysLeft = 0
 
     if not category then
-        state = "wrong_location"
+        state = POS_Constants.INTEL_STATE_WRONG_LOCATION
         tooltipText = PhobosLib.safeGetText("UI_POS_Market_GatherIntel_WrongLocation")
-    elseif not hasTools or not hasPaperItem then
-        state = "missing_items"
-        tooltipText = PhobosLib.safeGetText("UI_POS_Market_GatherIntel_MissingItems")
-    else
-        -- Check cooldown
-        local sq = player:getSquare()
-        if sq then
-            local bx = math.floor(sq:getX())
-            local by = math.floor(sq:getY())
-            local visitKey = POS_Constants.INTEL_VISIT_KEY_PREFIX .. tostring(bx) .. "_" .. tostring(by)
-            local lastVisitDay = player:getModData()[visitKey] or -999
-            local currentDay = getGameTime():getNightsSurvived()
-            local cooldownDays = POS_Sandbox and POS_Sandbox.getIntelCooldownDays
-                and POS_Sandbox.getIntelCooldownDays() or POS_Constants.INTEL_COOLDOWN_DAYS_DEFAULT
-            local daysSince = currentDay - lastVisitDay
+    elseif PhobosLib and PhobosLib.isDangerNearby then
+        local radius = POS_Sandbox and POS_Sandbox.getDangerCheckRadius
+            and POS_Sandbox.getDangerCheckRadius()
+            or POS_Constants.DANGER_CHECK_RADIUS
+        if PhobosLib.isDangerNearby(player, radius) then
+            state = POS_Constants.INTEL_STATE_DANGER_NEARBY
+            tooltipText = PhobosLib.safeGetText("UI_POS_Market_GatherIntel_DangerNearby")
+        end
+    end
 
-            if daysSince < cooldownDays then
-                state = "cooldown"
-                daysLeft = cooldownDays - daysSince
-                tooltipText = PhobosLib.safeGetText("UI_POS_Market_GatherIntel_Cooldown")
-                    .. " " .. tostring(math.ceil(daysLeft)) .. " day(s)."
-            else
-                state = "ready"
-                tooltipText = PhobosLib.safeGetText("UI_POS_Market_GatherIntel_Ready")
+    if state == POS_Constants.INTEL_STATE_READY then
+        if not hasTools or not hasPaperItem then
+            state = POS_Constants.INTEL_STATE_MISSING_ITEMS
+            tooltipText = PhobosLib.safeGetText("UI_POS_Market_GatherIntel_MissingItems")
+        else
+            -- Check cooldown
+            local sq = player:getSquare()
+            if sq then
+                local bx = math.floor(sq:getX())
+                local by = math.floor(sq:getY())
+                local visitKey = POS_Constants.INTEL_VISIT_KEY_PREFIX .. tostring(bx) .. "_" .. tostring(by)
+                local lastVisitDay = player:getModData()[visitKey] or -999
+                local currentDay = getGameTime():getNightsSurvived()
+                local cooldownDays = POS_Sandbox and POS_Sandbox.getIntelCooldownDays
+                    and POS_Sandbox.getIntelCooldownDays() or POS_Constants.INTEL_COOLDOWN_DAYS_DEFAULT
+                local daysSince = currentDay - lastVisitDay
+
+                if daysSince < cooldownDays then
+                    state = POS_Constants.INTEL_STATE_ON_COOLDOWN
+                    daysLeft = cooldownDays - daysSince
+                    tooltipText = PhobosLib.safeGetText("UI_POS_Market_GatherIntel_Cooldown")
+                        .. " " .. tostring(math.ceil(daysLeft)) .. " day(s)."
+                else
+                    state = POS_Constants.INTEL_STATE_READY
+                    tooltipText = PhobosLib.safeGetText("UI_POS_Market_GatherIntel_Ready")
+                end
             end
         end
     end
@@ -146,7 +158,7 @@ function POS_MarketContextMenu.onFillWorldObjectContextMenu(playerNum, context, 
     local option = context:addOption(
         baseLabel .. catLabel,
         worldobjects, function()
-            if state == "ready" then
+            if state == POS_Constants.INTEL_STATE_READY then
                 ISTimedActionQueue.add(
                     POS_MarketReconAction:new(player, category, location)
                 )
@@ -155,7 +167,7 @@ function POS_MarketContextMenu.onFillWorldObjectContextMenu(playerNum, context, 
     )
 
     -- Set unavailable for non-ready states
-    if state ~= "ready" then
+    if state ~= POS_Constants.INTEL_STATE_READY then
         option.notAvailable = true
     end
 

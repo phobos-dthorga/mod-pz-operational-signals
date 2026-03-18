@@ -405,5 +405,7 @@
     "UI_POS_RadioTier1": "FM Receiver (broadcast only)",
     "UI_POS_RadioTier2": "Basic Two-Way Radio",
     "UI_POS_RadioTier3": "Advanced Scanner",
-    "UI_POS_RadioTier4": "Military-Grade Scanner"
+    "UI_POS_RadioTier4": "Military-Grade Scanner",
+
+    "UI_POS_Market_GatherIntel_DangerNearby": "Cannot gather intel — threats detected nearby. Clear the area first."
 }

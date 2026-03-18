@@ -77,6 +77,133 @@ function POS_WorldState.getWorldSeed()
 end
 
 ---------------------------------------------------------------
+-- External cache persistence (flat files in Zomboid/Lua/)
+---------------------------------------------------------------
+
+--- Save the building discovery cache to an external flat file.
+--- Only the server/SP authority writes cache files.
+function POS_WorldState.saveBuildingCache()
+    if not POS_WorldState.isAuthority() then return end
+    local buildings = POS_WorldState.getBuildings()
+    if not buildings or not buildings.entries then return end
+
+    local writer = getFileWriter(POS_Constants.CACHE_FILE_BUILDINGS, false, false)
+    if not writer then
+        PhobosLib.debug("POS", "[WorldState] Failed to open building cache for writing")
+        return
+    end
+
+    for _, entry in ipairs(buildings.entries) do
+        local rooms = ""
+        if entry.rooms then
+            rooms = table.concat(entry.rooms, POS_Constants.CACHE_FILE_ROOM_SEP)
+        end
+        writer:writeLine(tostring(entry.x) .. POS_Constants.CACHE_FILE_SEPARATOR
+            .. tostring(entry.y) .. POS_Constants.CACHE_FILE_SEPARATOR .. rooms)
+    end
+    writer:close()
+    PhobosLib.debug("POS", "[WorldState] Building cache saved: " .. tostring(#buildings.entries) .. " entries")
+end
+
+--- Load the building discovery cache from an external flat file.
+---@return table|nil Array of { x, y, rooms } entries, or nil if file not found
+function POS_WorldState.loadBuildingCache()
+    local reader = getFileReader(POS_Constants.CACHE_FILE_BUILDINGS, false)
+    if not reader then return nil end
+
+    local entries = {}
+    local line = reader:readLine()
+    while line do
+        local parts = PhobosLib.splitString(line, POS_Constants.CACHE_FILE_SEPARATOR)
+        if parts and #parts >= 2 then
+            local x = tonumber(parts[1])
+            local y = tonumber(parts[2])
+            local rooms = {}
+            if parts[3] and parts[3] ~= "" then
+                rooms = PhobosLib.splitString(parts[3], POS_Constants.CACHE_FILE_ROOM_SEP)
+            end
+            if x and y then
+                table.insert(entries, { x = x, y = y, rooms = rooms })
+            end
+        end
+        line = reader:readLine()
+    end
+    reader:close()
+    PhobosLib.debug("POS", "[WorldState] Building cache loaded: " .. tostring(#entries) .. " entries")
+    return entries
+end
+
+--- Save the mailbox discovery cache to an external flat file.
+function POS_WorldState.saveMailboxCache()
+    if not POS_WorldState.isAuthority() then return end
+    local mailboxes = POS_WorldState.getMailboxes()
+    if not mailboxes or not mailboxes.entries then return end
+
+    local writer = getFileWriter(POS_Constants.CACHE_FILE_MAILBOXES, false, false)
+    if not writer then
+        PhobosLib.debug("POS", "[WorldState] Failed to open mailbox cache for writing")
+        return
+    end
+
+    for _, entry in ipairs(mailboxes.entries) do
+        writer:writeLine(tostring(entry.x) .. POS_Constants.CACHE_FILE_SEPARATOR
+            .. tostring(entry.y))
+    end
+    writer:close()
+    PhobosLib.debug("POS", "[WorldState] Mailbox cache saved: " .. tostring(#mailboxes.entries) .. " entries")
+end
+
+--- Load the mailbox discovery cache from an external flat file.
+---@return table|nil Array of { x, y } entries, or nil if file not found
+function POS_WorldState.loadMailboxCache()
+    local reader = getFileReader(POS_Constants.CACHE_FILE_MAILBOXES, false)
+    if not reader then return nil end
+
+    local entries = {}
+    local line = reader:readLine()
+    while line do
+        local parts = PhobosLib.splitString(line, POS_Constants.CACHE_FILE_SEPARATOR)
+        if parts and #parts >= 2 then
+            local x = tonumber(parts[1])
+            local y = tonumber(parts[2])
+            if x and y then
+                table.insert(entries, { x = x, y = y })
+            end
+        end
+        line = reader:readLine()
+    end
+    reader:close()
+    PhobosLib.debug("POS", "[WorldState] Mailbox cache loaded: " .. tostring(#entries) .. " entries")
+    return entries
+end
+
+--- Migrate building and mailbox caches from ModData to external files.
+--- Runs once per world; sets meta.cachesMigrated = true on completion.
+function POS_WorldState.migrateModDataCaches()
+    local meta = POS_WorldState.getMeta()
+    if meta.cachesMigrated then return end
+
+    local buildings = POS_WorldState.getBuildings()
+    if buildings and buildings.entries and #buildings.entries > 0 then
+        local count = #buildings.entries
+        POS_WorldState.saveBuildingCache()
+        -- Clear from ModData after successful write
+        buildings.entries = {}
+        PhobosLib.debug("POS", "[WorldState] Migrated " .. tostring(count) .. " building entries to external file")
+    end
+
+    local mailboxes = POS_WorldState.getMailboxes()
+    if mailboxes and mailboxes.entries and #mailboxes.entries > 0 then
+        local count = #mailboxes.entries
+        POS_WorldState.saveMailboxCache()
+        mailboxes.entries = {}
+        PhobosLib.debug("POS", "[WorldState] Migrated " .. tostring(count) .. " mailbox entries to external file")
+    end
+
+    meta.cachesMigrated = true
+end
+
+---------------------------------------------------------------
 -- Bootstrap: called on server OnGameStart
 ---------------------------------------------------------------
 
@@ -161,6 +288,9 @@ function POS_WorldState.bootstrap()
         end
         meta.migrated = true
     end
+
+    -- Migrate building/mailbox caches from ModData to external files
+    POS_WorldState.migrateModDataCaches()
 
     PhobosLib.debug("POS", "[WorldState] Bootstrap complete, schema v"
         .. tostring(meta.schemaVersion) .. ", seed=" .. tostring(meta.worldSeed))

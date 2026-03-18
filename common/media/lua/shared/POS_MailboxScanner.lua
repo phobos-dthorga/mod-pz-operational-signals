@@ -145,6 +145,17 @@ function POS_MailboxScanner.initialScan()
     if not POS_Sandbox or not POS_Sandbox.isDeliveryEnabled
        or not POS_Sandbox.isDeliveryEnabled() then return end
 
+    -- Try loading from external cache first
+    if POS_WorldState and POS_WorldState.loadMailboxCache then
+        local cached = POS_WorldState.loadMailboxCache()
+        if cached and #cached > 0 then
+            for _, entry in ipairs(cached) do
+                POS_MailboxScanner.addToCache(entry.x, entry.y)
+            end
+            PhobosLib.debug("POS", "[MailboxScanner] Loaded " .. tostring(#cached) .. " mailboxes from external cache")
+        end
+    end
+
     local px = math.floor(player:getX())
     local py = math.floor(player:getY())
 
@@ -162,6 +173,11 @@ function POS_MailboxScanner.initialScan()
     end
 
     if meta then meta.mailboxScanDone = true end
+
+    -- Persist to external cache if new mailboxes were discovered
+    if added > 0 and POS_WorldState and POS_WorldState.saveMailboxCache then
+        POS_WorldState.saveMailboxCache()
+    end
 
     PhobosLib.debug("POS", "[MailboxScanner] Initial scan complete: "
         .. added .. " new mailboxes from " .. #found .. " found")

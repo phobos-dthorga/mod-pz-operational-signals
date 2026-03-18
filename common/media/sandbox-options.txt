@@ -868,6 +868,16 @@ option POS.IntelCooldownDays
     translation = POS_IntelCooldownDays,
 }
 
+option POS.DangerCheckRadius
+{
+    type = integer,
+    default = 15,
+    min = 5,
+    max = 30,
+    page = POS_Sandbox,
+    translation = POS_DangerCheckRadius,
+}
+
 option POS.VHSReviewTimePerEntry
 {
     type = integer,

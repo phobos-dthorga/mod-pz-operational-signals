@@ -92,6 +92,15 @@ POSNET/
     exchange_latest.txt
 ```
 
+### Discovery Cache Files (flat, Zomboid/Lua/ directory)
+
+| File | Format | Contents | Writer |
+|------|--------|----------|--------|
+| `POSNET_buildings.dat` | Pipe-delimited (`x|y|room1,room2,...`) | Building discovery cache | Server/SP |
+| `POSNET_mailboxes.dat` | Pipe-delimited (`x|y`) | Mailbox discovery cache | Server/SP |
+
+These files are populated during initial scan, passive scanning, and migrated from ModData on first load after the externalization update. They are disposable -- if deleted, caches rebuild through natural exploration.
+
 ### Event Format
 
 Pipe-delimited text, one line per event:

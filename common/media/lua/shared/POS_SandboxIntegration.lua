@@ -456,6 +456,14 @@ function POS_Sandbox.getEnableForagingTapes()
 end
 
 ---------------------------------------------------------------
+-- Danger detection
+---------------------------------------------------------------
+
+function POS_Sandbox.getDangerCheckRadius()
+    return PhobosLib.getSandboxVar("POS", "DangerCheckRadius", 15)
+end
+
+---------------------------------------------------------------
 -- Intel gathering cooldown
 ---------------------------------------------------------------
 

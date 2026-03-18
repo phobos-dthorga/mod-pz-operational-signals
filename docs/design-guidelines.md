@@ -814,3 +814,71 @@ The item pool only includes vanilla (`Base.*`) items by default.
 Cross-mod items (PCP, PIP) are registered separately via
 `POS_ItemPool.registerItem()` to prevent modded items with incorrect
 DisplayCategories from appearing in wrong market categories.
+
+---
+
+## 14. Danger Detection
+
+### 14.1 PhobosLib.isDangerNearby()
+
+All POSnet actions requiring concentration (intel gathering, passive recon scanning,
+VHS tape review) are gated by `PhobosLib.isDangerNearby(player, radius)`.
+
+Threats detected:
+- **Live zombies** within radius tiles (cell zombie list iteration)
+- **Active fires** on nearby squares (IsoFire instanceof check)
+- **Player in combat** (isInCombat API if available)
+
+### 14.2 Context Menu Integration
+
+The intel gathering context menu uses a 6-state priority system:
+
+| Priority | State | Colour | Tooltip |
+|----------|-------|--------|---------|
+| 1 | System disabled | Hidden | -- |
+| 2 | Wrong location | Yellow | No relevant intel to gather here |
+| 3 | Danger nearby | Red | Threats detected -- clear area first |
+| 4 | Missing items | Yellow | Need writing implements |
+| 5 | On cooldown | Grey | Intel recently gathered here |
+| 6 | Ready | Green | Gather intel |
+
+### 14.3 Passive Recon Gate
+
+Passive recon devices (camcorder, field logger, scanner radio) pause scanning
+when danger is detected. A debug log message is emitted for diagnostics.
+
+### 14.4 Sandbox Control
+
+`DangerCheckRadius` (default 15, range 5-30) controls the detection range.
+Players in safer areas can reduce this for less restrictive gameplay.
+
+---
+
+## 15. Data Externalization
+
+### 15.1 Principle
+
+ModData (Global or player) is reserved for **capped, bounded** data only.
+Unbounded data (discovery caches, event logs) is stored in external flat files
+under `Zomboid/Lua/`.
+
+### 15.2 External Files
+
+| File | Format | Contents | Writer |
+|------|--------|----------|--------|
+| `POSNET_buildings.dat` | Pipe-delimited | Building discovery cache | Server/SP |
+| `POSNET_mailboxes.dat` | Pipe-delimited | Mailbox discovery cache | Server/SP |
+| `POSNET_economy_day{N}.log` | Pipe-delimited | Market event log (per day) | Server/SP |
+| `POSNET_snapshot_economy.txt` | Pipe-delimited | Economy state snapshot | Server/SP |
+
+### 15.3 Migration
+
+On first load after the externalization update, `POS_WorldState.migrateModDataCaches()`
+checks for building/mailbox data in ModData, writes to external files, clears ModData,
+and sets `meta.cachesMigrated = true` to prevent re-migration.
+
+### 15.4 Disposability
+
+Event log files and cache files are **not the source of truth** -- that remains
+in ModData (capped observations, rolling closes). If external files are deleted,
+the game continues normally. Caches rebuild through natural exploration.

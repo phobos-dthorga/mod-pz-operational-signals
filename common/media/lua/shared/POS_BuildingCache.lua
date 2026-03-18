@@ -173,6 +173,17 @@ function POS_BuildingCache.initialScan()
     if not POS_Sandbox or not POS_Sandbox.isReconEnabled
        or not POS_Sandbox.isReconEnabled() then return end
 
+    -- Try loading from external cache first
+    if POS_WorldState and POS_WorldState.loadBuildingCache then
+        local cached = POS_WorldState.loadBuildingCache()
+        if cached and #cached > 0 then
+            for _, entry in ipairs(cached) do
+                POS_BuildingCache.addToCache(entry.x, entry.y, entry.rooms or {})
+            end
+            PhobosLib.debug("POS", "[BuildingCache] Loaded " .. tostring(#cached) .. " buildings from external cache")
+        end
+    end
+
     local px = math.floor(player:getX())
     local py = math.floor(player:getY())
 
@@ -190,6 +201,11 @@ function POS_BuildingCache.initialScan()
     end
 
     if meta then meta.buildingScanDone = true end
+
+    -- Persist to external cache if new buildings were discovered
+    if added > 0 and POS_WorldState and POS_WorldState.saveBuildingCache then
+        POS_WorldState.saveBuildingCache()
+    end
 
     PhobosLib.debug("POS", "[BuildingCache] Initial scan complete: "
         .. added .. " new buildings from " .. #buildings .. " found")
@@ -212,7 +228,15 @@ function POS_BuildingCache.passiveScan()
     local buildings = PhobosLib.findNearbyBuildings(
         px, py, scanRadius, POS_BuildingCache.RECON_ROOMS)
 
+    local added = false
     for _, b in ipairs(buildings) do
-        POS_BuildingCache.addToCache(b.x, b.y, b.matchingRooms)
+        if POS_BuildingCache.addToCache(b.x, b.y, b.matchingRooms) then
+            added = true
+        end
+    end
+
+    -- Persist to external cache if new buildings were discovered
+    if added and POS_WorldState and POS_WorldState.saveBuildingCache then
+        POS_WorldState.saveBuildingCache()
     end
 end

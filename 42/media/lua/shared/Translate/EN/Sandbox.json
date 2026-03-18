@@ -228,5 +228,8 @@
     "Sandbox_POS_IntelCooldownDays_tooltip": "Number of in-game days before the same location can be surveyed again for market intel. <BR> <BR> <INDENT:20> Prevents repeat-farming at the same building. <BR> Approaches but does not exceed the intel freshness decay period. <BR> Range: 3-14. Default: 12",
 
     "Sandbox_POS_VHSReviewTimePerEntry": "VHS Review Time Per Entry (ticks)",
-    "Sandbox_POS_VHSReviewTimePerEntry_tooltip": "Duration of each VHS tape entry review at a TV station in game ticks. <BR> <BR> <INDENT:20> 300 ticks = ~5 minutes at 1x game speed. <BR> Each entry on the tape requires a separate review action. <BR> Range: 100-600. Default: 300"
+    "Sandbox_POS_VHSReviewTimePerEntry_tooltip": "Duration of each VHS tape entry review at a TV station in game ticks. <BR> <BR> <INDENT:20> 300 ticks = ~5 minutes at 1x game speed. <BR> Each entry on the tape requires a separate review action. <BR> Range: 100-600. Default: 300",
+
+    "Sandbox_POS_DangerCheckRadius": "Danger Detection Radius (tiles)",
+    "Sandbox_POS_DangerCheckRadius_tooltip": "Radius in tiles for threat detection when gathering intel or using passive recon devices. <BR> <BR> <INDENT:20> Detects: live zombies, active fires, combat. <BR> Higher values are safer but more restrictive. <BR> Range: 5-30. Default: 15"
 }

@@ -485,3 +485,28 @@ POS_Constants.RADIO_BROADCAST_QUALITY_TIER1   = 30
 POS_Constants.RADIO_BROADCAST_QUALITY_TIER2   = 50
 POS_Constants.RADIO_BROADCAST_QUALITY_TIER3   = 70
 POS_Constants.RADIO_BROADCAST_QUALITY_TIER4   = 90
+
+---------------------------------------------------------------
+-- Danger detection
+---------------------------------------------------------------
+
+POS_Constants.DANGER_CHECK_RADIUS = 15
+
+---------------------------------------------------------------
+-- External cache file paths (flat, Zomboid/Lua/ directory)
+---------------------------------------------------------------
+
+POS_Constants.CACHE_FILE_BUILDINGS  = "POSNET_buildings.dat"
+POS_Constants.CACHE_FILE_MAILBOXES  = "POSNET_mailboxes.dat"
+POS_Constants.CACHE_FILE_SEPARATOR  = "|"
+POS_Constants.CACHE_FILE_ROOM_SEP   = ","
+
+---------------------------------------------------------------
+-- Context menu intel states
+---------------------------------------------------------------
+
+POS_Constants.INTEL_STATE_READY          = "ready"
+POS_Constants.INTEL_STATE_WRONG_LOCATION = "wrong_location"
+POS_Constants.INTEL_STATE_DANGER_NEARBY  = "danger_nearby"
+POS_Constants.INTEL_STATE_MISSING_ITEMS  = "missing_items"
+POS_Constants.INTEL_STATE_ON_COOLDOWN    = "on_cooldown"
