@@ -74,6 +74,18 @@ function screen.create(contentPanel, _params, _terminal)
         opportunities = POS_InvestmentLog.getOpenOpportunities()
     end
 
+    -- On-demand generation if none available
+    if #opportunities == 0 and POS_Sandbox and POS_Sandbox.isInvestmentEnabled
+       and POS_Sandbox.isInvestmentEnabled()
+       and POS_InvestmentGenerator and POS_InvestmentGenerator.generate then
+        local opp = POS_InvestmentGenerator.generate()
+        if opp and POS_InvestmentLog then
+            POS_InvestmentLog.addOpportunity(opp)
+            table.insert(opportunities, opp)
+            PhobosLib.debug("POS", "[BBS] On-demand investment generated: " .. (opp.id or "?"))
+        end
+    end
+
     if #opportunities == 0 then
         W.createLabel(contentPanel, 8, y,
             safeGetText("UI_POS_BBS_NoOpportunities"), C.dim)

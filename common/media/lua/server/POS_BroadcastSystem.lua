@@ -49,8 +49,13 @@ function POS_BroadcastSystem.start()
     end
 
     systemActive = true
-    lastBroadcastTime = getTimestampMs()
-    lastInvestmentBroadcastTime = getTimestampMs()
+    local now = getTimestampMs()
+    lastBroadcastTime = now
+    -- Offset investment timer so the first broadcast fires after ~5 game-minutes
+    -- instead of the full interval (default 60 min), improving first-time experience.
+    local invIntervalMs = POS_Sandbox.getInvestmentBroadcastMins() * 60 * 1000
+    local firstInvDelayMs = 5 * 60 * 1000  -- 5 game-minutes
+    lastInvestmentBroadcastTime = now - invIntervalMs + firstInvDelayMs
     PhobosLib.debug("POS", "Broadcast system started (interval: "
         .. POS_Sandbox.getBroadcastIntervalMinutes() .. " min)")
 end
