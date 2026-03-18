@@ -130,6 +130,43 @@ local function onServerCommand(module, command, args)
                     .. " @ $" .. (args.marketData.price or "?"))
             end
         end
+
+    elseif command == POS_Constants.CMD_MARKET_SNAPSHOT then
+        -- Server sent market snapshot — update local cache
+        if args and args.data and POS_MarketDatabase then
+            for catId, catData in pairs(args.data) do
+                POS_MarketDatabase.updateClientCache(catId, catData)
+            end
+        end
+        PhobosLib.debug("POS", "[RadioInterception] Market snapshot received")
+
+    elseif command == POS_Constants.CMD_ECONOMY_TICK_COMPLETE then
+        -- Economy day tick completed — request fresh snapshot
+        if POS_MarketDatabase then
+            POS_MarketDatabase.clearClientCache()
+        end
+        -- Auto-request fresh data
+        local player = getSpecificPlayer(0)
+        if player then
+            sendClientCommand(player, POS_Constants.CMD_MODULE,
+                POS_Constants.CMD_REQUEST_MARKET_SNAPSHOT, {})
+        end
+        PhobosLib.debug("POS", "[RadioInterception] Economy tick day="
+            .. tostring(args and args.day or "?"))
+
+    elseif command == POS_Constants.CMD_BUILDING_CACHE_SYNC then
+        -- Server sent building cache sync
+        if args and args.entries and POS_WorldState then
+            local buildings = POS_WorldState.getBuildings()
+            buildings.entries = args.entries
+        end
+
+    elseif command == POS_Constants.CMD_MAILBOX_CACHE_SYNC then
+        -- Server sent mailbox cache sync
+        if args and args.entries and POS_WorldState then
+            local mailboxes = POS_WorldState.getMailboxes()
+            mailboxes.entries = args.entries
+        end
     end
 end
 
@@ -151,6 +188,14 @@ end
 function POS_RadioInterception.init()
     POS_RadioInterception.registerChannels()
     Events.OnServerCommand.Add(onServerCommand)
+
+    -- Request initial market snapshot from server (MP clients only)
+    local player = getSpecificPlayer(0)
+    if player and POS_WorldState and not POS_WorldState.isAuthority() then
+        sendClientCommand(player, POS_Constants.CMD_MODULE,
+            POS_Constants.CMD_REQUEST_MARKET_SNAPSHOT, {})
+    end
+
     PhobosLib.debug("POS", "Radio interception initialised")
 end
 

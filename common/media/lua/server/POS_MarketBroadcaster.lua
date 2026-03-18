@@ -25,6 +25,7 @@
 require "PhobosLib"
 require "POS_Constants"
 require "POS_MarketRegistry"
+require "POS_MarketDatabase"
 
 POS_MarketBroadcaster = {}
 
@@ -175,7 +176,25 @@ function POS_MarketBroadcaster.broadcast()
         return false
     end
 
-    -- Broadcast to all clients
+    -- Write broadcast observation directly to world state (server-side)
+    if POS_MarketDatabase and POS_MarketDatabase.addRecord then
+        POS_MarketDatabase.addRecord({
+            id = packet.id,
+            categoryId = packet.categoryId,
+            price = packet.price,
+            stock = packet.stock or "medium",
+            source = packet.source or "Radio Broadcast",
+            location = packet.location or "",
+            recordedDay = POS_WorldState and POS_WorldState.getWorldDay() or 0,
+            confidence = packet.confidence or "low",
+            sourceTier = "broadcast",
+            quality = POS_Sandbox and POS_Sandbox.getMarketBroadcastQuality
+                and POS_Sandbox.getMarketBroadcastQuality() or 50,
+            items = packet.items,
+        })
+    end
+
+    -- Notify all clients that new market data is available
     broadcastToAll(POS_Constants.CMD_MODULE, POS_Constants.CMD_MARKET_BROADCAST, {
         marketData = packet,
     })

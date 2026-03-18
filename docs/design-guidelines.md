@@ -643,9 +643,45 @@ with 4-5 sub-categories per parent, paginated if needed.
 
 ---
 
-## 11. Passive Recon Device Rules
+## 11. Data Persistence Rules
 
-### 11.1 Device Equip Requirement
+### 11.1 World-Scoped State
+
+- Market intelligence is stored in world-scoped Global ModData (`POSNET.World`).
+- Building and mailbox caches are stored in `POSNET.Buildings` and `POSNET.Mailboxes`.
+- Exchange and wholesaler data live in `POSNET.Exchange` and `POSNET.Wholesalers`.
+- Schema version and migration flags are tracked in `POSNET.Meta`.
+
+### 11.2 Player ModData Scope
+
+Player modData is limited to per-player state only:
+- Reputation, cash balance, watchlist, active orders, alert preferences, cooldowns.
+- VHS tape full entries are stored in the event log; only a summary is kept in
+  item modData.
+
+### 11.3 Authority Model
+
+- **Server-authoritative**: only the server (or SP host) writes canonical market
+  state via `POS_MarketDatabase.addRecord()`.
+- MP clients receive snapshots via `sendServerCommand` (`CMD_MARKET_SNAPSHOT`)
+  and store them in an ephemeral local cache. Clients never write world state.
+- Clients request snapshots on init and after each `CMD_ECONOMY_TICK_COMPLETE`
+  notification.
+
+### 11.4 Rolling Window Caps
+
+All rolling windows are capped by sandbox options with constants as fallbacks:
+- `MAX_OBSERVATIONS_PER_CATEGORY` (default 24)
+- `MAX_ROLLING_CLOSES` (default 14)
+- `MAX_GLOBAL_EVENTS` (default 100)
+- `MAX_PLAYER_ALERTS` (default 20)
+- `MAX_PLAYER_ORDERS` (default 10)
+
+---
+
+## 12. Passive Recon Device Rules
+
+### 12.1 Device Equip Requirement
 
 Passive scanning only activates when a device is equipped in the appropriate slot.
 Merely carrying the device in inventory provides a confidence bonus to manual
@@ -658,7 +694,7 @@ note-taking but does NOT trigger passive scanning.
 | Data Calculator | N/A | N/A | +5% confidence |
 | Vanilla Radio | N/A (must be ON) | Yes | N/A |
 
-### 11.2 VHS Tape Rules
+### 12.2 VHS Tape Rules
 
 - Tapes are the primary storage medium for passive recon data
 - Each tape has a fixed capacity (20/15/8/4 entries by quality tier)
@@ -667,14 +703,14 @@ note-taking but does NOT trigger passive scanning.
 - VHS tapes CANNOT be used with the Data Calculator (user requirement)
 - Minimum continuous operation: 3 in-game days per tape (sandbox-configurable)
 
-### 11.3 Performance Rules
+### 12.3 Performance Rules
 
 - Passive scanning runs on EveryOneMinute (NOT EveryTick)
 - Only one device scans per minute cycle (staggered if multiple equipped)
 - Buildings already on current tape are skipped (deduplication)
 - Chunk-based detection avoids scanning stationary players repeatedly
 
-### 11.4 Scanner Radio Specifics
+### 12.4 Scanner Radio Specifics
 
 - NOT a new item -- vanilla radios gain passive scanning via POSnet
 - Radio MUST be powered on (consuming battery) to scan

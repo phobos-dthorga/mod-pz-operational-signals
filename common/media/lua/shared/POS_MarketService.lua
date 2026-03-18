@@ -88,7 +88,9 @@ end
 --- @param categoryId string
 --- @return table Summary with translated key references
 function POS_MarketService.getCommoditySummary(categoryId)
+    if not POS_MarketDatabase then return nil end
     local summary = POS_MarketDatabase.getSummary(categoryId)
+    if not summary then return nil end
     local trend = POS_ExchangeEngine.getTrend(categoryId)
     local cat = POS_MarketRegistry.getCategory(categoryId)
 
@@ -129,6 +131,7 @@ end
 --- Get exchange overview (all category indices + sentiment).
 --- @return table { indices = { {categoryId, labelKey, index, trendKey, changePct} }, sentimentKey }
 function POS_MarketService.getExchangeOverview()
+    if not POS_MarketRegistry then return { indices = {}, sentimentKey = "UI_POS_Market_Sentiment_Neutral" } end
     local categories = POS_MarketRegistry.getVisibleCategories({})
     local indices = {}
 
