@@ -95,5 +95,31 @@
     "UI_POS_BBS_InvDesc_ToolSmithing": "Setting up a tool-smithing operation. Anvil and forge needed.",
     "UI_POS_BBS_InvDesc_RadioParts": "Sourcing radio components for the relay network expansion.",
     "UI_POS_BBS_InvDesc_Ammunition": "Ammunition reloading supplies. Brass, primers, powder.",
-    "UI_POS_BBS_InvDesc_ShelterRepair": "Shelter reinforcement materials. Lumber, nails, tarps."
+    "UI_POS_BBS_InvDesc_ShelterRepair": "Shelter reinforcement materials. Lumber, nails, tarps.",
+
+    "UI_POS_MainMenuOption_Deliveries": "Courier Service",
+
+    "UI_POS_Delivery_Header": "POSnet COURIER SERVICE",
+    "UI_POS_Delivery_Available": "AVAILABLE DELIVERIES:",
+    "UI_POS_Delivery_Active": "YOUR ACTIVE DELIVERY:",
+    "UI_POS_Delivery_Recent": "RECENT DELIVERIES:",
+    "UI_POS_Delivery_NoAvailable": "No deliveries available. Check back later.",
+    "UI_POS_Delivery_NoActive": "No active delivery.",
+    "UI_POS_Delivery_Pickup": "Pickup",
+    "UI_POS_Delivery_Dropoff": "Dropoff",
+    "UI_POS_Delivery_Item": "Package",
+    "UI_POS_Delivery_Distance": "Distance (straight)",
+    "UI_POS_Delivery_DistanceWalked": "Distance travelled",
+    "UI_POS_Delivery_Reward": "Reward",
+    "UI_POS_Delivery_Accept": "Accept Delivery",
+    "UI_POS_Delivery_Status_AwaitingPickup": "Awaiting pickup",
+    "UI_POS_Delivery_Status_InTransit": "In transit",
+    "UI_POS_Delivery_Status_Delivered": "Delivered",
+    "UI_POS_Delivery_CollectPackage": "Collect POSnet Package",
+    "UI_POS_Delivery_DeliverPackage": "Deliver POSnet Package",
+    "UI_POS_Delivery_Completed": "Delivery completed! Reward: $%1",
+    "UI_POS_Delivery_Expired": "Delivery expired.",
+    "UI_POS_Delivery_NoItem": "You don't have the package.",
+    "UI_POS_Delivery_Tiles": "tiles",
+    "UI_POS_Delivery_ExpiresIn": "Expires in %1 days"
 }

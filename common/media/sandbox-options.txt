@@ -161,3 +161,41 @@ option POS.InvestmentBroadcastMins
     page = POS_Sandbox,
     translation = POS_InvestmentBroadcastMins,
 }
+
+option POS.EnableDeliveryMissions
+{
+    type = boolean,
+    default = true,
+    page = POS_Sandbox,
+    translation = POS_EnableDeliveryMissions,
+}
+
+option POS.MinDeliveryDistance
+{
+    type = integer,
+    default = 4400,
+    min = 1000,
+    max = 15000,
+    page = POS_Sandbox,
+    translation = POS_MinDeliveryDistance,
+}
+
+option POS.MaxDeliveryDistance
+{
+    type = integer,
+    default = 11000,
+    min = 3000,
+    max = 30000,
+    page = POS_Sandbox,
+    translation = POS_MaxDeliveryDistance,
+}
+
+option POS.DeliveryRoadFactor
+{
+    type = integer,
+    default = 130,
+    min = 100,
+    max = 200,
+    page = POS_Sandbox,
+    translation = POS_DeliveryRoadFactor,
+}

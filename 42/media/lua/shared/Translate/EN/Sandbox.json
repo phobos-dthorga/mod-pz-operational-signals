@@ -35,5 +35,14 @@
     "Sandbox_POS_MaxActiveInvestments": "Max Active Investments",
     "Sandbox_POS_MaxActiveInvestments_tooltip": "Maximum number of concurrent active investments a player can hold. <BR> <BR> <INDENT:20> New investments cannot be made when the limit is reached. <BR> Range: 1–20. Default: 5",
     "Sandbox_POS_InvestmentBroadcastMins": "Investment Broadcast Interval (minutes)",
-    "Sandbox_POS_InvestmentBroadcastMins_tooltip": "Time in game-minutes between new investment opportunity broadcasts. <BR> <BR> <INDENT:20> Lower values = more frequent opportunities. <BR> Range: 15–240. Default: 60"
+    "Sandbox_POS_InvestmentBroadcastMins_tooltip": "Time in game-minutes between new investment opportunity broadcasts. <BR> <BR> <INDENT:20> Lower values = more frequent opportunities. <BR> Range: 15–240. Default: 60",
+
+    "Sandbox_POS_EnableDeliveryMissions": "Enable Delivery Missions",
+    "Sandbox_POS_EnableDeliveryMissions_tooltip": "Master toggle for the Courier Service delivery mission system. <BR> <BR> <INDENT:20> When disabled, no delivery missions will be generated. <BR> Default: ON",
+    "Sandbox_POS_MinDeliveryDistance": "Min Delivery Distance (tiles)",
+    "Sandbox_POS_MinDeliveryDistance_tooltip": "Minimum road distance in tiles between pickup and dropoff mailboxes. <BR> <BR> <INDENT:20> Shorter distances give lower rewards (~$1,000). <BR> Based on ~5 min drive time at 65 MPH. <BR> Range: 1000–15000. Default: 4400",
+    "Sandbox_POS_MaxDeliveryDistance": "Max Delivery Distance (tiles)",
+    "Sandbox_POS_MaxDeliveryDistance_tooltip": "Maximum road distance in tiles between pickup and dropoff mailboxes. <BR> <BR> <INDENT:20> Longer distances give higher rewards (~$2,500). <BR> Baseline: Muldraugh-to-Louisville road distance. <BR> Range: 3000–30000. Default: 11000",
+    "Sandbox_POS_DeliveryRoadFactor": "Delivery Road Factor (%)",
+    "Sandbox_POS_DeliveryRoadFactor_tooltip": "Estimated road distance as a percentage of straight-line distance. <BR> <BR> <INDENT:20> 130 means road distance is ~1.3x the straight-line distance. <BR> Used for reward estimation before actual distance is tracked. <BR> Range: 100–200. Default: 130"
 }

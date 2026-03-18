@@ -46,6 +46,9 @@ globals = {
     "POS_InvestmentResolver",
     "POS_InvestmentLog",
     "POS_TerminalWidgets",
+    "POS_MailboxScanner",
+    "POS_DeliveryGenerator",
+    "POS_PathTracker",
 }
 
 read_globals = {

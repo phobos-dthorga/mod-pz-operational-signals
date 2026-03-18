@@ -34,12 +34,13 @@ local C = POS_TerminalWidgets.COLOURS
 
 --- Menu options with target screen IDs.
 local MENU_OPTIONS = {
-    { key = "UI_POS_MainMenuOption_BBS",      screen = "BBS_LIST",                enabled = true },
-    { key = "UI_POS_MainMenuOption_IRC",      screen = "IRC_LIST",                enabled = false },
-    { key = "UI_POS_MainMenuOption_Journal",  screen = "JOURNAL",                 enabled = false },
-    { key = "UI_POS_MainMenuOption_Profile",  screen = "PROFILE",                 enabled = false },
-    { key = "UI_POS_MainMenuOption_Stock",    screen = "STOCKMARKET_PLACEHOLDER", enabled = true },
-    { key = "UI_POS_MainMenuOption_Shutdown", screen = nil,                       enabled = true, action = "shutdown" },
+    { key = "UI_POS_MainMenuOption_BBS",        screen = "BBS_LIST",                enabled = true },
+    { key = "UI_POS_MainMenuOption_Deliveries", screen = "DELIVERIES",              enabled = true },
+    { key = "UI_POS_MainMenuOption_IRC",        screen = "IRC_LIST",                enabled = false },
+    { key = "UI_POS_MainMenuOption_Journal",    screen = "JOURNAL",                 enabled = false },
+    { key = "UI_POS_MainMenuOption_Profile",    screen = "PROFILE",                 enabled = false },
+    { key = "UI_POS_MainMenuOption_Stock",      screen = "STOCKMARKET_PLACEHOLDER", enabled = true },
+    { key = "UI_POS_MainMenuOption_Shutdown",   screen = nil,                       enabled = true, action = "shutdown" },
 }
 
 ---------------------------------------------------------------

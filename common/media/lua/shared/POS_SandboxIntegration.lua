@@ -95,3 +95,25 @@ end
 function POS_Sandbox.getInvestmentBroadcastMins()
     return PhobosLib.getSandboxVar("POS", "InvestmentBroadcastMins", 60)
 end
+
+---------------------------------------------------------------
+-- Delivery mission sandbox accessors
+---------------------------------------------------------------
+
+function POS_Sandbox.isDeliveryEnabled()
+    return PhobosLib.getSandboxVar("POS", "EnableDeliveryMissions", true)
+end
+
+function POS_Sandbox.getMinDeliveryDistance()
+    return PhobosLib.getSandboxVar("POS", "MinDeliveryDistance", 4400)
+end
+
+function POS_Sandbox.getMaxDeliveryDistance()
+    return PhobosLib.getSandboxVar("POS", "MaxDeliveryDistance", 11000)
+end
+
+--- Returns road factor as a float (sandbox stores as integer percentage).
+function POS_Sandbox.getDeliveryRoadFactor()
+    local pct = PhobosLib.getSandboxVar("POS", "DeliveryRoadFactor", 130)
+    return pct / 100
+end

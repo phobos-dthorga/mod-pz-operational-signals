@@ -99,3 +99,14 @@ POS_CompletionDetector.registerChecker("item_acquire", function(player, obj)
     local found = inv:getCountTypeRecurse(obj.target)
     return found >= count
 end)
+
+---------------------------------------------------------------
+-- Built-in objective type: delivery
+-- Completion is handled by POS_DeliveryContextMenu via the
+-- right-click "Deliver POSnet Package" action — NOT via
+-- periodic polling. This checker simply reads the completion
+-- flag that the context menu action sets.
+---------------------------------------------------------------
+POS_CompletionDetector.registerChecker("delivery", function(_player, obj)
+    return obj.completed == true
+end)
