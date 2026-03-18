@@ -30,6 +30,7 @@ require "POS_DeliveryGenerator"
 require "POS_RewardCalculator"
 require "POS_OperationLog"
 require "PhobosLib_Pagination"
+require "PhobosLib_Address"
 
 local function safeGetText(key, ...)
     local ok, result = pcall(getText, key, ...)
@@ -39,6 +40,16 @@ end
 
 local C = POS_TerminalWidgets.COLOURS
 local BBS_GOOD = { r = 0.20, g = 0.90, b = 0.50, a = 1.0 }
+
+local function formatLocation(x, y)
+    if PhobosLib_Address and PhobosLib_Address.resolveAddress then
+        local addr = PhobosLib_Address.resolveAddress(x, y)
+        if addr and addr.street then
+            return PhobosLib_Address.formatAddress(addr)
+        end
+    end
+    return math.floor(x) .. ", " .. math.floor(y)
+end
 
 ---------------------------------------------------------------
 -- Helpers
@@ -157,14 +168,24 @@ function screen.create(contentPanel, _params, _terminal)
         -- Pickup location
         W.createLabel(contentPanel, 8, y,
             "  " .. safeGetText("UI_POS_Delivery_Pickup") .. ": "
-            .. math.floor(obj.pickupX) .. ", " .. math.floor(obj.pickupY), C.text)
+            .. formatLocation(obj.pickupX, obj.pickupY), C.text)
         y = y + lineH
 
         -- Dropoff location
         W.createLabel(contentPanel, 8, y,
             "  " .. safeGetText("UI_POS_Delivery_Dropoff") .. ": "
-            .. math.floor(obj.dropoffX) .. ", " .. math.floor(obj.dropoffY), C.text)
+            .. formatLocation(obj.dropoffX, obj.dropoffY), C.text)
         y = y + lineH
+
+        -- Show on Map button (shows relevant location based on delivery state)
+        local mapX = obj.pickedUp and obj.dropoffX or obj.pickupX
+        local mapY = obj.pickedUp and obj.dropoffY or obj.pickupY
+        W.createButton(contentPanel, btnX, y, btnW, btnH,
+            safeGetText("UI_POS_Delivery_ShowOnMap"), nil,
+            function()
+                PhobosLib.showOnWorldMap(0, mapX, mapY, 20.0)
+            end)
+        y = y + btnH + 4
 
         -- Straight-line distance
         W.createLabel(contentPanel, 8, y,

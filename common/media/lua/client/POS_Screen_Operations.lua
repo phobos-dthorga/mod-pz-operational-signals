@@ -31,6 +31,7 @@ require "POS_BuildingCache"
 require "POS_MapMarkers"
 require "POS_OperationLog"
 require "PhobosLib_Pagination"
+require "PhobosLib_Address"
 
 local function safeGetText(key, ...)
     local ok, result = pcall(getText, key, ...)
@@ -40,6 +41,16 @@ end
 
 local C = POS_TerminalWidgets.COLOURS
 local GOOD = { r = 0.20, g = 0.90, b = 0.50, a = 1.0 }
+
+local function formatLocation(x, y)
+    if PhobosLib_Address and PhobosLib_Address.resolveAddress then
+        local addr = PhobosLib_Address.resolveAddress(x, y)
+        if addr and addr.street then
+            return PhobosLib_Address.formatAddress(addr)
+        end
+    end
+    return math.floor(x) .. ", " .. math.floor(y)
+end
 
 --- Tier colour coding.
 local TIER_COLOURS = {
@@ -174,9 +185,18 @@ function screen.create(contentPanel, _params, _terminal)
         local obj = active.objectives[1]
         W.createLabel(contentPanel, 8, y,
             "  " .. safeGetText("UI_POS_Ops_Target") .. ": "
-            .. math.floor(obj.targetBuildingX) .. ", "
-            .. math.floor(obj.targetBuildingY), C.text)
+            .. formatLocation(obj.targetBuildingX, obj.targetBuildingY), C.text)
         y = y + lineH
+
+        -- Show on Map button
+        local mapTargetX = obj.targetBuildingX
+        local mapTargetY = obj.targetBuildingY
+        W.createButton(contentPanel, btnX, y, btnW, btnH,
+            safeGetText("UI_POS_Ops_ShowOnMap"), nil,
+            function()
+                PhobosLib.showOnWorldMap(0, mapTargetX, mapTargetY, 20.0)
+            end)
+        y = y + btnH + 4
 
         -- Multi-step status
         local status

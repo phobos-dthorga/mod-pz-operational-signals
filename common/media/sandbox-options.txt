@@ -90,6 +90,14 @@ option POS.MinSignalThreshold
     translation = POS_MinSignalThreshold,
 }
 
+option POS.SignalAffectsMissionRange
+{
+    type = boolean,
+    default = true,
+    page = POS_Sandbox,
+    translation = POS_SignalAffectsMissionRange,
+}
+
 option POS.EnableInvestments
 {
     type = boolean,

@@ -31,6 +31,7 @@ require "POS_Reputation"
 require "POS_RewardCalculator"
 require "POS_MapMarkers"
 require "POS_OperationLog"
+require "PhobosLib_Address"
 
 local function safeGetText(key, ...)
     local ok, result = pcall(getText, key, ...)
@@ -135,11 +136,31 @@ function screen.create(contentPanel, params, _terminal)
     if obj then
         local targetStr
         if isDelivery then
-            targetStr = safeGetText("UI_POS_Delivery_Pickup") .. ": "
-                .. math.floor(obj.pickupX or 0) .. ", " .. math.floor(obj.pickupY or 0)
+            local locStr = "???"
+            if PhobosLib_Address and PhobosLib_Address.resolveAddress then
+                local addr = PhobosLib_Address.resolveAddress(obj.pickupX or 0, obj.pickupY or 0)
+                if addr and addr.street then
+                    locStr = PhobosLib_Address.formatAddress(addr)
+                else
+                    locStr = math.floor(obj.pickupX or 0) .. ", " .. math.floor(obj.pickupY or 0)
+                end
+            else
+                locStr = math.floor(obj.pickupX or 0) .. ", " .. math.floor(obj.pickupY or 0)
+            end
+            targetStr = safeGetText("UI_POS_Delivery_Pickup") .. ": " .. locStr
         else
-            targetStr = safeGetText("UI_POS_Ops_Target") .. ": "
-                .. math.floor(obj.targetBuildingX or 0) .. ", " .. math.floor(obj.targetBuildingY or 0)
+            local locStr = "???"
+            if PhobosLib_Address and PhobosLib_Address.resolveAddress then
+                local addr = PhobosLib_Address.resolveAddress(obj.targetBuildingX or 0, obj.targetBuildingY or 0)
+                if addr and addr.street then
+                    locStr = PhobosLib_Address.formatAddress(addr)
+                else
+                    locStr = math.floor(obj.targetBuildingX or 0) .. ", " .. math.floor(obj.targetBuildingY or 0)
+                end
+            else
+                locStr = math.floor(obj.targetBuildingX or 0) .. ", " .. math.floor(obj.targetBuildingY or 0)
+            end
+            targetStr = safeGetText("UI_POS_Ops_Target") .. ": " .. locStr
         end
         W.createLabel(contentPanel, 8, y, "  " .. targetStr, C.dim)
         y = y + lineH

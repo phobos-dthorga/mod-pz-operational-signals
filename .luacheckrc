@@ -66,6 +66,7 @@ read_globals = {
     "PhobosLib",
     "PhobosLib_Pagination",
     "PhobosLib_Radio",
+    "PhobosLib_Address",
     "AZAS_STATIONS",
     "AZAS_FrequencyIndex",
     "getRadioScriptManager",

@@ -71,6 +71,11 @@ function POS_Sandbox.getMinSignalThreshold()
     return pct / 100
 end
 
+--- Whether signal strength affects mission distance/quality (placeholder).
+function POS_Sandbox.isSignalAffectsMissionRange()
+    return PhobosLib.getSandboxVar("POS", "SignalAffectsMissionRange", true)
+end
+
 ---------------------------------------------------------------
 -- Investment sandbox accessors
 ---------------------------------------------------------------

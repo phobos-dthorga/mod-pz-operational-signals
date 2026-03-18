@@ -148,3 +148,37 @@ Effects:
 - Gated by `EnableSignalStrength` sandbox toggle
 
 See `docs/radio-power-table.md` for the full power reference table.
+
+### 5.4 Signal Strength Mission Influence (Future)
+
+Radio signal strength should influence mission generation parameters:
+- Lower signal = shorter mission range (closer targets)
+- Higher signal = longer range, better rewards
+- Signal quality affects the "clarity" of mission briefings
+- Gated by `SignalAffectsMissionRange` sandbox toggle (placeholder, not yet wired)
+
+---
+
+## 6. Location Display
+
+### 6.1 Street Addresses
+
+All mission locations must be displayed as human-readable street addresses
+using `PhobosLib_Address.resolveAddress()`. Raw coordinates are the
+fallback if street resolution fails (e.g. modded maps without
+`streets.xml`).
+
+### 6.2 Show on Map
+
+Active missions with a location must offer a `[MAP]` button that opens
+the PZ world map centered on the target via `PhobosLib.showOnWorldMap()`.
+The MAP button appears on active mission views only (not negotiate).
+
+### 6.3 Explored-Only Locations
+
+Missions must only target locations the player has already explored:
+- `POS_BuildingCache.passiveScan()` restricts to 50-tile radius around
+  the player — inherently explored territory.
+- `POS_MailboxScanner` requires player right-click interaction — inherently
+  explored.
+- Any future mission generators must enforce this constraint.

@@ -228,5 +228,8 @@
     "UI_POS_Signal_Excellent": "EXCELLENT",
     "UI_POS_Signal_Good": "GOOD",
     "UI_POS_Signal_Weak": "WEAK",
-    "UI_POS_Signal_Critical": "CRITICAL"
+    "UI_POS_Signal_Critical": "CRITICAL",
+
+    "UI_POS_Ops_ShowOnMap": "[MAP] Show on Map",
+    "UI_POS_Delivery_ShowOnMap": "[MAP] Show Location"
 }

@@ -18,6 +18,9 @@
     "Sandbox_POS_MinSignalThreshold": "Minimum Signal Threshold (%%)",
     "Sandbox_POS_MinSignalThreshold_tooltip": "Minimum signal strength required to connect to POSnet. <BR> <BR> <INDENT:20> Radios below this threshold cannot connect at all. <BR> Set to 0 to allow any radio regardless of power. <BR> Range: 0-50. Default: 15",
 
+    "Sandbox_POS_SignalAffectsMissionRange": "Signal Affects Mission Range",
+    "Sandbox_POS_SignalAffectsMissionRange_tooltip": "When enabled, radio signal strength influences mission distance and quality. <BR> <BR> <INDENT:20> Weaker signals produce closer, simpler missions. <BR> Stronger signals unlock longer-range, higher-reward operations. <BR> Default: ON",
+
     "Sandbox_POS_EnableInvestments": "Enable BBS Investments",
     "Sandbox_POS_EnableInvestments_tooltip": "Master toggle for the BBS investment system. <BR> <BR> <INDENT:20> When disabled, no investment opportunities will be generated. <BR> Default: ON",
     "Sandbox_POS_InvestmentMinPaybackDays": "Investment Min Payback (days)",
