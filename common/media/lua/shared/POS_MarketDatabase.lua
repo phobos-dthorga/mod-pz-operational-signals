@@ -16,7 +16,9 @@
 
 ---------------------------------------------------------------
 -- POS_MarketDatabase.lua
--- Intel record storage and aggregation. Uses player modData.
+-- Intel record storage and aggregation.
+-- Server/SP: reads/writes from world-scoped Global ModData.
+-- Client (MP): reads from a local ephemeral cache.
 ---------------------------------------------------------------
 
 require "PhobosLib"
@@ -28,18 +30,34 @@ POS_MarketDatabase = {}
 -- Internal helpers
 ---------------------------------------------------------------
 
-local function getStore()
-    local player = getSpecificPlayer(0)
-    if not player then return {} end
-    local md = player:getModData()
-    if not md then return {} end
-    if not md[POS_Constants.MD_MARKET_INTEL] then
-        md[POS_Constants.MD_MARKET_INTEL] = {}
+--- Ephemeral client-side cache (MP clients only).
+local clientCache = {}
+
+--- Get the observations array for a category from world state.
+--- On server/SP: reads from ModData.getOrCreate("POSNET.World")
+--- On client in MP: reads from local cache
+local function getWorldCategoryData(categoryId)
+    if POS_WorldState and POS_WorldState.isAuthority() then
+        -- Server/SP: read from world ModData
+        local world = POS_WorldState.getWorld()
+        if not world.categories then world.categories = {} end
+        if not world.categories[categoryId] then
+            world.categories[categoryId] = { observations = {}, rollingCloses = {}, aggregate = {} }
+        end
+        return world.categories[categoryId]
+    else
+        -- MP client: read from local cache
+        if not clientCache[categoryId] then
+            clientCache[categoryId] = { observations = {}, rollingCloses = {}, aggregate = {} }
+        end
+        return clientCache[categoryId]
     end
-    return md[POS_Constants.MD_MARKET_INTEL]
 end
 
 local function getCurrentDay()
+    if POS_WorldState and POS_WorldState.getWorldDay then
+        return POS_WorldState.getWorldDay()
+    end
     local gt = getGameTime and getGameTime()
     if gt then return gt:getNightsSurvived() end
     return 0
@@ -56,18 +74,26 @@ end
 -- Public API
 ---------------------------------------------------------------
 
---- Add a new intel record.
+--- Add a new intel record. Server-only: clients must submit
+--- via sendClientCommand(CMD_SUBMIT_OBSERVATION).
 --- @param record table Intel record (see schema in market-exchange-design.md)
----   Optional fields: items (table of {fullType, price}), sourceTier ("field"|"broadcast"), quality (0-100)
 --- @return boolean success
 function POS_MarketDatabase.addRecord(record)
-    if not record or not record.id then return false end
-    local store = getStore()
-    -- Duplicate check
-    for i = 1, #store do
-        if store[i].id == record.id then return false end
+    -- Server-only: clients must submit via sendClientCommand
+    if not POS_WorldState or not POS_WorldState.isAuthority() then
+        PhobosLib.debug("POS", "[MarketDB] addRecord rejected — not authority")
+        return false
     end
-    -- Preserve optional extended fields
+
+    if not record or not record.categoryId then return false end
+
+    -- Dedup check
+    local catData = getWorldCategoryData(record.categoryId)
+    for _, existing in ipairs(catData.observations) do
+        if existing.id and existing.id == record.id then return false end
+    end
+
+    -- Validate optional fields
     if record.items ~= nil and type(record.items) ~= "table" then
         record.items = nil
     end
@@ -77,37 +103,86 @@ function POS_MarketDatabase.addRecord(record)
     if record.quality then
         record.quality = math.max(0, math.min(100, tonumber(record.quality) or 0))
     end
-    table.insert(store, record)
-    PhobosLib.debug("POS", "[POS:MarketDB]",
-        "Added intel record: " .. record.id .. " (cat: " .. (record.categoryId or "?") .. ")")
+
+    -- Add observation with rolling window cap
+    local maxObs = POS_Sandbox and POS_Sandbox.getMaxObservationsPerCategory
+        and POS_Sandbox.getMaxObservationsPerCategory()
+        or POS_Constants.MAX_OBSERVATIONS_PER_CATEGORY
+
+    local obs = {
+        id = record.id,
+        day = record.recordedDay or getCurrentDay(),
+        price = record.price,
+        stock = record.stock,
+        source = record.source,
+        location = record.location,
+        confidence = record.confidence,
+        sourceTier = record.sourceTier or "field",
+        quality = record.quality,
+    }
+
+    -- Store items if present
+    if record.items then obs.items = record.items end
+
+    PhobosLib.pushRolling(catData.observations, obs, maxObs)
+
+    -- Also log to event log
+    if POS_EventLog and POS_EventLog.append then
+        POS_EventLog.append("economy", "observation",
+            record.categoryId, "", "", 0,
+            POS_BasisPoints and POS_BasisPoints.toBps(record.price or 0) or 0,
+            record.sourceTier or "field")
+    end
+
+    PhobosLib.debug("POS", "[MarketDB] Added intel record: "
+        .. tostring(record.id) .. " (cat: " .. tostring(record.categoryId) .. ")")
+
     return true
 end
 
 --- Get all records for a category, filtered by freshness.
 --- @param categoryId string
 --- @param maxAgeDays number|nil Override max age (default: sandbox setting)
---- @return table[] Array of records
+--- @return table[] Array of observation records
 function POS_MarketDatabase.getRecords(categoryId, maxAgeDays)
-    local store = getStore()
-    local currentDay = getCurrentDay()
+    local catData = getWorldCategoryData(categoryId)
+    if not catData or not catData.observations then return {} end
+
     local maxAge = maxAgeDays or getMaxAgeDays()
-    local results = {}
-    for i = 1, #store do
-        local r = store[i]
-        if r.categoryId == categoryId then
-            local age = currentDay - (r.recordedDay or 0)
-            if age <= maxAge then
-                table.insert(results, r)
-            end
+    local day = getCurrentDay()
+    local result = {}
+
+    for _, obs in ipairs(catData.observations) do
+        if day - (obs.day or 0) <= maxAge then
+            result[#result + 1] = obs
         end
     end
-    return results
+
+    return result
 end
 
 --- Get aggregated summary for a category.
+--- Uses pre-computed aggregate if available (from economy tick),
+--- otherwise computes on the fly.
 --- @param categoryId string
 --- @return table { low, high, avg, sourceCount, freshestDay, confidence, trend }
 function POS_MarketDatabase.getSummary(categoryId)
+    local catData = getWorldCategoryData(categoryId)
+
+    -- If aggregate is pre-computed (by economy tick), return it
+    if catData.aggregate and catData.aggregate.avgPrice and catData.aggregate.avgPrice > 0 then
+        return {
+            low = catData.aggregate.lowPrice,
+            high = catData.aggregate.highPrice,
+            avg = catData.aggregate.avgPrice,
+            sourceCount = catData.aggregate.sourceCount or 0,
+            freshestDay = catData.aggregate.freshestDay or 0,
+            confidence = catData.aggregate.confidence or "low",
+            trend = "unknown",
+        }
+    end
+
+    -- Otherwise compute on the fly (SP without economy tick, or first access)
     local records = POS_MarketDatabase.getRecords(categoryId)
     local summary = {
         low = nil,
@@ -126,12 +201,13 @@ function POS_MarketDatabase.getSummary(categoryId)
     local sources = {}
 
     for _, r in ipairs(records) do
-        if r.price then
-            if not summary.low or r.price < summary.low then
-                summary.low = r.price
+        local price = r.price
+        if price then
+            if not summary.low or price < summary.low then
+                summary.low = price
             end
-            if not summary.high or r.price > summary.high then
-                summary.high = r.price
+            if not summary.high or price > summary.high then
+                summary.high = price
             end
             -- Weight by sourceTier
             local w = POS_Constants.SOURCE_TIER_WEIGHT_DEFAULT
@@ -140,14 +216,15 @@ function POS_MarketDatabase.getSummary(categoryId)
             elseif r.sourceTier == "broadcast" then
                 w = POS_Constants.SOURCE_TIER_WEIGHT_BROADCAST
             end
-            weightedTotal = weightedTotal + (r.price * w)
+            weightedTotal = weightedTotal + (price * w)
             totalWeight = totalWeight + w
         end
         if r.source then
             sources[r.source] = true
         end
-        if r.recordedDay and r.recordedDay > summary.freshestDay then
-            summary.freshestDay = r.recordedDay
+        local rDay = r.day or r.recordedDay or 0
+        if rDay > summary.freshestDay then
+            summary.freshestDay = rDay
         end
     end
 
@@ -195,33 +272,33 @@ end
 --- @param days number Number of days to look back
 --- @return table[] Array of { day, avg, count }
 function POS_MarketDatabase.getPriceHistory(categoryId, days)
-    local store = getStore()
+    local catData = getWorldCategoryData(categoryId)
+    if not catData or not catData.observations then return {} end
+
     local currentDay = getCurrentDay()
     local startDay = currentDay - (days or 7)
 
     -- Group prices by day
     local byDay = {}
-    for _, r in ipairs(store) do
-        if r.categoryId == categoryId and r.price and r.recordedDay then
-            if r.recordedDay >= startDay then
-                local day = r.recordedDay
-                if not byDay[day] then
-                    byDay[day] = { total = 0, count = 0 }
-                end
-                byDay[day].total = byDay[day].total + r.price
-                byDay[day].count = byDay[day].count + 1
+    for _, obs in ipairs(catData.observations) do
+        local obsDay = obs.day or obs.recordedDay
+        if obs.price and obsDay and obsDay >= startDay then
+            if not byDay[obsDay] then
+                byDay[obsDay] = { total = 0, count = 0 }
             end
+            byDay[obsDay].total = byDay[obsDay].total + obs.price
+            byDay[obsDay].count = byDay[obsDay].count + 1
         end
     end
 
     -- Build sorted history
     local history = {}
     for day, data in pairs(byDay) do
-        table.insert(history, {
+        history[#history + 1] = {
             day = day,
             avg = math.floor((data.total / data.count) * 100 + 0.5) / 100,
             count = data.count,
-        })
+        }
     end
     table.sort(history, function(a, b) return a.day < b.day end)
 
@@ -247,8 +324,9 @@ function POS_MarketDatabase.getItemRecords(categoryId, maxAgeDays)
                     end
                     entry.totalPrice = entry.totalPrice + item.price
                     entry.priceCount = entry.priceCount + 1
-                    if (r.recordedDay or 0) > entry.lastSeen then
-                        entry.lastSeen = r.recordedDay or 0
+                    local rDay = r.day or r.recordedDay or 0
+                    if rDay > entry.lastSeen then
+                        entry.lastSeen = rDay
                     end
                 end
             end
@@ -257,12 +335,12 @@ function POS_MarketDatabase.getItemRecords(categoryId, maxAgeDays)
 
     local result = {}
     for _, entry in pairs(itemMap) do
-        table.insert(result, {
+        result[#result + 1] = {
             fullType = entry.fullType,
             avgPrice = math.floor((entry.totalPrice / entry.priceCount) * 100 + 0.5) / 100,
             priceCount = entry.priceCount,
             lastSeen = entry.lastSeen,
-        })
+        }
     end
     table.sort(result, function(a, b) return a.fullType < b.fullType end)
 
@@ -272,22 +350,34 @@ end
 --- Get all known traders (across all categories).
 --- @return table[] Array of { source, location, categories[] }
 function POS_MarketDatabase.getKnownTraders()
-    local store = getStore()
     local currentDay = getCurrentDay()
     local maxAge = getMaxAgeDays()
     local traderMap = {}
 
-    for _, r in ipairs(store) do
-        if r.source and (currentDay - (r.recordedDay or 0)) <= maxAge then
-            local key = r.source
-            if not traderMap[key] then
-                traderMap[key] = {
-                    source = r.source,
-                    location = r.location or "",
-                    categories = {},
-                }
+    -- Iterate all known categories from world state
+    local categories = {}
+    if POS_WorldState and POS_WorldState.isAuthority() then
+        local world = POS_WorldState.getWorld()
+        if world and world.categories then categories = world.categories end
+    else
+        categories = clientCache
+    end
+
+    for catId, catData in pairs(categories) do
+        if catData.observations then
+            for _, obs in ipairs(catData.observations) do
+                if obs.source and (currentDay - (obs.day or 0)) <= maxAge then
+                    local key = obs.source
+                    if not traderMap[key] then
+                        traderMap[key] = {
+                            source = obs.source,
+                            location = obs.location or "",
+                            categories = {},
+                        }
+                    end
+                    traderMap[key].categories[catId] = true
+                end
             end
-            traderMap[key].categories[r.categoryId or "unknown"] = true
         end
     end
 
@@ -295,43 +385,60 @@ function POS_MarketDatabase.getKnownTraders()
     for _, t in pairs(traderMap) do
         local cats = {}
         for catId in pairs(t.categories) do
-            table.insert(cats, catId)
+            cats[#cats + 1] = catId
         end
         table.sort(cats)
-        table.insert(traders, {
+        traders[#traders + 1] = {
             source = t.source,
             location = t.location,
             categories = cats,
-        })
+        }
     end
     table.sort(traders, function(a, b) return a.source < b.source end)
 
     return traders
 end
 
---- Purge expired records older than maxDays.
+--- Purge expired observations older than maxDays.
+--- Server-only. Uses PhobosLib.trimByAge.
 --- @param maxDays number|nil Override (default: sandbox setting)
---- @return number count Number of records purged
+--- @return number count Number of observations purged
 function POS_MarketDatabase.purgeExpired(maxDays)
-    local store = getStore()
-    local currentDay = getCurrentDay()
-    local maxAge = maxDays or getMaxAgeDays()
-    local purged = 0
+    if not POS_WorldState or not POS_WorldState.isAuthority() then return 0 end
 
-    local i = 1
-    while i <= #store do
-        local age = currentDay - (store[i].recordedDay or 0)
-        if age > maxAge then
-            table.remove(store, i)
-            purged = purged + 1
-        else
-            i = i + 1
+    local world = POS_WorldState.getWorld()
+    if not world.categories then return 0 end
+
+    local day = getCurrentDay()
+    local maxAge = maxDays or getMaxAgeDays()
+    local total = 0
+
+    for catId, catData in pairs(world.categories) do
+        if catData.observations then
+            total = total + PhobosLib.trimByAge(catData.observations, "day", maxAge, day)
         end
     end
 
-    if purged > 0 then
-        PhobosLib.debug("POS", "[POS:MarketDB]",
-            "Purged " .. purged .. " expired intel records")
+    if total > 0 then
+        PhobosLib.debug("POS", "[MarketDB] Purged " .. total .. " expired observations")
     end
-    return purged
+
+    return total
+end
+
+---------------------------------------------------------------
+-- Client cache management (MP)
+---------------------------------------------------------------
+
+--- Update the local client cache for a category (called when
+--- receiving a snapshot from the server in MP).
+--- @param categoryId string
+--- @param data table Category data { observations, rollingCloses, aggregate }
+function POS_MarketDatabase.updateClientCache(categoryId, data)
+    clientCache[categoryId] = data
+end
+
+--- Clear the entire client cache (e.g. on disconnect).
+function POS_MarketDatabase.clearClientCache()
+    clientCache = {}
 end

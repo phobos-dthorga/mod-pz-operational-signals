@@ -23,14 +23,18 @@
 
 require "PhobosLib"
 require "POS_Constants"
+require "POS_WorldState"
 require "POS_MarketDatabase"
 
 POS_MarketIngestion = {}
 
 --- Ingest a raw market note item into the database.
+--- On server/SP: adds the record directly via POS_MarketDatabase.
+--- On MP client: sends the record to the server via sendClientCommand.
 --- @param noteItem any InventoryItem with market note modData
+--- @param player any|nil IsoPlayer (required for MP client routing)
 --- @return boolean success
-function POS_MarketIngestion.ingestNote(noteItem)
+function POS_MarketIngestion.ingestNote(noteItem, player)
     if not noteItem then return false end
     local md = noteItem:getModData()
     if not md or md[POS_Constants.MD_NOTE_TYPE] ~= "market" then return false end
@@ -45,7 +49,19 @@ function POS_MarketIngestion.ingestNote(noteItem)
         recordedDay = md[POS_Constants.MD_NOTE_RECORDED],
         confidence = md[POS_Constants.MD_NOTE_CONFIDENCE],
     }
-    return POS_MarketDatabase.addRecord(record)
+
+    if POS_WorldState and POS_WorldState.isAuthority() then
+        -- Server/SP: add directly
+        return POS_MarketDatabase.addRecord(record)
+    else
+        -- MP client: send to server
+        local p = player or getSpecificPlayer(0)
+        if p then
+            sendClientCommand(p, POS_Constants.CMD_MODULE,
+                POS_Constants.CMD_SUBMIT_OBSERVATION, { record = record })
+        end
+        return true  -- Optimistic: assume server will accept
+    end
 end
 
 --- Check if enough data exists to compile a report for a category.

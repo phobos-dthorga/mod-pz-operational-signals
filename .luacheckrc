@@ -86,6 +86,7 @@ globals = {
     "POS_TapeManager",
     "POS_NoteTooltip",
     "POS_ReconDeviceRegistry",
+    "POS_EconomyTick",
 }
 
 read_globals = {

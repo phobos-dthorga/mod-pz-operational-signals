@@ -21,6 +21,7 @@
 -- plus thin PZ API wrappers for day, authority, and seed queries.
 ---------------------------------------------------------------
 
+require "PhobosLib"
 require "POS_Constants"
 
 POS_WorldState = {}
@@ -116,6 +117,50 @@ function POS_WorldState.bootstrap()
 
     local mailboxes = POS_WorldState.getMailboxes()
     mailboxes.entries = mailboxes.entries or {}
+
+    -- One-time migration from player modData to world ModData
+    if not meta.migrated then
+        local player = getSpecificPlayer(0)
+        if player then
+            local playerMd = player:getModData()
+
+            -- Migrate market intel records
+            local oldIntel = playerMd[POS_Constants.MD_MARKET_INTEL]
+            if oldIntel and type(oldIntel) == "table" then
+                PhobosLib.debug("POS", "[WorldState] Migrating "
+                    .. tostring(#oldIntel) .. " intel records from player to world")
+                if POS_MarketDatabase and POS_MarketDatabase.addRecord then
+                    for _, record in ipairs(oldIntel) do
+                        POS_MarketDatabase.addRecord(record)
+                    end
+                end
+                playerMd[POS_Constants.MD_MARKET_INTEL] = nil
+            end
+
+            -- Migrate building cache
+            local oldBuildings = playerMd["POS_DiscoveredBuildings"]
+            if oldBuildings and type(oldBuildings) == "table" then
+                buildings.entries = buildings.entries or {}
+                for _, b in ipairs(oldBuildings) do
+                    buildings.entries[#buildings.entries + 1] = b
+                end
+                playerMd["POS_DiscoveredBuildings"] = nil
+                playerMd["POS_BuildingScanDone"] = nil
+            end
+
+            -- Migrate mailbox cache
+            local oldMailboxes = playerMd["POS_DiscoveredMailboxes"]
+            if oldMailboxes and type(oldMailboxes) == "table" then
+                mailboxes.entries = mailboxes.entries or {}
+                for _, m in ipairs(oldMailboxes) do
+                    mailboxes.entries[#mailboxes.entries + 1] = m
+                end
+                playerMd["POS_DiscoveredMailboxes"] = nil
+                playerMd["POS_MailboxScanDone"] = nil
+            end
+        end
+        meta.migrated = true
+    end
 
     PhobosLib.debug("POS", "[WorldState] Bootstrap complete, schema v"
         .. tostring(meta.schemaVersion) .. ", seed=" .. tostring(meta.worldSeed))

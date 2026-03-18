@@ -30,6 +30,8 @@
 
 require "PhobosLib"
 require "POS_Constants"
+require "POS_WorldState"
+require "POS_MarketDatabase"
 require "POS_MarketBroadcaster"
 
 POS_BroadcastSystem = {}
@@ -39,7 +41,7 @@ POS_BroadcastSystem = {}
 --- @param module string Command module
 --- @param command string Command name
 --- @param args table Command arguments
-local function broadcastToAll(module, command, args)
+function POS_BroadcastSystem.broadcastToAll(module, command, args)
     if isServer and isServer() then
         -- Dedicated/listen server: iterate online players
         local players = getOnlinePlayers and getOnlinePlayers()
@@ -115,7 +117,7 @@ function POS_BroadcastSystem.broadcast()
     end
 
     -- Broadcast to all clients via server command
-    broadcastToAll(POS_Constants.CMD_MODULE, POS_Constants.CMD_NEW_OPERATION, {
+    POS_BroadcastSystem.broadcastToAll(POS_Constants.CMD_MODULE, POS_Constants.CMD_NEW_OPERATION, {
         operationData = operation,
     })
 
@@ -138,7 +140,7 @@ function POS_BroadcastSystem.broadcastInvestment()
     end
 
     -- Broadcast to all clients via server command
-    broadcastToAll(POS_Constants.CMD_MODULE, POS_Constants.CMD_NEW_INVESTMENT, {
+    POS_BroadcastSystem.broadcastToAll(POS_Constants.CMD_MODULE, POS_Constants.CMD_NEW_INVESTMENT, {
         investmentData = opportunity,
     })
 
@@ -188,7 +190,31 @@ end
 function POS_BroadcastSystem.onClientCommand(module, command, player, args)
     if module ~= POS_Constants.CMD_MODULE then return end
 
-    if command == POS_Constants.CMD_REQUEST_OPERATION then
+    if command == POS_Constants.CMD_SUBMIT_OBSERVATION then
+        -- Client submitted a market observation (from field recon / note ingestion)
+        if args and args.record then
+            POS_MarketDatabase.addRecord(args.record)
+        end
+
+    elseif command == POS_Constants.CMD_REQUEST_MARKET_SNAPSHOT then
+        -- Client requesting market overview for their local cache
+        if player then
+            local snapshot = {}
+            local world = POS_WorldState and POS_WorldState.getWorld()
+            if world and world.categories then
+                for catId, catData in pairs(world.categories) do
+                    snapshot[catId] = {
+                        observations = catData.observations or {},
+                        rollingCloses = catData.rollingCloses or {},
+                        aggregate = catData.aggregate or {},
+                    }
+                end
+            end
+            sendServerCommand(player, POS_Constants.CMD_MODULE,
+                POS_Constants.CMD_MARKET_SNAPSHOT, { data = snapshot })
+        end
+
+    elseif command == POS_Constants.CMD_REQUEST_OPERATION then
         -- Future: allow players to request a new operation on demand
         PhobosLib.debug("POS", "Operation request from " .. (player:getUsername() or "?"))
     elseif command == POS_Constants.CMD_PLAYER_INVESTED and args then
