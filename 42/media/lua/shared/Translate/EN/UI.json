@@ -29,8 +29,6 @@
     "UI_POS_NoPower": "Radio has no power.",
     "UI_POS_NoComputer": "No computer available.",
 
-    "Tooltip_POS_PortableComputer": "A bulky early-90s portable computer. <BR> With this in your inventory, connect to POSnet via any radio — no desktop terminal required. <BR> <BR> Battery drains while the terminal is open.",
-
     "UI_POS_TerminalHeader": "POSnet OPERATIONAL TERMINAL",
     "UI_POS_TerminalConnected": "Connected via %1",
     "UI_POS_TerminalFrequency": "Frequency: %1 MHz",
@@ -188,8 +186,6 @@
     "UI_POS_Ops_Status_NotesNeeded": "Craft field report",
     "UI_POS_Ops_Status_ReturnToTerminal": "Return to terminal",
 
-    "Tooltip_POS_ReconPhotograph": "A photograph of a POSnet reconnaissance target. <BR> Combine with paper and a pen to write field notes.",
-    "Tooltip_POS_FieldReport": "Handwritten field observations for a POSnet operation. <BR> Return to a terminal to submit.",
     "DisplayName_POS_ReconPhotograph": "Recon Photograph",
     "DisplayName_POS_FieldReport": "POSnet Field Report",
 
@@ -341,9 +337,6 @@
     "UI_POS_Exchange_AmmoIndex": "Ammunition Index",
     "UI_POS_Exchange_ToolsIndex": "Tools Index",
     "UI_POS_Exchange_RadioIndex": "Radio Equipment Index",
-
-    "Tooltip_POS_RawMarketNote": "Handwritten observations on local market conditions. <BR> Upload at a POSnet terminal to add to the intel database.",
-    "Tooltip_POS_CompiledMarketReport": "A compiled analysis of commodity prices and availability. <BR> Generated from multiple field notes for a single commodity.",
 
     "UI_POS_Market_Cat_Survival": "Survival",
     "UI_POS_Market_Cat_Weapons": "Weapons",
