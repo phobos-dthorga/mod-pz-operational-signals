@@ -43,11 +43,11 @@ function POS_PriceEngine.getDayDrift(categoryId)
     end
     local seed = hash + day * POS_Constants.PRICE_DRIFT_SEED_MULTIPLIER
 
-    -- Use seed for deterministic drift
-    local rng = newrandom()
-    rng:seed(seed)
+    -- Deterministic pseudo-random from seed (no Java RNG dependency)
+    -- Simple hash → float in [-1, 1] range, then scale to drift bounds
+    local h = ((seed * 2654435761) % 4294967296) / 4294967296  -- Knuth multiplicative hash → [0, 1)
     local halfRange = POS_Constants.PRICE_DRIFT_RANGE / 2
-    local baseDrift = (rng:random(POS_Constants.PRICE_DRIFT_RANGE) - halfRange)
+    local baseDrift = ((h * POS_Constants.PRICE_DRIFT_RANGE) - halfRange)
         / POS_Constants.PRICE_DRIFT_DIVISOR
 
     -- Clamp to sandbox-configurable max daily drift
