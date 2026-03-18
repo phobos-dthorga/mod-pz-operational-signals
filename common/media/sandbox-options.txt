@@ -501,3 +501,389 @@ option POS.TerminalPowerDrainRate
     page = POS_Sandbox,
     translation = POS_TerminalPowerDrainRate,
 }
+
+option POS.EnableMarkets
+{
+    type = boolean,
+    default = true,
+    page = POS_Sandbox,
+    translation = POS_EnableMarkets,
+}
+
+option POS.EnableExchange
+{
+    type = boolean,
+    default = false,
+    page = POS_Sandbox,
+    translation = POS_EnableExchange,
+}
+
+option POS.IntelFreshnessDecayDays
+{
+    type = integer,
+    default = 14,
+    min = 3,
+    max = 60,
+    page = POS_Sandbox,
+    translation = POS_IntelFreshnessDecayDays,
+}
+
+option POS.MarketBroadcastInterval
+{
+    type = integer,
+    default = 120,
+    min = 30,
+    max = 480,
+    page = POS_Sandbox,
+    translation = POS_MarketBroadcastInterval,
+}
+
+option POS.MarketNoteActionTime
+{
+    type = integer,
+    default = 300,
+    min = 100,
+    max = 600,
+    page = POS_Sandbox,
+    translation = POS_MarketNoteActionTime,
+}
+
+option POS.EnableMarketBroadcasts
+{
+    type = boolean,
+    default = true,
+    page = POS_Sandbox,
+    translation = POS_EnableMarketBroadcasts,
+}
+
+option POS.MarketBroadcastQuality
+{
+    type = integer,
+    default = 50,
+    min = 0,
+    max = 100,
+    page = POS_Sandbox,
+    translation = POS_MarketBroadcastQuality,
+}
+
+option POS.EnableCategoryWeighting
+{
+    type = boolean,
+    default = true,
+    page = POS_Sandbox,
+    translation = POS_EnableCategoryWeighting,
+}
+
+option POS.EnableItemLevelIntel
+{
+    type = boolean,
+    default = true,
+    page = POS_Sandbox,
+    translation = POS_EnableItemLevelIntel,
+}
+
+option POS.ItemSelectionPoolSize
+{
+    type = integer,
+    default = 3,
+    min = 1,
+    max = 5,
+    page = POS_Sandbox,
+    translation = POS_ItemSelectionPoolSize,
+}
+
+option POS.BroadcastItemsPerPacket
+{
+    type = integer,
+    default = 2,
+    min = 1,
+    max = 5,
+    page = POS_Sandbox,
+    translation = POS_BroadcastItemsPerPacket,
+}
+
+option POS.ReputationAffectsVariance
+{
+    type = boolean,
+    default = true,
+    page = POS_Sandbox,
+    translation = POS_ReputationAffectsVariance,
+}
+
+option POS.DailyPriceDriftPct
+{
+    type = integer,
+    default = 2,
+    min = 0,
+    max = 10,
+    page = POS_Sandbox,
+    translation = POS_DailyPriceDriftPct,
+}
+
+option POS.EssentialGoodsPriority
+{
+    type = boolean,
+    default = true,
+    page = POS_Sandbox,
+    translation = POS_EssentialGoodsPriority,
+}
+
+option POS.WeightFuel
+{
+    type = integer,
+    default = 150,
+    min = 10,
+    max = 300,
+    page = POS_Sandbox,
+    translation = POS_WeightFuel,
+}
+
+option POS.WeightMedicine
+{
+    type = integer,
+    default = 140,
+    min = 10,
+    max = 300,
+    page = POS_Sandbox,
+    translation = POS_WeightMedicine,
+}
+
+option POS.WeightFood
+{
+    type = integer,
+    default = 100,
+    min = 10,
+    max = 300,
+    page = POS_Sandbox,
+    translation = POS_WeightFood,
+}
+
+option POS.WeightAmmunition
+{
+    type = integer,
+    default = 130,
+    min = 10,
+    max = 300,
+    page = POS_Sandbox,
+    translation = POS_WeightAmmunition,
+}
+
+option POS.WeightTools
+{
+    type = integer,
+    default = 90,
+    min = 10,
+    max = 300,
+    page = POS_Sandbox,
+    translation = POS_WeightTools,
+}
+
+option POS.WeightRadio
+{
+    type = integer,
+    default = 60,
+    min = 10,
+    max = 300,
+    page = POS_Sandbox,
+    translation = POS_WeightRadio,
+}
+
+option POS.PortableBatteryDivisor
+{
+    type = integer,
+    default = 1800,
+    min = 300,
+    max = 7200,
+    page = POS_Sandbox,
+    translation = POS_PortableBatteryDivisor,
+}
+
+option POS.MaxObservationsPerCategory
+{
+    type = integer,
+    default = 24,
+    min = 12,
+    max = 48,
+    page = POS_Sandbox,
+    translation = POS_MaxObservationsPerCategory,
+}
+
+option POS.MaxRollingCloses
+{
+    type = integer,
+    default = 14,
+    min = 7,
+    max = 30,
+    page = POS_Sandbox,
+    translation = POS_MaxRollingCloses,
+}
+
+option POS.MaxGlobalEvents
+{
+    type = integer,
+    default = 100,
+    min = 50,
+    max = 250,
+    page = POS_Sandbox,
+    translation = POS_MaxGlobalEvents,
+}
+
+option POS.MaxPlayerAlerts
+{
+    type = integer,
+    default = 20,
+    min = 5,
+    max = 50,
+    page = POS_Sandbox,
+    translation = POS_MaxPlayerAlerts,
+}
+
+option POS.EconomyTickEnabled
+{
+    type = boolean,
+    default = true,
+    page = POS_Sandbox,
+    translation = POS_EconomyTickEnabled,
+}
+
+option POS.EnableEventLogs
+{
+    type = boolean,
+    default = true,
+    page = POS_Sandbox,
+    translation = POS_EnableEventLogs,
+}
+
+option POS.EventLogRetentionDays
+{
+    type = integer,
+    default = 30,
+    min = 7,
+    max = 90,
+    page = POS_Sandbox,
+    translation = POS_EventLogRetentionDays,
+}
+
+option POS.EnablePassiveRecon
+{
+    type = boolean,
+    default = true,
+    page = POS_Sandbox,
+    translation = POS_EnablePassiveRecon,
+}
+
+option POS.PassiveReconInterval
+{
+    type = integer,
+    default = 60,
+    min = 30,
+    max = 180,
+    page = POS_Sandbox,
+    translation = POS_PassiveReconInterval,
+}
+
+option POS.CamcorderScanRadius
+{
+    type = integer,
+    default = 40,
+    min = 20,
+    max = 80,
+    page = POS_Sandbox,
+    translation = POS_CamcorderScanRadius,
+}
+
+option POS.LoggerScanRadius
+{
+    type = integer,
+    default = 25,
+    min = 10,
+    max = 50,
+    page = POS_Sandbox,
+    translation = POS_LoggerScanRadius,
+}
+
+option POS.VHSTapeMinDays
+{
+    type = integer,
+    default = 3,
+    min = 1,
+    max = 7,
+    page = POS_Sandbox,
+    translation = POS_VHSTapeMinDays,
+}
+
+option POS.CamcorderNoiseLevel
+{
+    type = integer,
+    default = 5,
+    min = 0,
+    max = 20,
+    page = POS_Sandbox,
+    translation = POS_CamcorderNoiseLevel,
+}
+
+option POS.TapeDegradationRate
+{
+    type = integer,
+    default = 10,
+    min = 0,
+    max = 30,
+    page = POS_Sandbox,
+    translation = POS_TapeDegradationRate,
+}
+
+option POS.CalculatorConfidenceBonus
+{
+    type = integer,
+    default = 5,
+    min = 0,
+    max = 15,
+    page = POS_Sandbox,
+    translation = POS_CalculatorConfidenceBonus,
+}
+
+option POS.EnableVHSCrafting
+{
+    type = boolean,
+    default = true,
+    page = POS_Sandbox,
+    translation = POS_EnableVHSCrafting,
+}
+
+option POS.EnableForagingTapes
+{
+    type = boolean,
+    default = true,
+    page = POS_Sandbox,
+    translation = POS_EnableForagingTapes,
+}
+
+option POS.IntelCooldownDays
+{
+    type = integer,
+    default = 12,
+    min = 3,
+    max = 14,
+    page = POS_Sandbox,
+    translation = POS_IntelCooldownDays,
+}
+
+option POS.DangerCheckRadius
+{
+    type = integer,
+    default = 15,
+    min = 5,
+    max = 30,
+    page = POS_Sandbox,
+    translation = POS_DangerCheckRadius,
+}
+
+option POS.VHSReviewTimePerEntry
+{
+    type = integer,
+    default = 300,
+    min = 100,
+    max = 600,
+    page = POS_Sandbox,
+    translation = POS_VHSReviewTimePerEntry,
+}

@@ -65,6 +65,28 @@ globals = {
     "POS_MenuBuilder",
     "POS_NavPanel",
     "POS_ContextPanel",
+    "POS_MarketRegistry",
+    "POS_MarketDatabase",
+    "POS_ExchangeEngine",
+    "POS_MarketService",
+    "POS_RoomCategoryMap",
+    "POS_MarketIngestion",
+    "POS_MarketReconAction",
+    "POS_MarketContextMenu",
+    "POS_MarketBroadcaster",
+    "POS_CrossModMarkets",
+    "POS_TraderIntegration",
+    "POS_ItemPool",
+    "POS_PriceEngine",
+    "POS_WorldState",
+    "POS_PlayerState",
+    "POS_BasisPoints",
+    "POS_EventLog",
+    "POS_PassiveRecon",
+    "POS_TapeManager",
+    "POS_NoteTooltip",
+    "POS_ReconDeviceRegistry",
+    "POS_EconomyTick",
 }
 
 read_globals = {
@@ -108,6 +130,7 @@ read_globals = {
     -- Cross-mod (optional, runtime-guarded)
     "PCP_Sandbox",
     "PIP_Sandbox",
+    "DynamicTrading",
 
     -- Auto-generated from PZJavaDocs lua_api.json (1646 entries)
     -- Regenerate: extract globals + exposed classes from lua_api.json

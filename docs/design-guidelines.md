@@ -61,6 +61,25 @@ missions, windows, and sandbox options. All new features must comply.
 - Page changes (pagination) use `replaceCurrent()` to avoid polluting the
   back stack.
 
+#### 2.1.1 Root Screen Navigation
+
+Root screens (main menu, or any screen where the navigation stack is empty)
+MUST display a `[0] Exit` button that closes the terminal window. Root screens
+do NOT show a Back button — there is nowhere to go back to.
+
+#### 2.1.2 Non-Root Screen Navigation
+
+All non-root screens MUST display a `[0] Back` button via `drawFooter()`.
+This returns to the previous screen in the navigation stack.
+
+#### 2.1.3 Navigation Guarantee
+
+Every screen MUST call either:
+- `POS_TerminalWidgets.drawExitFooter(ctx)` — for root screens
+- `POS_TerminalWidgets.drawFooter(ctx)` — for all other screens
+
+No screen should render without a navigation action at the bottom.
+
 ### 2.2 Menu Hierarchy
 
 - The **main menu** must remain uncluttered. Use sub-menus.
@@ -101,8 +120,20 @@ missions, windows, and sandbox options. All new features must comply.
 - All screen content must use **relative widths** (`contentPanel:getWidth()`)
   rather than hardcoded pixel values. Button widths: `pw - 10`.
 - `maxChars` for wrapped text should adapt to panel width where practical.
-- Separator character count (currently 40) is acceptable at the default
-  size but should scale with width in future if needed.
+- Separator character count is dynamically computed from panel width.
+
+### 2.6 Text Overflow Prevention
+
+All button labels MUST be truncated to fit their pixel width using
+`PhobosLib.truncateText()`. This prevents text from overflowing button
+boundaries and bleeding into adjacent panels.
+
+Rules:
+- Button text is truncated with "..." ellipsis if it exceeds button width
+- Separator character count is dynamically computed from panel width
+- Wrapped text character limits are derived from pixel width via
+  `PhobosLib.maxCharsForWidth()`, not hardcoded values
+- NavPanel labels are truncated to fit the 172px button width
 
 ---
 
@@ -115,6 +146,13 @@ missions, windows, and sandbox options. All new features must comply.
 - The goal is **maximum player choice with minimum grief**.
 - Boolean toggles for feature gates; integer sliders for tunable values.
 - All sandbox options must have translated labels and tooltips.
+
+### 3.1 Weight Threshold Rule
+
+When exposing category or sub-category weights as sandbox options, only those with
+a default weight ≥ 0.5 should be included. This prevents the sandbox options panel
+from becoming monolithic. Low-weight categories (cosmetic items, junk) use their
+coded defaults silently.
 
 ---
 
@@ -597,3 +635,268 @@ At 1170px default, usable height is ~667px (~33 lines at 20px lineH).
   `PhobosLib_Pagination`'s `maxHeight` option.
 - Headers + footers + breadcrumbs should not exceed ~6 lines combined.
 - Screens should test at the minimum window height (780px, ~22 usable lines).
+
+---
+
+## 10. Item Selection & Market Intelligence
+
+### 10.1 Weight-Based Selection
+
+All item selection in the market system uses `PhobosLib.weightedRandom()` with
+category/sub-category weights. Higher-weight categories appear more frequently
+in both field reconnaissance and broadcasts.
+
+### 10.2 Off-Category Chance
+
+A small randomness factor (`POS_Constants.ITEM_POOL_OFF_CATEGORY_CHANCE`, default 5%)
+introduces items from unrelated categories. This simulates the unpredictable nature
+of post-apocalyptic trade and prevents market data from being perfectly predictable.
+
+### 10.3 Reputation Influence
+
+Player reputation tier scales price variance:
+- Low reputation → wide variance (prices are unreliable estimates)
+- High reputation → tight variance (prices are accurate)
+
+This is controlled by the `ReputationAffectsVariance` sandbox option.
+
+### 10.4 Essential Goods Priority
+
+When enabled (`EssentialGoodsPriority` sandbox option), essential categories
+(fuel, medicine, food) receive a 1.5× broadcast frequency multiplier, making
+survival-critical market data more available to players.
+
+### 10.5 Sub-Category Drill-Down
+
+Terminal screens allow filtering by sub-category (e.g., "Rifle Ammo" within
+"Ammunition"). This adds one navigation level but keeps screens uncluttered
+with 4-5 sub-categories per parent, paginated if needed.
+
+---
+
+## 11. Data Persistence Rules
+
+### 11.1 World-Scoped State
+
+- Market intelligence is stored in world-scoped Global ModData (`POSNET.World`).
+- Building and mailbox caches are stored in `POSNET.Buildings` and `POSNET.Mailboxes`.
+- Exchange and wholesaler data live in `POSNET.Exchange` and `POSNET.Wholesalers`.
+- Schema version and migration flags are tracked in `POSNET.Meta`.
+
+### 11.2 Player ModData Scope
+
+Player modData is limited to per-player state only:
+- Reputation, cash balance, watchlist, active orders, alert preferences, cooldowns.
+- VHS tape full entries are stored in the event log; only a summary is kept in
+  item modData.
+
+### 11.3 Authority Model
+
+- **Server-authoritative**: only the server (or SP host) writes canonical market
+  state via `POS_MarketDatabase.addRecord()`.
+- MP clients receive snapshots via `sendServerCommand` (`CMD_MARKET_SNAPSHOT`)
+  and store them in an ephemeral local cache. Clients never write world state.
+- Clients request snapshots on init and after each `CMD_ECONOMY_TICK_COMPLETE`
+  notification.
+
+### 11.4 Rolling Window Caps
+
+All rolling windows are capped by sandbox options with constants as fallbacks:
+- `MAX_OBSERVATIONS_PER_CATEGORY` (default 24)
+- `MAX_ROLLING_CLOSES` (default 14)
+- `MAX_GLOBAL_EVENTS` (default 100)
+- `MAX_PLAYER_ALERTS` (default 20)
+- `MAX_PLAYER_ORDERS` (default 10)
+
+---
+
+## 12. Passive Recon Device Rules
+
+### 12.1 Device Equip Requirement
+
+Passive scanning only activates when a device is equipped in the appropriate slot.
+Merely carrying the device in inventory provides a confidence bonus to manual
+note-taking but does NOT trigger passive scanning.
+
+| Device | Equip Slot | Passive Scan | Carry Bonus |
+|--------|-----------|--------------|-------------|
+| Recon Camcorder | Secondary hand | Yes | +15% confidence |
+| Field Survey Logger | Belt/holster | Yes | +10% confidence |
+| Data Calculator | N/A | N/A | +5% confidence |
+| Vanilla Radio | N/A (must be ON) | Yes | N/A |
+
+### 12.2 VHS Tape Rules
+
+- Tapes are the primary storage medium for passive recon data
+- Each tape has a fixed capacity (20/15/8/4 entries by quality tier)
+- Tapes degrade with each upload-and-erase cycle (sandbox-configurable rate)
+- Tapes become "Worn" when degradation reaches 100% and must be recycled
+- VHS tapes CANNOT be used with the Data Calculator (user requirement)
+- Minimum continuous operation: 3 in-game days per tape (sandbox-configurable)
+
+### 12.3 Performance Rules
+
+- Passive scanning runs on EveryOneMinute (NOT EveryTick)
+- Only one device scans per minute cycle (staggered if multiple equipped)
+- Buildings already on current tape are skipped (deduplication)
+- Chunk-based detection avoids scanning stationary players repeatedly
+
+### 12.4 Scanner Radio Specifics
+
+- NOT a new item -- any vanilla or modded radio gains passive scanning via POSnet
+- Radio MUST be powered on: battery > 0 OR grid electricity on the parent square
+- Tier is derived from `TransmitRange` at runtime using `POS_Constants` thresholds:
+  - Tier 1 (TransmitRange=0): FM receiver, broadcast listening only, no active scan
+  - Tier 2 (1--2000): Basic two-way radio, small scan radius, low confidence
+  - Tier 3 (2001--10000): Advanced scanner, medium radius and confidence
+  - Tier 4 (>10000): Military-grade, large radius, tactical band access
+- **No hardcoded item names** -- detection is fully dynamic via `getDeviceData()`,
+  so any radio (vanilla or modded) works automatically without code changes
+- Scan radius formula: `floor(TransmitRange / RADIO_RANGE_DIVISOR)`, clamped 1--40
+- Confidence modifiers are in BPS (basis points), converted to percentage adjustment
+- Only one radio scans per minute cycle (stagger rule, same as other devices)
+- FM receivers (TransmitRange=0) receive market broadcasts but do NOT scan buildings
+- Military radios (TransmitRange>10000) can access the tactical band
+
+### 12.5 VHS Tape Review Workflow
+
+VHS tapes must be reviewed at a **TV station** (CraftBench entity) to extract
+intelligence. The TV station uses vanilla TvWideScreen and TvBlack sprites,
+excluding TvAntique (no VCR compatibility).
+
+**Review Process:**
+1. Player stands near a TV (vanilla TvWideScreen or TvBlack)
+2. Uses `ReviewVHSTape` craftRecipe (requires recorded tape + pen + paper)
+3. Each entry review takes 5 minutes (sandbox-configurable)
+4. Creates one `RawMarketNote` per entry with category-specific items
+5. Paper consumed: SheetPaper2 fully consumed, Notebook loses condition
+6. Tape entry count decremented; when 0, tape is blank for reuse
+
+**Universal Intelligence Pipeline:**
+
+| Source | Review Location | Action | Output |
+|--------|----------------|--------|--------|
+| VHS Tape | TV with VCR | Review VHS Tape (5 min/entry) | RawMarketNote x N |
+| Field Logger | Any (right-click) | Transcribe Data (future) | RawMarketNote x N |
+| Radio Intercept | VHS tape records | Same as VHS review | RawMarketNote x N |
+| Manual Observation | In-field | Gather Intel (5 min) | RawMarketNote x 1 |
+
+Pen and paper is ALWAYS the final medium before POSnet terminal upload.
+
+---
+
+## 13. Journal & Document System
+
+### 13.1 Readable Market Notes
+
+RawMarketNote items are PZ Literature-type documents that can be "Read"
+by the player. Each note contains a formatted market intelligence report
+with category, location, price observations, and stock assessment.
+
+Document pages are created via `PhobosLib.createReadableDocument()` at
+note creation time. The page content mirrors the dynamic tooltip data
+but in a more detailed, journalistic format.
+
+### 13.2 Price Formatting
+
+All prices displayed to the player MUST use `PhobosLib.formatPrice(value)`
+which ensures consistent 2-decimal-place formatting (e.g., "$0.60" not "$0.6").
+
+### 13.3 Location Display
+
+Locations should display resolved street addresses when available
+(via PhobosLib_Address). When no street data exists, raw room names
+are title-cased via `PhobosLib.titleCase()` (e.g., "grocery" -> "Grocery").
+
+### 13.4 Item Filtering
+
+The item pool only includes vanilla (`Base.*`) items by default.
+Cross-mod items (PCP, PIP) are registered separately via
+`POS_ItemPool.registerItem()` to prevent modded items with incorrect
+DisplayCategories from appearing in wrong market categories.
+
+---
+
+## 14. Danger Detection
+
+### 14.1 PhobosLib.isDangerNearby()
+
+All POSnet actions requiring concentration (intel gathering, passive recon scanning,
+VHS tape review) are gated by `PhobosLib.isDangerNearby(player, radius)`.
+
+Threats detected:
+- **Live zombies** within radius tiles (cell zombie list iteration)
+- **Active fires** on nearby squares (IsoFire instanceof check)
+- **Player in combat** (isInCombat API if available)
+
+### 14.2 Context Menu Integration
+
+The intel gathering context menu uses a 6-state priority system:
+
+| Priority | State | Colour | Tooltip |
+|----------|-------|--------|---------|
+| 1 | System disabled | Hidden | -- |
+| 2 | Wrong location | Yellow | No relevant intel to gather here |
+| 3 | Danger nearby | Red | Threats detected -- clear area first |
+| 4 | Missing items | Yellow | Need writing implements |
+| 5 | On cooldown | Grey | Intel recently gathered here |
+| 6 | Ready | Green | Gather intel |
+
+### 14.3 Passive Recon Gate
+
+Passive recon devices (camcorder, field logger, scanner radio) pause scanning
+when danger is detected. A debug log message is emitted for diagnostics.
+
+### 14.4 Sandbox Control
+
+`DangerCheckRadius` (default 15, range 5-30) controls the detection range.
+Players in safer areas can reduce this for less restrictive gameplay.
+
+---
+
+## 15. Data Externalization
+
+### 15.1 Principle
+
+ModData (Global or player) is reserved for **capped, bounded** data only.
+Unbounded data (discovery caches, event logs) is stored in external flat files
+under `Zomboid/Lua/`.
+
+### 15.2 External Files
+
+| File | Format | Contents | Writer |
+|------|--------|----------|--------|
+| `POSNET_buildings.dat` | Pipe-delimited | Building discovery cache | Server/SP |
+| `POSNET_mailboxes.dat` | Pipe-delimited | Mailbox discovery cache | Server/SP |
+| `POSNET_economy_day{N}.log` | Pipe-delimited | Market event log (per day) | Server/SP |
+| `POSNET_snapshot_economy.txt` | Pipe-delimited | Economy state snapshot | Server/SP |
+
+### 15.3 Migration
+
+On first load after the externalization update, `POS_WorldState.migrateModDataCaches()`
+checks for building/mailbox data in ModData, writes to external files, clears ModData,
+and sets `meta.cachesMigrated = true` to prevent re-migration.
+
+### 15.4 Disposability
+
+Event log files and cache files are **not the source of truth** -- that remains
+in ModData (capped observations, rolling closes). If external files are deleted,
+the game continues normally. Caches rebuild through natural exploration.
+
+---
+
+## 16. Release & Tagging Doctrine
+
+All Phobos PZ mods follow the release architecture defined in
+[`docs/release-architecture.md`](release-architecture.md).
+
+### Key Rules
+
+1. **Annotated tags only**: `git tag -a vX.Y.Z -m "Release vX.Y.Z"`
+2. **Tags are immutable**: never delete, re-tag, or edit a published tag
+3. **Pre-release for dev branches**: use `-beta.N` or `-rc.N` suffixes
+4. **Stable from main only**: bare `vX.Y.Z` tags only on `main`
+5. **SemVer**: `MAJOR.MINOR.PATCH` — commit prefixes determine bump level
+6. **ZIP artifacts**: every release includes a clean mod ZIP + `manifest.json`
+7. **Dependency declarations**: `dependencies.json` at repo root declares hard deps
+8. **Conventional commits**: `feat:`, `fix:`, `docs:`, `chore:` prefixes required

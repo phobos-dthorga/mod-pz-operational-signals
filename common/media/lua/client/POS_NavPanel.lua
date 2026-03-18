@@ -30,7 +30,7 @@ require "POS_MenuBuilder"
 POS_NavPanel = {}
 
 --- Number of segments in the signal strength bar.
-local SIGNAL_BAR_LENGTH = 10
+local SIGNAL_BAR_LENGTH = POS_Constants.SIGNAL_BAR_LENGTH
 
 --- Build a text-based signal strength bar.
 ---@param pct number Signal percentage (0-100)
@@ -58,9 +58,9 @@ function POS_NavPanel.render(navPanel, terminal)
     y = y + lineH
     local signalPct = math.floor((terminal.signalStrength or 0) * 100)
     local signalBar = POS_NavPanel.buildSignalBar(signalPct)
-    local signalColour = signalPct >= 80 and C.success
-        or signalPct >= 50 and C.text
-        or signalPct >= 25 and C.warn
+    local signalColour = signalPct >= POS_Constants.SIGNAL_THRESHOLD_HIGH_PCT and C.success
+        or signalPct >= POS_Constants.SIGNAL_THRESHOLD_MED_PCT and C.text
+        or signalPct >= POS_Constants.SIGNAL_THRESHOLD_LOW_PCT and C.warn
         or C.error
     W.createLabel(navPanel, 4, y, signalBar .. " " .. signalPct .. "%", signalColour)
     y = y + lineH
@@ -74,7 +74,7 @@ function POS_NavPanel.render(navPanel, terminal)
     y = y + lineH
 
     -- Separator
-    W.createSeparator(navPanel, 4, y, math.floor((pw - 8) / 8), "-")
+    W.createSeparator(navPanel, 4, y, nil, "-")
     y = y + lineH
 
     -- Menu items from registry
@@ -98,6 +98,13 @@ function POS_NavPanel.render(navPanel, terminal)
             label = "> " .. label
         else
             label = "  " .. label
+        end
+
+        -- Truncate label to fit nav panel width
+        if PhobosLib and PhobosLib.truncateText then
+            label = PhobosLib.truncateText(label, UIFont.Code,
+                btnW - POS_Constants.UI_BUTTON_TEXT_PADDING,
+                POS_Constants.UI_BUTTON_TEXT_ELLIPSIS)
         end
 
         if entry.enabled then

@@ -30,8 +30,38 @@
 
 require "PhobosLib"
 require "POS_Constants"
+require "POS_WorldState"
+require "POS_MarketDatabase"
+require "POS_MarketRegistry"
+require "POS_MarketBroadcaster"
 
 POS_BroadcastSystem = {}
+
+--- Broadcast a server command to all connected players.
+--- In SP, sends to getSpecificPlayer(0). In MP, iterates getOnlinePlayers().
+--- @param module string Command module
+--- @param command string Command name
+--- @param args table Command arguments
+function POS_BroadcastSystem.broadcastToAll(module, command, args)
+    if isServer and isServer() then
+        -- Dedicated/listen server: iterate online players
+        local players = getOnlinePlayers and getOnlinePlayers()
+        if players then
+            for i = 0, players:size() - 1 do
+                local p = players:get(i)
+                if p then
+                    sendServerCommand(p, module, command, args)
+                end
+            end
+        end
+    else
+        -- Single-player: send to local player
+        local player = getSpecificPlayer(0)
+        if player then
+            sendServerCommand(player, module, command, args)
+        end
+    end
+end
 
 --- Last broadcast timestamp (real-time milliseconds).
 local lastBroadcastTime = 0
@@ -88,7 +118,7 @@ function POS_BroadcastSystem.broadcast()
     end
 
     -- Broadcast to all clients via server command
-    sendServerCommand(POS_Constants.CMD_MODULE, POS_Constants.CMD_NEW_OPERATION, {
+    POS_BroadcastSystem.broadcastToAll(POS_Constants.CMD_MODULE, POS_Constants.CMD_NEW_OPERATION, {
         operationData = operation,
     })
 
@@ -111,7 +141,7 @@ function POS_BroadcastSystem.broadcastInvestment()
     end
 
     -- Broadcast to all clients via server command
-    sendServerCommand(POS_Constants.CMD_MODULE, POS_Constants.CMD_NEW_INVESTMENT, {
+    POS_BroadcastSystem.broadcastToAll(POS_Constants.CMD_MODULE, POS_Constants.CMD_NEW_INVESTMENT, {
         investmentData = opportunity,
     })
 
@@ -146,6 +176,11 @@ function POS_BroadcastSystem.onEveryOneMinute()
     if POS_InvestmentResolver then
         POS_InvestmentResolver.resolveMatured()
     end
+
+    -- Market broadcasts (separate timer, managed by POS_MarketBroadcaster)
+    if POS_MarketBroadcaster then
+        POS_MarketBroadcaster.tick()
+    end
 end
 
 --- Handle client command responses (reserved for future use).
@@ -156,7 +191,58 @@ end
 function POS_BroadcastSystem.onClientCommand(module, command, player, args)
     if module ~= POS_Constants.CMD_MODULE then return end
 
-    if command == POS_Constants.CMD_REQUEST_OPERATION then
+    if command == POS_Constants.CMD_SUBMIT_OBSERVATION then
+        if not args or not args.record then return end
+        local record = args.record
+
+        -- Validate required fields
+        if type(record.categoryId) ~= "string" or record.categoryId == "" then
+            PhobosLib.debug("POS", "[Validation] Rejected observation: invalid categoryId from "
+                .. (player:getUsername() or "?"))
+            return
+        end
+
+        -- Validate category exists in registry
+        if POS_MarketRegistry and POS_MarketRegistry.getCategory then
+            if not POS_MarketRegistry.getCategory(record.categoryId) then
+                PhobosLib.debug("POS", "[Validation] Rejected observation: unknown category '"
+                    .. tostring(record.categoryId) .. "' from " .. (player:getUsername() or "?"))
+                return
+            end
+        end
+
+        -- Validate price range (reject obviously invalid)
+        if record.price and (type(record.price) ~= "number" or record.price < 0 or record.price > 10000) then
+            PhobosLib.debug("POS", "[Validation] Rejected observation: invalid price "
+                .. tostring(record.price) .. " from " .. (player:getUsername() or "?"))
+            return
+        end
+
+        -- Set server-authoritative fields
+        record.recordedDay = POS_WorldState and POS_WorldState.getWorldDay() or 0
+        record.id = record.id or ("obs_" .. tostring(ZombRand(1000000000)))
+
+        POS_MarketDatabase.addRecord(record)
+
+    elseif command == POS_Constants.CMD_REQUEST_MARKET_SNAPSHOT then
+        -- Client requesting market overview for their local cache
+        if player then
+            local snapshot = {}
+            local world = POS_WorldState and POS_WorldState.getWorld()
+            if world and world.categories then
+                for catId, catData in pairs(world.categories) do
+                    snapshot[catId] = {
+                        observations = catData.observations or {},
+                        rollingCloses = catData.rollingCloses or {},
+                        aggregate = catData.aggregate or {},
+                    }
+                end
+            end
+            sendServerCommand(player, POS_Constants.CMD_MODULE,
+                POS_Constants.CMD_MARKET_SNAPSHOT, { data = snapshot })
+        end
+
+    elseif command == POS_Constants.CMD_REQUEST_OPERATION then
         -- Future: allow players to request a new operation on demand
         PhobosLib.debug("POS", "Operation request from " .. (player:getUsername() or "?"))
     elseif command == POS_Constants.CMD_PLAYER_INVESTED and args then
@@ -167,12 +253,52 @@ function POS_BroadcastSystem.onClientCommand(module, command, player, args)
         if POS_InvestmentResolver then
             POS_InvestmentResolver.onRequestPendingPayouts(player)
         end
+
+    elseif command == POS_Constants.CMD_ADMIN_FORCE_TICK then
+        -- Admin only: force economy tick
+        if PhobosLib.isPlayerAdmin and PhobosLib.isPlayerAdmin(player) then
+            if POS_EconomyTick and POS_EconomyTick.processDayTick then
+                local meta = POS_WorldState.getMeta()
+                meta.lastProcessedDay = -1  -- Force reprocessing
+                POS_EconomyTick.processDayTick()
+                PhobosLib.debug("POS", "[Admin] Force tick executed by " .. (player:getUsername() or "?"))
+            end
+        end
+
+    elseif command == POS_Constants.CMD_ADMIN_DUMP_STATE then
+        -- Admin only: dump compact world state summary
+        if PhobosLib.isPlayerAdmin and PhobosLib.isPlayerAdmin(player) then
+            local world = POS_WorldState.getWorld()
+            local meta = POS_WorldState.getMeta()
+            local summary = {
+                schemaVersion = meta.schemaVersion,
+                lastProcessedDay = meta.lastProcessedDay,
+                categoryCount = 0,
+                totalObservations = 0,
+            }
+            if world.categories then
+                for catId, catData in pairs(world.categories) do
+                    summary.categoryCount = summary.categoryCount + 1
+                    summary.totalObservations = summary.totalObservations
+                        + (catData.observations and #catData.observations or 0)
+                end
+            end
+            sendServerCommand(player, POS_Constants.CMD_MODULE,
+                POS_Constants.CMD_ADMIN_DUMP_STATE, { summary = summary })
+            PhobosLib.debug("POS", "[Admin] State dump sent to " .. (player:getUsername() or "?"))
+        end
     end
 end
 
 --- Initialise the broadcast system on server start.
 function POS_BroadcastSystem.init()
     POS_BroadcastSystem.start()
+
+    -- Start market broadcaster alongside operation/investment timers
+    if POS_MarketBroadcaster then
+        POS_MarketBroadcaster.start()
+    end
+
     Events.EveryOneMinute.Add(POS_BroadcastSystem.onEveryOneMinute)
     Events.OnClientCommand.Add(POS_BroadcastSystem.onClientCommand)
     PhobosLib.debug("POS", "Broadcast system initialised")

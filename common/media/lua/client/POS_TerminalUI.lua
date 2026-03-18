@@ -65,10 +65,10 @@ end
 --- These define where the monitor's "screen" sits within the bezel texture.
 --- Values measured from the generated CRT bezel image.
 local BEZEL = {
-    left   = 0.15,
-    right  = 0.15,
-    top    = 0.13,
-    bottom = 0.30,
+    left   = POS_Constants.BEZEL_INSET_LEFT,
+    right  = POS_Constants.BEZEL_INSET_RIGHT,
+    top    = POS_Constants.BEZEL_INSET_TOP,
+    bottom = POS_Constants.BEZEL_INSET_BOTTOM,
 }
 
 --- Font for terminal text.
@@ -80,19 +80,19 @@ local function lineHeight()
 end
 
 --- Content padding inside the screen area.
-local SCREEN_PAD = 8
+local SCREEN_PAD = POS_Constants.UI_SCREEN_PADDING
 
 --- Navigation sidebar width (left panel, fixed).
-local NAV_PANEL_WIDTH = 180
+local NAV_PANEL_WIDTH = POS_Constants.UI_NAV_PANEL_WIDTH
 
 --- Context detail panel width (right panel, fixed).
-local CONTEXT_PANEL_WIDTH = 200
+local CONTEXT_PANEL_WIDTH = POS_Constants.UI_CONTEXT_PANEL_WIDTH
 
 --- Minimum window width before context panel auto-collapses.
-local CONTEXT_COLLAPSE_THRESHOLD = 900
+local CONTEXT_COLLAPSE_THRESHOLD = POS_Constants.UI_CONTEXT_COLLAPSE_THRESHOLD
 
 --- Gap between adjacent panels.
-local PANEL_GAP = 4
+local PANEL_GAP = POS_Constants.UI_PANEL_GAP
 
 ---------------------------------------------------------------
 -- Boot sequence
@@ -158,10 +158,10 @@ end
 
 --- Base reveal rate: chars per frame at 1x game speed.
 --- ~720 chars over 30 seconds at 60fps = 0.4 chars/frame.
-local BASE_CHARS_PER_FRAME = BOOT_TOTAL_CHARS / (30 * 60)
+local BASE_CHARS_PER_FRAME = BOOT_TOTAL_CHARS / (POS_Constants.BOOT_DURATION_SECONDS * POS_Constants.BOOT_TARGET_FPS)
 
 --- Pause frames after boot text finishes (1 second).
-local BOOT_PAUSE_FRAMES = 60
+local BOOT_PAUSE_FRAMES = POS_Constants.BOOT_PAUSE_FRAMES
 
 ---------------------------------------------------------------
 -- Screen rect helper
@@ -345,7 +345,9 @@ function POS_TerminalUI:prerender()
         local gt = getGameTime()
         if gt then
             local mult = gt:getMultiplier() or 1
-            self.portableDrainAccum = (self.portableDrainAccum or 0) + (mult / 1800)
+            local drainDivisor = POS_Sandbox and POS_Sandbox.getPortableDrainDivisor
+                and POS_Sandbox.getPortableDrainDivisor() or POS_Constants.PORTABLE_DRAIN_DIVISOR_DEFAULT
+            self.portableDrainAccum = (self.portableDrainAccum or 0) + (mult / drainDivisor)
             if self.portableDrainAccum >= 1.0 then
                 self.portableDrainAccum = self.portableDrainAccum - 1.0
                 local cond = self.portableComputer:getCondition()

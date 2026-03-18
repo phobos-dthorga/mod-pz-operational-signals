@@ -1,0 +1,21 @@
+module Base
+{
+    xuiSkin default
+    {
+        entity ES_POS_TVStation
+        {
+            LuaWindowClass = ISEntityWindow,
+            DisplayName = Television,
+            Icon = Television,
+            components
+            {
+                CraftLogic
+                {
+                    LuaPanelClass = ISCraftDefaultPanel,
+                    DisplayName = VHS Review Station,
+                    Icon = Television,
+                }
+            }
+        }
+    }
+}

@@ -16,9 +16,9 @@
 
 ---------------------------------------------------------------
 -- POS_BuildingCache.lua
--- Player-discovered building cache for recon missions.
+-- World-scoped building cache for recon missions.
 --
--- Buildings are cached in player modData as the player explores.
+-- Buildings are cached in world ModData via POS_WorldState.
 -- Each entry stores building coordinates and the room types found.
 -- Passive scanning runs every in-game minute within a 50-tile radius.
 ---------------------------------------------------------------
@@ -27,9 +27,6 @@ require "PhobosLib"
 require "POS_Constants"
 
 POS_BuildingCache = POS_BuildingCache or {}
-
---- ModData key for the building cache.
-local CACHE_KEY = "POS_DiscoveredBuildings"
 
 --- Minimum distance between cached buildings to avoid duplicates (tiles).
 local DEDUP_RADIUS = 10
@@ -40,27 +37,26 @@ local INITIAL_SCAN_RADIUS = 250
 --- Scan radius for passive periodic scans (tiles).
 local PASSIVE_SCAN_RADIUS = 50
 
---- ModData flag key for gating the one-time initial scan.
-local INITIAL_SCAN_FLAG = "POS_BuildingScanDone"
-
 ---------------------------------------------------------------
 -- Cache management
 ---------------------------------------------------------------
 
---- Get the discovered building cache from player modData.
+--- Get the discovered building cache from world ModData.
 --- Each entry: { x, y, rooms = {"pharmacy", "office", ...} }
 ---@return table Array of building entries
 function POS_BuildingCache.getCache()
-    local player = getSpecificPlayer(0)
-    if not player then return {} end
-    local md = player:getModData()
-    if not md then return {} end
-    md[CACHE_KEY] = md[CACHE_KEY] or {}
-    return md[CACHE_KEY]
+    if POS_WorldState and POS_WorldState.getBuildings then
+        local buildings = POS_WorldState.getBuildings()
+        buildings.entries = buildings.entries or {}
+        return buildings.entries
+    end
+    -- Fallback for when world state not yet initialized
+    return {}
 end
 
 --- Add a building to the discovery cache.
 --- Deduplicates against existing entries within DEDUP_RADIUS.
+--- In MP, only the server/authority adds to the shared cache.
 ---@param x number Building world X
 ---@param y number Building world Y
 ---@param rooms table Array of room name strings found in this building
@@ -166,17 +162,27 @@ POS_BuildingCache.RECON_ROOMS = {
 
 --- One-time retroactive scan on first mod load.
 --- Scans a large radius to catch buildings the player has already visited.
---- Gated by modData flag so it only runs once per save.
+--- Gated by world ModData flag so it only runs once per save.
 function POS_BuildingCache.initialScan()
     local player = getSpecificPlayer(0)
     if not player then return end
 
-    local md = player:getModData()
-    if not md then return end
-    if md[INITIAL_SCAN_FLAG] then return end
+    local meta = POS_WorldState and POS_WorldState.getMeta()
+    if meta and meta.buildingScanDone then return end
 
     if not POS_Sandbox or not POS_Sandbox.isReconEnabled
        or not POS_Sandbox.isReconEnabled() then return end
+
+    -- Try loading from external cache first
+    if POS_WorldState and POS_WorldState.loadBuildingCache then
+        local cached = POS_WorldState.loadBuildingCache()
+        if cached and #cached > 0 then
+            for _, entry in ipairs(cached) do
+                POS_BuildingCache.addToCache(entry.x, entry.y, entry.rooms or {})
+            end
+            PhobosLib.debug("POS", "[BuildingCache] Loaded " .. tostring(#cached) .. " buildings from external cache")
+        end
+    end
 
     local px = math.floor(player:getX())
     local py = math.floor(player:getY())
@@ -194,7 +200,12 @@ function POS_BuildingCache.initialScan()
         end
     end
 
-    md[INITIAL_SCAN_FLAG] = true
+    if meta then meta.buildingScanDone = true end
+
+    -- Persist to external cache if new buildings were discovered
+    if added > 0 and POS_WorldState and POS_WorldState.saveBuildingCache then
+        POS_WorldState.saveBuildingCache()
+    end
 
     PhobosLib.debug("POS", "[BuildingCache] Initial scan complete: "
         .. added .. " new buildings from " .. #buildings .. " found")
@@ -217,7 +228,15 @@ function POS_BuildingCache.passiveScan()
     local buildings = PhobosLib.findNearbyBuildings(
         px, py, scanRadius, POS_BuildingCache.RECON_ROOMS)
 
+    local added = false
     for _, b in ipairs(buildings) do
-        POS_BuildingCache.addToCache(b.x, b.y, b.matchingRooms)
+        if POS_BuildingCache.addToCache(b.x, b.y, b.matchingRooms) then
+            added = true
+        end
+    end
+
+    -- Persist to external cache if new buildings were discovered
+    if added and POS_WorldState and POS_WorldState.saveBuildingCache then
+        POS_WorldState.saveBuildingCache()
     end
 end

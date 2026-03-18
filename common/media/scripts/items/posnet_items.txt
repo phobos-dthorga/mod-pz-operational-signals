@@ -29,4 +29,127 @@ module PhobosOperationalSignals {
         Tooltip = Tooltip_POS_FieldReport,
     }
 
+    item RawMarketNote {
+        DisplayCategory = Literature,
+        DisplayName = Raw Market Note,
+        ItemType = base:normal,
+        Weight = 0.05,
+        Icon = Item_POS_RawMarketNote,
+        Tooltip = Tooltip_POS_RawMarketNote,
+    }
+
+    item CompiledMarketReport {
+        DisplayCategory = Literature,
+        DisplayName = Compiled Market Report,
+        ItemType = base:normal,
+        Weight = 0.1,
+        Icon = Notebook,
+        Tooltip = Tooltip_POS_CompiledMarketReport,
+    }
+
+    item ReconCamcorder {
+        DisplayCategory = Electronics,
+        DisplayName = Recon Camcorder,
+        ItemType = base:normal,
+        Weight = 1.5,
+        Icon = Item_POS_ReconCamcorder,
+        Tooltip = Tooltip_POS_ReconCamcorder,
+        ConditionMax = 100,
+        Tags = Electronic,
+    }
+
+    item FieldSurveyLogger {
+        DisplayCategory = Electronics,
+        DisplayName = Field Survey Logger,
+        ItemType = base:normal,
+        Weight = 0.8,
+        Icon = Item_POS_FieldSurveyLogger,
+        Tooltip = Tooltip_POS_FieldSurveyLogger,
+        ConditionMax = 100,
+        Tags = Electronic,
+    }
+
+    item DataCalculator {
+        DisplayCategory = Electronics,
+        DisplayName = Data Calculator,
+        ItemType = base:normal,
+        Weight = 0.3,
+        Icon = Item_POS_DataCalculator,
+        Tooltip = Tooltip_POS_DataCalculator,
+        ConditionMax = 50,
+        Tags = Electronic,
+    }
+
+    item BlankVHSCTape {
+        DisplayCategory = Electronics,
+        DisplayName = Blank VHS-C Tape,
+        ItemType = base:normal,
+        Weight = 0.1,
+        Icon = Item_POS_BlankVHSCTape,
+        Tooltip = Tooltip_POS_BlankVHSCTape,
+    }
+
+    item RecordedReconTape {
+        DisplayCategory = Electronics,
+        DisplayName = Recorded Recon Tape,
+        ItemType = base:normal,
+        Weight = 0.1,
+        Icon = Item_POS_RecordedReconTape,
+        Tooltip = Tooltip_POS_RecordedReconTape,
+    }
+
+    item WornVHSTape {
+        DisplayCategory = Junk,
+        DisplayName = Worn VHS Tape,
+        ItemType = base:normal,
+        Weight = 0.1,
+        Icon = Item_POS_WornVHSTape,
+        Tooltip = Tooltip_POS_WornVHSTape,
+    }
+
+    item DamagedVHSTape {
+        DisplayCategory = Junk,
+        DisplayName = Damaged VHS Tape,
+        ItemType = base:normal,
+        Weight = 0.1,
+        Icon = Item_POS_DamagedVHSTape,
+        Tooltip = Tooltip_POS_DamagedVHSTape,
+    }
+
+    item MagneticTapeScrap {
+        DisplayCategory = Material,
+        DisplayName = Magnetic Tape Scrap,
+        ItemType = base:normal,
+        Weight = 0.05,
+        Icon = Item_POS_MagneticTapeScrap,
+        Tooltip = Tooltip_POS_MagneticTapeScrap,
+    }
+
+    item RefurbishedVHSCTape {
+        DisplayCategory = Electronics,
+        DisplayName = Refurbished VHS-C Tape,
+        ItemType = base:normal,
+        Weight = 0.1,
+        Icon = Item_POS_RefurbishedVHSCTape,
+        Tooltip = Tooltip_POS_RefurbishedVHSCTape,
+    }
+
+    item SplicedReconTape {
+        DisplayCategory = Electronics,
+        DisplayName = Spliced Recon Tape,
+        ItemType = base:normal,
+        Weight = 0.1,
+        Icon = Item_POS_SplicedReconTape,
+        Tooltip = Tooltip_POS_SplicedReconTape,
+    }
+
+    item ImprovisedReconTape {
+        DisplayCategory = Electronics,
+        DisplayName = Improvised Recon Tape,
+        ItemType = base:normal,
+        Weight = 0.1,
+        Icon = Item_POS_ImprovisedReconTape,
+        Tooltip = Tooltip_POS_ImprovisedReconTape,
+    }
+
 }

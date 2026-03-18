@@ -3,5 +3,19 @@
 
     "PhobosOperationalSignals.PortableComputer": "Portable Computer",
     "PhobosOperationalSignals.ReconPhotograph": "Recon Photograph",
-    "PhobosOperationalSignals.FieldReport": "POSnet Field Report"
+    "PhobosOperationalSignals.FieldReport": "POSnet Field Report",
+    "PhobosOperationalSignals.RawMarketNote": "Raw Market Note",
+    "PhobosOperationalSignals.CompiledMarketReport": "Compiled Market Report",
+
+    "PhobosOperationalSignals.ReconCamcorder": "Recon Camcorder",
+    "PhobosOperationalSignals.FieldSurveyLogger": "Field Survey Logger",
+    "PhobosOperationalSignals.DataCalculator": "Data Calculator",
+    "PhobosOperationalSignals.BlankVHSCTape": "Blank VHS-C Tape",
+    "PhobosOperationalSignals.RecordedReconTape": "Recorded Recon Tape",
+    "PhobosOperationalSignals.WornVHSTape": "Worn VHS Tape",
+    "PhobosOperationalSignals.DamagedVHSTape": "Damaged VHS Tape",
+    "PhobosOperationalSignals.MagneticTapeScrap": "Magnetic Tape Scrap",
+    "PhobosOperationalSignals.RefurbishedVHSCTape": "Refurbished VHS-C Tape",
+    "PhobosOperationalSignals.SplicedReconTape": "Spliced Recon Tape",
+    "PhobosOperationalSignals.ImprovisedReconTape": "Improvised Recon Tape"
 }

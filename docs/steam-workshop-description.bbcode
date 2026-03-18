@@ -1,90 +1,80 @@
 [h1]Phobos' Operational Signals (POSnet)[/h1]
 
-[b]Version:[/b] 0.3.0
-[b]Requires:[/b] [url=https://steamcommunity.com/sharedfiles/filedetails/?id=3668598865]PhobosLib[/url]
-[b]PZ Version:[/b] Build 42.15.0+
+[b]Version 0.10.0 — Preview[/b]
 
-[hr][/hr]
+A radio-driven procedural operations and market intelligence system for Project Zomboid Build 42.
 
-Radio-driven procedural operations system for Project Zomboid Build 42. Set up a radio next to a desktop computer, connect to the POSnet military channel, and receive field operations on a retro CRT-style terminal. Complete objectives to fulfil them before they expire.
+[h2]Features[/h2]
 
-[h2]How It Works[/h2]
-
-[olist]
-[*] Find any radio and a vanilla desktop computer.
-[*] Place the desktop computer within 3 tiles of the radio.
-[*] Turn the radio on (it needs power — battery or mains electricity).
-[*] Right-click the radio and select [b]Connect to POSnet[/b].
-[*] A green-screen terminal opens showing your active operations.
-[*] New operations arrive at regular broadcast intervals — complete objectives before they expire.
-[/olist]
-
-[h2]Terminal UI[/h2]
-
-The POSnet terminal displays a retro early-90s CRT interface with green monospace text and scanline effects. It shows your active operations, objective progress, and summary counts for completed and expired missions. Scroll through operations and track your progress at a glance.
-
-[h3]Boot Sequence (v0.3.0)[/h3]
-On first connection each session, the terminal plays a DOS-style boot animation — Phoenix BIOS POST, memory test, MS-DOS loading, and network driver initialization — with typewriter character-by-character reveal. The boot takes ~30 seconds at 1x game speed and scales with game speed. Click anywhere to skip. The terminal window is also resizable.
-
-[h2]Core Systems[/h2]
-
-[h3]Radio Interception[/h3]
-POSnet registers a custom military radio channel at a configurable frequency (default 91.5 MHz). Any radio works — ham radios, walkie-talkies, makeshift radios, even standard receivers. The radio must be powered on and within range of a desktop computer.
-
-[h3]Mission Generator[/h3]
-Procedural operation generation from registered templates. Operations are selected from five categories and four difficulty levels. 5 built-in starter missions included, with full support for external mods to register additional templates.
-
-[h3]Operation Log[/h3]
-Track your active, completed, and expired operations in a persistent journal stored in your player data. Operations auto-expire after a configurable number of days. The terminal auto-refreshes to show objective completion in real time.
-
-[h3]Completion Detector[/h3]
-Extensible objective tracking system. Built-in objective types include item acquisition, with support for custom checkers registered by external mods.
-
-[h3]Broadcast System[/h3]
-Server-side timed broadcast scheduling delivers new operations at configurable intervals to all connected players.
-
-[h2]Mission Categories[/h2]
-
+[h3]POSnet Terminal[/h3]
 [list]
-[*] [b]Industrial Recovery[/b] — Salvage materials from factories and warehouses
-[*] [b]Vehicle Salvage[/b] — Locate and recover vehicle parts
-[*] [b]Scientific Research[/b] — Collect specimens and conduct field research
-[*] [b]Survivor Assistance[/b] — Aid survivors with supplies and medical care
-[*] [b]Infrastructure Repair[/b] — Restore critical infrastructure
+[*] CRT-style terminal interface with 4 colour themes and resizable window
+[*] Boot sequence, navigation panels, and screen stack architecture
+[*] Desktop computer or portable computer connection via radio
+[*] AZAS Frequency Index integration for dynamic per-world frequencies
+[*] Signal strength system based on radio hardware (inverse square law)
 [/list]
 
-[h2]Sandbox Options[/h2]
-
+[h3]Operations & Missions[/h3]
 [list]
-[*] [b]Enable Debug Logging[/b] (default: off) — Verbose console output for troubleshooting
-[*] [b]Enable Broadcasts[/b] (default: on) — Toggle POSnet broadcast system
-[*] [b]Broadcast Interval[/b] (default: 30 min, range: 5–120) — Minutes between broadcasts
-[*] [b]Max Active Operations[/b] (default: 3, range: 1–10) — Concurrent operation limit
-[*] [b]Operation Expiry[/b] (default: 7 days, range: 1–30) — Days before operations expire
-[*] [b]POSnet Frequency[/b] (default: 91500, range: 10000–500000) — Radio frequency in Hz
+[*] Procedural recon, delivery, and courier missions via BBS
+[*] Investment opportunities with risk/reward simulation
+[*] Mission negotiation and cancellation with reputation consequences
+[*] Street address resolution and map waypoints via Paper Trails
 [/list]
 
-[h2]Extensibility[/h2]
-
-POSnet is designed for cross-mod integration:
+[h3]Market Intelligence[/h3]
 [list]
-[*] Register custom mission templates via [b]POS_MissionTemplates.register()[/b]
-[*] Register custom objective type checkers via [b]POS_CompletionDetector.registerChecker()[/b]
-[*] Optional tie-ins with PhobosChemistryPathways and PhobosIndustrialPathology
+[*] Commodity market simulation with 11 categories and 18 sub-categories
+[*] Field reconnaissance produces category-specific item pricing
+[*] Day-to-day price drift with supply/demand speculation
+[*] Reputation-scaled price accuracy (5 tiers)
+[*] Server-authoritative economy (multiplayer-safe from day one)
+[/list]
+
+[h3]Passive Reconnaissance Devices[/h3]
+[list]
+[*] Recon Camcorder — equippable, highest quality visual recon, requires VHS tape
+[*] Field Survey Logger — equippable, environmental metadata, silent operation
+[*] Scanner Radio — ALL vanilla radios enhanced with 4-tier passive scanning
+[*] Data Calculator — compile raw data into higher-quality reports
+[*] VHS-C tapes as physical intelligence storage (4 quality tiers)
+[*] Tape crafting: repair, splice, improvise from scavenged materials
+[*] VHS review at TV stations (CraftBench entity)
+[/list]
+
+[h3]Safety & Intelligence Quality[/h3]
+[list]
+[*] Danger detection — intel gathering and passive recon paused near threats
+[*] 5-state context menu with colour-coded status and tooltips
+[*] Dynamic note tooltips show category, observed items, and prices
+[*] Journal/document system for in-game readable intelligence reports
+[*] Intel gathering cooldown prevents location exploitation
+[/list]
+
+[h3]Data Persistence[/h3]
+[list]
+[*] World-scoped Global ModData for shared economy (6 containers)
+[*] Tiny player-bound state (reputation, cash, watchlist, alerts)
+[*] Building/mailbox caches externalized to flat files (scalable)
+[*] Append-only event logs for auditing and admin analysis
+[*] Capped rolling windows prevent save bloat
+[*] Auto-migration from legacy data formats
 [/list]
 
 [h2]Dependencies[/h2]
-
-[b]Required:[/b]
 [list]
-[*] [url=https://steamcommunity.com/sharedfiles/filedetails/?id=3668598865]PhobosLib[/url] — Shared utility library
+[*] [b]Required:[/b] PhobosLib 1.40.0+ — [url=https://steamcommunity.com/sharedfiles/filedetails/?id=3668598865]Steam Workshop[/url]
+[*] [b]Required:[/b] AZAS Frequency Index
+[*] [b]Optional:[/b] Phobos Chemistry Pathways (cross-mod market categories)
+[*] [b]Optional:[/b] Paper Trails (street address resolution)
 [/list]
 
-[b]Optional (soft dependencies):[/b]
-[list]
-[*] [url=https://steamcommunity.com/sharedfiles/filedetails/?id=3668197831]Phobos' Chemistry Pathways[/url] — Scientific Research mission templates
-[*] PhobosIndustrialPathology — Pathology-themed mission templates
-[/list]
+[h2]Sandbox Options[/h2]
+60+ configurable options covering broadcast intervals, mission parameters, market weighting, passive recon device behaviour, VHS tape mechanics, and economy tick settings.
+
+[h2]Status[/h2]
+Preview release — active development. Features are functional but expect changes.
 
 [h2]Source Code[/h2]
 

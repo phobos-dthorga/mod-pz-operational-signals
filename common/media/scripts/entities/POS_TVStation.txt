@@ -1,0 +1,38 @@
+/* TV Station entity for VHS tape review.
+ * Uses vanilla TvWideScreen and TvBlack sprites.
+ * Excludes TvAntique (no VCR compatibility).
+ */
+
+module Base
+{
+    entity POS_TVStation
+    {
+        component UiConfig
+        {
+            xuiSkin = default,
+            entityStyle = ES_POS_TVStation,
+            uiEnabled = true,
+        }
+        component CraftBench
+        {
+            Recipes = POS_TVStation,
+        }
+        component SpriteConfig
+        {
+            face SINGLE
+            {
+                layer
+                {
+                    row = appliances_television_01_0,
+                }
+            }
+            face SINGLE
+            {
+                layer
+                {
+                    row = appliances_television_01_4,
+                }
+            }
+        }
+    }
+}

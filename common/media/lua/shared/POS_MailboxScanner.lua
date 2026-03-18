@@ -16,11 +16,12 @@
 
 ---------------------------------------------------------------
 -- POS_MailboxScanner.lua
--- Player-discovered mailbox cache for delivery missions.
+-- World-scoped mailbox cache for delivery missions.
 --
--- Mailboxes are cached in player modData as they are discovered
--- through right-click interaction (POS_DeliveryContextMenu).
--- The cache persists across saves and grows as the player explores.
+-- Mailboxes are cached in world ModData via POS_WorldState
+-- as they are discovered through right-click interaction
+-- (POS_DeliveryContextMenu). The cache persists across saves
+-- and grows as the player explores.
 --
 -- Sprite IDs sourced from Paper Trails mod research:
 --   Residential mailboxes: street_decoration_01_18..21
@@ -28,6 +29,7 @@
 ---------------------------------------------------------------
 
 require "PhobosLib"
+require "POS_Constants"
 
 POS_MailboxScanner = POS_MailboxScanner or {}
 
@@ -44,9 +46,6 @@ POS_MailboxScanner.MAILBOX_SPRITES = {
     "street_decoration_01_10",
     "street_decoration_01_11",
 }
-
---- ModData key for the mailbox cache.
-local CACHE_KEY = "POS_DiscoveredMailboxes"
 
 --- Minimum distance between two cached mailboxes to avoid duplicates (tiles).
 local DEDUP_RADIUS = 3
@@ -66,23 +65,21 @@ local MAX_PAIR_CHECK = 30
 --- Minimum separation between two mailboxes to form a valid pair (tiles).
 local MIN_PAIR_DISTANCE = 20
 
---- ModData flag key for gating the one-time initial scan.
-local INITIAL_SCAN_FLAG = "POS_MailboxScanDone"
-
 ---------------------------------------------------------------
 -- Cache management
 ---------------------------------------------------------------
 
---- Get the discovered mailbox cache from player modData.
+--- Get the discovered mailbox cache from world ModData.
 --- Each entry: { x = number, y = number }
 ---@return table Array of { x, y } positions
 function POS_MailboxScanner.getCache()
-    local player = getSpecificPlayer(0)
-    if not player then return {} end
-    local md = player:getModData()
-    if not md then return {} end
-    md[CACHE_KEY] = md[CACHE_KEY] or {}
-    return md[CACHE_KEY]
+    if POS_WorldState and POS_WorldState.getMailboxes then
+        local mailboxes = POS_WorldState.getMailboxes()
+        mailboxes.entries = mailboxes.entries or {}
+        return mailboxes.entries
+    end
+    -- Fallback for when world state not yet initialized
+    return {}
 end
 
 --- Add a mailbox position to the discovery cache.
@@ -137,17 +134,27 @@ end
 
 --- One-time retroactive scan on first mod load.
 --- Scans a large radius to catch mailboxes the player has already visited.
---- Gated by modData flag so it only runs once per save.
+--- Gated by world ModData flag so it only runs once per save.
 function POS_MailboxScanner.initialScan()
     local player = getSpecificPlayer(0)
     if not player then return end
 
-    local md = player:getModData()
-    if not md then return end
-    if md[INITIAL_SCAN_FLAG] then return end
+    local meta = POS_WorldState and POS_WorldState.getMeta()
+    if meta and meta.mailboxScanDone then return end
 
     if not POS_Sandbox or not POS_Sandbox.isDeliveryEnabled
        or not POS_Sandbox.isDeliveryEnabled() then return end
+
+    -- Try loading from external cache first
+    if POS_WorldState and POS_WorldState.loadMailboxCache then
+        local cached = POS_WorldState.loadMailboxCache()
+        if cached and #cached > 0 then
+            for _, entry in ipairs(cached) do
+                POS_MailboxScanner.addToCache(entry.x, entry.y)
+            end
+            PhobosLib.debug("POS", "[MailboxScanner] Loaded " .. tostring(#cached) .. " mailboxes from external cache")
+        end
+    end
 
     local px = math.floor(player:getX())
     local py = math.floor(player:getY())
@@ -165,7 +172,12 @@ function POS_MailboxScanner.initialScan()
         end
     end
 
-    md[INITIAL_SCAN_FLAG] = true
+    if meta then meta.mailboxScanDone = true end
+
+    -- Persist to external cache if new mailboxes were discovered
+    if added > 0 and POS_WorldState and POS_WorldState.saveMailboxCache then
+        POS_WorldState.saveMailboxCache()
+    end
 
     PhobosLib.debug("POS", "[MailboxScanner] Initial scan complete: "
         .. added .. " new mailboxes from " .. #found .. " found")
@@ -176,7 +188,7 @@ end
 ---------------------------------------------------------------
 
 --- Select a valid pair of mailboxes for a delivery mission.
---- Uses the player-discovered cache rather than scanning loaded chunks.
+--- Uses the world-scoped cache rather than scanning loaded chunks.
 ---
 ---@return table|nil { pickup={x,y}, dropoff={x,y}, straightLine=n } or nil
 function POS_MailboxScanner.selectDeliveryPair()

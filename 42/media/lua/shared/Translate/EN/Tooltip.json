@@ -1,0 +1,22 @@
+{
+    "__copyright": "Copyright (c) 2026 Phobos A. D'thorga. All rights reserved.",
+
+    "Tooltip_POS_PortableComputer": "A bulky early-90s portable computer. <BR> With this in your inventory, connect to POSnet via any radio — no desktop terminal required. <BR> <BR> Battery drains while the terminal is open.",
+    "Tooltip_POS_ReconPhotograph": "A photograph of a POSnet reconnaissance target. <BR> Combine with paper and a pen to write field notes.",
+    "Tooltip_POS_FieldReport": "Handwritten field observations for a POSnet operation. <BR> Return to a terminal to submit.",
+    "Tooltip_POS_RawMarketNote": "Handwritten observations on local market conditions. <BR> Upload at a POSnet terminal to add to the intel database.",
+    "Tooltip_POS_CompiledMarketReport": "A compiled analysis of commodity prices and availability. <BR> Generated from multiple field notes for a single commodity.",
+
+    "Tooltip_POS_ReconCamcorder": "A compact VHS-C camcorder from the early 1990s. <BR> Equip in secondary hand to passively record nearby buildings and room types. <BR> Requires a VHS-C tape inserted. Drains battery while active.",
+    "Tooltip_POS_FieldSurveyLogger": "A rugged handheld data logger for environmental survey work. <BR> Equip to passively collect metadata about nearby buildings. <BR> Can store data internally (10 entries) or on a VHS tape. Silent operation.",
+    "Tooltip_POS_DataCalculator": "A scientific calculator from the early 1990s. <BR> Right-click with raw data items to compile higher-quality market reports. <BR> Carrying this provides a small confidence bonus to all recon data.",
+
+    "Tooltip_POS_BlankVHSCTape": "A factory-fresh VHS-C compact cassette tape. <BR> Insert into a recon device to record up to 20 reconnaissance entries. <BR> Review recorded tapes at a TV to extract market intelligence.",
+    "Tooltip_POS_RecordedReconTape": "A VHS-C tape containing recorded reconnaissance footage. <BR> Review at a TV with pen and paper to extract market notes. <BR> Upload the resulting notes to a POSnet terminal.",
+    "Tooltip_POS_WornVHSTape": "A heavily used VHS-C tape that has degraded beyond reliable recording. <BR> Can be recycled for magnetic tape scrap.",
+    "Tooltip_POS_DamagedVHSTape": "A broken VHS-C cassette tape. <BR> Can be repaired with a screwdriver and adhesive tape, or recycled for scrap.",
+    "Tooltip_POS_MagneticTapeScrap": "Loose magnetic tape ribbon salvaged from VHS cassettes. <BR> Used to craft improvised recon tapes.",
+    "Tooltip_POS_RefurbishedVHSCTape": "A repaired VHS-C tape with visible adhesive patches. <BR> Lower quality than factory tapes (15 entries, reduced confidence).",
+    "Tooltip_POS_SplicedReconTape": "A makeshift VHS-C tape spliced from multiple damaged tapes. <BR> Functional but unreliable (8 entries, low confidence, may corrupt data).",
+    "Tooltip_POS_ImprovisedReconTape": "A crude improvised cassette assembled from scavenged materials. <BR> Extremely unreliable (4 entries, very low confidence, signal corruption likely)."
+}

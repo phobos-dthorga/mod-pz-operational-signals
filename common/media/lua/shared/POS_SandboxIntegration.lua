@@ -285,3 +285,196 @@ function POS_Sandbox.getTerminalPowerDrainRate()
     local pct = PhobosLib.getSandboxVar("POS", "TerminalPowerDrainRate", 15)
     return pct / 100
 end
+
+---------------------------------------------------------------
+-- Market / exchange sandbox accessors
+---------------------------------------------------------------
+
+function POS_Sandbox.getEnableMarkets()
+    return PhobosLib.getSandboxVar("POS", "EnableMarkets", true)
+end
+
+function POS_Sandbox.getEnableExchange()
+    return PhobosLib.getSandboxVar("POS", "EnableExchange", false)
+end
+
+function POS_Sandbox.getIntelFreshnessDecayDays()
+    return PhobosLib.getSandboxVar("POS", "IntelFreshnessDecayDays", 14)
+end
+
+function POS_Sandbox.getMarketBroadcastInterval()
+    return PhobosLib.getSandboxVar("POS", "MarketBroadcastInterval", 120)
+end
+
+function POS_Sandbox.getMarketNoteActionTime()
+    return PhobosLib.getSandboxVar("POS", "MarketNoteActionTime", 300)
+end
+
+function POS_Sandbox.getEnableMarketBroadcasts()
+    return PhobosLib.getSandboxVar("POS", "EnableMarketBroadcasts", true)
+end
+
+function POS_Sandbox.getMarketBroadcastQuality()
+    return PhobosLib.getSandboxVar("POS", "MarketBroadcastQuality", 50)
+end
+
+---------------------------------------------------------------
+-- Item selection & category weighting sandbox accessors
+---------------------------------------------------------------
+
+function POS_Sandbox.getEnableCategoryWeighting()
+    return PhobosLib.getSandboxVar("POS", "EnableCategoryWeighting", true)
+end
+
+function POS_Sandbox.getEnableItemLevelIntel()
+    return PhobosLib.getSandboxVar("POS", "EnableItemLevelIntel", true)
+end
+
+function POS_Sandbox.getItemSelectionPoolSize()
+    return PhobosLib.getSandboxVar("POS", "ItemSelectionPoolSize", 3)
+end
+
+function POS_Sandbox.getBroadcastItemsPerPacket()
+    return PhobosLib.getSandboxVar("POS", "BroadcastItemsPerPacket", 2)
+end
+
+function POS_Sandbox.getReputationAffectsVariance()
+    return PhobosLib.getSandboxVar("POS", "ReputationAffectsVariance", true)
+end
+
+function POS_Sandbox.getDailyPriceDriftPct()
+    return PhobosLib.getSandboxVar("POS", "DailyPriceDriftPct", 2)
+end
+
+function POS_Sandbox.getEssentialGoodsPriority()
+    return PhobosLib.getSandboxVar("POS", "EssentialGoodsPriority", true)
+end
+
+--- Returns fuel category weight as float (sandbox stores as integer, ÷100).
+function POS_Sandbox.getWeightFuel()
+    return PhobosLib.getSandboxVar("POS", "WeightFuel", 150) / 100
+end
+
+function POS_Sandbox.getWeightMedicine()
+    return PhobosLib.getSandboxVar("POS", "WeightMedicine", 140) / 100
+end
+
+function POS_Sandbox.getWeightFood()
+    return PhobosLib.getSandboxVar("POS", "WeightFood", 100) / 100
+end
+
+function POS_Sandbox.getWeightAmmunition()
+    return PhobosLib.getSandboxVar("POS", "WeightAmmunition", 130) / 100
+end
+
+function POS_Sandbox.getWeightTools()
+    return PhobosLib.getSandboxVar("POS", "WeightTools", 90) / 100
+end
+
+function POS_Sandbox.getWeightRadio()
+    return PhobosLib.getSandboxVar("POS", "WeightRadio", 60) / 100
+end
+
+function POS_Sandbox.getPortableDrainDivisor()
+    return PhobosLib.getSandboxVar("POS", "PortableBatteryDivisor", 1800)
+end
+
+---------------------------------------------------------------
+-- Persistence & economy tick
+---------------------------------------------------------------
+
+function POS_Sandbox.getMaxObservationsPerCategory()
+    return PhobosLib.getSandboxVar("POS", "MaxObservationsPerCategory", 24)
+end
+
+function POS_Sandbox.getMaxRollingCloses()
+    return PhobosLib.getSandboxVar("POS", "MaxRollingCloses", 14)
+end
+
+function POS_Sandbox.getMaxGlobalEvents()
+    return PhobosLib.getSandboxVar("POS", "MaxGlobalEvents", 100)
+end
+
+function POS_Sandbox.getMaxPlayerAlerts()
+    return PhobosLib.getSandboxVar("POS", "MaxPlayerAlerts", 20)
+end
+
+function POS_Sandbox.getEconomyTickEnabled()
+    return PhobosLib.getSandboxVar("POS", "EconomyTickEnabled", true)
+end
+
+function POS_Sandbox.getEnableEventLogs()
+    return PhobosLib.getSandboxVar("POS", "EnableEventLogs", true)
+end
+
+function POS_Sandbox.getEventLogRetentionDays()
+    return PhobosLib.getSandboxVar("POS", "EventLogRetentionDays", 30)
+end
+
+---------------------------------------------------------------
+-- Passive recon devices
+---------------------------------------------------------------
+
+function POS_Sandbox.getEnablePassiveRecon()
+    return PhobosLib.getSandboxVar("POS", "EnablePassiveRecon", true)
+end
+
+function POS_Sandbox.getPassiveReconInterval()
+    return PhobosLib.getSandboxVar("POS", "PassiveReconInterval", 60)
+end
+
+function POS_Sandbox.getCamcorderScanRadius()
+    return PhobosLib.getSandboxVar("POS", "CamcorderScanRadius", 40)
+end
+
+function POS_Sandbox.getLoggerScanRadius()
+    return PhobosLib.getSandboxVar("POS", "LoggerScanRadius", 25)
+end
+
+function POS_Sandbox.getVHSTapeMinDays()
+    return PhobosLib.getSandboxVar("POS", "VHSTapeMinDays", 3)
+end
+
+function POS_Sandbox.getCamcorderNoiseLevel()
+    return PhobosLib.getSandboxVar("POS", "CamcorderNoiseLevel", 5)
+end
+
+function POS_Sandbox.getTapeDegradationRate()
+    return PhobosLib.getSandboxVar("POS", "TapeDegradationRate", 10)
+end
+
+function POS_Sandbox.getCalculatorConfidenceBonus()
+    return PhobosLib.getSandboxVar("POS", "CalculatorConfidenceBonus", 5)
+end
+
+function POS_Sandbox.getEnableVHSCrafting()
+    return PhobosLib.getSandboxVar("POS", "EnableVHSCrafting", true)
+end
+
+function POS_Sandbox.getEnableForagingTapes()
+    return PhobosLib.getSandboxVar("POS", "EnableForagingTapes", true)
+end
+
+---------------------------------------------------------------
+-- Danger detection
+---------------------------------------------------------------
+
+function POS_Sandbox.getDangerCheckRadius()
+    return PhobosLib.getSandboxVar("POS", "DangerCheckRadius", 15)
+end
+
+---------------------------------------------------------------
+-- Intel gathering cooldown
+---------------------------------------------------------------
+
+function POS_Sandbox.getIntelCooldownDays()
+    return PhobosLib.getSandboxVar("POS", "IntelCooldownDays", 12)
+end
+
+---------------------------------------------------------------
+-- VHS review at TV station
+---------------------------------------------------------------
+
+function POS_Sandbox.getVHSReviewTimePerEntry()
+    return PhobosLib.getSandboxVar("POS", "VHSReviewTimePerEntry", 300)
+end
