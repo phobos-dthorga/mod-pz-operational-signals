@@ -34,6 +34,32 @@ require "POS_MarketBroadcaster"
 
 POS_BroadcastSystem = {}
 
+--- Broadcast a server command to all connected players.
+--- In SP, sends to getSpecificPlayer(0). In MP, iterates getOnlinePlayers().
+--- @param module string Command module
+--- @param command string Command name
+--- @param args table Command arguments
+local function broadcastToAll(module, command, args)
+    if isServer and isServer() then
+        -- Dedicated/listen server: iterate online players
+        local players = getOnlinePlayers and getOnlinePlayers()
+        if players then
+            for i = 0, players:size() - 1 do
+                local p = players:get(i)
+                if p then
+                    sendServerCommand(p, module, command, args)
+                end
+            end
+        end
+    else
+        -- Single-player: send to local player
+        local player = getSpecificPlayer(0)
+        if player then
+            sendServerCommand(player, module, command, args)
+        end
+    end
+end
+
 --- Last broadcast timestamp (real-time milliseconds).
 local lastBroadcastTime = 0
 
@@ -89,7 +115,7 @@ function POS_BroadcastSystem.broadcast()
     end
 
     -- Broadcast to all clients via server command
-    sendServerCommand(POS_Constants.CMD_MODULE, POS_Constants.CMD_NEW_OPERATION, {
+    broadcastToAll(POS_Constants.CMD_MODULE, POS_Constants.CMD_NEW_OPERATION, {
         operationData = operation,
     })
 
@@ -112,7 +138,7 @@ function POS_BroadcastSystem.broadcastInvestment()
     end
 
     -- Broadcast to all clients via server command
-    sendServerCommand(POS_Constants.CMD_MODULE, POS_Constants.CMD_NEW_INVESTMENT, {
+    broadcastToAll(POS_Constants.CMD_MODULE, POS_Constants.CMD_NEW_INVESTMENT, {
         investmentData = opportunity,
     })
 

@@ -28,6 +28,22 @@ require "POS_MarketRegistry"
 
 POS_MarketBroadcaster = {}
 
+--- Broadcast a server command to all connected players (SP + MP safe).
+local function broadcastToAll(module, command, args)
+    if isServer and isServer() then
+        local players = getOnlinePlayers and getOnlinePlayers()
+        if players then
+            for i = 0, players:size() - 1 do
+                local p = players:get(i)
+                if p then sendServerCommand(p, module, command, args) end
+            end
+        end
+    else
+        local player = getSpecificPlayer(0)
+        if player then sendServerCommand(player, module, command, args) end
+    end
+end
+
 --- Last market broadcast timestamp (real-time milliseconds).
 local lastMarketBroadcastTime = 0
 
@@ -160,7 +176,7 @@ function POS_MarketBroadcaster.broadcast()
     end
 
     -- Broadcast to all clients
-    sendServerCommand(POS_Constants.CMD_MODULE, POS_Constants.CMD_MARKET_BROADCAST, {
+    broadcastToAll(POS_Constants.CMD_MODULE, POS_Constants.CMD_MARKET_BROADCAST, {
         marketData = packet,
     })
 
