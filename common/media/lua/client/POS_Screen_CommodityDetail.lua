@@ -175,8 +175,7 @@ screen.getContextData = function(params)
         table.insert(data, { type = "kv", key = "UI_POS_Market_Sources",
             value = tostring(summary.sourceCount) })
         table.insert(data, { type = "kv", key = "UI_POS_Market_Trend",
-            value = W and W.safeGetText and W.safeGetText(summary.trendKey)
-                or PhobosLib.safeGetText(summary.trendKey) })
+            value = PhobosLib.safeGetText(summary.trendKey) })
     end
     return data
 end
