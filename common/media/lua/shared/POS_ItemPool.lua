@@ -38,19 +38,12 @@ local initialised = false
 -- DisplayCategory -> Commodity category mapping
 ---------------------------------------------------------------
 
-local CATEGORY_WEIGHTS = {
-    fuel          = 1.5,
-    medicine      = 1.4,
-    food          = 1.0,
-    ammunition    = 1.3,
-    tools         = 0.9,
-    radio         = 0.6,
-    survival      = 0.8,
-    weapons       = 1.1,
-    clothing      = 0.5,
-    literature    = 0.3,
-    miscellaneous = 0.1,
-}
+local function getCategoryWeight(categoryId)
+    if POS_MarketRegistry and POS_MarketRegistry.getCategoryWeight then
+        return POS_MarketRegistry.getCategoryWeight(categoryId)
+    end
+    return 1.0
+end
 
 local DISPLAY_CATEGORY_MAP = {
     FirstAid            = "medicine",
@@ -254,19 +247,7 @@ local SUB_CATEGORY_DEFS = {
 -- Base price multipliers per category
 ---------------------------------------------------------------
 
-local CATEGORY_PRICE_MULTIPLIERS = {
-    fuel          = 1.5,
-    medicine      = 1.3,
-    food          = 0.8,
-    ammunition    = 1.4,
-    tools         = 1.0,
-    radio         = 1.2,
-    survival      = 0.9,
-    weapons       = 1.3,
-    clothing      = 0.6,
-    literature    = 0.4,
-    miscellaneous = 0.3,
-}
+local CATEGORY_PRICE_MULTIPLIERS = POS_Constants.CATEGORY_PRICE_MULTIPLIERS
 
 ---------------------------------------------------------------
 -- Internal helpers
@@ -486,8 +467,7 @@ function POS_ItemPool.selectItems(categoryId, count, ctx)
     -- Build weighted entries for selection
     local entries = {}
     for _, item in ipairs(items) do
-        local catWeight = CATEGORY_WEIGHTS[item.commodityCategory]
-            or CATEGORY_WEIGHTS.miscellaneous
+        local catWeight = getCategoryWeight(item.commodityCategory)
         entries[#entries + 1] = {
             value = item,
             weight = math.floor(catWeight * POS_Constants.ITEM_POOL_WEIGHT_PRECISION),

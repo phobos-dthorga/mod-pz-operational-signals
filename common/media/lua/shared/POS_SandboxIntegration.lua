@@ -374,3 +374,7 @@ end
 function POS_Sandbox.getWeightRadio()
     return PhobosLib.getSandboxVar("POS", "WeightRadio", 60) / 100
 end
+
+function POS_Sandbox.getPortableDrainDivisor()
+    return PhobosLib.getSandboxVar("POS", "PortableBatteryDivisor", 1800)
+end

@@ -132,7 +132,10 @@ function POS_PriceEngine.generatePrice(fullType, categoryId, ctx)
         local summary = POS_MarketDatabase.getSummary(categoryId)
         if summary and summary.sourceCount > 0 then
             -- More sources = more stable (closer to true price)
-            sdFactor = math.max(-0.1, math.min(0.1, (summary.sourceCount - 5) * 0.01))
+            sdFactor = math.max(-POS_Constants.PRICE_SD_FACTOR_CLAMP,
+                math.min(POS_Constants.PRICE_SD_FACTOR_CLAMP,
+                    (summary.sourceCount - POS_Constants.PRICE_SD_FACTOR_BASELINE)
+                    * POS_Constants.PRICE_SD_FACTOR_PER_SOURCE))
         end
     end
 

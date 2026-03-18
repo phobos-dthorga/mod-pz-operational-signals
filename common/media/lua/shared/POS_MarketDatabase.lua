@@ -133,12 +133,12 @@ function POS_MarketDatabase.getSummary(categoryId)
             if not summary.high or r.price > summary.high then
                 summary.high = r.price
             end
-            -- Weight by sourceTier: field=1.0, broadcast=0.7, default=0.85
-            local w = 0.85
+            -- Weight by sourceTier
+            local w = POS_Constants.SOURCE_TIER_WEIGHT_DEFAULT
             if r.sourceTier == "field" then
-                w = 1.0
+                w = POS_Constants.SOURCE_TIER_WEIGHT_FIELD
             elseif r.sourceTier == "broadcast" then
-                w = 0.7
+                w = POS_Constants.SOURCE_TIER_WEIGHT_BROADCAST
             end
             weightedTotal = weightedTotal + (r.price * w)
             totalWeight = totalWeight + w

@@ -209,3 +209,101 @@ POS_Constants.PRICE_MIN_OUTPUT             = 0.01
 
 -- Reputation variance multipliers (indexed by tier 1-5)
 POS_Constants.REP_VARIANCE_MULTIPLIERS = { 1.5, 1.2, 1.0, 0.8, 0.6 }
+
+---------------------------------------------------------------
+-- Source tier weights (market intel averaging)
+---------------------------------------------------------------
+
+POS_Constants.SOURCE_TIER_WEIGHT_FIELD     = 1.0
+POS_Constants.SOURCE_TIER_WEIGHT_BROADCAST = 0.7
+POS_Constants.SOURCE_TIER_WEIGHT_DEFAULT   = 0.85
+
+---------------------------------------------------------------
+-- Category price multipliers (item pool base pricing)
+---------------------------------------------------------------
+
+POS_Constants.CATEGORY_PRICE_MULTIPLIERS = {
+    fuel          = 1.5,
+    medicine      = 1.3,
+    food          = 0.8,
+    ammunition    = 1.4,
+    tools         = 1.0,
+    radio         = 1.2,
+    survival      = 0.9,
+    weapons       = 1.3,
+    clothing      = 0.6,
+    literature    = 0.4,
+    miscellaneous = 0.3,
+}
+
+---------------------------------------------------------------
+-- Supply/demand factor (price engine)
+---------------------------------------------------------------
+
+POS_Constants.PRICE_SD_FACTOR_PER_SOURCE = 0.01
+POS_Constants.PRICE_SD_FACTOR_BASELINE   = 5
+POS_Constants.PRICE_SD_FACTOR_CLAMP      = 0.1
+
+---------------------------------------------------------------
+-- Exchange engine
+---------------------------------------------------------------
+
+POS_Constants.EXCHANGE_INDEX_BASE_VALUE    = 100
+POS_Constants.EXCHANGE_INDEX_LOOKBACK_DAYS = 30
+POS_Constants.EXCHANGE_TREND_LOOKBACK_DAYS = 7
+
+---------------------------------------------------------------
+-- Terminal UI layout
+---------------------------------------------------------------
+
+POS_Constants.UI_NAV_PANEL_WIDTH            = 180
+POS_Constants.UI_CONTEXT_PANEL_WIDTH        = 200
+POS_Constants.UI_CONTEXT_COLLAPSE_THRESHOLD = 900
+POS_Constants.UI_SCREEN_PADDING             = 8
+POS_Constants.UI_PANEL_GAP                  = 4
+
+---------------------------------------------------------------
+-- CRT bezel insets (proportion of terminal dimensions)
+---------------------------------------------------------------
+
+POS_Constants.BEZEL_INSET_LEFT   = 0.15
+POS_Constants.BEZEL_INSET_RIGHT  = 0.15
+POS_Constants.BEZEL_INSET_TOP    = 0.13
+POS_Constants.BEZEL_INSET_BOTTOM = 0.30
+
+---------------------------------------------------------------
+-- Boot sequence timing
+---------------------------------------------------------------
+
+POS_Constants.BOOT_DURATION_SECONDS = 30
+POS_Constants.BOOT_TARGET_FPS       = 60
+POS_Constants.BOOT_PAUSE_FRAMES     = 60
+
+---------------------------------------------------------------
+-- Portable computer drain
+---------------------------------------------------------------
+
+POS_Constants.PORTABLE_DRAIN_DIVISOR_DEFAULT = 1800
+
+---------------------------------------------------------------
+-- Page sizes (terminal screens)
+---------------------------------------------------------------
+
+POS_Constants.PAGE_SIZE_COMMODITIES    = 8
+POS_Constants.PAGE_SIZE_MARKET_REPORTS = 5
+
+---------------------------------------------------------------
+-- Signal bar display (POS_NavPanel)
+---------------------------------------------------------------
+
+POS_Constants.SIGNAL_BAR_LENGTH         = 10
+POS_Constants.SIGNAL_THRESHOLD_HIGH_PCT = 80
+POS_Constants.SIGNAL_THRESHOLD_MED_PCT  = 50
+POS_Constants.SIGNAL_THRESHOLD_LOW_PCT  = 25
+
+---------------------------------------------------------------
+-- Font scale thresholds (pixels, window width breakpoints)
+---------------------------------------------------------------
+
+POS_Constants.FONT_SCALE_SMALL_WIDTH = 600
+POS_Constants.FONT_SCALE_LARGE_WIDTH = 900

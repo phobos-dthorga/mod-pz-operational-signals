@@ -27,7 +27,7 @@ require "POS_MarketRegistry"
 
 POS_ExchangeEngine = {}
 
-local INDEX_BASE_VALUE = 100
+local INDEX_BASE_VALUE = POS_Constants.EXCHANGE_INDEX_BASE_VALUE
 
 ---------------------------------------------------------------
 -- Index calculation
@@ -38,7 +38,7 @@ local INDEX_BASE_VALUE = 100
 --- @param categoryId string
 --- @return number index Current index value (100 = baseline)
 function POS_ExchangeEngine.getIndex(categoryId)
-    local history = POS_MarketDatabase.getPriceHistory(categoryId, 30)
+    local history = POS_MarketDatabase.getPriceHistory(categoryId, POS_Constants.EXCHANGE_INDEX_LOOKBACK_DAYS)
     if #history == 0 then return INDEX_BASE_VALUE end
 
     local baseline = history[1].avg
@@ -55,7 +55,7 @@ end
 --- @param days number Lookback period
 --- @return table[] Array of { day, index }
 function POS_ExchangeEngine.getIndexHistory(categoryId, days)
-    local history = POS_MarketDatabase.getPriceHistory(categoryId, days or 30)
+    local history = POS_MarketDatabase.getPriceHistory(categoryId, days or POS_Constants.EXCHANGE_INDEX_LOOKBACK_DAYS)
     if #history == 0 then return {} end
 
     local baseline = history[1].avg
@@ -79,7 +79,7 @@ end
 --- @param categoryId string
 --- @return table { direction = "rising"|"falling"|"stable"|"unknown", changePct = number }
 function POS_ExchangeEngine.getTrend(categoryId)
-    local history = POS_MarketDatabase.getPriceHistory(categoryId, 7)
+    local history = POS_MarketDatabase.getPriceHistory(categoryId, POS_Constants.EXCHANGE_TREND_LOOKBACK_DAYS)
 
     if #history < 2 then
         return { direction = "unknown", changePct = 0 }

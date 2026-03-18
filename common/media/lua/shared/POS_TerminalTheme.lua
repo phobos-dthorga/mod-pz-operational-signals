@@ -25,6 +25,8 @@
 -- Theme changes take effect on next terminal open.
 ---------------------------------------------------------------
 
+require "POS_Constants"
+
 POS_TerminalTheme = POS_TerminalTheme or {}
 
 ---------------------------------------------------------------
@@ -40,10 +42,10 @@ local FONT_MAP = {
 }
 
 --- Width threshold below which font is scaled down one step.
-local FONT_SCALE_SMALL_WIDTH = 600
+local FONT_SCALE_SMALL_WIDTH = POS_Constants.FONT_SCALE_SMALL_WIDTH
 
 --- Width threshold above which font is scaled up one step.
-local FONT_SCALE_LARGE_WIDTH = 900
+local FONT_SCALE_LARGE_WIDTH = POS_Constants.FONT_SCALE_LARGE_WIDTH
 
 --- Get the configured terminal font.
 ---@param windowWidth number|nil Current window width for scaling (optional)
@@ -97,6 +99,7 @@ POS_TerminalTheme.THEMES = {
             bgHover    = { r = 0.05, g = 0.15, b = 0.05, a = 0.8 },
             border     = { r = 0.15, g = 0.50, b = 0.15, a = 0.8 },
             borderDim  = { r = 0.08, g = 0.25, b = 0.08, a = 0.5 },
+            success    = { r = 0.20, g = 0.90, b = 0.50, a = 1.0 },
             transparent = { r = 0, g = 0, b = 0, a = 0 },
         },
     },
@@ -125,6 +128,7 @@ POS_TerminalTheme.THEMES = {
             bgHover    = { r = 0.15, g = 0.10, b = 0.02, a = 0.8 },
             border     = { r = 0.50, g = 0.35, b = 0.05, a = 0.8 },
             borderDim  = { r = 0.25, g = 0.18, b = 0.03, a = 0.5 },
+            success    = { r = 1.00, g = 0.85, b = 0.30, a = 1.0 },
             transparent = { r = 0, g = 0, b = 0, a = 0 },
         },
     },
@@ -153,6 +157,7 @@ POS_TerminalTheme.THEMES = {
             bgHover    = { r = 0.12, g = 0.12, b = 0.12, a = 0.8 },
             border     = { r = 0.40, g = 0.40, b = 0.40, a = 0.8 },
             borderDim  = { r = 0.20, g = 0.20, b = 0.20, a = 0.5 },
+            success    = { r = 0.50, g = 0.90, b = 0.50, a = 1.0 },
             transparent = { r = 0, g = 0, b = 0, a = 0 },
         },
     },
@@ -181,6 +186,7 @@ POS_TerminalTheme.THEMES = {
             bgHover    = { r = 0.05, g = 0.08, b = 0.18, a = 0.8 },
             border     = { r = 0.20, g = 0.35, b = 0.65, a = 0.8 },
             borderDim  = { r = 0.10, g = 0.18, b = 0.35, a = 0.5 },
+            success    = { r = 0.30, g = 0.70, b = 1.00, a = 1.0 },
             transparent = { r = 0, g = 0, b = 0, a = 0 },
         },
     },

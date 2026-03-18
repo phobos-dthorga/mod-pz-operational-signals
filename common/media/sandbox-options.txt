@@ -687,3 +687,13 @@ option POS.WeightRadio
     page = POS_Sandbox,
     translation = POS_WeightRadio,
 }
+
+option POS.PortableBatteryDivisor
+{
+    type = integer,
+    default = 1800,
+    min = 300,
+    max = 7200,
+    page = POS_Sandbox,
+    translation = POS_PortableBatteryDivisor,
+}

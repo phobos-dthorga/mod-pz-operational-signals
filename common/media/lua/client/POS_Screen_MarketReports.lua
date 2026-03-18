@@ -91,7 +91,7 @@ function screen.create(contentPanel, params, _terminal)
         local currentPage = (params and params.reportPage) or 1
         ctx.y = PhobosLib_Pagination.create(ctx.panel, {
             items = reports,
-            pageSize = 5,
+            pageSize = POS_Constants.PAGE_SIZE_MARKET_REPORTS,
             currentPage = currentPage,
             x = ctx.btnX,
             y = ctx.y,

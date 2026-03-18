@@ -168,5 +168,8 @@
     "Sandbox_POS_WeightTools_tooltip": "Selection weight for the Tools commodity category (divided by 100). <BR> <BR> <INDENT:20> 90 = 0.9x importance. Range: 10-300. Default: 90",
 
     "Sandbox_POS_WeightRadio": "Radio/Electronics Category Weight",
-    "Sandbox_POS_WeightRadio_tooltip": "Selection weight for the Radio/Electronics commodity category (divided by 100). <BR> <BR> <INDENT:20> 60 = 0.6x importance. Range: 10-300. Default: 60"
+    "Sandbox_POS_WeightRadio_tooltip": "Selection weight for the Radio/Electronics commodity category (divided by 100). <BR> <BR> <INDENT:20> 60 = 0.6x importance. Range: 10-300. Default: 60",
+
+    "Sandbox_POS_PortableBatteryDivisor": "Portable Computer Battery Drain Rate",
+    "Sandbox_POS_PortableBatteryDivisor_tooltip": "Controls how fast the portable computer battery drains while the terminal is open. <BR> <BR> <INDENT:20> Higher values = slower drain (longer battery life). <BR> 1800 = ~50 minutes of use, 3600 = ~100 minutes, 900 = ~25 minutes. <BR> Range: 300-7200. Default: 1800"
 }
