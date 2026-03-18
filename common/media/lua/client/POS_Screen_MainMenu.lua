@@ -23,6 +23,7 @@
 require "PhobosLib"
 require "POS_ScreenManager"
 require "POS_TerminalWidgets"
+require "POS_Reputation"
 
 local function safeGetText(key, ...)
     local ok, result = pcall(getText, key, ...)
@@ -35,6 +36,7 @@ local C = POS_TerminalWidgets.COLOURS
 --- Menu options with target screen IDs.
 local MENU_OPTIONS = {
     { key = "UI_POS_MainMenuOption_BBS",        screen = "BBS_LIST",                enabled = true },
+    { key = "UI_POS_MainMenuOption_Ops",        screen = "OPERATIONS",              enabled = true },
     { key = "UI_POS_MainMenuOption_Deliveries", screen = "DELIVERIES",              enabled = true },
     { key = "UI_POS_MainMenuOption_IRC",        screen = "IRC_LIST",                enabled = false },
     { key = "UI_POS_MainMenuOption_Journal",    screen = "JOURNAL",                 enabled = false },
@@ -76,6 +78,16 @@ function screen.create(contentPanel, _params, terminal)
 
     W.createLabel(contentPanel, 0, y,
         "> " .. safeGetText("UI_POS_TerminalFrequency", freqMHz), C.text)
+    y = y + lineH
+
+    -- Reputation display
+    local player = getSpecificPlayer(0)
+    local rep = POS_Reputation.get(player)
+    local tierDef = POS_Reputation.getPlayerTierDef(player)
+    W.createLabel(contentPanel, 0, y,
+        "> " .. safeGetText("UI_POS_Ops_Reputation") .. ": " .. rep
+        .. " [" .. safeGetText(tierDef and tierDef.key or "UI_POS_Rep_Tier_Untrusted") .. "]",
+        C.dim)
     y = y + lineH + 4
 
     W.createSeparator(contentPanel, 0, y, 40, "-")

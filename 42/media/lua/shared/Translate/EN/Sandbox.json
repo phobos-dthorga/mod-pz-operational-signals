@@ -44,5 +44,24 @@
     "Sandbox_POS_MaxDeliveryDistance": "Max Delivery Distance (tiles)",
     "Sandbox_POS_MaxDeliveryDistance_tooltip": "Maximum road distance in tiles between pickup and dropoff mailboxes. <BR> <BR> <INDENT:20> Longer distances give higher rewards (~$2,500). <BR> Baseline: Muldraugh-to-Louisville road distance. <BR> Range: 3000–30000. Default: 11000",
     "Sandbox_POS_DeliveryRoadFactor": "Delivery Road Factor (%)",
-    "Sandbox_POS_DeliveryRoadFactor_tooltip": "Estimated road distance as a percentage of straight-line distance. <BR> <BR> <INDENT:20> 130 means road distance is ~1.3x the straight-line distance. <BR> Used for reward estimation before actual distance is tracked. <BR> Range: 100–200. Default: 130"
+    "Sandbox_POS_DeliveryRoadFactor_tooltip": "Estimated road distance as a percentage of straight-line distance. <BR> <BR> <INDENT:20> 130 means road distance is ~1.3x the straight-line distance. <BR> Used for reward estimation before actual distance is tracked. <BR> Range: 100–200. Default: 130",
+
+    "Sandbox_POS_EnableReconMissions": "Enable Recon Missions",
+    "Sandbox_POS_EnableReconMissions_tooltip": "Master toggle for building recon missions. <BR> <BR> <INDENT:20> When disabled, no recon operations will be generated. <BR> Default: ON",
+    "Sandbox_POS_ReputationCap": "Reputation Cap",
+    "Sandbox_POS_ReputationCap_tooltip": "Maximum reputation a player can reach. <BR> <BR> <INDENT:20> Higher caps require more missions to reach endgame tiers. <BR> Range: 500–10000. Default: 2500",
+    "Sandbox_POS_ReputationMultiplier": "Reputation Multiplier (%)",
+    "Sandbox_POS_ReputationMultiplier_tooltip": "Scales all reputation gains and losses by this percentage. <BR> <BR> <INDENT:20> 200% = reputation earned twice as fast. 50% = half speed. <BR> Range: 25–400. Default: 100",
+    "Sandbox_POS_RewardMultiplier": "Reward Multiplier (%)",
+    "Sandbox_POS_RewardMultiplier_tooltip": "Scales all currency payouts from missions by this percentage. <BR> <BR> <INDENT:20> 200% = double payouts. 50% = half payouts. <BR> Affects recon and delivery rewards. <BR> Range: 25–400. Default: 100",
+    "Sandbox_POS_TierIIReputationReq": "Tier II Reputation Requirement",
+    "Sandbox_POS_TierIIReputationReq_tooltip": "Reputation needed to unlock Tier II (moderate risk) missions. <BR> <BR> <INDENT:20> Range: 0–5000. Default: 250",
+    "Sandbox_POS_TierIIIReputationReq": "Tier III Reputation Requirement",
+    "Sandbox_POS_TierIIIReputationReq_tooltip": "Reputation needed to unlock Tier III (elevated risk) missions. <BR> <BR> <INDENT:20> Range: 0–5000. Default: 750",
+    "Sandbox_POS_TierIVReputationReq": "Tier IV Reputation Requirement",
+    "Sandbox_POS_TierIVReputationReq_tooltip": "Reputation needed to unlock Tier IV (high risk) missions. <BR> <BR> <INDENT:20> Range: 0–5000. Default: 1500",
+    "Sandbox_POS_ExpiryReputationPenalty": "Operation Expiry Penalty",
+    "Sandbox_POS_ExpiryReputationPenalty_tooltip": "Reputation lost when an accepted operation expires. <BR> <BR> <INDENT:20> Set to 0 to disable expiry penalties. <BR> Range: 0–100. Default: 25",
+    "Sandbox_POS_InvestmentRepPerHundred": "Investment Rep per $100",
+    "Sandbox_POS_InvestmentRepPerHundred_tooltip": "Reputation gained per $100 invested when an investment matures successfully. <BR> <BR> <INDENT:20> Defaulted investments apply a minor negative equivalent. <BR> Range: 0–50. Default: 10"
 }

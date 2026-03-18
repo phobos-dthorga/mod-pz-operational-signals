@@ -199,3 +199,91 @@ option POS.DeliveryRoadFactor
     page = POS_Sandbox,
     translation = POS_DeliveryRoadFactor,
 }
+
+option POS.EnableReconMissions
+{
+    type = boolean,
+    default = true,
+    page = POS_Sandbox,
+    translation = POS_EnableReconMissions,
+}
+
+option POS.ReputationCap
+{
+    type = integer,
+    default = 2500,
+    min = 500,
+    max = 10000,
+    page = POS_Sandbox,
+    translation = POS_ReputationCap,
+}
+
+option POS.ReputationMultiplier
+{
+    type = integer,
+    default = 100,
+    min = 25,
+    max = 400,
+    page = POS_Sandbox,
+    translation = POS_ReputationMultiplier,
+}
+
+option POS.RewardMultiplier
+{
+    type = integer,
+    default = 100,
+    min = 25,
+    max = 400,
+    page = POS_Sandbox,
+    translation = POS_RewardMultiplier,
+}
+
+option POS.TierIIReputationReq
+{
+    type = integer,
+    default = 250,
+    min = 0,
+    max = 5000,
+    page = POS_Sandbox,
+    translation = POS_TierIIReputationReq,
+}
+
+option POS.TierIIIReputationReq
+{
+    type = integer,
+    default = 750,
+    min = 0,
+    max = 5000,
+    page = POS_Sandbox,
+    translation = POS_TierIIIReputationReq,
+}
+
+option POS.TierIVReputationReq
+{
+    type = integer,
+    default = 1500,
+    min = 0,
+    max = 5000,
+    page = POS_Sandbox,
+    translation = POS_TierIVReputationReq,
+}
+
+option POS.ExpiryReputationPenalty
+{
+    type = integer,
+    default = 25,
+    min = 0,
+    max = 100,
+    page = POS_Sandbox,
+    translation = POS_ExpiryReputationPenalty,
+}
+
+option POS.InvestmentRepPerHundred
+{
+    type = integer,
+    default = 10,
+    min = 0,
+    max = 50,
+    page = POS_Sandbox,
+    translation = POS_InvestmentRepPerHundred,
+}

@@ -49,6 +49,10 @@ globals = {
     "POS_MailboxScanner",
     "POS_DeliveryGenerator",
     "POS_PathTracker",
+    "POS_Reputation",
+    "POS_RewardCalculator",
+    "POS_BuildingCache",
+    "POS_ReconGenerator",
 }
 
 read_globals = {

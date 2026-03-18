@@ -110,3 +110,46 @@ end)
 POS_CompletionDetector.registerChecker("delivery", function(_player, obj)
     return obj.completed == true
 end)
+
+---------------------------------------------------------------
+-- Built-in objective type: recon
+-- Player must enter a building containing the target RoomDef.
+-- Checks player's current square for a matching room.
+---------------------------------------------------------------
+POS_CompletionDetector.registerChecker("recon", function(player, obj)
+    if obj.completed then return true end
+    if not obj.targetRoomDefs or not obj.targetBuildingX then return false end
+
+    -- Check if player is inside a room matching the target
+    local sq = player:getCurrentSquare()
+    if not sq then return false end
+
+    local room = nil
+    pcall(function() room = sq:getRoom() end)
+    if not room then return false end
+
+    local roomDef = nil
+    pcall(function() roomDef = room:getRoomDef() end)
+    if not roomDef then return false end
+
+    local roomName = nil
+    pcall(function() roomName = roomDef:getName() end)
+    if not roomName then return false end
+
+    -- Check if this room name matches any of the target room defs
+    for _, target in ipairs(obj.targetRoomDefs) do
+        if roomName == target then
+            -- Verify building coordinates are close enough
+            local bx, by = obj.targetBuildingX, obj.targetBuildingY
+            local px, py = player:getX(), player:getY()
+            local dist = math.abs(px - bx) + math.abs(py - by)
+            if dist < 100 then  -- within 100 tiles of target building
+                obj.entered = true
+                obj.completed = true
+                return true
+            end
+        end
+    end
+
+    return false
+end)

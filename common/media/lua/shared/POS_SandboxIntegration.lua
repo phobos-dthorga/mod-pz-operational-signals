@@ -117,3 +117,43 @@ function POS_Sandbox.getDeliveryRoadFactor()
     local pct = PhobosLib.getSandboxVar("POS", "DeliveryRoadFactor", 130)
     return pct / 100
 end
+
+---------------------------------------------------------------
+-- Reputation & reward sandbox accessors
+---------------------------------------------------------------
+
+function POS_Sandbox.isReconEnabled()
+    return PhobosLib.getSandboxVar("POS", "EnableReconMissions", true)
+end
+
+function POS_Sandbox.getReputationCap()
+    return PhobosLib.getSandboxVar("POS", "ReputationCap", 2500)
+end
+
+function POS_Sandbox.getReputationMultiplier()
+    return PhobosLib.getSandboxVar("POS", "ReputationMultiplier", 100)
+end
+
+function POS_Sandbox.getRewardMultiplier()
+    return PhobosLib.getSandboxVar("POS", "RewardMultiplier", 100)
+end
+
+function POS_Sandbox.getTierIIReputationReq()
+    return PhobosLib.getSandboxVar("POS", "TierIIReputationReq", 250)
+end
+
+function POS_Sandbox.getTierIIIReputationReq()
+    return PhobosLib.getSandboxVar("POS", "TierIIIReputationReq", 750)
+end
+
+function POS_Sandbox.getTierIVReputationReq()
+    return PhobosLib.getSandboxVar("POS", "TierIVReputationReq", 1500)
+end
+
+function POS_Sandbox.getExpiryReputationPenalty()
+    return PhobosLib.getSandboxVar("POS", "ExpiryReputationPenalty", 25)
+end
+
+function POS_Sandbox.getInvestmentRepPerHundred()
+    return PhobosLib.getSandboxVar("POS", "InvestmentRepPerHundred", 10)
+end

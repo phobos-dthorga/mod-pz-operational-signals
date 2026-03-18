@@ -238,3 +238,12 @@ local function onPassiveMailboxScan()
 end
 
 Events.EveryOneMinute.Add(onPassiveMailboxScan)
+
+--- Also passively scan for buildings with recon-relevant rooms.
+local function onPassiveBuildingScan()
+    if POS_BuildingCache and POS_BuildingCache.passiveScan then
+        POS_BuildingCache.passiveScan()
+    end
+end
+
+Events.EveryOneMinute.Add(onPassiveBuildingScan)

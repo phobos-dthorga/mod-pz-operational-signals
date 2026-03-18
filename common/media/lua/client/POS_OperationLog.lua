@@ -126,17 +126,47 @@ function POS_OperationLog.completeOperation(operationId)
     local op = POS_OperationLog.get(operationId)
     if not op then return false end
     op.status = "completed"
+
+    -- Grant reputation for completing recon missions
+    if op.baseReputation and op.baseReputation > 0 then
+        local player = getSpecificPlayer(0)
+        if player and POS_Reputation then
+            POS_Reputation.add(player, op.baseReputation)
+        end
+    end
+
+    -- Pay reward for recon missions
+    if op.scaledReward and op.scaledReward > 0
+       and op.objectives and op.objectives[1]
+       and op.objectives[1].type == "recon" then
+        local player = getSpecificPlayer(0)
+        if player then
+            PhobosLib.addMoney(player, op.scaledReward)
+        end
+    end
+
     PhobosLib.debug("POS", "Operation completed: " .. operationId)
     return true
 end
 
---- Mark an operation as expired.
+--- Mark an operation as expired and apply reputation penalty.
 --- @param operationId string
 --- @return boolean
 function POS_OperationLog.expireOperation(operationId)
     local op = POS_OperationLog.get(operationId)
     if not op then return false end
     op.status = "expired"
+
+    -- Apply expiry reputation penalty
+    local penalty = POS_Sandbox and POS_Sandbox.getExpiryReputationPenalty
+        and POS_Sandbox.getExpiryReputationPenalty() or 25
+    if penalty > 0 and POS_Reputation then
+        local player = getSpecificPlayer(0)
+        if player then
+            POS_Reputation.add(player, -penalty)
+        end
+    end
+
     PhobosLib.debug("POS", "Operation expired: " .. operationId)
     return true
 end
