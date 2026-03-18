@@ -68,5 +68,24 @@
     "Sandbox_POS_WritingDamageChance": "Writing Damage Chance (%)",
     "Sandbox_POS_WritingDamageChance_tooltip": "Percentage chance that a pen or pencil takes condition damage when crafting field reports. <BR> <BR> <INDENT:20> Set to 0 to disable writing implement wear. <BR> Range: 0–100. Default: 20",
     "Sandbox_POS_WritingDamageAmount": "Writing Damage Amount",
-    "Sandbox_POS_WritingDamageAmount_tooltip": "Average condition loss per damage event on writing implements. <BR> <BR> <INDENT:20> Actual loss varies ±2 around this value. <BR> Range: 1–20. Default: 7"
+    "Sandbox_POS_WritingDamageAmount_tooltip": "Average condition loss per damage event on writing implements. <BR> <BR> <INDENT:20> Actual loss varies ±2 around this value. <BR> Range: 1–20. Default: 7",
+
+    "Sandbox_POS_EnableNegotiation": "Enable Mission Negotiation",
+    "Sandbox_POS_EnableNegotiation_tooltip": "When enabled, players can negotiate mission terms (reward, deadline) before accepting. <BR> <BR> <INDENT:20> Success chance is based on reputation tier. <BR> When disabled, missions are accepted at the posted terms. <BR> Default: ON",
+    "Sandbox_POS_NegotiationSuccessBonus": "Negotiation Success Bonus (%)",
+    "Sandbox_POS_NegotiationSuccessBonus_tooltip": "Flat bonus (or penalty if negative) added to the base negotiation success chance. <BR> <BR> <INDENT:20> Base chances: Tier I = 30%, Tier II = 50%, Tier III = 70%, Tier IV = 85%. <BR> Range: -50 to 50. Default: 0",
+
+    "Sandbox_POS_EnableCancellationPenalty": "Enable Cancellation Penalties",
+    "Sandbox_POS_EnableCancellationPenalty_tooltip": "When enabled, cancelling active missions incurs a reputation penalty scaled by mission tier. <BR> <BR> <INDENT:20> Tier I (low risk) missions are always free to cancel. <BR> Default: ON",
+    "Sandbox_POS_BaseCancelPenalty": "Base Cancel Penalty (recon)",
+    "Sandbox_POS_BaseCancelPenalty_tooltip": "Base reputation penalty for cancelling recon operations. <BR> <BR> <INDENT:20> Scaled by tier: Tier II = 0.5x, Tier III = 1.0x, Tier IV = 1.5x. <BR> Set to 0 to remove recon cancel penalties. <BR> Range: 0–200. Default: 30",
+    "Sandbox_POS_BaseCancelPenaltyDelivery": "Base Cancel Penalty (delivery)",
+    "Sandbox_POS_BaseCancelPenaltyDelivery_tooltip": "Base reputation penalty for cancelling delivery missions. <BR> <BR> <INDENT:20> Doubles if the package has already been picked up. <BR> Set to 0 to remove delivery cancel penalties. <BR> Range: 0–100. Default: 15",
+
+    "Sandbox_POS_TerminalFontSize": "Terminal Font Size",
+    "Sandbox_POS_TerminalFontSize_tooltip": "Font size for the POSnet terminal display. <BR> <BR> <INDENT:20> 1 = Small, 2 = Medium, 3 = Code (monospace), 4 = Large. <BR> Changes take effect on next terminal open. <BR> Range: 1–4. Default: 3 (Code)",
+    "Sandbox_POS_TerminalColourTheme": "Terminal Colour Theme",
+    "Sandbox_POS_TerminalColourTheme_tooltip": "Colour theme for the POSnet terminal display. <BR> <BR> <INDENT:20> 1 = Classic Green, 2 = Amber, 3 = Cool White, 4 = IBM Blue. <BR> Changes take effect on next terminal open. <BR> Range: 1–4. Default: 1 (Classic Green)",
+    "Sandbox_POS_FontScaleWithWindow": "Scale Font with Window Size",
+    "Sandbox_POS_FontScaleWithWindow_tooltip": "When enabled, the terminal font size adjusts based on window width. <BR> <BR> <INDENT:20> Smaller windows use a smaller font; larger windows use a larger font. <BR> Independent of PZ's global font settings. <BR> Default: OFF"
 }

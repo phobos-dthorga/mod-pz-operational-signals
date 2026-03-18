@@ -191,5 +191,30 @@
     "Tooltip_POS_ReconPhotograph": "A photograph of a POSnet reconnaissance target. <BR> Combine with paper and a pen to write field notes.",
     "Tooltip_POS_FieldReport": "Handwritten field observations for a POSnet operation. <BR> Return to a terminal to submit.",
     "DisplayName_POS_ReconPhotograph": "Recon Photograph",
-    "DisplayName_POS_FieldReport": "POSnet Field Report"
+    "DisplayName_POS_FieldReport": "POSnet Field Report",
+
+    "UI_POS_Cancel_NoPenalty": "Cancel Mission (no penalty)",
+    "UI_POS_Cancel_WithPenalty": "Cancel Mission (-%1 rep)",
+    "UI_POS_Cancel_Confirm": "Are you sure?",
+    "UI_POS_Cancel_Yes": "Yes, cancel",
+    "UI_POS_Cancel_No": "No, keep mission",
+    "UI_POS_Cancel_Done": "Mission cancelled.",
+    "UI_POS_Cancel_DeliveryForfeited": "Package forfeited.",
+
+    "UI_POS_Negotiate_Header": "NEGOTIATE TERMS",
+    "UI_POS_Negotiate_CurrentOffer": "CURRENT OFFER:",
+    "UI_POS_Negotiate_HigherPay": "Request higher pay (+20%% reward, -1 day)",
+    "UI_POS_Negotiate_MoreTime": "Request more time (+2 days, -15%% reward)",
+    "UI_POS_Negotiate_Accept": "Accept current terms",
+    "UI_POS_Negotiate_Decline": "Decline",
+    "UI_POS_Negotiate_Success": "> The contact agrees to your terms.",
+    "UI_POS_Negotiate_Failed": "> The contact declines your request.",
+    "UI_POS_Negotiate_MaxAttempts": "No further negotiation possible.",
+    "UI_POS_Negotiate_AttemptsLeft": "Attempts remaining: %1",
+
+    "UI_POS_BBSHub_Header": "POSnet BULLETIN BOARD",
+    "UI_POS_BBSHub_Investments": "Investments",
+    "UI_POS_BBSHub_Operations": "Operations \u2014 Recon Missions",
+    "UI_POS_BBSHub_Courier": "Courier Service",
+    "UI_POS_BBSHub_ActiveCount": "(%1 active)"
 }

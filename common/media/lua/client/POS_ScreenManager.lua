@@ -149,6 +149,28 @@ function POS_ScreenManager.goBack()
         "navigated back to: " .. prev.screenId)
 end
 
+--- Replace the current screen without pushing to the navigation stack.
+--- Used for pagination — avoids cluttering the back-button history.
+---@param screenId string Target screen ID
+---@param params table|nil Optional parameters for the target screen
+function POS_ScreenManager.replaceCurrent(screenId, params)
+    if not POS_ScreenManager.screens[screenId] then
+        print("[POS:ScreenMgr] replaceCurrent: unknown screen '" .. tostring(screenId) .. "'")
+        return
+    end
+
+    destroyCurrentScreen()
+
+    POS_ScreenManager.currentScreen = screenId
+    POS_ScreenManager.currentParams = params
+    POS_ScreenManager.dirty = false
+
+    createWidgetScreen(screenId, params)
+
+    PhobosLib.debug("POS", "[POS:ScreenMgr]",
+        "replaced current with: " .. screenId)
+end
+
 --- Reset navigation to a specific screen, clearing the stack.
 ---@param screenId string Target screen ID
 function POS_ScreenManager.resetTo(screenId)

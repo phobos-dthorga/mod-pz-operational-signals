@@ -307,3 +307,77 @@ option POS.WritingDamageAmount
     page = POS_Sandbox,
     translation = POS_WritingDamageAmount,
 }
+
+option POS.EnableNegotiation
+{
+    type = boolean,
+    default = true,
+    page = POS_Sandbox,
+    translation = POS_EnableNegotiation,
+}
+
+option POS.NegotiationSuccessBonus
+{
+    type = integer,
+    default = 0,
+    min = -50,
+    max = 50,
+    page = POS_Sandbox,
+    translation = POS_NegotiationSuccessBonus,
+}
+
+option POS.EnableCancellationPenalty
+{
+    type = boolean,
+    default = true,
+    page = POS_Sandbox,
+    translation = POS_EnableCancellationPenalty,
+}
+
+option POS.BaseCancelPenalty
+{
+    type = integer,
+    default = 30,
+    min = 0,
+    max = 200,
+    page = POS_Sandbox,
+    translation = POS_BaseCancelPenalty,
+}
+
+option POS.BaseCancelPenaltyDelivery
+{
+    type = integer,
+    default = 15,
+    min = 0,
+    max = 100,
+    page = POS_Sandbox,
+    translation = POS_BaseCancelPenaltyDelivery,
+}
+
+option POS.TerminalFontSize
+{
+    type = integer,
+    default = 3,
+    min = 1,
+    max = 4,
+    page = POS_Sandbox,
+    translation = POS_TerminalFontSize,
+}
+
+option POS.TerminalColourTheme
+{
+    type = integer,
+    default = 1,
+    min = 1,
+    max = 4,
+    page = POS_Sandbox,
+    translation = POS_TerminalColourTheme,
+}
+
+option POS.FontScaleWithWindow
+{
+    type = boolean,
+    default = false,
+    page = POS_Sandbox,
+    translation = POS_FontScaleWithWindow,
+}

@@ -62,6 +62,7 @@ globals = {
 read_globals = {
     -- PhobosLib (loaded via require)
     "PhobosLib",
+    "PhobosLib_Pagination",
 
     -- PZ Lua classes and enums (not in JavaDocs — pure Lua, must stay manual)
     "Keyboard",

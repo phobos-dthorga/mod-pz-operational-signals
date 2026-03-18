@@ -29,6 +29,8 @@ require "POS_ReconGenerator"
 require "POS_RewardCalculator"
 require "POS_BuildingCache"
 require "POS_MapMarkers"
+require "POS_OperationLog"
+require "PhobosLib_Pagination"
 
 local function safeGetText(key, ...)
     local ok, result = pcall(getText, key, ...)
@@ -269,6 +271,23 @@ function screen.create(contentPanel, _params, _terminal)
             end
         end
 
+        -- Cancel button
+        local cancelPenalty = POS_RewardCalculator.previewCancellationPenalty(active)
+        local cancelLabel
+        if cancelPenalty <= 0 then
+            cancelLabel = safeGetText("UI_POS_Cancel_NoPenalty")
+        else
+            cancelLabel = safeGetText("UI_POS_Cancel_WithPenalty",
+                tostring(cancelPenalty))
+        end
+        local cancelActiveId = active.id
+        W.createButton(contentPanel, btnX, y, btnW, btnH, cancelLabel, nil,
+            function()
+                POS_OperationLog.cancelOperation(cancelActiveId)
+                POS_ScreenManager.markDirty()
+            end)
+        y = y + btnH + 4
+
         y = y + 4
     else
         -- ── Available operations ──
@@ -292,30 +311,55 @@ function screen.create(contentPanel, _params, _terminal)
             end
             y = y + lineH
         else
-            for i, op in ipairs(available) do
-                local tierColour = TIER_COLOURS[op.tier or 1] or C.text
-                local tierLabel = "T" .. (op.tier or "?")
-                local label = "[" .. i .. "] [" .. tierLabel .. "] "
-                    .. safeGetText(op.nameKey or "???")
-                    .. " — $" .. (op.scaledReward or "???")
-
-                local opId = op.id
-                W.createButton(contentPanel, btnX, y, btnW, btnH, label, nil,
-                    function()
-                        if POS_OperationLog and POS_OperationLog.get then
-                            local operation = POS_OperationLog.get(opId)
-                            if operation then
-                                operation.status = "active"
-                                -- Place waypoint on world map
-                                if POS_MapMarkers then
-                                    POS_MapMarkers.placeMarker(operation)
+            local currentPage = (_params and _params.opsPage) or 1
+            y = PhobosLib_Pagination.create(contentPanel, {
+                items = available,
+                pageSize = 5,
+                currentPage = currentPage,
+                x = btnX,
+                y = y,
+                width = btnW,
+                colours = {
+                    text = C.text, dim = C.dim,
+                    bgDark = C.bgDark, bgHover = C.bgHover,
+                    border = C.border,
+                },
+                renderItem = function(parent, rx, ry, rw, op, _idx)
+                    local tierLabel = "T" .. (op.tier or "?")
+                    local label = "[" .. tierLabel .. "] "
+                        .. safeGetText(op.nameKey or "???")
+                        .. " — $" .. (op.scaledReward or "???")
+                    local opId = op.id
+                    W.createButton(parent, rx, ry, rw, btnH, label, nil,
+                        function()
+                            -- Route through negotiate screen if enabled
+                            local negotiateEnabled = POS_Sandbox
+                                and POS_Sandbox.isNegotiationEnabled
+                                and POS_Sandbox.isNegotiationEnabled()
+                            if negotiateEnabled then
+                                POS_ScreenManager.navigateTo("NEGOTIATE",
+                                    { operationId = opId })
+                            else
+                                -- Direct accept (negotiation disabled)
+                                if POS_OperationLog and POS_OperationLog.get then
+                                    local operation = POS_OperationLog.get(opId)
+                                    if operation then
+                                        operation.status = "active"
+                                        if POS_MapMarkers then
+                                            POS_MapMarkers.placeMarker(operation)
+                                        end
+                                        POS_ScreenManager.markDirty()
+                                    end
                                 end
-                                POS_ScreenManager.markDirty()
                             end
-                        end
-                    end)
-                y = y + btnH + 4
-            end
+                        end)
+                    return btnH + 4
+                end,
+                onPageChange = function(newPage)
+                    POS_ScreenManager.replaceCurrent("OPERATIONS",
+                        { opsPage = newPage })
+                end,
+            })
         end
     end
 

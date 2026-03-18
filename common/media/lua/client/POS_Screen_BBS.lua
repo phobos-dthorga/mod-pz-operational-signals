@@ -24,6 +24,7 @@
 require "PhobosLib"
 require "POS_ScreenManager"
 require "POS_TerminalWidgets"
+require "PhobosLib_Pagination"
 
 local function safeGetText(key, ...)
     local ok, result = pcall(getText, key, ...)
@@ -78,21 +79,38 @@ function screen.create(contentPanel, _params, _terminal)
             safeGetText("UI_POS_BBS_NoOpportunities"), C.dim)
         y = y + lineH
     else
-        for i, opp in ipairs(opportunities) do
-            local riskPct = string.format("%.0f%%", (opp.displayedRisk or 0) * 100)
-            local returnX = string.format("%.1fx", opp.returnMultiplier or 1)
-            local label = "[" .. i .. "] " .. (opp.posterName or "???")
-                .. " -- $" .. (opp.principalMin or 0) .. "-$" .. (opp.principalMax or 0)
-                .. " (" .. returnX .. ", ~" .. riskPct .. " risk)"
-
-            local oppId = opp.id
-            W.createButton(contentPanel, btnX, y, btnW, btnH, label, nil,
-                function()
-                    POS_ScreenManager.navigateTo("BBS_POST_VIEW",
-                        { opportunityId = oppId })
-                end)
-            y = y + btnH + 4
-        end
+        local currentPage = (_params and _params.bbsPage) or 1
+        y = PhobosLib_Pagination.create(contentPanel, {
+            items = opportunities,
+            pageSize = 5,
+            currentPage = currentPage,
+            x = btnX,
+            y = y,
+            width = btnW,
+            colours = {
+                text = C.text, dim = C.dim,
+                bgDark = C.bgDark, bgHover = C.bgHover,
+                border = C.border,
+            },
+            renderItem = function(parent, rx, ry, rw, opp, _idx)
+                local riskPct = string.format("%.0f%%", (opp.displayedRisk or 0) * 100)
+                local returnX = string.format("%.1fx", opp.returnMultiplier or 1)
+                local label = (opp.posterName or "???")
+                    .. " -- $" .. (opp.principalMin or 0) .. "-$" .. (opp.principalMax or 0)
+                    .. " (" .. returnX .. ", ~" .. riskPct .. " risk)"
+                local oppId = opp.id
+                W.createButton(parent, rx, ry, rw, btnH, label, nil,
+                    function()
+                        POS_ScreenManager.navigateTo("BBS_POST_VIEW",
+                            { opportunityId = oppId })
+                    end)
+                return btnH + 4
+            end,
+            onPageChange = function(newPage)
+                POS_ScreenManager.replaceCurrent("BBS_LIST",
+                    { bbsPage = newPage })
+            end,
+        })
     end
 
     y = y + 4

@@ -165,3 +165,50 @@ end
 function POS_Sandbox.getWritingDamageAmount()
     return PhobosLib.getSandboxVar("POS", "WritingDamageAmount", 7)
 end
+
+---------------------------------------------------------------
+-- Negotiation sandbox accessors
+---------------------------------------------------------------
+
+function POS_Sandbox.isNegotiationEnabled()
+    return PhobosLib.getSandboxVar("POS", "EnableNegotiation", true)
+end
+
+function POS_Sandbox.getNegotiationSuccessBonus()
+    return PhobosLib.getSandboxVar("POS", "NegotiationSuccessBonus", 0)
+end
+
+---------------------------------------------------------------
+-- Cancellation sandbox accessors
+---------------------------------------------------------------
+
+function POS_Sandbox.isCancellationPenaltyEnabled()
+    return PhobosLib.getSandboxVar("POS", "EnableCancellationPenalty", true)
+end
+
+function POS_Sandbox.getBaseCancelPenalty()
+    return PhobosLib.getSandboxVar("POS", "BaseCancelPenalty", 30)
+end
+
+function POS_Sandbox.getBaseCancelPenaltyDelivery()
+    return PhobosLib.getSandboxVar("POS", "BaseCancelPenaltyDelivery", 15)
+end
+
+---------------------------------------------------------------
+-- Terminal theme sandbox accessors
+---------------------------------------------------------------
+
+--- Font size: 1=Small, 2=Medium, 3=Code, 4=Large.
+function POS_Sandbox.getTerminalFontSize()
+    return PhobosLib.getSandboxVar("POS", "TerminalFontSize", 3)
+end
+
+--- Colour theme: 1=Classic Green, 2=Amber, 3=Cool White, 4=IBM Blue.
+function POS_Sandbox.getTerminalColourTheme()
+    return PhobosLib.getSandboxVar("POS", "TerminalColourTheme", 1)
+end
+
+--- Whether to scale font size with window width.
+function POS_Sandbox.isFontScaleWithWindow()
+    return PhobosLib.getSandboxVar("POS", "FontScaleWithWindow", false)
+end

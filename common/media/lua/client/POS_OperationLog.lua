@@ -149,6 +149,54 @@ function POS_OperationLog.completeOperation(operationId)
     return true
 end
 
+--- Cancel an active operation and apply tier-scaled reputation penalty.
+--- Tier I missions incur no penalty; higher tiers scale upward.
+--- @param operationId string
+--- @return boolean True if cancelled successfully
+function POS_OperationLog.cancelOperation(operationId)
+    local op = POS_OperationLog.get(operationId)
+    if not op then return false end
+    if op.status ~= "active" then return false end
+
+    op.status = "cancelled"
+
+    -- Apply cancellation penalty
+    local player = getSpecificPlayer(0)
+    if player and POS_RewardCalculator
+       and POS_RewardCalculator.applyCancellationPenalty then
+        POS_RewardCalculator.applyCancellationPenalty(player, op)
+    end
+
+    -- Remove map marker
+    if POS_MapMarkers and POS_MapMarkers.removeMarker then
+        POS_MapMarkers.removeMarker(operationId)
+    end
+
+    -- For deliveries: remove package item from inventory if picked up
+    local obj = op.objectives and op.objectives[1]
+    if obj and obj.type == "delivery" and obj.pickedUp and player then
+        pcall(function()
+            local inv = player:getInventory()
+            if not inv then return end
+            local items = inv:getItemsFromFullType(
+                "PhobosOperationalSignals.POSnetPackage")
+            if items then
+                for i = 0, items:size() - 1 do
+                    local item = items:get(i)
+                    local md = item:getModData()
+                    if md and md.POS_OperationId == operationId then
+                        inv:Remove(item)
+                        break
+                    end
+                end
+            end
+        end)
+    end
+
+    PhobosLib.debug("POS", "Operation cancelled: " .. operationId)
+    return true
+end
+
 --- Mark an operation as expired and apply reputation penalty.
 --- @param operationId string
 --- @return boolean
@@ -227,7 +275,7 @@ end
 --- @return table Map of status → count
 function POS_OperationLog.getCounts()
     local all = POS_OperationLog.getAll()
-    local counts = { active = 0, completed = 0, expired = 0, failed = 0 }
+    local counts = { active = 0, completed = 0, expired = 0, failed = 0, cancelled = 0 }
     for i = 1, #all do
         local s = all[i].status or "active"
         counts[s] = (counts[s] or 0) + 1
