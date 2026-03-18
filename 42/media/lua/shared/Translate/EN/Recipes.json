@@ -1,5 +1,10 @@
 {
     "__copyright": "Copyright (c) 2026 Phobos A. D'thorga. All rights reserved.",
 
-    "CraftFieldReport": "Write Field Report"
+    "CraftFieldReport": "Write Field Report",
+
+    "RefurbishVHSTape": "Refurbish VHS Tape",
+    "SpliceReconTape": "Splice Recon Tape",
+    "ImproviseReconTape": "Improvise Recon Tape",
+    "RecycleTapeToScrap": "Recycle Tape to Scrap"
 }
