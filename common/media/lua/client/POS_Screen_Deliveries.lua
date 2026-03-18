@@ -26,6 +26,7 @@ require "PhobosLib"
 require "POS_ScreenManager"
 require "POS_TerminalWidgets"
 require "POS_PathTracker"
+require "POS_DeliveryGenerator"
 
 local function safeGetText(key, ...)
     local ok, result = pcall(getText, key, ...)
@@ -68,8 +69,11 @@ local function getCompletedDeliveries()
 end
 
 --- Get available (not yet accepted) deliveries.
+--- If none exist, attempts to generate one on-demand by scanning
+--- for mailbox pairs near the player.
 local function getAvailableDeliveries()
     if not POS_OperationLog then return {} end
+
     local results = {}
     local ops = POS_OperationLog.getByStatus("available")
     for _, op in ipairs(ops) do
@@ -78,6 +82,21 @@ local function getAvailableDeliveries()
             table.insert(results, op)
         end
     end
+
+    -- On-demand generation: if no available deliveries, try to create one
+    if #results == 0 and POS_Sandbox.isDeliveryEnabled() then
+        local player = getSpecificPlayer(0)
+        if player then
+            local delivery = POS_DeliveryGenerator.generate(player)
+            if delivery then
+                POS_OperationLog.addOperation(delivery)
+                table.insert(results, delivery)
+                PhobosLib.debug("POS",
+                    "[Deliveries] Generated on-demand delivery: " .. delivery.id)
+            end
+        end
+    end
+
     return results
 end
 
