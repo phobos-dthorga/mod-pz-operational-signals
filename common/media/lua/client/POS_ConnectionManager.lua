@@ -234,10 +234,16 @@ function POS_ConnectionManager.canConnect(player, radioObj)
 
     -- Check for computer access (desktop nearby OR portable in inventory)
     local playerSquare = PhobosLib.getSquareFromPlayer(player)
-    if not POS_ConnectionManager.isDesktopNearby(playerSquare) then
+    local hasDesktop = POS_ConnectionManager.isDesktopNearby(playerSquare)
+    if not hasDesktop then
         if not POS_ConnectionManager.hasPortableComputer(player) then
             return false, "UI_POS_NoComputer"
         end
+    end
+
+    -- Desktop computer requires electricity at its location
+    if hasDesktop and playerSquare and not playerSquare:haveElectricity() then
+        return false, POS_Constants.ERR_NO_POWER
     end
 
     return true, nil, nil, band

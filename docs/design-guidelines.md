@@ -163,6 +163,31 @@ Effects:
 
 See `docs/radio-power-table.md` for the full power reference table.
 
+### 5.5 Terminal Power Consumption
+
+Desktop terminals consume generator fuel while open, adding real gameplay
+cost to terminal usage and giving the shutdown action meaningful purpose.
+
+- **Grid power is free** — drain only applies when grid is off and a
+  generator is the power source.
+- **Drain rate**: Configurable via `TerminalPowerDrainRate` sandbox option
+  (default 0.15%/min, ~11 hours continuous per full generator). Set to 0
+  to disable drain entirely.
+- **Uses PhobosLib Power API**: `startPowerDrain()` / `stopPowerDrain()`
+  handle grid vs generator detection automatically.
+- **Power failure**: Terminal auto-closes with `PhobosLib.say()` message
+  when power is lost mid-session (generator empty or turned off).
+- **Connection gate**: `POS_ConnectionManager.canConnect()` checks
+  `square:haveElectricity()` at the desktop computer location. No power
+  = greyed-out context menu option with clear reason text.
+- **Portable computers**: Use item condition drain (separate system,
+  unchanged). Not affected by generator power.
+- **Cross-mod drain detection**: Drain rate stored on square modData
+  (`POS_PowerDrainRate` / `POS_PowerDrainSession`). If another mod or
+  session is already draining at an equal or higher rate, POSnet skips
+  its own drain to avoid stacking. If POSnet's rate is higher, it
+  replaces the existing drain.
+
 ### 5.4 Signal Strength Mission Influence (Future)
 
 Radio signal strength should influence mission generation parameters:

@@ -278,3 +278,10 @@ end
 function POS_Sandbox.getEnableContextPanel()
     return PhobosLib.getSandboxVar("POS", "EnableContextPanel", true)
 end
+
+--- Returns terminal power drain rate as float (sandbox stores as integer hundredths).
+--- 15 → 0.15 %/min. 0 disables drain entirely.
+function POS_Sandbox.getTerminalPowerDrainRate()
+    local pct = PhobosLib.getSandboxVar("POS", "TerminalPowerDrainRate", 15)
+    return pct / 100
+end

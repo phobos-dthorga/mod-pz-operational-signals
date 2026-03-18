@@ -259,6 +259,8 @@
     "UI_POS_Error_NotConnected": "No active POSnet connection.",
     "UI_POS_Error_ExtensionFailed": "A terminal extension failed to load.",
     "UI_POS_Error_ScreenBlocked": "Access denied: %1",
+    "UI_POS_Error_NoPower": "No electricity available. Connect a generator or restore grid power.",
+    "UI_POS_PowerLost": "POWER FAILURE — Terminal shutting down...",
     "UI_POS_Breadcrumb_Separator": " > ",
     "UI_POS_Menu_Locked": "[LOCKED] %1",
     "UI_POS_Menu_Unavailable": "[UNAVAILABLE]",

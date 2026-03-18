@@ -110,5 +110,8 @@
     "Sandbox_POS_EnableNavPanel": "Enable Navigation Panel",
     "Sandbox_POS_EnableNavPanel_tooltip": "Show the persistent navigation sidebar on the left side of the terminal. <BR> <BR> <INDENT:20> Provides quick access to all terminal sections and displays signal strength. <BR> Disable for a full-width content panel. <BR> Default: ON",
     "Sandbox_POS_EnableContextPanel": "Enable Context Panel",
-    "Sandbox_POS_EnableContextPanel_tooltip": "Show the context-sensitive detail panel on the right side of the terminal. <BR> <BR> <INDENT:20> Displays mission details, negotiation chances, and investment info. <BR> Automatically collapses on narrow windows. <BR> Disable for more content width. <BR> Default: ON"
+    "Sandbox_POS_EnableContextPanel_tooltip": "Show the context-sensitive detail panel on the right side of the terminal. <BR> <BR> <INDENT:20> Displays mission details, negotiation chances, and investment info. <BR> Automatically collapses on narrow windows. <BR> Disable for more content width. <BR> Default: ON",
+
+    "Sandbox_POS_TerminalPowerDrainRate": "Terminal Power Drain (%%/min)",
+    "Sandbox_POS_TerminalPowerDrainRate_tooltip": "Generator fuel drain rate while the desktop terminal is active (as hundredths of %% per real-time minute). <BR> <BR> <INDENT:20> Only applies when grid power is off. Grid power is free. <BR> Set to 0 to disable power drain entirely. <BR> Range: 0–100. Default: 15 (0.15%%/min, ~11 hours per full generator)"
 }

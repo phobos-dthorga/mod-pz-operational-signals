@@ -491,3 +491,13 @@ option POS.EnableContextPanel
     page = POS_Sandbox,
     translation = POS_EnableContextPanel,
 }
+
+option POS.TerminalPowerDrainRate
+{
+    type = integer,
+    default = 15,
+    min = 0,
+    max = 100,
+    page = POS_Sandbox,
+    translation = POS_TerminalPowerDrainRate,
+}

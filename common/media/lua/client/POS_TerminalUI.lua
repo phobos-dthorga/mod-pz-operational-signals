@@ -360,6 +360,25 @@ function POS_TerminalUI:prerender()
         end
     end
 
+    -- Desktop terminal: check for power failure (throttled)
+    if not self.portableComputer and self.powerSquare then
+        self.powerCheckAccum = (self.powerCheckAccum or 0) + 1
+        if self.powerCheckAccum >= POS_Constants.POWER_CHECK_INTERVAL then
+            self.powerCheckAccum = 0
+            if not PhobosLib.hasPower(self.powerSquare) then
+                local player = getPlayer()
+                if player then
+                    PhobosLib.say(player,
+                        PhobosLib.safeGetText(POS_Constants.MSG_POWER_LOST))
+                end
+                PhobosLib.debug("POS", "[POS:TerminalUI]",
+                    "Desktop power lost — closing terminal")
+                POS_TerminalUI.closeTerminal()
+                return
+            end
+        end
+    end
+
     local tex = getCRTBezel()
     if tex then
         -- Draw CRT bezel texture covering entire window (behind child widgets)
@@ -441,6 +460,18 @@ function POS_TerminalUI:onMouseDown(x, y)
 end
 
 function POS_TerminalUI:close()
+    -- Stop power drain session
+    if self.powerDrainSession then
+        PhobosLib.stopPowerDrain(self.powerDrainSession)
+        -- Clean up square modData
+        if self.powerSquare then
+            local md = self.powerSquare:getModData()
+            md[POS_Constants.MD_POWER_DRAIN_RATE] = nil
+            md[POS_Constants.MD_POWER_DRAIN_SESSION] = nil
+        end
+        self.powerDrainSession = nil
+        self.powerSquare = nil
+    end
     -- Remove keyboard listener
     if self._keyHandler then
         Events.OnKeyPressed.Remove(self._keyHandler)
@@ -601,6 +632,38 @@ function POS_TerminalUI.open(radioName, frequency, portablePC, signalStrength, b
     -- Track portable computer for battery drain
     ui.portableComputer = portablePC
     ui.portableDrainAccum = 0
+
+    -- Desktop terminal: start generator power drain
+    if not portablePC then
+        local player = getPlayer()
+        if player then
+            local sq = player:getSquare()
+            if sq and PhobosLib.hasPower(sq) then
+                local drainRate = POS_Sandbox.getTerminalPowerDrainRate()
+                if drainRate > 0 then
+                    -- Cross-mod: check if another drain already exists on this square
+                    local md = sq:getModData()
+                    local existingRate = md[POS_Constants.MD_POWER_DRAIN_RATE] or 0
+                    if existingRate > 0 and existingRate >= drainRate then
+                        PhobosLib.debug("POS", "[POS:TerminalUI]",
+                            "Existing power drain at " .. existingRate
+                            .. "%%/min — skipping POSnet drain")
+                    else
+                        -- Stop existing lower-rate drain if present
+                        local existingSession = md[POS_Constants.MD_POWER_DRAIN_SESSION]
+                        if existingSession then
+                            PhobosLib.stopPowerDrain(existingSession)
+                        end
+                        ui.powerDrainSession = PhobosLib.startPowerDrain(sq, drainRate)
+                        md[POS_Constants.MD_POWER_DRAIN_RATE] = drainRate
+                        md[POS_Constants.MD_POWER_DRAIN_SESSION] = ui.powerDrainSession
+                    end
+                end
+                ui.powerSquare = sq
+            end
+        end
+    end
+    ui.powerCheckAccum = 0
 
     ui:initialise()
     ui:addToUIManager()
