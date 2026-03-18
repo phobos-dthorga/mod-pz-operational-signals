@@ -488,7 +488,7 @@ end
 --- Open the POSnet terminal window.
 --- @param radioName string Display name of the connected radio
 --- @param frequency number POSnet frequency in Hz
-function POS_TerminalUI.open(radioName, frequency, portablePC)
+function POS_TerminalUI.open(radioName, frequency, portablePC, signalStrength, band)
     if POS_TerminalUI.instance then
         POS_TerminalUI.instance:setVisible(true)
         POS_TerminalUI.instance:addToUIManager()
@@ -505,6 +505,8 @@ function POS_TerminalUI.open(radioName, frequency, portablePC)
     local ui = POS_TerminalUI:new(x, y, w, h)
     ui.radioName = radioName or "Radio"
     ui.frequency = frequency or POS_Sandbox.getPOSnetFrequency()
+    ui.signalStrength = signalStrength or 1.0
+    ui.band = band or "operations"
 
     -- Track portable computer for battery drain
     ui.portableComputer = portablePC

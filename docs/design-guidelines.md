@@ -112,3 +112,39 @@ missions, windows, and sandbox options. All new features must comply.
 - Sandbox keys follow: `POS_<OptionName>` (label) and
   `POS_<OptionName>_tooltip` (tooltip).
 - Translation files are JSON in `42/media/lua/shared/Translate/EN/`.
+
+---
+
+## 5. Radio & Signal Strength
+
+### 5.1 AZAS Dependency
+
+POSnet requires **AZAS Frequency Index** as a hard dependency. Frequencies
+are assigned dynamically per-world — there is no static frequency sandbox
+option.
+
+POSnet registers **two stations** with AZAS:
+- `POSnet_Operations` (amateur band) — civilian ops content
+- `POSnet_Tactical` (military band) — combat/tactical content
+
+### 5.2 Band-Based Content Gating
+
+Radio hardware determines which band the player can access:
+- **Ham radios** receive amateur + military → full content
+- **Military handhelds** receive military only → tactical content only
+- **Commercial radios** receive neither → cannot connect
+
+The terminal stores the connected band and filters content accordingly.
+
+### 5.3 Signal Strength
+
+Radio hardware quality determines connection quality via inverse square
+law: `signal = clamp(0, 1, (power / reference)^2)`.
+
+Effects:
+- Below `MinSignalThreshold` (default 15%): connection refused
+- Above threshold: rewards scale from 50% to 100%
+- Terminal displays signal strength with colour-coded quality indicator
+- Gated by `EnableSignalStrength` sandbox toggle
+
+See `docs/radio-power-table.md` for the full power reference table.

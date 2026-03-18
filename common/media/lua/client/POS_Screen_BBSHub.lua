@@ -72,24 +72,43 @@ function screen.create(contentPanel, _params, _terminal)
         end
     end
 
-    -- Sub-menu options
-    local options = {
-        {
+    -- Band-based content gating
+    local terminal = POS_TerminalUI and POS_TerminalUI.instance
+    local band = terminal and terminal.band or "operations"
+
+    -- Sub-menu options (filtered by band)
+    local options = {}
+
+    if band == "operations" then
+        -- Civilian band: investments, deliveries, Tier I-II operations
+        table.insert(options, {
             key = "UI_POS_BBSHub_Investments",
             screen = "BBS_LIST",
             count = investCount,
-        },
-        {
+        })
+        table.insert(options, {
             key = "UI_POS_BBSHub_Operations",
             screen = "OPERATIONS",
             count = reconCount,
-        },
-        {
+        })
+        table.insert(options, {
             key = "UI_POS_BBSHub_Courier",
             screen = "DELIVERIES",
             count = deliveryCount,
-        },
-    }
+        })
+    elseif band == "tactical" then
+        -- Military band: Tier III-IV operations + investments
+        table.insert(options, {
+            key = "UI_POS_BBSHub_Investments",
+            screen = "BBS_LIST",
+            count = investCount,
+        })
+        table.insert(options, {
+            key = "UI_POS_BBSHub_Operations",
+            screen = "OPERATIONS",
+            count = reconCount,
+        })
+    end
 
     for i, opt in ipairs(options) do
         local countStr = ""

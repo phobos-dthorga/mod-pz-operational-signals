@@ -30,8 +30,8 @@ POS_ContextMenu = {}
 --- Safe getText wrapper.
 --- @param key string Translation key
 --- @return string
-local function safeGetText(key)
-    local ok, result = pcall(getText, key)
+local function safeGetText(key, ...)
+    local ok, result = pcall(getText, key, ...)
     if ok and result then return result end
     return key
 end
@@ -78,7 +78,7 @@ local function onFillWorldObjectContextMenu(playerNum, context, worldObjects, te
 
         for _, worldObj in ipairs(objects) do
             if POS_ConnectionManager.isWorldRadio(worldObj) then
-                local canDo, reason = POS_ConnectionManager.canConnect(player, worldObj)
+                local canDo, reason, extra = POS_ConnectionManager.canConnect(player, worldObj)
                 local label = safeGetText("UI_POS_ContextMenuConnect")
 
                 if canDo then
@@ -87,10 +87,32 @@ local function onFillWorldObjectContextMenu(playerNum, context, worldObjects, te
                     local option = context:addOption(label, worldObjects, nil)
                     option.notAvailable = true
                     local tooltip = ISWorldObjectContextMenu.addToolTip()
-                    tooltip.description = safeGetText(reason or "UI_POS_RadioOff")
+                    if reason == "UI_POS_FrequencyMismatch" and extra then
+                        tooltip.description = safeGetText(reason,
+                            extra.opsFreqMHz or "?", extra.tacFreqMHz or "?")
+                    elseif reason == "UI_POS_SignalTooWeak" and extra then
+                        tooltip.description = safeGetText(reason)
+                            .. " (" .. (extra.signalPct or "0") .. "%)"
+                    else
+                        tooltip.description = safeGetText(reason or "UI_POS_RadioOff")
+                    end
                     option.toolTip = tooltip
                 end
                 return
+            end
+
+            -- Desktop computer: show POSnet frequency info
+            if POS_ConnectionManager.isDesktopComputer
+               and POS_ConnectionManager.isDesktopComputer(worldObj) then
+                local opsFreq = POS_AZASIntegration
+                    and POS_AZASIntegration.getOperationsFrequency() or 130000
+                local tacFreq = POS_AZASIntegration
+                    and POS_AZASIntegration.getTacticalFrequency() or 155000
+                local freqLabel = safeGetText("UI_POS_ComputerFrequencyInfo",
+                    string.format("%.1f", opsFreq / 1000),
+                    string.format("%.1f", tacFreq / 1000))
+                local option = context:addOption(freqLabel, worldObjects, nil)
+                option.notAvailable = true
             end
         end
     end
@@ -112,7 +134,7 @@ local function onFillInventoryObjectContextMenu(playerNum, context, items)
         end
 
         if invItem and POS_ConnectionManager.isInventoryRadio(invItem) then
-            local canDo, reason = POS_ConnectionManager.canConnect(player, invItem)
+            local canDo, reason, extra = POS_ConnectionManager.canConnect(player, invItem)
             local label = safeGetText("UI_POS_ContextMenuConnect")
 
             if canDo then
@@ -121,7 +143,15 @@ local function onFillInventoryObjectContextMenu(playerNum, context, items)
                 local option = context:addOption(label, items, nil)
                 option.notAvailable = true
                 local tooltip = ISWorldObjectContextMenu.addToolTip()
-                tooltip.description = safeGetText(reason or "UI_POS_RadioOff")
+                if reason == "UI_POS_FrequencyMismatch" and extra then
+                    tooltip.description = safeGetText(reason,
+                        extra.opsFreqMHz or "?", extra.tacFreqMHz or "?")
+                elseif reason == "UI_POS_SignalTooWeak" and extra then
+                    tooltip.description = safeGetText(reason)
+                        .. " (" .. (extra.signalPct or "0") .. "%)"
+                else
+                    tooltip.description = safeGetText(reason or "UI_POS_RadioOff")
+                end
                 option.toolTip = tooltip
             end
             return

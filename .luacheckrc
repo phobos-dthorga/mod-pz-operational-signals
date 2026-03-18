@@ -57,12 +57,18 @@ globals = {
     "POS_CraftCallbacks",
     "POS_MapMarkers",
     "POS_TerminalTheme",
+    "POS_AZASIntegration",
+    "POS_RadioPower",
 }
 
 read_globals = {
     -- PhobosLib (loaded via require)
     "PhobosLib",
     "PhobosLib_Pagination",
+    "PhobosLib_Radio",
+    "AZAS_STATIONS",
+    "AZAS_FrequencyIndex",
+    "getRadioScriptManager",
 
     -- PZ Lua classes and enums (not in JavaDocs — pure Lua, must stay manual)
     "Keyboard",

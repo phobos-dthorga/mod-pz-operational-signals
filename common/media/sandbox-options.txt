@@ -44,14 +44,32 @@ option POS.OperationExpiryDays
     translation = POS_OperationExpiryDays,
 }
 
-option POS.POSnetFrequency
+option POS.EnableSignalStrength
+{
+    type = boolean,
+    default = true,
+    page = POS_Sandbox,
+    translation = POS_EnableSignalStrength,
+}
+
+option POS.SignalReferencePower
 {
     type = integer,
-    default = 91500,
-    min = 10000,
-    max = 500000,
+    default = 10000,
+    min = 1000,
+    max = 30000,
     page = POS_Sandbox,
-    translation = POS_POSnetFrequency,
+    translation = POS_SignalReferencePower,
+}
+
+option POS.MinSignalThreshold
+{
+    type = integer,
+    default = 15,
+    min = 0,
+    max = 50,
+    page = POS_Sandbox,
+    translation = POS_MinSignalThreshold,
 }
 
 option POS.EnableInvestments

@@ -44,8 +44,31 @@ function POS_Sandbox.getOperationExpiryDays()
     return PhobosLib.getSandboxVar("POS", "OperationExpiryDays", 7)
 end
 
+--- POSnet frequency — now delegated to AZAS integration.
+--- Returns the operations band frequency (backward compat).
 function POS_Sandbox.getPOSnetFrequency()
-    return PhobosLib.getSandboxVar("POS", "POSnetFrequency", 91500)
+    if POS_AZASIntegration and POS_AZASIntegration.getFrequency then
+        return POS_AZASIntegration.getFrequency()
+    end
+    return 130000
+end
+
+---------------------------------------------------------------
+-- Signal strength sandbox accessors
+---------------------------------------------------------------
+
+function POS_Sandbox.isSignalStrengthEnabled()
+    return PhobosLib.getSandboxVar("POS", "EnableSignalStrength", true)
+end
+
+function POS_Sandbox.getSignalReferencePower()
+    return PhobosLib.getSandboxVar("POS", "SignalReferencePower", 10000)
+end
+
+--- Returns threshold as 0.0–0.5 (sandbox stores as integer 0–50).
+function POS_Sandbox.getMinSignalThreshold()
+    local pct = PhobosLib.getSandboxVar("POS", "MinSignalThreshold", 15)
+    return pct / 100
 end
 
 ---------------------------------------------------------------

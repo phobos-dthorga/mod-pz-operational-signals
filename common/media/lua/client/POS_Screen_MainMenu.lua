@@ -24,6 +24,7 @@ require "PhobosLib"
 require "POS_ScreenManager"
 require "POS_TerminalWidgets"
 require "POS_Reputation"
+require "POS_RadioPower"
 
 local function safeGetText(key, ...)
     local ok, result = pcall(getText, key, ...)
@@ -77,6 +78,28 @@ function screen.create(contentPanel, _params, terminal)
     W.createLabel(contentPanel, 0, y,
         "> " .. safeGetText("UI_POS_TerminalFrequency", freqMHz), C.text)
     y = y + lineH
+
+    -- Band display
+    local band = terminal and terminal.band or "operations"
+    local bandKey = band == "tactical" and "UI_POS_Band_Tactical" or "UI_POS_Band_Operations"
+    W.createLabel(contentPanel, 0, y,
+        "> " .. safeGetText("UI_POS_TerminalBand", safeGetText(bandKey)), C.text)
+    y = y + lineH
+
+    -- Signal strength display
+    local signal = terminal and terminal.signalStrength or 1.0
+    if POS_Sandbox.isSignalStrengthEnabled() then
+        local signalPct = string.format("%.0f%%", signal * 100)
+        local qualityKey = POS_RadioPower.getQualityKey(signal)
+        local signalColour = signal >= 0.8 and C.textBright
+            or signal >= 0.5 and C.text
+            or signal >= 0.25 and C.warn
+            or C.error
+        W.createLabel(contentPanel, 0, y,
+            "> " .. safeGetText("UI_POS_TerminalSignal", signalPct, safeGetText(qualityKey)),
+            signalColour)
+        y = y + lineH
+    end
 
     -- Reputation display
     local player = getSpecificPlayer(0)

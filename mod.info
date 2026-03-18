@@ -1,9 +1,9 @@
 name=Phobos' Operational Signals
 id=PhobosOperationalSignals
-modversion=0.5.0
+modversion=0.7.0
 versionMin=42.15.0
-require=\PhobosLib
-loadModAfter=\PhobosLib,\PhobosChemistryPathways,\PhobosIndustrialPathology
+require=\PhobosLib,\AZASFrequencyIndex_RefactorTest
+loadModAfter=\PhobosLib,\AZASFrequencyIndex_RefactorTest,\PhobosChemistryPathways,\PhobosIndustrialPathology
 poster=poster.png
 description=Radio-driven procedural operations system for Project Zomboid Build 42. Intercept POSnet transmissions, log operations in your journal, and deploy into the field. Requires PhobosLib.
 url=https://github.com/phobos-dthorga/mod-pz-operational-signals

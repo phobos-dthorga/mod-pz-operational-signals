@@ -30,24 +30,36 @@ POS_RadioInterception = {}
 --- Whether the POSnet channel has been registered.
 local channelRegistered = false
 
---- Register the POSnet radio channel with PZ's radio system.
---- Called via OnLoadRadioScripts event.
---- @param scriptManager any PZ RadioScriptManager
---- @param isNewGame boolean True if this is a new game
-function POS_RadioInterception.onLoadRadioScripts(scriptManager, isNewGame)
+--- Register POSnet radio channels with PZ's radio system.
+--- Called from init() on OnGameStart (after AZAS assigns frequencies).
+function POS_RadioInterception.registerChannels()
     if channelRegistered then return end
-    if not scriptManager then return end
 
-    local freq = POS_Sandbox.getPOSnetFrequency()
-
-    local channel = scriptManager:AddChannel("POSnet", freq)
-    if channel then
-        channel:SetCategory("Military")
-        PhobosLib.debug("POS", "POSnet channel registered at " .. tostring(freq) .. " Hz")
-        channelRegistered = true
-    else
-        PhobosLib.debug("POS", "Failed to register POSnet channel at " .. tostring(freq) .. " Hz")
+    local mgr = getRadioScriptManager and getRadioScriptManager()
+    if not mgr then
+        PhobosLib.debug("POS", "RadioScriptManager not available — skipping channel registration")
+        return
     end
+
+    -- Register operations channel (amateur band)
+    local opsFreq = POS_AZASIntegration and POS_AZASIntegration.getOperationsFrequency
+        and POS_AZASIntegration.getOperationsFrequency() or 130000
+    local opsCh = mgr:AddChannel("POSnet Operations", opsFreq)
+    if opsCh then
+        opsCh:SetCategory("Military")
+        PhobosLib.debug("POS", "POSnet Operations channel at " .. tostring(opsFreq) .. " Hz")
+    end
+
+    -- Register tactical channel (military band)
+    local tacFreq = POS_AZASIntegration and POS_AZASIntegration.getTacticalFrequency
+        and POS_AZASIntegration.getTacticalFrequency() or 155000
+    local tacCh = mgr:AddChannel("POSnet Tactical", tacFreq)
+    if tacCh then
+        tacCh:SetCategory("Military")
+        PhobosLib.debug("POS", "POSnet Tactical channel at " .. tostring(tacFreq) .. " Hz")
+    end
+
+    channelRegistered = true
 end
 
 --- Handle an incoming POSnet transmission from the server.
@@ -125,7 +137,7 @@ end
 
 --- Initialise radio interception hooks.
 function POS_RadioInterception.init()
-    Events.OnLoadRadioScripts.Add(POS_RadioInterception.onLoadRadioScripts)
+    POS_RadioInterception.registerChannels()
     Events.OnServerCommand.Add(onServerCommand)
     PhobosLib.debug("POS", "Radio interception initialised")
 end

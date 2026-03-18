@@ -33,7 +33,17 @@ POS_RewardCalculator = POS_RewardCalculator or {}
 function POS_RewardCalculator.scaleReward(baseReward)
     local multiplier = POS_Sandbox and POS_Sandbox.getRewardMultiplier
         and POS_Sandbox.getRewardMultiplier() or 100
-    return math.floor((baseReward or 0) * multiplier / 100)
+
+    -- Apply signal strength multiplier from active terminal
+    local signalMult = 1.0
+    if POS_RadioPower and POS_RadioPower.getRewardMultiplier
+       and POS_TerminalUI and POS_TerminalUI.instance
+       and POS_TerminalUI.instance.signalStrength then
+        signalMult = POS_RadioPower.getRewardMultiplier(
+            POS_TerminalUI.instance.signalStrength)
+    end
+
+    return math.floor((baseReward or 0) * multiplier / 100 * signalMult)
 end
 
 --- Scale a base reputation delta by the global ReputationMultiplier.

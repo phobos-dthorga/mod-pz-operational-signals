@@ -67,12 +67,22 @@ end
 
 local function getAvailableRecons()
     if not POS_OperationLog then return {} end
+
+    -- Determine tier filter based on connected band
+    local terminal = POS_TerminalUI and POS_TerminalUI.instance
+    local band = terminal and terminal.band or "operations"
+    local minTier = band == "tactical" and 3 or 1
+    local maxTier = band == "tactical" and 4 or 2
+
     local results = {}
     local ops = POS_OperationLog.getByStatus("available")
     for _, op in ipairs(ops) do
         if op.objectives and op.objectives[1]
            and op.objectives[1].type == "recon" then
-            table.insert(results, op)
+            local tier = op.tier or 1
+            if tier >= minTier and tier <= maxTier then
+                table.insert(results, op)
+            end
         end
     end
 
@@ -83,8 +93,11 @@ local function getAvailableRecons()
         if player then
             local op = POS_ReconGenerator.generate(player)
             if op and POS_OperationLog then
-                POS_OperationLog.addOperation(op)
-                table.insert(results, op)
+                local tier = op.tier or 1
+                if tier >= minTier and tier <= maxTier then
+                    POS_OperationLog.addOperation(op)
+                    table.insert(results, op)
+                end
             end
         end
     end

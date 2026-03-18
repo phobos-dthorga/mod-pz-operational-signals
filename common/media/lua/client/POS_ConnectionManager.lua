@@ -142,11 +142,20 @@ function POS_ConnectionManager.getDeviceData(radioObj)
     return nil
 end
 
+--- Check if an IsoObject is a desktop computer (public wrapper).
+--- @param obj any IsoObject
+--- @return boolean
+function POS_ConnectionManager.isDesktopComputer(obj)
+    return isDesktopComputer(obj)
+end
+
 --- Validate all requirements for a POSnet connection.
 --- @param player any IsoPlayer
 --- @param radioObj any Radio world object or inventory item
 --- @return boolean success
 --- @return string|nil reasonKey Translation key for failure reason
+--- @return table|nil extraData Additional data for tooltip formatting
+--- @return string|nil band "operations" or "tactical" (if frequency matched)
 function POS_ConnectionManager.canConnect(player, radioObj)
     if not player or not radioObj then
         return false, nil
@@ -189,6 +198,32 @@ function POS_ConnectionManager.canConnect(player, radioObj)
         return false, "UI_POS_NoPower"
     end
 
+    -- Check frequency matches a POSnet band
+    local tunedFreq = nil
+    pcall(function() tunedFreq = dd:getFrequency() end)
+    local band = POS_AZASIntegration and POS_AZASIntegration.matchFrequency
+        and POS_AZASIntegration.matchFrequency(tunedFreq)
+    if not band then
+        local opsFreq = POS_AZASIntegration and POS_AZASIntegration.getOperationsFrequency
+            and POS_AZASIntegration.getOperationsFrequency() or 130000
+        local tacFreq = POS_AZASIntegration and POS_AZASIntegration.getTacticalFrequency
+            and POS_AZASIntegration.getTacticalFrequency() or 155000
+        return false, "UI_POS_FrequencyMismatch", {
+            opsFreqMHz = string.format("%.1f", opsFreq / 1000),
+            tacFreqMHz = string.format("%.1f", tacFreq / 1000),
+        }
+    end
+
+    -- Check signal strength (if enabled)
+    if POS_Sandbox.isSignalStrengthEnabled() then
+        local power = POS_RadioPower.getPower(radioObj)
+        local signal = POS_RadioPower.calculateSignalStrength(power)
+        if not POS_RadioPower.meetsThreshold(signal) then
+            local pct = string.format("%.0f", signal * 100)
+            return false, "UI_POS_SignalTooWeak", { signalPct = pct }
+        end
+    end
+
     -- Check for computer access (desktop nearby OR portable in inventory)
     local playerSquare = PhobosLib.getSquareFromPlayer(player)
     if not POS_ConnectionManager.isDesktopNearby(playerSquare) then
@@ -197,14 +232,14 @@ function POS_ConnectionManager.canConnect(player, radioObj)
         end
     end
 
-    return true, nil
+    return true, nil, nil, band
 end
 
 --- Open the POSnet terminal UI.
 --- @param player any IsoPlayer
 --- @param radioObj any Radio object
 function POS_ConnectionManager.connect(player, radioObj)
-    local canDo, reason = POS_ConnectionManager.canConnect(player, radioObj)
+    local canDo, reason, _extra, band = POS_ConnectionManager.canConnect(player, radioObj)
     if not canDo then
         PhobosLib.debug("POS", "Connection failed: " .. (reason or "unknown"))
         return
@@ -228,6 +263,10 @@ function POS_ConnectionManager.connect(player, radioObj)
         end
     end)
 
+    -- Calculate signal strength
+    local power = POS_RadioPower.getPower(radioObj)
+    local signalStrength = POS_RadioPower.calculateSignalStrength(power)
+
     -- Determine if using portable computer (for battery drain)
     local portablePC = nil
     local playerSquare = PhobosLib.getSquareFromPlayer(player)
@@ -235,8 +274,17 @@ function POS_ConnectionManager.connect(player, radioObj)
         portablePC = POS_ConnectionManager.findPortableComputer(player)
     end
 
-    local freq = POS_Sandbox.getPOSnetFrequency()
-    POS_TerminalUI.open(radioName, freq, portablePC)
+    -- Get the frequency for the connected band
+    local freq
+    if band == "tactical" then
+        freq = POS_AZASIntegration.getTacticalFrequency()
+    else
+        freq = POS_AZASIntegration.getOperationsFrequency()
+    end
 
-    PhobosLib.debug("POS", "Connected to POSnet via " .. radioName)
+    POS_TerminalUI.open(radioName, freq, portablePC, signalStrength, band)
+
+    PhobosLib.debug("POS", "Connected to POSnet via " .. radioName
+        .. " [" .. (band or "?") .. "] (signal: "
+        .. string.format("%.0f%%", signalStrength * 100) .. ")")
 end

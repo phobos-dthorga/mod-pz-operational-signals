@@ -216,5 +216,17 @@
     "UI_POS_BBSHub_Investments": "Investments",
     "UI_POS_BBSHub_Operations": "Operations \u2014 Recon Missions",
     "UI_POS_BBSHub_Courier": "Courier Service",
-    "UI_POS_BBSHub_ActiveCount": "(%1 active)"
+    "UI_POS_BBSHub_ActiveCount": "(%1 active)",
+
+    "UI_POS_FrequencyMismatch": "Tune radio to %1 MHz (ops) or %2 MHz (tactical)",
+    "UI_POS_ComputerFrequencyInfo": "POSnet: %1 MHz (ops) / %2 MHz (tactical)",
+    "UI_POS_SignalTooWeak": "Signal too weak. Use a more powerful radio.",
+    "UI_POS_Band_Operations": "OPERATIONS",
+    "UI_POS_Band_Tactical": "TACTICAL",
+    "UI_POS_TerminalBand": "Band: %1",
+    "UI_POS_TerminalSignal": "Signal: %1 [%2]",
+    "UI_POS_Signal_Excellent": "EXCELLENT",
+    "UI_POS_Signal_Good": "GOOD",
+    "UI_POS_Signal_Weak": "WEAK",
+    "UI_POS_Signal_Critical": "CRITICAL"
 }
