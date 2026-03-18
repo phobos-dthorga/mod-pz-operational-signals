@@ -17,4 +17,56 @@ module PhobosOperationalSignals {
         OnCreate POS_CraftCallbacks.onCreateFieldReport,
     }
 
+    craftRecipe RefurbishVHSTape
+    {
+        item 1 PhobosOperationalSignals.DamagedVHSTape,
+        item keep 1 Base.Screwdriver,
+        item 1 Base.DuctTape,
+
+        result PhobosOperationalSignals.RefurbishedVHSCTape 1,
+
+        time 200,
+        category PhobosFieldOps,
+        needToBeLearn false,
+        OnCreate POS_CraftCallbacks.onCreateRefurbishedTape,
+    }
+
+    craftRecipe SpliceReconTape
+    {
+        item 2 PhobosOperationalSignals.DamagedVHSTape,
+        item 1 Base.DuctTape,
+
+        result PhobosOperationalSignals.SplicedReconTape 1,
+
+        time 250,
+        category PhobosFieldOps,
+        needToBeLearn false,
+        OnCreate POS_CraftCallbacks.onCreateSplicedTape,
+    }
+
+    craftRecipe ImproviseReconTape
+    {
+        item 1 PhobosOperationalSignals.MagneticTapeScrap,
+        item 1 Base.DuctTape,
+        item keep 1 Base.Screwdriver,
+
+        result PhobosOperationalSignals.ImprovisedReconTape 1,
+
+        time 300,
+        category PhobosFieldOps,
+        needToBeLearn false,
+        OnCreate POS_CraftCallbacks.onCreateImprovisedTape,
+    }
+
+    craftRecipe RecycleTapeToScrap
+    {
+        item 1 [PhobosOperationalSignals.WornVHSTape;PhobosOperationalSignals.DamagedVHSTape],
+
+        result PhobosOperationalSignals.MagneticTapeScrap 1,
+
+        time 60,
+        category PhobosFieldOps,
+        needToBeLearn false,
+    }
+
 }

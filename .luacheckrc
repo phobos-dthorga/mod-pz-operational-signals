@@ -82,6 +82,9 @@ globals = {
     "POS_PlayerState",
     "POS_BasisPoints",
     "POS_EventLog",
+    "POS_PassiveRecon",
+    "POS_TapeManager",
+    "POS_ReconDeviceRegistry",
 }
 
 read_globals = {

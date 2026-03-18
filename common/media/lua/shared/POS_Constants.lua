@@ -367,3 +367,74 @@ POS_Constants.CMD_BUILDING_CACHE_SYNC     = "BuildingCacheSync"
 POS_Constants.CMD_MAILBOX_CACHE_SYNC      = "MailboxCacheSync"
 POS_Constants.CMD_ADMIN_FORCE_TICK        = "AdminForceTick"
 POS_Constants.CMD_ADMIN_DUMP_STATE        = "AdminDumpState"
+
+---------------------------------------------------------------
+-- Passive recon device item types
+---------------------------------------------------------------
+
+POS_Constants.ITEM_RECON_CAMCORDER      = "PhobosOperationalSignals.ReconCamcorder"
+POS_Constants.ITEM_FIELD_SURVEY_LOGGER  = "PhobosOperationalSignals.FieldSurveyLogger"
+POS_Constants.ITEM_DATA_CALCULATOR      = "PhobosOperationalSignals.DataCalculator"
+POS_Constants.ITEM_BLANK_VHS_TAPE       = "PhobosOperationalSignals.BlankVHSCTape"
+POS_Constants.ITEM_RECORDED_RECON_TAPE  = "PhobosOperationalSignals.RecordedReconTape"
+POS_Constants.ITEM_WORN_VHS_TAPE        = "PhobosOperationalSignals.WornVHSTape"
+POS_Constants.ITEM_DAMAGED_VHS_TAPE     = "PhobosOperationalSignals.DamagedVHSTape"
+POS_Constants.ITEM_MAGNETIC_TAPE_SCRAP  = "PhobosOperationalSignals.MagneticTapeScrap"
+POS_Constants.ITEM_REFURBISHED_TAPE     = "PhobosOperationalSignals.RefurbishedVHSCTape"
+POS_Constants.ITEM_SPLICED_TAPE         = "PhobosOperationalSignals.SplicedReconTape"
+POS_Constants.ITEM_IMPROVISED_TAPE      = "PhobosOperationalSignals.ImprovisedReconTape"
+
+---------------------------------------------------------------
+-- Passive recon scan parameters
+---------------------------------------------------------------
+
+POS_Constants.RECON_CAMCORDER_SCAN_RADIUS  = 40
+POS_Constants.RECON_LOGGER_SCAN_RADIUS     = 25
+POS_Constants.RECON_SCAN_INTERVAL_SECONDS  = 60
+POS_Constants.RECON_LOGGER_INTERNAL_CAP    = 10
+
+---------------------------------------------------------------
+-- VHS tape parameters
+---------------------------------------------------------------
+
+POS_Constants.VHS_FACTORY_CAPACITY         = 20
+POS_Constants.VHS_REFURBISHED_CAPACITY     = 15
+POS_Constants.VHS_SPLICED_CAPACITY         = 8
+POS_Constants.VHS_IMPROVISED_CAPACITY      = 4
+POS_Constants.VHS_MIN_OPERATION_DAYS       = 3
+POS_Constants.VHS_DEGRADATION_RATE_PCT     = 10
+
+---------------------------------------------------------------
+-- Tape confidence modifiers (basis points)
+---------------------------------------------------------------
+
+POS_Constants.VHS_CONFIDENCE_MOD_FACTORY      = 0
+POS_Constants.VHS_CONFIDENCE_MOD_REFURBISHED  = -1000
+POS_Constants.VHS_CONFIDENCE_MOD_SPLICED      = -2500
+POS_Constants.VHS_CONFIDENCE_MOD_IMPROVISED   = -5000
+
+---------------------------------------------------------------
+-- Device inventory bonuses (when carried but not equipped)
+---------------------------------------------------------------
+
+POS_Constants.CAMCORDER_CARRY_CONFIDENCE_BONUS  = 1500   -- +15% in BPS
+POS_Constants.LOGGER_CARRY_CONFIDENCE_BONUS     = 1000   -- +10% in BPS
+POS_Constants.CALCULATOR_CARRY_CONFIDENCE_BONUS = 500    -- +5% in BPS
+
+---------------------------------------------------------------
+-- Camcorder noise
+---------------------------------------------------------------
+
+POS_Constants.CAMCORDER_NOISE_LEVEL_DEFAULT = 5
+
+---------------------------------------------------------------
+-- Tape modData keys
+---------------------------------------------------------------
+
+POS_Constants.MD_TAPE_ENTRIES     = "POS_TapeEntries"
+POS_Constants.MD_TAPE_CAPACITY    = "POS_TapeCapacity"
+POS_Constants.MD_TAPE_QUALITY     = "POS_TapeQuality"
+POS_Constants.MD_TAPE_REGION      = "POS_TapeRegion"
+POS_Constants.MD_TAPE_DURATION    = "POS_TapeDuration"
+POS_Constants.MD_TAPE_ENTRY_COUNT = "POS_TapeEntryCount"
+POS_Constants.MD_TAPE_WEAR        = "POS_TapeWear"
