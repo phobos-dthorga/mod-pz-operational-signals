@@ -123,20 +123,8 @@ function screen.create(contentPanel, _params, terminal)
         ctx.y = ctx.y + ctx.btnH + 4
     end
 
-    -- Shutdown button (always present, not registry-driven)
-    local shutIdx = #entries + 1
-    W.createButton(ctx.panel, ctx.btnX, ctx.y, ctx.btnW, ctx.btnH,
-        "[" .. shutIdx .. "] " .. W.safeGetText("UI_POS_MainMenuOption_Shutdown"), nil,
-        function() POS_TerminalUI.closeTerminal() end)
-    ctx.y = ctx.y + ctx.btnH + 4
-
-    -- Footer
-    ctx.y = ctx.y + 4
-    W.createSeparator(ctx.panel, 0, ctx.y, 40, "-")
-    ctx.y = ctx.y + ctx.lineH
-
-    W.createLabel(ctx.panel, 0, ctx.y,
-        W.safeGetText("UI_POS_MainMenuPrompt"), C.dim)
+    -- Exit footer (root screen — closes terminal)
+    W.drawExitFooter(ctx)
 end
 
 screen.destroy = POS_TerminalWidgets.defaultDestroy

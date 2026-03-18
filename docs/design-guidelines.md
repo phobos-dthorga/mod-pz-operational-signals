@@ -61,6 +61,25 @@ missions, windows, and sandbox options. All new features must comply.
 - Page changes (pagination) use `replaceCurrent()` to avoid polluting the
   back stack.
 
+#### 2.1.1 Root Screen Navigation
+
+Root screens (main menu, or any screen where the navigation stack is empty)
+MUST display a `[0] Exit` button that closes the terminal window. Root screens
+do NOT show a Back button — there is nowhere to go back to.
+
+#### 2.1.2 Non-Root Screen Navigation
+
+All non-root screens MUST display a `[0] Back` button via `drawFooter()`.
+This returns to the previous screen in the navigation stack.
+
+#### 2.1.3 Navigation Guarantee
+
+Every screen MUST call either:
+- `POS_TerminalWidgets.drawExitFooter(ctx)` — for root screens
+- `POS_TerminalWidgets.drawFooter(ctx)` — for all other screens
+
+No screen should render without a navigation action at the bottom.
+
 ### 2.2 Menu Hierarchy
 
 - The **main menu** must remain uncluttered. Use sub-menus.
@@ -101,8 +120,20 @@ missions, windows, and sandbox options. All new features must comply.
 - All screen content must use **relative widths** (`contentPanel:getWidth()`)
   rather than hardcoded pixel values. Button widths: `pw - 10`.
 - `maxChars` for wrapped text should adapt to panel width where practical.
-- Separator character count (currently 40) is acceptable at the default
-  size but should scale with width in future if needed.
+- Separator character count is dynamically computed from panel width.
+
+### 2.6 Text Overflow Prevention
+
+All button labels MUST be truncated to fit their pixel width using
+`PhobosLib.truncateText()`. This prevents text from overflowing button
+boundaries and bleeding into adjacent panels.
+
+Rules:
+- Button text is truncated with "..." ellipsis if it exceeds button width
+- Separator character count is dynamically computed from panel width
+- Wrapped text character limits are derived from pixel width via
+  `PhobosLib.maxCharsForWidth()`, not hardcoded values
+- NavPanel labels are truncated to fit the 172px button width
 
 ---
 

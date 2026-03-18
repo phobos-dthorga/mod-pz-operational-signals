@@ -66,6 +66,12 @@ local C = POS_TerminalWidgets.COLOURS
 --- @param callback function Callback function
 --- @return any ISButton
 function POS_TerminalWidgets.createButton(parent, x, y, w, h, text, target, callback)
+    -- Truncate text to fit button width
+    if PhobosLib and PhobosLib.truncateText then
+        local maxTextWidth = w - POS_Constants.UI_BUTTON_TEXT_PADDING
+        text = PhobosLib.truncateText(text, UIFont.Code, maxTextWidth,
+            POS_Constants.UI_BUTTON_TEXT_ELLIPSIS)
+    end
     local btn = ISButton:new(x, y, w, h, text, target, callback)
     btn.backgroundColor = { r = C.bgDark.r, g = C.bgDark.g, b = C.bgDark.b, a = C.bgDark.a }
     btn.backgroundColorMouseOver = { r = C.bgHover.r, g = C.bgHover.g, b = C.bgHover.b, a = C.bgHover.a }
@@ -87,6 +93,12 @@ end
 --- @param text string Button label text
 --- @return any ISButton
 function POS_TerminalWidgets.createDisabledButton(parent, x, y, w, h, text)
+    -- Truncate text to fit button width
+    if PhobosLib and PhobosLib.truncateText then
+        local maxTextWidth = w - POS_Constants.UI_BUTTON_TEXT_PADDING
+        text = PhobosLib.truncateText(text, UIFont.Code, maxTextWidth,
+            POS_Constants.UI_BUTTON_TEXT_ELLIPSIS)
+    end
     local btn = ISButton:new(x, y, w, h, text, nil, nil)
     btn.backgroundColor = { r = C.bgDark.r, g = C.bgDark.g, b = C.bgDark.b, a = 0.4 }
     btn.backgroundColorMouseOver = btn.backgroundColor
@@ -124,7 +136,15 @@ end
 --- @param char string|nil Separator character (default "=")
 --- @return any ISLabel
 function POS_TerminalWidgets.createSeparator(parent, x, y, charCount, char)
-    local sep = string.rep(char or "=", charCount or 40)
+    -- Dynamic separator if charCount not explicitly provided
+    if not charCount or charCount <= 0 then
+        local charW = PhobosLib and PhobosLib.measureCharWidth
+            and PhobosLib.measureCharWidth(UIFont.Code) or 8
+        local panelW = parent and parent.getWidth and parent:getWidth() or 300
+        charCount = math.max(POS_Constants.UI_MIN_SEPARATOR_CHARS,
+            math.floor((panelW - 10) / charW))
+    end
+    local sep = string.rep(char or "=", charCount)
     return POS_TerminalWidgets.createLabel(parent, x, y, sep, C.dim)
 end
 
@@ -208,7 +228,14 @@ function POS_TerminalWidgets.createWrappedText(parent, x, y, maxChars, text, col
     local labels = {}
     local lineH = 18
     local currentY = y
-    maxChars = maxChars or 38
+    if not maxChars then
+        local panelWidth = parent and parent.getWidth and parent:getWidth() or 300
+        if PhobosLib and PhobosLib.maxCharsForWidth then
+            maxChars = PhobosLib.maxCharsForWidth(UIFont.Code, panelWidth, 10)
+        else
+            maxChars = 38
+        end
+    end
 
     if not text or text == "" then
         return labels, currentY
@@ -298,7 +325,7 @@ function POS_TerminalWidgets.drawHeader(ctx, headerKey)
     end
     W.createLabel(ctx.panel, 0, ctx.y, W.safeGetText(headerKey), C.textBright)
     ctx.y = ctx.y + ctx.lineH
-    W.createSeparator(ctx.panel, 0, ctx.y, 40)
+    W.createSeparator(ctx.panel, 0, ctx.y, nil)
     ctx.y = ctx.y + ctx.lineH + 4
 end
 
@@ -308,11 +335,29 @@ end
 function POS_TerminalWidgets.drawFooter(ctx)
     local W = POS_TerminalWidgets
     ctx.y = ctx.y + 4
-    W.createSeparator(ctx.panel, 0, ctx.y, 40, "-")
+    W.createSeparator(ctx.panel, 0, ctx.y, nil, "-")
     ctx.y = ctx.y + ctx.lineH + 4
     W.createButton(ctx.panel, ctx.btnX, ctx.y, ctx.btnW, ctx.btnH,
         "[0] " .. W.safeGetText("UI_POS_BackPrompt"), nil,
         function() POS_ScreenManager.goBack() end)
+    ctx.y = ctx.y + ctx.btnH + 4
+end
+
+--- Draw an exit footer for root screens (closes terminal).
+--- Mutates ctx.y. Only for root screens where there is no back target.
+--- @param ctx table Layout context from initLayout
+function POS_TerminalWidgets.drawExitFooter(ctx)
+    local W = POS_TerminalWidgets
+    ctx.y = ctx.y + 4
+    W.createSeparator(ctx.panel, 0, ctx.y, nil, "-")
+    ctx.y = ctx.y + ctx.lineH + 4
+    W.createButton(ctx.panel, ctx.btnX, ctx.y, ctx.btnW, ctx.btnH,
+        "[0] " .. W.safeGetText("UI_POS_ExitTerminal"), nil,
+        function()
+            if POS_TerminalUI and POS_TerminalUI.instance then
+                POS_TerminalUI.instance:close()
+            end
+        end)
     ctx.y = ctx.y + ctx.btnH + 4
 end
 

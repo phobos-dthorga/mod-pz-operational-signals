@@ -74,7 +74,7 @@ function POS_NavPanel.render(navPanel, terminal)
     y = y + lineH
 
     -- Separator
-    W.createSeparator(navPanel, 4, y, math.floor((pw - 8) / 8), "-")
+    W.createSeparator(navPanel, 4, y, nil, "-")
     y = y + lineH
 
     -- Menu items from registry
@@ -98,6 +98,13 @@ function POS_NavPanel.render(navPanel, terminal)
             label = "> " .. label
         else
             label = "  " .. label
+        end
+
+        -- Truncate label to fit nav panel width
+        if PhobosLib and PhobosLib.truncateText then
+            label = PhobosLib.truncateText(label, UIFont.Code,
+                btnW - POS_Constants.UI_BUTTON_TEXT_PADDING,
+                POS_Constants.UI_BUTTON_TEXT_ELLIPSIS)
         end
 
         if entry.enabled then

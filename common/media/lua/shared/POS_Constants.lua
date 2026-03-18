@@ -460,3 +460,11 @@ POS_Constants.MD_TAPE_ID = "POS_TapeId"
 POS_Constants.VHS_REVIEW_TIME_PER_ENTRY    = 300
 POS_Constants.VHS_REVIEW_SOURCE_LABEL      = "VHS Tape Review"
 POS_Constants.NOTEBOOK_CONDITION_PER_NOTE  = 1
+
+---------------------------------------------------------------
+-- UI text overflow prevention
+---------------------------------------------------------------
+
+POS_Constants.UI_BUTTON_TEXT_ELLIPSIS   = "..."
+POS_Constants.UI_MIN_SEPARATOR_CHARS    = 10
+POS_Constants.UI_BUTTON_TEXT_PADDING    = 16

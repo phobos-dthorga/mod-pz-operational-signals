@@ -404,5 +404,7 @@
 
     "UI_POS_TVStation_Name": "VHS Review Station",
     "UI_POS_VHSReview_NoTape": "No recorded VHS tape in inventory.",
-    "UI_POS_VHSReview_NoPaper": "Requires paper and writing implement."
+    "UI_POS_VHSReview_NoPaper": "Requires paper and writing implement.",
+
+    "UI_POS_ExitTerminal": "Exit Terminal"
 }
