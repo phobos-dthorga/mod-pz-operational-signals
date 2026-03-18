@@ -378,3 +378,35 @@ end
 function POS_Sandbox.getPortableDrainDivisor()
     return PhobosLib.getSandboxVar("POS", "PortableBatteryDivisor", 1800)
 end
+
+---------------------------------------------------------------
+-- Persistence & economy tick
+---------------------------------------------------------------
+
+function POS_Sandbox.getMaxObservationsPerCategory()
+    return PhobosLib.getSandboxVar("POS", "MaxObservationsPerCategory", 24)
+end
+
+function POS_Sandbox.getMaxRollingCloses()
+    return PhobosLib.getSandboxVar("POS", "MaxRollingCloses", 14)
+end
+
+function POS_Sandbox.getMaxGlobalEvents()
+    return PhobosLib.getSandboxVar("POS", "MaxGlobalEvents", 100)
+end
+
+function POS_Sandbox.getMaxPlayerAlerts()
+    return PhobosLib.getSandboxVar("POS", "MaxPlayerAlerts", 20)
+end
+
+function POS_Sandbox.getEconomyTickEnabled()
+    return PhobosLib.getSandboxVar("POS", "EconomyTickEnabled", true)
+end
+
+function POS_Sandbox.getEnableEventLogs()
+    return PhobosLib.getSandboxVar("POS", "EnableEventLogs", true)
+end
+
+function POS_Sandbox.getEventLogRetentionDays()
+    return PhobosLib.getSandboxVar("POS", "EventLogRetentionDays", 30)
+end

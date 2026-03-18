@@ -307,3 +307,63 @@ POS_Constants.SIGNAL_THRESHOLD_LOW_PCT  = 25
 
 POS_Constants.FONT_SCALE_SMALL_WIDTH = 600
 POS_Constants.FONT_SCALE_LARGE_WIDTH = 900
+
+---------------------------------------------------------------
+-- World ModData keys (Global ModData containers)
+---------------------------------------------------------------
+
+POS_Constants.WMD_WORLD       = "POSNET.World"
+POS_Constants.WMD_EXCHANGE    = "POSNET.Exchange"
+POS_Constants.WMD_WHOLESALERS = "POSNET.Wholesalers"
+POS_Constants.WMD_META        = "POSNET.Meta"
+POS_Constants.WMD_BUILDINGS   = "POSNET.Buildings"
+POS_Constants.WMD_MAILBOXES   = "POSNET.Mailboxes"
+
+---------------------------------------------------------------
+-- Schema versioning
+---------------------------------------------------------------
+
+POS_Constants.SCHEMA_VERSION = 1
+
+---------------------------------------------------------------
+-- Rolling window caps
+---------------------------------------------------------------
+
+POS_Constants.MAX_OBSERVATIONS_PER_CATEGORY = 24
+POS_Constants.MAX_ROLLING_CLOSES            = 14
+POS_Constants.MAX_GLOBAL_EVENTS             = 100
+POS_Constants.MAX_PLAYER_ALERTS             = 20
+POS_Constants.MAX_PLAYER_ORDERS             = 10
+
+---------------------------------------------------------------
+-- Basis points
+---------------------------------------------------------------
+
+POS_Constants.BPS_DIVISOR = 10000
+
+---------------------------------------------------------------
+-- Event log paths and format
+---------------------------------------------------------------
+
+POS_Constants.EVENT_LOG_DIR          = "POSNET/events/"
+POS_Constants.EVENT_SNAPSHOT_DIR     = "POSNET/snapshots/"
+POS_Constants.EVENT_LOG_SEPARATOR    = "|"
+POS_Constants.EVENT_LOG_VERSION      = 1
+POS_Constants.EVENT_LOG_PURGE_BUFFER = 5
+
+---------------------------------------------------------------
+-- Server commands (persistence / snapshot protocol)
+---------------------------------------------------------------
+
+POS_Constants.CMD_SUBMIT_OBSERVATION      = "SubmitObservation"
+POS_Constants.CMD_REQUEST_MARKET_SNAPSHOT = "RequestMarketSnapshot"
+POS_Constants.CMD_MARKET_SNAPSHOT         = "MarketSnapshot"
+POS_Constants.CMD_REQUEST_CATEGORY_DETAIL = "RequestCategoryDetail"
+POS_Constants.CMD_CATEGORY_DETAIL         = "CategoryDetail"
+POS_Constants.CMD_ECONOMY_TICK_COMPLETE   = "EconomyTickComplete"
+POS_Constants.CMD_SUBMIT_BUILDING         = "SubmitBuilding"
+POS_Constants.CMD_SUBMIT_MAILBOX          = "SubmitMailbox"
+POS_Constants.CMD_BUILDING_CACHE_SYNC     = "BuildingCacheSync"
+POS_Constants.CMD_MAILBOX_CACHE_SYNC      = "MailboxCacheSync"
+POS_Constants.CMD_ADMIN_FORCE_TICK        = "AdminForceTick"
+POS_Constants.CMD_ADMIN_DUMP_STATE        = "AdminDumpState"

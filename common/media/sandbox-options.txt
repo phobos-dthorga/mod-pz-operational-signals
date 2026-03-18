@@ -697,3 +697,69 @@ option POS.PortableBatteryDivisor
     page = POS_Sandbox,
     translation = POS_PortableBatteryDivisor,
 }
+
+option POS.MaxObservationsPerCategory
+{
+    type = integer,
+    default = 24,
+    min = 12,
+    max = 48,
+    page = POS_Sandbox,
+    translation = POS_MaxObservationsPerCategory,
+}
+
+option POS.MaxRollingCloses
+{
+    type = integer,
+    default = 14,
+    min = 7,
+    max = 30,
+    page = POS_Sandbox,
+    translation = POS_MaxRollingCloses,
+}
+
+option POS.MaxGlobalEvents
+{
+    type = integer,
+    default = 100,
+    min = 50,
+    max = 250,
+    page = POS_Sandbox,
+    translation = POS_MaxGlobalEvents,
+}
+
+option POS.MaxPlayerAlerts
+{
+    type = integer,
+    default = 20,
+    min = 5,
+    max = 50,
+    page = POS_Sandbox,
+    translation = POS_MaxPlayerAlerts,
+}
+
+option POS.EconomyTickEnabled
+{
+    type = boolean,
+    default = true,
+    page = POS_Sandbox,
+    translation = POS_EconomyTickEnabled,
+}
+
+option POS.EnableEventLogs
+{
+    type = boolean,
+    default = true,
+    page = POS_Sandbox,
+    translation = POS_EnableEventLogs,
+}
+
+option POS.EventLogRetentionDays
+{
+    type = integer,
+    default = 30,
+    min = 7,
+    max = 90,
+    page = POS_Sandbox,
+    translation = POS_EventLogRetentionDays,
+}

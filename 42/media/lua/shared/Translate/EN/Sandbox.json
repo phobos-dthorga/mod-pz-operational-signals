@@ -171,5 +171,26 @@
     "Sandbox_POS_WeightRadio_tooltip": "Selection weight for the Radio/Electronics commodity category (divided by 100). <BR> <BR> <INDENT:20> 60 = 0.6x importance. Range: 10-300. Default: 60",
 
     "Sandbox_POS_PortableBatteryDivisor": "Portable Computer Battery Drain Rate",
-    "Sandbox_POS_PortableBatteryDivisor_tooltip": "Controls how fast the portable computer battery drains while the terminal is open. <BR> <BR> <INDENT:20> Higher values = slower drain (longer battery life). <BR> 1800 = ~50 minutes of use, 3600 = ~100 minutes, 900 = ~25 minutes. <BR> Range: 300-7200. Default: 1800"
+    "Sandbox_POS_PortableBatteryDivisor_tooltip": "Controls how fast the portable computer battery drains while the terminal is open. <BR> <BR> <INDENT:20> Higher values = slower drain (longer battery life). <BR> 1800 = ~50 minutes of use, 3600 = ~100 minutes, 900 = ~25 minutes. <BR> Range: 300-7200. Default: 1800",
+
+    "Sandbox_POS_MaxObservationsPerCategory": "Max Observations Per Category",
+    "Sandbox_POS_MaxObservationsPerCategory_tooltip": "Maximum number of market observations retained per commodity category. <BR> <BR> <INDENT:20> Older observations are discarded when this cap is exceeded. <BR> Higher values retain more history but increase world save size. <BR> Range: 12-48. Default: 24",
+
+    "Sandbox_POS_MaxRollingCloses": "Max Rolling Price Closes",
+    "Sandbox_POS_MaxRollingCloses_tooltip": "Maximum number of daily closing prices retained per category and company. <BR> <BR> <INDENT:20> Used for trend calculation and price history charts. <BR> Range: 7-30. Default: 14",
+
+    "Sandbox_POS_MaxGlobalEvents": "Max Global Market Events",
+    "Sandbox_POS_MaxGlobalEvents_tooltip": "Maximum number of market events retained in the world event log. <BR> <BR> <INDENT:20> Events include price shocks, wholesaler actions, and supply disruptions. <BR> Range: 50-250. Default: 100",
+
+    "Sandbox_POS_MaxPlayerAlerts": "Max Player Alerts",
+    "Sandbox_POS_MaxPlayerAlerts_tooltip": "Maximum number of market alerts retained per player. <BR> <BR> <INDENT:20> Older alerts are discarded when this cap is exceeded. <BR> Range: 5-50. Default: 20",
+
+    "Sandbox_POS_EconomyTickEnabled": "Enable Economy Daily Tick",
+    "Sandbox_POS_EconomyTickEnabled_tooltip": "When enabled, the market economy processes a daily tick that updates prices, aggregates observations, and advances wholesaler behaviour. <BR> <BR> <INDENT:20> Disabling freezes the economy at its current state. <BR> Default: ON",
+
+    "Sandbox_POS_EnableEventLogs": "Enable Event Logs",
+    "Sandbox_POS_EnableEventLogs_tooltip": "When enabled, the server writes append-only event logs for market activity. <BR> <BR> <INDENT:20> Useful for debugging, auditing, and admin analysis. <BR> Logs are stored outside the save file and do not affect modData size. <BR> Default: ON",
+
+    "Sandbox_POS_EventLogRetentionDays": "Event Log Retention (days)",
+    "Sandbox_POS_EventLogRetentionDays_tooltip": "Number of in-game days to retain event log files before purging. <BR> <BR> <INDENT:20> Older log files are truncated during the daily economy tick. <BR> Range: 7-90. Default: 30"
 }

@@ -78,6 +78,10 @@ globals = {
     "POS_TraderIntegration",
     "POS_ItemPool",
     "POS_PriceEngine",
+    "POS_WorldState",
+    "POS_PlayerState",
+    "POS_BasisPoints",
+    "POS_EventLog",
 }
 
 read_globals = {
