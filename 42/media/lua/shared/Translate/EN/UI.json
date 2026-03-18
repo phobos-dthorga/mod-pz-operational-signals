@@ -378,5 +378,14 @@
     "UI_POS_Market_JunkItems": "Miscellaneous",
     "UI_POS_Market_SubCategory": "Sub-Category",
     "UI_POS_Market_ViewAll": "View All",
-    "UI_POS_Market_FilterBy": "Filter by Sub-Category"
+    "UI_POS_Market_FilterBy": "Filter by Sub-Category",
+
+    "UI_POS_Device_Camcorder": "Recon Camcorder",
+    "UI_POS_Device_Logger": "Field Survey Logger",
+    "UI_POS_Device_Calculator": "Data Calculator",
+    "UI_POS_Recon_TapeFull": "VHS tape is full. Replace or upload.",
+    "UI_POS_Recon_DeviceActive": "Passive recon active",
+    "UI_POS_Recon_UploadComplete": "Recon upload complete",
+    "UI_POS_Recon_NoTape": "No usable VHS tape found",
+    "UI_POS_Recon_NoBattery": "Device battery depleted"
 }

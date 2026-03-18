@@ -763,3 +763,97 @@ option POS.EventLogRetentionDays
     page = POS_Sandbox,
     translation = POS_EventLogRetentionDays,
 }
+
+option POS.EnablePassiveRecon
+{
+    type = boolean,
+    default = true,
+    page = POS_Sandbox,
+    translation = POS_EnablePassiveRecon,
+}
+
+option POS.PassiveReconInterval
+{
+    type = integer,
+    default = 60,
+    min = 30,
+    max = 180,
+    page = POS_Sandbox,
+    translation = POS_PassiveReconInterval,
+}
+
+option POS.CamcorderScanRadius
+{
+    type = integer,
+    default = 40,
+    min = 20,
+    max = 80,
+    page = POS_Sandbox,
+    translation = POS_CamcorderScanRadius,
+}
+
+option POS.LoggerScanRadius
+{
+    type = integer,
+    default = 25,
+    min = 10,
+    max = 50,
+    page = POS_Sandbox,
+    translation = POS_LoggerScanRadius,
+}
+
+option POS.VHSTapeMinDays
+{
+    type = integer,
+    default = 3,
+    min = 1,
+    max = 7,
+    page = POS_Sandbox,
+    translation = POS_VHSTapeMinDays,
+}
+
+option POS.CamcorderNoiseLevel
+{
+    type = integer,
+    default = 5,
+    min = 0,
+    max = 20,
+    page = POS_Sandbox,
+    translation = POS_CamcorderNoiseLevel,
+}
+
+option POS.TapeDegradationRate
+{
+    type = integer,
+    default = 10,
+    min = 0,
+    max = 30,
+    page = POS_Sandbox,
+    translation = POS_TapeDegradationRate,
+}
+
+option POS.CalculatorConfidenceBonus
+{
+    type = integer,
+    default = 5,
+    min = 0,
+    max = 15,
+    page = POS_Sandbox,
+    translation = POS_CalculatorConfidenceBonus,
+}
+
+option POS.EnableVHSCrafting
+{
+    type = boolean,
+    default = true,
+    page = POS_Sandbox,
+    translation = POS_EnableVHSCrafting,
+}
+
+option POS.EnableForagingTapes
+{
+    type = boolean,
+    default = true,
+    page = POS_Sandbox,
+    translation = POS_EnableForagingTapes,
+}

@@ -98,3 +98,42 @@ function POS_CraftCallbacks.onCreateFieldReport(items, result, player)
         end
     end
 end
+
+--- Callback for Refurbished VHS-C Tape crafting.
+function POS_CraftCallbacks.onCreateRefurbishedTape(items, result, player)
+    if not result then return end
+    local md = PhobosLib.getModData(result)
+    if md then
+        md[POS_Constants.MD_TAPE_CAPACITY] = POS_Constants.VHS_REFURBISHED_CAPACITY
+        md[POS_Constants.MD_TAPE_QUALITY] = "medium"
+        md[POS_Constants.MD_TAPE_ENTRY_COUNT] = 0
+        md[POS_Constants.MD_TAPE_ENTRIES] = ""
+        md[POS_Constants.MD_TAPE_WEAR] = 0
+    end
+end
+
+--- Callback for Spliced Recon Tape crafting.
+function POS_CraftCallbacks.onCreateSplicedTape(items, result, player)
+    if not result then return end
+    local md = PhobosLib.getModData(result)
+    if md then
+        md[POS_Constants.MD_TAPE_CAPACITY] = POS_Constants.VHS_SPLICED_CAPACITY
+        md[POS_Constants.MD_TAPE_QUALITY] = "low"
+        md[POS_Constants.MD_TAPE_ENTRY_COUNT] = 0
+        md[POS_Constants.MD_TAPE_ENTRIES] = ""
+        md[POS_Constants.MD_TAPE_WEAR] = 0
+    end
+end
+
+--- Callback for Improvised Recon Tape crafting.
+function POS_CraftCallbacks.onCreateImprovisedTape(items, result, player)
+    if not result then return end
+    local md = PhobosLib.getModData(result)
+    if md then
+        md[POS_Constants.MD_TAPE_CAPACITY] = POS_Constants.VHS_IMPROVISED_CAPACITY
+        md[POS_Constants.MD_TAPE_QUALITY] = "very_low"
+        md[POS_Constants.MD_TAPE_ENTRY_COUNT] = 0
+        md[POS_Constants.MD_TAPE_ENTRIES] = ""
+        md[POS_Constants.MD_TAPE_WEAR] = 0
+    end
+end

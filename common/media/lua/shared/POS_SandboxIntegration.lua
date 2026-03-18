@@ -410,3 +410,47 @@ end
 function POS_Sandbox.getEventLogRetentionDays()
     return PhobosLib.getSandboxVar("POS", "EventLogRetentionDays", 30)
 end
+
+---------------------------------------------------------------
+-- Passive recon devices
+---------------------------------------------------------------
+
+function POS_Sandbox.getEnablePassiveRecon()
+    return PhobosLib.getSandboxVar("POS", "EnablePassiveRecon", true)
+end
+
+function POS_Sandbox.getPassiveReconInterval()
+    return PhobosLib.getSandboxVar("POS", "PassiveReconInterval", 60)
+end
+
+function POS_Sandbox.getCamcorderScanRadius()
+    return PhobosLib.getSandboxVar("POS", "CamcorderScanRadius", 40)
+end
+
+function POS_Sandbox.getLoggerScanRadius()
+    return PhobosLib.getSandboxVar("POS", "LoggerScanRadius", 25)
+end
+
+function POS_Sandbox.getVHSTapeMinDays()
+    return PhobosLib.getSandboxVar("POS", "VHSTapeMinDays", 3)
+end
+
+function POS_Sandbox.getCamcorderNoiseLevel()
+    return PhobosLib.getSandboxVar("POS", "CamcorderNoiseLevel", 5)
+end
+
+function POS_Sandbox.getTapeDegradationRate()
+    return PhobosLib.getSandboxVar("POS", "TapeDegradationRate", 10)
+end
+
+function POS_Sandbox.getCalculatorConfidenceBonus()
+    return PhobosLib.getSandboxVar("POS", "CalculatorConfidenceBonus", 5)
+end
+
+function POS_Sandbox.getEnableVHSCrafting()
+    return PhobosLib.getSandboxVar("POS", "EnableVHSCrafting", true)
+end
+
+function POS_Sandbox.getEnableForagingTapes()
+    return PhobosLib.getSandboxVar("POS", "EnableForagingTapes", true)
+end

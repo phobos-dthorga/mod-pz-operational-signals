@@ -192,5 +192,35 @@
     "Sandbox_POS_EnableEventLogs_tooltip": "When enabled, the server writes append-only event logs for market activity. <BR> <BR> <INDENT:20> Useful for debugging, auditing, and admin analysis. <BR> Logs are stored outside the save file and do not affect modData size. <BR> Default: ON",
 
     "Sandbox_POS_EventLogRetentionDays": "Event Log Retention (days)",
-    "Sandbox_POS_EventLogRetentionDays_tooltip": "Number of in-game days to retain event log files before purging. <BR> <BR> <INDENT:20> Older log files are truncated during the daily economy tick. <BR> Range: 7-90. Default: 30"
+    "Sandbox_POS_EventLogRetentionDays_tooltip": "Number of in-game days to retain event log files before purging. <BR> <BR> <INDENT:20> Older log files are truncated during the daily economy tick. <BR> Range: 7-90. Default: 30",
+
+    "Sandbox_POS_EnablePassiveRecon": "Enable Passive Reconnaissance",
+    "Sandbox_POS_EnablePassiveRecon_tooltip": "When enabled, recon devices passively scan the environment while carried and equipped. <BR> <BR> <INDENT:20> Default: ON",
+
+    "Sandbox_POS_PassiveReconInterval": "Passive Recon Interval (seconds)",
+    "Sandbox_POS_PassiveReconInterval_tooltip": "Time between passive reconnaissance scans in game seconds. <BR> <BR> <INDENT:20> Lower values scan more frequently but use more battery. <BR> Range: 30-180. Default: 60",
+
+    "Sandbox_POS_CamcorderScanRadius": "Camcorder Scan Radius (tiles)",
+    "Sandbox_POS_CamcorderScanRadius_tooltip": "Passive scan radius for the Recon Camcorder when equipped. <BR> <BR> <INDENT:20> Range: 20-80. Default: 40",
+
+    "Sandbox_POS_LoggerScanRadius": "Field Logger Scan Radius (tiles)",
+    "Sandbox_POS_LoggerScanRadius_tooltip": "Passive scan radius for the Field Survey Logger when equipped. <BR> <BR> <INDENT:20> Range: 10-50. Default: 25",
+
+    "Sandbox_POS_VHSTapeMinDays": "VHS Tape Minimum Operation (days)",
+    "Sandbox_POS_VHSTapeMinDays_tooltip": "Minimum number of in-game days a VHS tape should last under continuous recording. <BR> <BR> <INDENT:20> Range: 1-7. Default: 3",
+
+    "Sandbox_POS_CamcorderNoiseLevel": "Camcorder Noise Level (%)",
+    "Sandbox_POS_CamcorderNoiseLevel_tooltip": "Percentage increase to player noise while the camcorder is actively recording. <BR> <BR> <INDENT:20> 0 = silent operation. Higher values attract more zombies. <BR> Range: 0-20. Default: 5",
+
+    "Sandbox_POS_TapeDegradationRate": "Tape Degradation Rate (%)",
+    "Sandbox_POS_TapeDegradationRate_tooltip": "Quality loss applied to a VHS tape each time it is uploaded and erased. <BR> <BR> <INDENT:20> Higher values make tapes wear out faster. 0 = no degradation. <BR> Range: 0-30. Default: 10",
+
+    "Sandbox_POS_CalculatorConfidenceBonus": "Calculator Confidence Bonus (%)",
+    "Sandbox_POS_CalculatorConfidenceBonus_tooltip": "Passive confidence bonus applied to all recon data when a Data Calculator is in inventory. <BR> <BR> <INDENT:20> Range: 0-15. Default: 5",
+
+    "Sandbox_POS_EnableVHSCrafting": "Enable VHS Tape Crafting",
+    "Sandbox_POS_EnableVHSCrafting_tooltip": "When enabled, players can repair, splice, and improvise VHS tapes from scavenged materials. <BR> <BR> <INDENT:20> Default: ON",
+
+    "Sandbox_POS_EnableForagingTapes": "Enable Tape Foraging",
+    "Sandbox_POS_EnableForagingTapes_tooltip": "When enabled, damaged VHS tapes and magnetic tape scraps can be found while foraging in urban areas. <BR> <BR> <INDENT:20> Default: ON"
 }

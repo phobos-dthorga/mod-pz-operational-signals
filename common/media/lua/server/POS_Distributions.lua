@@ -63,3 +63,32 @@ dist("PoliceDesk",                PC, 0.2)
 
 -- Schools — lockers
 dist("SchoolLockers",             PC, 0.1)
+
+-----------------------------------------------------
+-- RECON DEVICES & VHS TAPES
+-----------------------------------------------------
+
+-- Recon Camcorder (rare electronics find)
+dist("ElectronicStoreComputers", POS_Constants.ITEM_RECON_CAMCORDER, 0.05)
+dist("ArmyStorageElectronics", POS_Constants.ITEM_RECON_CAMCORDER, 0.08)
+
+-- Field Survey Logger (offices, warehouses, police)
+dist("OfficeDesk", POS_Constants.ITEM_FIELD_SURVEY_LOGGER, 0.03)
+dist("PoliceDesk", POS_Constants.ITEM_FIELD_SURVEY_LOGGER, 0.04)
+
+-- Data Calculator (common office/school item)
+dist("OfficeDesk", POS_Constants.ITEM_DATA_CALCULATOR, 0.08)
+dist("SchoolLockers", POS_Constants.ITEM_DATA_CALCULATOR, 0.05)
+dist("ElectronicStoreMisc", POS_Constants.ITEM_DATA_CALCULATOR, 0.10)
+
+-- Blank VHS-C Tapes
+dist("ElectronicStoreMisc", POS_Constants.ITEM_BLANK_VHS_TAPE, 0.15)
+dist("OfficeDrawers", POS_Constants.ITEM_BLANK_VHS_TAPE, 0.05)
+
+-- Damaged VHS Tapes (common in homes and stores)
+dist("LivingRoomShelf", POS_Constants.ITEM_DAMAGED_VHS_TAPE, 0.20)
+dist("ElectronicStoreMisc", POS_Constants.ITEM_DAMAGED_VHS_TAPE, 0.15)
+dist("SchoolLockers", POS_Constants.ITEM_DAMAGED_VHS_TAPE, 0.10)
+
+-- Magnetic Tape Scrap
+dist("ElectronicStoreMisc", POS_Constants.ITEM_MAGNETIC_TAPE_SCRAP, 0.10)
