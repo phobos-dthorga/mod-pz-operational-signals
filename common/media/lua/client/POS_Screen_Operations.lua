@@ -421,6 +421,41 @@ function screen.refresh(params)
     POS_TerminalWidgets.dynamicRefresh(screen, params)
 end
 
+screen.getContextData = function(_params)
+    local data = {}
+    -- Show active mission info if available
+    local active = POS_OperationLog and POS_OperationLog.getByStatus
+        and POS_OperationLog.getByStatus("active")
+    if active and #active > 0 then
+        local op = active[1]
+        table.insert(data, { type = "header", text = "UI_POS_Context_MissionInfo" })
+        if op.tier then
+            table.insert(data, { type = "kv", key = "UI_POS_Context_Tier", value = tostring(op.tier) })
+        end
+        if op.objectives and op.objectives[1]
+           and op.objectives[1].targetBuildingX and op.objectives[1].targetBuildingY then
+            local dist = 0
+            local player = getPlayer()
+            if player then
+                local px, py = player:getX(), player:getY()
+                local tx = op.objectives[1].targetBuildingX
+                local ty = op.objectives[1].targetBuildingY
+                dist = math.floor(math.sqrt((tx - px)^2 + (ty - py)^2) / 100) / 10
+            end
+            table.insert(data, { type = "kv", key = "UI_POS_Context_Distance", value = string.format("%.1f km", dist) })
+        end
+        if op.expiryDay then
+            local currentDay = 0
+            if getGameTime then
+                currentDay = getGameTime():getNightsSurvived()
+            end
+            local daysLeft = math.max(0, op.expiryDay - currentDay)
+            table.insert(data, { type = "kv", key = "UI_POS_Context_Deadline", value = tostring(daysLeft) .. "d" })
+        end
+    end
+    return data
+end
+
 ---------------------------------------------------------------
 
 POS_API.registerScreen(screen)

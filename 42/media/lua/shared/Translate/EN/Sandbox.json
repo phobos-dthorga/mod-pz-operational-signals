@@ -105,5 +105,10 @@
     "Sandbox_POS_TerminalColourTheme": "Terminal Colour Theme",
     "Sandbox_POS_TerminalColourTheme_tooltip": "Colour theme for the POSnet terminal display. <BR> <BR> <INDENT:20> 1 = Classic Green, 2 = Amber, 3 = Cool White, 4 = IBM Blue. <BR> Changes take effect on next terminal open. <BR> Range: 1–4. Default: 1 (Classic Green)",
     "Sandbox_POS_FontScaleWithWindow": "Scale Font with Window Size",
-    "Sandbox_POS_FontScaleWithWindow_tooltip": "When enabled, the terminal font size adjusts based on window width. <BR> <BR> <INDENT:20> Smaller windows use a smaller font; larger windows use a larger font. <BR> Independent of PZ's global font settings. <BR> Default: OFF"
+    "Sandbox_POS_FontScaleWithWindow_tooltip": "When enabled, the terminal font size adjusts based on window width. <BR> <BR> <INDENT:20> Smaller windows use a smaller font; larger windows use a larger font. <BR> Independent of PZ's global font settings. <BR> Default: OFF",
+
+    "Sandbox_POS_EnableNavPanel": "Enable Navigation Panel",
+    "Sandbox_POS_EnableNavPanel_tooltip": "Show the persistent navigation sidebar on the left side of the terminal. <BR> <BR> <INDENT:20> Provides quick access to all terminal sections and displays signal strength. <BR> Disable for a full-width content panel. <BR> Default: ON",
+    "Sandbox_POS_EnableContextPanel": "Enable Context Panel",
+    "Sandbox_POS_EnableContextPanel_tooltip": "Show the context-sensitive detail panel on the right side of the terminal. <BR> <BR> <INDENT:20> Displays mission details, negotiation chances, and investment info. <BR> Automatically collapses on narrow windows. <BR> Disable for more content width. <BR> Default: ON"
 }

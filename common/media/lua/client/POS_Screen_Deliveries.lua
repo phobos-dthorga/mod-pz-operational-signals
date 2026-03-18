@@ -333,6 +333,48 @@ function screen.refresh(params)
     POS_TerminalWidgets.dynamicRefresh(screen, params)
 end
 
+screen.getContextData = function(_params)
+    local data = {}
+    local active = POS_OperationLog and POS_OperationLog.getByStatus
+        and POS_OperationLog.getByStatus("active")
+    if active then
+        for _, op in ipairs(active) do
+            if op.objectives and op.objectives[1]
+               and op.objectives[1].type == "delivery" then
+                local obj = op.objectives[1]
+                table.insert(data, { type = "header", text = "UI_POS_Context_MissionInfo" })
+                if obj.pickupX and obj.pickupY then
+                    local pickupStr = math.floor(obj.pickupX) .. ", " .. math.floor(obj.pickupY)
+                    if PhobosLib_Address and PhobosLib_Address.resolveAddress then
+                        local addr = PhobosLib_Address.resolveAddress(obj.pickupX, obj.pickupY)
+                        if addr and addr.street then
+                            pickupStr = PhobosLib_Address.formatAddress(addr)
+                        end
+                    end
+                    table.insert(data, { type = "kv", key = "UI_POS_Context_Pickup", value = pickupStr })
+                end
+                if obj.dropoffX and obj.dropoffY then
+                    local dropStr = math.floor(obj.dropoffX) .. ", " .. math.floor(obj.dropoffY)
+                    if PhobosLib_Address and PhobosLib_Address.resolveAddress then
+                        local addr = PhobosLib_Address.resolveAddress(obj.dropoffX, obj.dropoffY)
+                        if addr and addr.street then
+                            dropStr = PhobosLib_Address.formatAddress(addr)
+                        end
+                    end
+                    table.insert(data, { type = "kv", key = "UI_POS_Context_Delivery", value = dropStr })
+                end
+                if op.expiryDay then
+                    local currentDay = getGameTime and getGameTime():getNightsSurvived() or 0
+                    local daysLeft = math.max(0, op.expiryDay - currentDay)
+                    table.insert(data, { type = "kv", key = "UI_POS_Context_Deadline", value = tostring(daysLeft) .. "d" })
+                end
+                break  -- show first active delivery only
+            end
+        end
+    end
+    return data
+end
+
 ---------------------------------------------------------------
 
 POS_API.registerScreen(screen)

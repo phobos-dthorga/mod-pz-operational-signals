@@ -294,6 +294,28 @@ function screen.refresh(params)
     POS_TerminalWidgets.dynamicRefresh(screen, params)
 end
 
+screen.getContextData = function(params)
+    local data = {}
+    if not params or not params.opportunityId then return data end
+    local opp = POS_InvestmentLog and POS_InvestmentLog.getOpportunity
+        and POS_InvestmentLog.getOpportunity(params.opportunityId)
+    if opp then
+        table.insert(data, { type = "header", text = "UI_POS_Context_MissionInfo" })
+        if opp.displayedRisk then
+            local riskPct = math.floor(opp.displayedRisk * 100)
+            table.insert(data, { type = "kv", key = "UI_POS_Context_Risk", value = riskPct .. "%" })
+        end
+        if opp.returnMultiplier then
+            local retPct = math.floor((opp.returnMultiplier - 1) * 100)
+            table.insert(data, { type = "kv", key = "UI_POS_Context_ExpectedReturn", value = retPct .. "%" })
+        end
+        if opp.paybackDays then
+            table.insert(data, { type = "kv", key = "UI_POS_Context_Duration", value = tostring(opp.paybackDays) .. "d" })
+        end
+    end
+    return data
+end
+
 ---------------------------------------------------------------
 
 POS_API.registerScreen(screen)

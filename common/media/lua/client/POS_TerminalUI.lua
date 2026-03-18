@@ -82,6 +82,18 @@ end
 --- Content padding inside the screen area.
 local SCREEN_PAD = 8
 
+--- Navigation sidebar width (left panel, fixed).
+local NAV_PANEL_WIDTH = 180
+
+--- Context detail panel width (right panel, fixed).
+local CONTEXT_PANEL_WIDTH = 200
+
+--- Minimum window width before context panel auto-collapses.
+local CONTEXT_COLLAPSE_THRESHOLD = 900
+
+--- Gap between adjacent panels.
+local PANEL_GAP = 4
+
 ---------------------------------------------------------------
 -- Boot sequence
 ---------------------------------------------------------------
@@ -175,6 +187,67 @@ function POS_TerminalUI:getScreenRect()
 end
 
 ---------------------------------------------------------------
+-- Panel layout
+---------------------------------------------------------------
+
+--- Reposition nav, content, and context panels within the bezel.
+--- Called every prerender() to handle window resize.
+function POS_TerminalUI:repositionPanels()
+    local sx, sy, sw, sh = self:getScreenRect()
+    local pad = SCREEN_PAD
+    local innerX = sx + pad
+    local innerY = sy + pad
+    local innerW = sw - pad * 2
+    local innerH = sh - pad * 2
+
+    local showNav = POS_Sandbox and POS_Sandbox.getEnableNavPanel
+        and POS_Sandbox.getEnableNavPanel() or true
+    local showContext = (self.width >= CONTEXT_COLLAPSE_THRESHOLD)
+        and (POS_Sandbox and POS_Sandbox.getEnableContextPanel
+             and POS_Sandbox.getEnableContextPanel() or true)
+
+    -- NavPanel (left, fixed width)
+    if self.navPanel then
+        if showNav then
+            self.navPanel:setX(innerX)
+            self.navPanel:setY(innerY)
+            self.navPanel:setWidth(NAV_PANEL_WIDTH)
+            self.navPanel:setHeight(innerH)
+        end
+        self.navPanel:setVisible(showNav and self.terminalState == "ready")
+    end
+
+    -- ContextPanel (right, fixed width, collapsible)
+    local ctxW = showContext and CONTEXT_PANEL_WIDTH or 0
+    if self.contextPanel then
+        if showContext then
+            self.contextPanel:setX(innerX + innerW - ctxW)
+            self.contextPanel:setY(innerY)
+            self.contextPanel:setWidth(ctxW)
+            self.contextPanel:setHeight(innerH)
+        end
+        self.contextPanel:setVisible(showContext and self.terminalState == "ready")
+    end
+
+    -- ContentPanel (center, flex width)
+    if self.contentPanel then
+        local contentX = innerX
+        local contentW = innerW
+        if showNav then
+            contentX = contentX + NAV_PANEL_WIDTH + PANEL_GAP
+            contentW = contentW - NAV_PANEL_WIDTH - PANEL_GAP
+        end
+        if showContext then
+            contentW = contentW - ctxW - PANEL_GAP
+        end
+        self.contentPanel:setX(contentX)
+        self.contentPanel:setY(innerY)
+        self.contentPanel:setWidth(math.max(contentW, 200))
+        self.contentPanel:setHeight(innerH)
+    end
+end
+
+---------------------------------------------------------------
 -- Constructor
 ---------------------------------------------------------------
 
@@ -235,6 +308,24 @@ function POS_TerminalUI:createChildren()
     self.contentPanel:instantiate()
     self:addChild(self.contentPanel)
 
+    -- NavPanel (left sidebar)
+    self.navPanel = ISPanel:new(0, 0, NAV_PANEL_WIDTH, 100)
+    self.navPanel.backgroundColor = { r = 0, g = 0, b = 0, a = 0 }
+    self.navPanel.borderColor = { r = 0, g = 0, b = 0, a = 0 }
+    self.navPanel:initialise()
+    self.navPanel:instantiate()
+    self:addChild(self.navPanel)
+    self.navPanel:setVisible(false)
+
+    -- ContextPanel (right sidebar)
+    self.contextPanel = ISPanel:new(0, 0, CONTEXT_PANEL_WIDTH, 100)
+    self.contextPanel.backgroundColor = { r = 0, g = 0, b = 0, a = 0 }
+    self.contextPanel.borderColor = { r = 0, g = 0, b = 0, a = 0 }
+    self.contextPanel:initialise()
+    self.contextPanel:instantiate()
+    self:addChild(self.contextPanel)
+    self.contextPanel:setVisible(false)
+
     -- Register ESC key listener (closure captures self)
     local ui = self
     self._keyHandler = function(key)
@@ -286,15 +377,8 @@ function POS_TerminalUI:prerender()
             TERM.border.a, TERM.border.r, TERM.border.g, TERM.border.b)
     end
 
-    -- Reposition content panel on resize
-    if self.contentPanel then
-        local sx, sy, sw, sh = self:getScreenRect()
-        local cpad = SCREEN_PAD
-        self.contentPanel:setX(sx + cpad)
-        self.contentPanel:setY(sy + cpad)
-        self.contentPanel:setWidth(sw - cpad * 2)
-        self.contentPanel:setHeight(sh - cpad * 2)
-    end
+    -- Reposition all panels (nav, content, context) on resize
+    self:repositionPanels()
 end
 
 function POS_TerminalUI:render()
@@ -302,9 +386,16 @@ function POS_TerminalUI:render()
 
     local sx, sy, sw, sh = self:getScreenRect()
 
-    -- Hide content panel during boot (boot uses drawText directly)
+    -- Hide all panels during boot (boot uses drawText directly)
+    local isReady = (self.terminalState == "ready")
     if self.contentPanel then
-        self.contentPanel:setVisible(self.terminalState == "ready")
+        self.contentPanel:setVisible(isReady)
+    end
+    if self.navPanel then
+        self.navPanel:setVisible(isReady and self.navPanel:isVisible())
+    end
+    if self.contextPanel then
+        self.contextPanel:setVisible(isReady and self.contextPanel:isVisible())
     end
 
     -- Stencil clip drawText content to the screen area

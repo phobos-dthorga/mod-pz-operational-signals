@@ -475,3 +475,19 @@ option POS.FontScaleWithWindow
     page = POS_Sandbox,
     translation = POS_FontScaleWithWindow,
 }
+
+option POS.EnableNavPanel
+{
+    type = boolean,
+    default = true,
+    page = POS_Sandbox,
+    translation = POS_EnableNavPanel,
+}
+
+option POS.EnableContextPanel
+{
+    type = boolean,
+    default = true,
+    page = POS_Sandbox,
+    translation = POS_EnableContextPanel,
+}

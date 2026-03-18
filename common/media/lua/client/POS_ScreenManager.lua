@@ -60,6 +60,18 @@ end
 -- Internal helpers
 ---------------------------------------------------------------
 
+--- Refresh navigation and context side panels.
+local function refreshSidePanels()
+    local terminal = POS_TerminalUI and POS_TerminalUI.instance
+    if not terminal then return end
+    if terminal.navPanel and terminal.navPanel:isVisible() and POS_NavPanel then
+        pcall(POS_NavPanel.render, terminal.navPanel, terminal)
+    end
+    if terminal.contextPanel and terminal.contextPanel:isVisible() and POS_ContextPanel then
+        pcall(POS_ContextPanel.render, terminal.contextPanel, terminal)
+    end
+end
+
 --- Build navigation context from terminal state for guard checks.
 ---@param params table|nil Screen parameters
 ---@return table ctx Navigation context
@@ -169,6 +181,8 @@ function POS_ScreenManager.navigateTo(screenId, params)
     PhobosLib.debug("POS", "[POS:ScreenMgr]",
         "navigated to: " .. screenId .. " (stack depth: "
         .. tostring(#POS_ScreenManager.navigationStack) .. ")")
+
+    refreshSidePanels()
 end
 
 --- Go back to the previous screen. No-op if stack is empty.
@@ -189,6 +203,8 @@ function POS_ScreenManager.goBack()
 
     PhobosLib.debug("POS", "[POS:ScreenMgr]",
         "navigated back to: " .. prev.screenId)
+
+    refreshSidePanels()
 end
 
 --- Replace the current screen without pushing to the navigation stack.
@@ -211,6 +227,8 @@ function POS_ScreenManager.replaceCurrent(screenId, params)
 
     PhobosLib.debug("POS", "[POS:ScreenMgr]",
         "replaced current with: " .. screenId)
+
+    refreshSidePanels()
 end
 
 --- Reset navigation to a specific screen, clearing the stack.
@@ -222,6 +240,8 @@ function POS_ScreenManager.resetTo(screenId)
     POS_ScreenManager.currentScreen = nil
     POS_ScreenManager.currentParams = nil
     POS_ScreenManager.navigateTo(screenId)
+
+    refreshSidePanels()
 end
 
 ---------------------------------------------------------------
@@ -238,6 +258,8 @@ function POS_ScreenManager.refreshIfNeeded(_terminal)
         pcall(screen.refresh, POS_ScreenManager.currentParams)
     end
     POS_ScreenManager.dirty = false
+
+    refreshSidePanels()
 end
 
 --- Force a refresh on the next frame.

@@ -439,3 +439,119 @@ Third-party POSnet terminal screens **must**:
   `onExit`) are wrapped in `pcall`
 - **Lazy construction** — screens are only constructed when navigated to
 - **Version handshake** — `POS_Constants.API_VERSION` for future compat checks
+
+---
+
+## 9. Terminal Panel Layout
+
+### 9.1 Three-Column Architecture
+
+The terminal window uses a 3-column layout:
+
+```
+POSnetWindow
+ ├── NavPanel      (left,  fixed 180px)
+ ├── ContentPanel  (center, flex width)
+ └── ContextPanel  (right, fixed 200px, collapsible)
+```
+
+- **NavPanel** — persistent navigation sidebar showing signal strength indicator,
+  connected band, and registry-driven menu items. Highlights the current screen.
+- **ContentPanel** — the main screen area where all screen widgets render
+  (existing behavior, unchanged).
+- **ContextPanel** — context-sensitive detail inspector populated by the current
+  screen's `getContextData()` callback.
+
+### 9.2 Panel Constants
+
+All panel dimensions are named constants in `POS_TerminalUI.lua`:
+
+| Constant | Value | Description |
+|----------|-------|-------------|
+| `NAV_PANEL_WIDTH` | 180 | Fixed width of the navigation sidebar |
+| `CONTEXT_PANEL_WIDTH` | 200 | Fixed width of the context panel |
+| `CONTEXT_COLLAPSE_THRESHOLD` | 900 | Window width below which context hides |
+| `PANEL_GAP` | 4 | Gap between adjacent panels |
+
+**Never hardcode panel widths.** Always reference the constants.
+
+### 9.3 Responsive Collapse
+
+- **Full mode** (window width >= 900px): All 3 panels visible.
+- **Compact mode** (window width < 900px): NavPanel + ContentPanel only.
+- The `contentPanel:getWidth()` changes dynamically — screens already use
+  relative sizing via `ctx.pw` from `initLayout()`, so no screen changes needed.
+- NavPanel never collapses (always visible when enabled).
+
+### 9.4 Sandbox Toggle
+
+Both side panels can be disabled by the player:
+- `EnableNavPanel` (default: true)
+- `EnableContextPanel` (default: true)
+
+When both are disabled, the terminal reverts to a single full-width content
+panel (original behavior).
+
+### 9.5 NavPanel Contents
+
+The NavPanel is rendered by `POS_NavPanel.render()` and shows:
+
+1. **Signal strength** — colour-coded bar + percentage (red/yellow/green/bright)
+2. **Connected band** — amateur/tactical/etc.
+3. **Separator**
+4. **Menu items** — from `POS_MenuBuilder.buildMenu({"pos.main"}, ...)`, with
+   the current screen highlighted via `>` prefix and bright colour.
+
+NavPanel re-renders on every screen transition and refresh cycle.
+
+### 9.6 ContextPanel and `getContextData()` Provider API
+
+Each screen can optionally define `getContextData(params)` that returns
+structured data for the context panel:
+
+```lua
+screen.getContextData = function(params)
+    return {
+        { type = "header",    text = "UI_POS_Context_MissionInfo" },
+        { type = "kv",        key = "UI_POS_Context_Tier", value = "II" },
+        { type = "kv",        key = "UI_POS_Context_Chance", value = "58%",
+                              colour = "success" },
+        { type = "separator" },
+        { type = "bar",       key = "UI_POS_Context_Signal", value = 62 },
+    }
+end
+```
+
+**Item types:**
+
+| Type | Fields | Description |
+|------|--------|-------------|
+| `header` | `text` (translation key) | Bright section title |
+| `kv` | `key` (translation key), `value`, `colour` (optional) | Key-value pair |
+| `separator` | — | Dim horizontal line |
+| `bar` | `key` (translation key), `value` (0-100), `colour` (optional) | Text progress bar |
+
+**Colour** values reference `POS_TerminalWidgets.COLOURS` keys by name
+(e.g. `"success"`, `"warn"`, `"error"`, `"text"`).
+
+Screens without `getContextData` leave the context panel empty.
+
+### 9.7 Content That Does NOT Belong in Side Panels
+
+Per the design philosophy (terminal, not dashboard):
+
+- **No persistent player HUD** (money, reputation, stats) — POSnet is a
+  terminal application, not a character screen.
+- **No mini-maps** — the `[MAP]` button opens the PZ world map directly.
+- **No mission spam lists** — mission lists belong in the content panel
+  with proper pagination.
+
+### 9.8 Vertical Design Awareness
+
+The CRT bezel consumes 13% top + 30% bottom = 43% of vertical space.
+At 1170px default, usable height is ~667px (~33 lines at 20px lineH).
+
+- Pagination page sizes should adapt to available vertical space using
+  `PhobosLib_Pagination`'s `maxHeight` option.
+- Headers + footers + breadcrumbs should not exceed ~6 lines combined.
+- Screens should test at the minimum window height (780px, ~22 usable lines).

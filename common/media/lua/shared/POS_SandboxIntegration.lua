@@ -264,3 +264,17 @@ end
 function POS_Sandbox.isFontScaleWithWindow()
     return PhobosLib.getSandboxVar("POS", "FontScaleWithWindow", false)
 end
+
+---------------------------------------------------------------
+-- Panel visibility sandbox accessors
+---------------------------------------------------------------
+
+--- Whether the persistent navigation sidebar is shown.
+function POS_Sandbox.getEnableNavPanel()
+    return PhobosLib.getSandboxVar("POS", "EnableNavPanel", true)
+end
+
+--- Whether the context detail panel is shown.
+function POS_Sandbox.getEnableContextPanel()
+    return PhobosLib.getSandboxVar("POS", "EnableContextPanel", true)
+end

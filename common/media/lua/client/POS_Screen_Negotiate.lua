@@ -292,6 +292,36 @@ function screen.refresh(_params)
     POS_TerminalWidgets.dynamicRefresh(screen, _params)
 end
 
+screen.getContextData = function(params)
+    local data = {}
+    if not params then return data end
+    table.insert(data, { type = "header", text = "UI_POS_Context_Negotiation" })
+    if params.operationId then
+        local op = POS_OperationLog and POS_OperationLog.get
+            and POS_OperationLog.get(params.operationId)
+        if op and op.negotiationAttempts then
+            table.insert(data, { type = "kv", key = "UI_POS_Context_Attempts",
+                value = tostring(op.negotiationAttempts) .. "/3" })
+        end
+    end
+    -- Negotiation chance calculation
+    local player = getSpecificPlayer(0)
+    if player then
+        local tier = POS_Reputation and POS_Reputation.getTier
+            and POS_Reputation.getTier(player) or 1
+        local tierChances = { 30, 50, 70, 85, 85 }
+        local baseChance = tierChances[math.min(tier, 5)] or 30
+        local repBonus = POS_Sandbox and POS_Sandbox.getNegotiationSuccessBonus
+            and POS_Sandbox.getNegotiationSuccessBonus() or 0
+        local finalChance = math.max(0, math.min(100, baseChance + repBonus))
+        table.insert(data, { type = "separator" })
+        table.insert(data, { type = "kv", key = "UI_POS_Context_Chance",
+            value = tostring(finalChance) .. "%",
+            colour = finalChance >= 60 and "success" or finalChance >= 40 and "warn" or "error" })
+    end
+    return data
+end
+
 ---------------------------------------------------------------
 
 POS_API.registerScreen(screen)

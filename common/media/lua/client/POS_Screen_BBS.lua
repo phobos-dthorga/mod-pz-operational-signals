@@ -205,6 +205,16 @@ function screen.refresh(_params)
     POS_TerminalWidgets.dynamicRefresh(screen, _params)
 end
 
+screen.getContextData = function(_params)
+    local data = {}
+    if POS_InvestmentLog and POS_InvestmentLog.countActiveInvestments then
+        local count = POS_InvestmentLog.countActiveInvestments()
+        table.insert(data, { type = "header", text = "UI_POS_Context_MissionInfo" })
+        table.insert(data, { type = "kv", key = "UI_POS_Context_ActiveCount", value = tostring(count) })
+    end
+    return data
+end
+
 ---------------------------------------------------------------
 
 POS_API.registerScreen(screen)
