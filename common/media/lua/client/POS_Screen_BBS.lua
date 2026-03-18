@@ -26,11 +26,15 @@ require "POS_Constants"
 require "POS_ScreenManager"
 require "POS_TerminalWidgets"
 require "PhobosLib_Pagination"
+require "POS_API"
 
 ---------------------------------------------------------------
 
 local screen = {}
 screen.id = POS_Constants.SCREEN_BBS_LIST
+screen.menuPath = {"pos.bbs"}
+screen.titleKey = "UI_POS_BBS_Header"
+screen.sortOrder = 10
 
 function screen.create(contentPanel, _params, _terminal)
     local W = POS_TerminalWidgets
@@ -203,4 +207,4 @@ end
 
 ---------------------------------------------------------------
 
-POS_ScreenManager.registerScreen(screen)
+POS_API.registerScreen(screen)

@@ -32,6 +32,7 @@ require "POS_RewardCalculator"
 require "POS_OperationLog"
 require "PhobosLib_Pagination"
 require "PhobosLib_Address"
+require "POS_API"
 
 local C = POS_TerminalWidgets.COLOURS
 
@@ -112,6 +113,14 @@ end
 
 local screen = {}
 screen.id = POS_Constants.SCREEN_DELIVERIES
+screen.menuPath = {"pos.bbs"}
+screen.titleKey = "UI_POS_Deliveries_Header"
+screen.sortOrder = 30
+screen.shouldShow = function(_player, ctx)
+    -- Deliveries not available on tactical band
+    return (ctx.band or "") ~= "tactical"
+end
+screen.requires = { connected = true, bands = {"amateur"} }
 
 function screen.create(contentPanel, _params, _terminal)
     local W = POS_TerminalWidgets
@@ -326,4 +335,4 @@ end
 
 ---------------------------------------------------------------
 
-POS_ScreenManager.registerScreen(screen)
+POS_API.registerScreen(screen)

@@ -24,11 +24,18 @@ require "PhobosLib"
 require "POS_Constants"
 require "POS_ScreenManager"
 require "POS_TerminalWidgets"
+require "POS_API"
 
 ---------------------------------------------------------------
 
 local screen = {}
 screen.id = POS_Constants.SCREEN_STOCKMARKET
+screen.menuPath = {"pos.main"}
+screen.titleKey = "UI_POS_Stockmarket_Header"
+screen.sortOrder = 90
+screen.canOpen = function(_player, _ctx)
+    return false, "UI_POS_Stockmarket_Placeholder"
+end
 
 function screen.create(contentPanel, _params, _terminal)
     local W = POS_TerminalWidgets
@@ -61,4 +68,4 @@ end
 
 ---------------------------------------------------------------
 
-POS_ScreenManager.registerScreen(screen)
+POS_API.registerScreen(screen)

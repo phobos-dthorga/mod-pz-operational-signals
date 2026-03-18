@@ -33,6 +33,7 @@ require "POS_MapMarkers"
 require "POS_OperationLog"
 require "PhobosLib_Pagination"
 require "PhobosLib_Address"
+require "POS_API"
 
 local C = POS_TerminalWidgets.COLOURS
 
@@ -127,6 +128,10 @@ end
 
 local screen = {}
 screen.id = POS_Constants.SCREEN_OPERATIONS
+screen.menuPath = {"pos.bbs"}
+screen.titleKey = "UI_POS_Operations_Header"
+screen.sortOrder = 20
+screen.requires = { connected = true, bands = {"amateur", "tactical"} }
 
 function screen.create(contentPanel, _params, _terminal)
     local W = POS_TerminalWidgets
@@ -418,4 +423,4 @@ end
 
 ---------------------------------------------------------------
 
-POS_ScreenManager.registerScreen(screen)
+POS_API.registerScreen(screen)

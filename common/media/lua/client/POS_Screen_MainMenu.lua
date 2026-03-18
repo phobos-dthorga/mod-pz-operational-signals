@@ -26,23 +26,19 @@ require "POS_ScreenManager"
 require "POS_TerminalWidgets"
 require "POS_Reputation"
 require "POS_RadioPower"
+require "POS_API"
+require "POS_MenuBuilder"
 
 local C = POS_TerminalWidgets.COLOURS
-
---- Menu options with target screen IDs.
-local MENU_OPTIONS = {
-    { key = "UI_POS_MainMenuOption_BBS",        screen = POS_Constants.SCREEN_BBS_HUB,    enabled = true },
-    { key = "UI_POS_MainMenuOption_IRC",        screen = "IRC_LIST",                     enabled = false },
-    { key = "UI_POS_MainMenuOption_Journal",    screen = "JOURNAL",                      enabled = false },
-    { key = "UI_POS_MainMenuOption_Profile",    screen = "PROFILE",                      enabled = false },
-    { key = "UI_POS_MainMenuOption_Stock",      screen = POS_Constants.SCREEN_STOCKMARKET, enabled = true },
-    { key = "UI_POS_MainMenuOption_Shutdown",   screen = nil,                       enabled = true, action = "shutdown" },
-}
 
 ---------------------------------------------------------------
 
 local screen = {}
 screen.id = POS_Constants.SCREEN_MAIN_MENU
+screen.menuPath = {}  -- root screen, no parent menu
+screen.titleKey = "UI_POS_MainMenu_Header"
+screen.sortOrder = 0
+screen.isRoot = true
 
 function screen.create(contentPanel, _params, terminal)
     local W = POS_TerminalWidgets
@@ -100,26 +96,39 @@ function screen.create(contentPanel, _params, terminal)
     W.createSeparator(ctx.panel, 0, ctx.y, 40, "-")
     ctx.y = ctx.y + ctx.lineH + 4
 
-    -- Menu option buttons
-    for i, opt in ipairs(MENU_OPTIONS) do
-        local label = "[" .. i .. "] " .. W.safeGetText(opt.key)
+    -- Menu option buttons (built dynamically from registry)
+    local menuCtx = {
+        band = band,
+        signal = signal,
+        terminal = terminal,
+    }
+    local entries = POS_MenuBuilder.buildMenu({"pos.main"}, player, menuCtx)
+    for i, entry in ipairs(entries) do
+        local label = "[" .. i .. "] " .. W.safeGetText(entry.def.titleKey)
 
-        if opt.enabled then
-            if opt.action == "shutdown" then
-                W.createButton(ctx.panel, ctx.btnX, ctx.y, ctx.btnW, ctx.btnH, label, nil,
-                    function() POS_TerminalUI.closeTerminal() end)
-            else
-                local targetScreen = opt.screen
-                W.createButton(ctx.panel, ctx.btnX, ctx.y, ctx.btnW, ctx.btnH, label, nil,
-                    function() POS_ScreenManager.navigateTo(targetScreen) end)
-            end
+        if entry.enabled then
+            local targetScreen = entry.def.id
+            W.createButton(ctx.panel, ctx.btnX, ctx.y, ctx.btnW, ctx.btnH, label, nil,
+                function() POS_ScreenManager.navigateTo(targetScreen) end)
         else
-            local disabledLabel = "    " .. W.safeGetText(opt.key) .. "  (coming soon)"
+            local disabledLabel = "    " .. W.safeGetText(entry.def.titleKey)
+            if entry.reason then
+                disabledLabel = disabledLabel .. "  (" .. W.safeGetText(entry.reason) .. ")"
+            else
+                disabledLabel = disabledLabel .. "  (coming soon)"
+            end
             W.createDisabledButton(ctx.panel, ctx.btnX, ctx.y, ctx.btnW, ctx.btnH, disabledLabel)
         end
 
         ctx.y = ctx.y + ctx.btnH + 4
     end
+
+    -- Shutdown button (always present, not registry-driven)
+    local shutIdx = #entries + 1
+    W.createButton(ctx.panel, ctx.btnX, ctx.y, ctx.btnW, ctx.btnH,
+        "[" .. shutIdx .. "] " .. W.safeGetText("UI_POS_MainMenuOption_Shutdown"), nil,
+        function() POS_TerminalUI.closeTerminal() end)
+    ctx.y = ctx.y + ctx.btnH + 4
 
     -- Footer
     ctx.y = ctx.y + 4
@@ -138,4 +147,11 @@ end
 
 ---------------------------------------------------------------
 
-POS_ScreenManager.registerScreen(screen)
+POS_API.registerCategory({
+    id = "pos.main",
+    parent = nil,
+    titleKey = "UI_POS_MainMenu_Header",
+    sortOrder = 0,
+})
+
+POS_API.registerScreen(screen)

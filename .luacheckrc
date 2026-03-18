@@ -60,6 +60,9 @@ globals = {
     "POS_AZASIntegration",
     "POS_RadioPower",
     "POS_Constants",
+    "POS_API",
+    "POS_Registry",
+    "POS_MenuBuilder",
 }
 
 read_globals = {

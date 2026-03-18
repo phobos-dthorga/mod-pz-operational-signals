@@ -231,5 +231,18 @@
     "UI_POS_Signal_Critical": "CRITICAL",
 
     "UI_POS_Ops_ShowOnMap": "[MAP] Show on Map",
-    "UI_POS_Delivery_ShowOnMap": "[MAP] Show Location"
+    "UI_POS_Delivery_ShowOnMap": "[MAP] Show Location",
+
+    "UI_POS_Error_UnknownScreen": "ERROR: Unknown terminal screen.",
+    "UI_POS_Error_NoSignal": "Signal too weak to access this service.",
+    "UI_POS_Error_WrongBand": "This service requires a different radio band.",
+    "UI_POS_Error_NotConnected": "No active POSnet connection.",
+    "UI_POS_Error_ExtensionFailed": "A terminal extension failed to load.",
+    "UI_POS_Error_ScreenBlocked": "Access denied: %1",
+    "UI_POS_Breadcrumb_Separator": " > ",
+    "UI_POS_Menu_Locked": "[LOCKED] %1",
+    "UI_POS_Menu_Unavailable": "[UNAVAILABLE]",
+    "UI_POS_API_DuplicateScreen": "Duplicate screen ID '%1' — registration rejected.",
+    "UI_POS_API_InvalidScreen": "Invalid screen definition — %1",
+    "UI_POS_API_VersionMismatch": "Extension '%1' requires POSnet API v%2 (current: v%3)."
 }

@@ -45,14 +45,14 @@ POS_Constants.CMD_REQUEST_PAYOUTS     = "RequestPendingPayouts"
 -- Screen IDs (POS_ScreenManager navigation targets)
 ---------------------------------------------------------------
 
-POS_Constants.SCREEN_MAIN_MENU   = "MAIN_MENU"
-POS_Constants.SCREEN_BBS_HUB     = "BBS_HUB"
-POS_Constants.SCREEN_BBS_LIST    = "BBS_LIST"
-POS_Constants.SCREEN_BBS_POST    = "BBS_POST_VIEW"
-POS_Constants.SCREEN_OPERATIONS  = "OPERATIONS"
-POS_Constants.SCREEN_DELIVERIES  = "DELIVERIES"
-POS_Constants.SCREEN_NEGOTIATE   = "NEGOTIATE"
-POS_Constants.SCREEN_STOCKMARKET = "STOCKMARKET_PLACEHOLDER"
+POS_Constants.SCREEN_MAIN_MENU   = "pos.main"
+POS_Constants.SCREEN_BBS_HUB     = "pos.bbs"
+POS_Constants.SCREEN_BBS_LIST    = "pos.bbs.investments"
+POS_Constants.SCREEN_BBS_POST    = "pos.bbs.investments.detail"
+POS_Constants.SCREEN_OPERATIONS  = "pos.bbs.operations"
+POS_Constants.SCREEN_DELIVERIES  = "pos.bbs.deliveries"
+POS_Constants.SCREEN_NEGOTIATE   = "pos.negotiate"
+POS_Constants.SCREEN_STOCKMARKET = "pos.stockmarket"
 
 ---------------------------------------------------------------
 -- Item full types
@@ -77,3 +77,20 @@ POS_Constants.AZAS_OPS_KEY          = "POSnet_Operations"
 POS_Constants.AZAS_TAC_KEY          = "POSnet_Tactical"
 POS_Constants.AZAS_DEFAULT_OPS_FREQ = 130000
 POS_Constants.AZAS_DEFAULT_TAC_FREQ = 155000
+
+---------------------------------------------------------------
+-- POSnet API version for extension compatibility
+---------------------------------------------------------------
+
+POS_Constants.API_VERSION = 1
+
+---------------------------------------------------------------
+-- Error translation keys
+---------------------------------------------------------------
+
+POS_Constants.ERR_UNKNOWN_SCREEN  = "UI_POS_Error_UnknownScreen"
+POS_Constants.ERR_NO_SIGNAL       = "UI_POS_Error_NoSignal"
+POS_Constants.ERR_WRONG_BAND      = "UI_POS_Error_WrongBand"
+POS_Constants.ERR_NOT_CONNECTED   = "UI_POS_Error_NotConnected"
+POS_Constants.ERR_EXTENSION_FAIL  = "UI_POS_Error_ExtensionFailed"
+POS_Constants.ERR_SCREEN_BLOCKED  = "UI_POS_Error_ScreenBlocked"

@@ -256,14 +256,10 @@ end
 -- across every screen file. See docs/design-guidelines.md §7.
 ---------------------------------------------------------------
 
---- Safe getText wrapper — returns the key itself on failure.
+--- Safe getText wrapper — delegates to PhobosLib.safeGetText.
 --- @param key string Translation key
 --- @return string
-function POS_TerminalWidgets.safeGetText(key, ...)
-    local ok, result = pcall(getText, key, ...)
-    if ok and result then return result end
-    return key
-end
+POS_TerminalWidgets.safeGetText = PhobosLib.safeGetText
 
 --- Initialise standard layout variables from a content panel.
 --- Returns a context table used by drawHeader, drawFooter, and
@@ -291,6 +287,14 @@ end
 --- @param headerKey string Translation key for the header text
 function POS_TerminalWidgets.drawHeader(ctx, headerKey)
     local W = POS_TerminalWidgets
+    -- Render breadcrumb if navigated beyond root
+    if POS_ScreenManager and POS_ScreenManager.getBreadcrumb then
+        local crumb = POS_ScreenManager.getBreadcrumb()
+        if crumb then
+            W.createLabel(ctx.panel, 0, ctx.y, crumb, C.dim)
+            ctx.y = ctx.y + ctx.lineH
+        end
+    end
     W.createLabel(ctx.panel, 0, ctx.y, W.safeGetText(headerKey), C.textBright)
     ctx.y = ctx.y + ctx.lineH
     W.createSeparator(ctx.panel, 0, ctx.y, 40)

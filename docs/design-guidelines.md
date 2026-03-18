@@ -269,3 +269,173 @@ Every screen must follow this structure:
   top of the file, after requires.
 - Values that affect game balance should be sandbox-configurable if the benefit is
   MEDIUM or higher. Use `POS_Sandbox` accessors with the constant as fallback.
+
+---
+
+## 8. Screen Stack Architecture
+
+### 8.1 Architecture Overview
+
+```
+POSnet
+ ├── POS_API              — Public registration API
+ │    ├── registerScreen()
+ │    ├── tryRegisterScreen()
+ │    ├── registerCategory()
+ │    └── checkRequires()
+ ├── POS_Registry          — Screen + category storage
+ │    ├── screens (by id)
+ │    ├── categories (by id)
+ │    └── getMenuEntries()
+ ├── POS_ScreenManager     — Navigation engine
+ │    ├── navigateTo()     — push + guard check
+ │    ├── goBack()         — pop
+ │    ├── replaceCurrent() — pagination (no stack pollution)
+ │    ├── resetTo()        — clear stack
+ │    └── getBreadcrumb()  — path from stack
+ ├── POS_MenuBuilder       — Dynamic menu generation
+ │    └── buildMenu()      — registry → sorted, guarded entries
+ └── UI Panels
+      ├── ContentPanel     — single reusable ISPanel
+      └── StatusPanel      — (future)
+```
+
+### 8.2 Screen Registration
+
+All screens **must** register via `POS_API.registerScreen(def)`. Direct calls to
+`POS_ScreenManager.registerScreen()` are deprecated.
+
+**Required fields:**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | string | Dot-namespaced (e.g. `pos.bbs.operations`) |
+| `menuPath` | table | Menu hierarchy (e.g. `{"pos.bbs"}`) — empty `{}` for programmatic-only |
+| `titleKey` | string | Translation key for screen title (used in breadcrumbs + menus) |
+| `create` | function | `(contentPanel, params, terminal) → void` |
+
+**Optional fields:**
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `destroy` | function | `defaultDestroy` | Widget cleanup |
+| `refresh` | function | empty fn | Periodic data refresh |
+| `onEnter` | function | nil | Called after `create` — use for data refresh |
+| `onExit` | function | nil | Called before `destroy` — use for state cleanup |
+| `sortOrder` | number | 1000 | Menu position (lower = higher) |
+| `shouldShow` | function | nil | `(player, ctx) → boolean` — menu visibility |
+| `canOpen` | function | nil | `(player, ctx) → boolean, reason` — access gate |
+| `requires` | table | nil | `{connected, minSignal, bands}` — declarative gate |
+| `isRoot` | boolean | false | Root screens cannot be popped |
+
+### 8.3 Guard System
+
+Two guards control screen access:
+
+- **`shouldShow(player, ctx)`** — Should this screen appear in the menu at all?
+  Used for band filtering, sandbox toggles, feature gates. Screens that return
+  `false` are completely hidden from the menu.
+
+- **`canOpen(player, ctx)`** — Can the player enter this screen right now?
+  Used for signal threshold, hardware checks. Returns `false, reason` where
+  `reason` is a translation key. Screen appears in menu but is disabled.
+
+- **`requires`** — Declarative shorthand checked by `POS_API.checkRequires()`:
+  - `connected = true` — must have active POSnet connection
+  - `minSignal = 0.15` — minimum signal strength
+  - `bands = {"amateur"}` — must be on one of these bands
+
+Guards are enforced by `POS_ScreenManager.navigateTo()` and by
+`POS_MenuBuilder.buildMenu()`.
+
+### 8.4 Lifecycle Flow
+
+```
+[navigateTo("pos.bbs.operations", params)]
+  → POS_Registry lookup by screen ID
+  → requires check (connected, signal, band)
+  → canOpen guard check
+  → Old screen: destroy() → onExit()
+  → New screen: create(contentPanel, params, terminal) → onEnter()
+```
+
+- `onEnter` / `onExit` are **optional** — screens that don't define them
+  still work normally. Use `onEnter` when a screen needs to refresh data
+  on re-entry (e.g. mission list), and `onExit` to clear transient state.
+
+### 8.5 Breadcrumbs
+
+`POS_ScreenManager.getBreadcrumb()` builds a translated path from the
+navigation stack using each screen's `titleKey`. Rendered automatically by
+`POS_TerminalWidgets.drawHeader()` when stack depth > 0.
+
+Example: `POSnet > BBS > Operations`
+
+Breadcrumbs do NOT appear on the root screen (Main Menu) and are NOT
+affected by `replaceCurrent()` (pagination).
+
+### 8.6 Dynamic Menu Generation
+
+`POS_MenuBuilder.buildMenu(menuPath, player, ctx)` returns an ordered list
+of `{ def, enabled, reason }` entries for the given menu path.
+
+```lua
+local entries = POS_MenuBuilder.buildMenu({"pos.bbs"}, player, ctx)
+for i, entry in ipairs(entries) do
+    if entry.enabled then
+        W.createButton(ctx.panel, ...)
+    else
+        W.createDisabledButton(ctx.panel, ...)
+    end
+end
+```
+
+Menus are **never hardcoded**. Future screens registered under a menu path
+automatically appear without editing menu code.
+
+### 8.7 Dot-Namespaced ID Convention
+
+Screen IDs use dot-separated namespaces:
+
+| Pattern | Example | Use |
+|---------|---------|-----|
+| `pos.*` | `pos.bbs.operations` | POSnet core screens |
+| `myaddon.*` | `myaddon.blackmarket` | Third-party extension screens |
+
+**Third-party screens must use their own namespace.** IDs without a dot or
+using the `pos.` prefix from non-core code will be rejected.
+
+### 8.8 Category Registration
+
+Menu categories are registered via `POS_API.registerCategory()`:
+
+```lua
+POS_API.registerCategory({
+    id = "pos.bbs",
+    parent = "pos.main",
+    titleKey = "UI_POS_BBSHub_Header",
+    sortOrder = 10,
+})
+```
+
+Categories define the menu hierarchy. Screens target a category via `menuPath`.
+
+### 8.9 Extension Contract
+
+Third-party POSnet terminal screens **must**:
+
+1. Register during client init via `POS_API.tryRegisterScreen()`
+2. Provide only translated user-facing strings (via `getText()`)
+3. Respect the current theme and relative sizing (use `POS_TerminalWidgets`)
+4. Never mutate the navigation stack directly
+5. Use POSnet services for player state, signal state, and mission data
+6. Degrade gracefully when dependencies are absent
+7. Use a namespaced screen ID (e.g. `myaddon.feature.screen`)
+
+### 8.10 Safety Measures
+
+- **`tryRegisterScreen()`** — pcall wrapper for third-party safety
+- **Protected hooks** — all lifecycle calls (`create`, `destroy`, `onEnter`,
+  `onExit`) are wrapped in `pcall`
+- **Lazy construction** — screens are only constructed when navigated to
+- **Version handshake** — `POS_Constants.API_VERSION` for future compat checks

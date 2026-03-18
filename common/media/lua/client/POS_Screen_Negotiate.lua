@@ -33,6 +33,7 @@ require "POS_RewardCalculator"
 require "POS_MapMarkers"
 require "POS_OperationLog"
 require "PhobosLib_Address"
+require "POS_API"
 
 ---------------------------------------------------------------
 -- Negotiation mechanics
@@ -71,6 +72,8 @@ end
 
 local screen = {}
 screen.id = POS_Constants.SCREEN_NEGOTIATE
+screen.menuPath = {}  -- navigated programmatically, not in any menu
+screen.titleKey = "UI_POS_Negotiate_Header"
 
 function screen.create(contentPanel, params, _terminal)
     local W = POS_TerminalWidgets
@@ -291,4 +294,4 @@ end
 
 ---------------------------------------------------------------
 
-POS_ScreenManager.registerScreen(screen)
+POS_API.registerScreen(screen)

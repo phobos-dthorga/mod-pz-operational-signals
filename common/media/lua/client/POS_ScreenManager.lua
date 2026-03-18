@@ -25,6 +25,8 @@
 ---------------------------------------------------------------
 
 require "PhobosLib"
+require "POS_Constants"
+require "POS_Registry"
 
 -- Guard: Screen files load alphabetically before this file and use
 -- require "POS_ScreenManager" to pull it in. If PZ's auto-loader then
@@ -58,15 +60,29 @@ end
 -- Internal helpers
 ---------------------------------------------------------------
 
---- Destroy the current screen's widgets (if applicable).
-local function destroyCurrentScreen()
-    local screen = POS_ScreenManager.screens[POS_ScreenManager.currentScreen]
-    if screen and screen.destroy then
-        pcall(screen.destroy)
+--- Build navigation context from terminal state for guard checks.
+---@param params table|nil Screen parameters
+---@return table ctx Navigation context
+local function buildNavContext(params)
+    local ctx = params and { unpack(params) } or {}
+    local terminal = POS_TerminalUI and POS_TerminalUI.instance
+    if terminal then
+        ctx.connected = terminal.connected or false
+        ctx.band = terminal.band or ""
+        ctx.signal = terminal.signalStrength or 0
     end
+    return ctx
 end
 
---- Create a screen's widgets in the content panel.
+--- Destroy the current screen's widgets and call onExit hook.
+local function destroyCurrentScreen()
+    local screen = POS_ScreenManager.screens[POS_ScreenManager.currentScreen]
+    if not screen then return end
+    if screen.destroy then pcall(screen.destroy) end
+    if screen.onExit then pcall(screen.onExit) end
+end
+
+--- Create a screen's widgets in the content panel and call onEnter hook.
 ---@param screenId string Screen ID to create
 ---@param params table|nil Screen parameters
 local function createWidgetScreen(screenId, params)
@@ -75,6 +91,7 @@ local function createWidgetScreen(screenId, params)
     local terminal = POS_TerminalUI and POS_TerminalUI.instance
     if not terminal or not terminal.contentPanel then return end
     pcall(screen.create, terminal.contentPanel, params, terminal)
+    if screen.onEnter then pcall(screen.onEnter) end
 end
 
 ---------------------------------------------------------------
@@ -102,8 +119,33 @@ end
 ---@param params table|nil Optional parameters for the target screen
 function POS_ScreenManager.navigateTo(screenId, params)
     if not POS_ScreenManager.screens[screenId] then
-        print("[POS:ScreenMgr] navigateTo: unknown screen '" .. tostring(screenId) .. "'")
-        return
+        PhobosLib.debug("POS", "[POS:ScreenMgr]",
+            "navigateTo: unknown screen '" .. tostring(screenId) .. "'")
+        return false, POS_Constants.ERR_UNKNOWN_SCREEN
+    end
+
+    -- Guard check via registry definition
+    local def = POS_Registry.getScreen(screenId)
+    if def then
+        local ctx = buildNavContext(params)
+        -- Check requires declaration
+        if def.requires and POS_API and POS_API.checkRequires then
+            local ok, reason = POS_API.checkRequires(def.requires, ctx)
+            if not ok then
+                PhobosLib.debug("POS", "[POS:ScreenMgr]",
+                    "navigateTo blocked by requires: " .. tostring(reason))
+                return false, reason
+            end
+        end
+        -- Check canOpen guard
+        if def.canOpen then
+            local pcallOk, canOpen, reason = pcall(def.canOpen, getPlayer(), ctx)
+            if pcallOk and canOpen == false then
+                PhobosLib.debug("POS", "[POS:ScreenMgr]",
+                    "navigateTo blocked by canOpen: " .. tostring(reason))
+                return false, reason
+            end
+        end
     end
 
     -- Destroy current screen before switching
@@ -201,4 +243,35 @@ end
 --- Force a refresh on the next frame.
 function POS_ScreenManager.markDirty()
     POS_ScreenManager.dirty = true
+end
+
+---------------------------------------------------------------
+-- Breadcrumb
+---------------------------------------------------------------
+
+--- Build a breadcrumb path string from the navigation stack.
+--- Returns nil if at root (stack empty).
+---@return string|nil breadcrumb Translated breadcrumb path
+function POS_ScreenManager.getBreadcrumb()
+    local stack = POS_ScreenManager.navigationStack
+    if #stack == 0 then return nil end
+
+    local sep = PhobosLib.safeGetText("UI_POS_Breadcrumb_Separator")
+    local parts = {}
+
+    for _, entry in ipairs(stack) do
+        local def = POS_Registry.getScreen(entry.screenId)
+        if def and def.titleKey then
+            table.insert(parts, PhobosLib.safeGetText(def.titleKey))
+        end
+    end
+
+    -- Add current screen
+    local curDef = POS_Registry.getScreen(POS_ScreenManager.currentScreen)
+    if curDef and curDef.titleKey then
+        table.insert(parts, PhobosLib.safeGetText(curDef.titleKey))
+    end
+
+    if #parts == 0 then return nil end
+    return table.concat(parts, sep)
 end

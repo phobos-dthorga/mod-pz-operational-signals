@@ -28,6 +28,7 @@ require "PhobosLib"
 require "POS_Constants"
 require "POS_ScreenManager"
 require "POS_TerminalWidgets"
+require "POS_API"
 
 local C = POS_TerminalWidgets.COLOURS
 
@@ -156,6 +157,8 @@ end
 
 local screen = {}
 screen.id = POS_Constants.SCREEN_BBS_POST
+screen.menuPath = {}  -- navigated programmatically, not in any menu
+screen.titleKey = "UI_POS_BBSPost_Header"
 
 function screen.create(contentPanel, params, _terminal)
     local W = POS_TerminalWidgets
@@ -293,4 +296,4 @@ end
 
 ---------------------------------------------------------------
 
-POS_ScreenManager.registerScreen(screen)
+POS_API.registerScreen(screen)

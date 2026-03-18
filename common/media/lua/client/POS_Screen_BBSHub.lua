@@ -26,11 +26,16 @@ require "POS_ScreenManager"
 require "POS_TerminalWidgets"
 require "POS_OperationLog"
 require "POS_InvestmentLog"
+require "POS_API"
+require "POS_MenuBuilder"
 
 ---------------------------------------------------------------
 
 local screen = {}
 screen.id = POS_Constants.SCREEN_BBS_HUB
+screen.menuPath = {"pos.main"}
+screen.titleKey = "UI_POS_BBSHub_Header"
+screen.sortOrder = 10
 
 function screen.create(contentPanel, _params, _terminal)
     local W = POS_TerminalWidgets
@@ -61,49 +66,39 @@ function screen.create(contentPanel, _params, _terminal)
     local terminal = POS_TerminalUI and POS_TerminalUI.instance
     local band = terminal and terminal.band or "operations"
 
-    -- Sub-menu options (filtered by band)
-    local options = {}
+    -- Active count lookup for sub-screen badges
+    local countByScreen = {
+        [POS_Constants.SCREEN_BBS_LIST] = investCount,
+        [POS_Constants.SCREEN_OPERATIONS] = reconCount,
+        [POS_Constants.SCREEN_DELIVERIES] = deliveryCount,
+    }
 
-    if band == "operations" then
-        -- Civilian band: investments, deliveries, Tier I-II operations
-        table.insert(options, {
-            key = "UI_POS_BBSHub_Investments",
-            screen = POS_Constants.SCREEN_BBS_LIST,
-            count = investCount,
-        })
-        table.insert(options, {
-            key = "UI_POS_BBSHub_Operations",
-            screen = POS_Constants.SCREEN_OPERATIONS,
-            count = reconCount,
-        })
-        table.insert(options, {
-            key = "UI_POS_BBSHub_Courier",
-            screen = POS_Constants.SCREEN_DELIVERIES,
-            count = deliveryCount,
-        })
-    elseif band == "tactical" then
-        -- Military band: Tier III-IV operations + investments
-        table.insert(options, {
-            key = "UI_POS_BBSHub_Investments",
-            screen = POS_Constants.SCREEN_BBS_LIST,
-            count = investCount,
-        })
-        table.insert(options, {
-            key = "UI_POS_BBSHub_Operations",
-            screen = POS_Constants.SCREEN_OPERATIONS,
-            count = reconCount,
-        })
-    end
+    -- Sub-menu options (built dynamically from registry)
+    local menuCtx = { band = band, terminal = terminal }
+    local player = getSpecificPlayer(0)
+    local entries = POS_MenuBuilder.buildMenu({"pos.bbs"}, player, menuCtx)
 
-    for i, opt in ipairs(options) do
+    for i, entry in ipairs(entries) do
+        local screenId = entry.def.id
+        local count = countByScreen[screenId] or 0
         local countStr = ""
-        if opt.count > 0 then
-            countStr = "  " .. W.safeGetText("UI_POS_BBSHub_ActiveCount", tostring(opt.count))
+        if count > 0 then
+            countStr = "  " .. W.safeGetText("UI_POS_BBSHub_ActiveCount", tostring(count))
         end
-        local label = "[" .. i .. "] " .. W.safeGetText(opt.key) .. countStr
-        local targetScreen = opt.screen
-        W.createButton(ctx.panel, ctx.btnX, ctx.y, ctx.btnW, ctx.btnH, label, nil,
-            function() POS_ScreenManager.navigateTo(targetScreen) end)
+        local label = "[" .. i .. "] " .. W.safeGetText(entry.def.titleKey) .. countStr
+
+        if entry.enabled then
+            local targetScreen = screenId
+            W.createButton(ctx.panel, ctx.btnX, ctx.y, ctx.btnW, ctx.btnH, label, nil,
+                function() POS_ScreenManager.navigateTo(targetScreen) end)
+        else
+            local disabledLabel = "    " .. W.safeGetText(entry.def.titleKey)
+            if entry.reason then
+                disabledLabel = disabledLabel .. "  (" .. W.safeGetText(entry.reason) .. ")"
+            end
+            W.createDisabledButton(ctx.panel, ctx.btnX, ctx.y, ctx.btnW, ctx.btnH, disabledLabel)
+        end
+
         ctx.y = ctx.y + ctx.btnH + 4
     end
 
@@ -119,4 +114,11 @@ end
 
 ---------------------------------------------------------------
 
-POS_ScreenManager.registerScreen(screen)
+POS_API.registerCategory({
+    id = "pos.bbs",
+    parent = "pos.main",
+    titleKey = "UI_POS_BBSHub_Header",
+    sortOrder = 10,
+})
+
+POS_API.registerScreen(screen)
