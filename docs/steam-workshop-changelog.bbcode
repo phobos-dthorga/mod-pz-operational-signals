@@ -1,5 +1,21 @@
 [h1]Changelog[/h1]
 
+[h2]v0.10.0 — Danger Detection, Cache Externalization & Polish (Preview)[/h2]
+[list]
+[*] Danger detection gate — intel gathering and passive recon blocked when threats nearby (zombies, fire, combat)
+[*] 5-state context menu for intel gathering (ready/wrong location/danger/missing items/cooldown)
+[*] Building and mailbox caches externalized to flat files (prevents ModData bloat)
+[*] Auto-migration from old ModData caches on first load
+[*] Unique Raw Market Note icon (folded paper with field notes aesthetic)
+[*] Dynamic tooltips via PhobosLib.registerTooltipProvider() — notes show category, items, prices
+[*] Journal/document writing system for in-game readable intel
+[*] Item name filtering for display names (removes "Base." prefix)
+[*] Iteration history document (ITERATION_HISTORY.md)
+[*] DangerCheckRadius sandbox option (default 15, range 5-30)
+[*] Tooltip.json created (fixes raw key display in item tooltips)
+[*] PhobosLib 1.40.0 dependency (danger detection, document writing, tooltip providers)
+[/list]
+
 [h2]v0.9.0 — Market Intelligence & Passive Recon (Preview)[/h2]
 [list]
 [*] Scanner radio passive recon — all 12 vanilla radios enhanced with 4-tier system

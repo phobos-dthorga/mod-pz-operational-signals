@@ -1,6 +1,6 @@
 [h1]Phobos' Operational Signals (POSnet)[/h1]
 
-[b]Version 0.9.0 — Preview[/b]
+[b]Version 0.10.0 — Preview[/b]
 
 A radio-driven procedural operations and market intelligence system for Project Zomboid Build 42.
 
@@ -43,17 +43,28 @@ A radio-driven procedural operations and market intelligence system for Project 
 [*] VHS review at TV stations (CraftBench entity)
 [/list]
 
+[h3]Safety & Intelligence Quality[/h3]
+[list]
+[*] Danger detection — intel gathering and passive recon paused near threats
+[*] 5-state context menu with colour-coded status and tooltips
+[*] Dynamic note tooltips show category, observed items, and prices
+[*] Journal/document system for in-game readable intelligence reports
+[*] Intel gathering cooldown prevents location exploitation
+[/list]
+
 [h3]Data Persistence[/h3]
 [list]
 [*] World-scoped Global ModData for shared economy (6 containers)
 [*] Tiny player-bound state (reputation, cash, watchlist, alerts)
+[*] Building/mailbox caches externalized to flat files (scalable)
 [*] Append-only event logs for auditing and admin analysis
 [*] Capped rolling windows prevent save bloat
+[*] Auto-migration from legacy data formats
 [/list]
 
 [h2]Dependencies[/h2]
 [list]
-[*] [b]Required:[/b] PhobosLib 1.38.0+ — [url=https://steamcommunity.com/sharedfiles/filedetails/?id=3668598865]Steam Workshop[/url]
+[*] [b]Required:[/b] PhobosLib 1.40.0+ — [url=https://steamcommunity.com/sharedfiles/filedetails/?id=3668598865]Steam Workshop[/url]
 [*] [b]Required:[/b] AZAS Frequency Index
 [*] [b]Optional:[/b] Phobos Chemistry Pathways (cross-mod market categories)
 [*] [b]Optional:[/b] Paper Trails (street address resolution)
