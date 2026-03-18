@@ -305,3 +305,15 @@ end
 function POS_Sandbox.getMarketBroadcastInterval()
     return PhobosLib.getSandboxVar("POS", "MarketBroadcastInterval", 120)
 end
+
+function POS_Sandbox.getMarketNoteActionTime()
+    return PhobosLib.getSandboxVar("POS", "MarketNoteActionTime", 300)
+end
+
+function POS_Sandbox.getEnableMarketBroadcasts()
+    return PhobosLib.getSandboxVar("POS", "EnableMarketBroadcasts", true)
+end
+
+function POS_Sandbox.getMarketBroadcastQuality()
+    return PhobosLib.getSandboxVar("POS", "MarketBroadcastQuality", 50)
+end

@@ -537,3 +537,31 @@ option POS.MarketBroadcastInterval
     page = POS_Sandbox,
     translation = POS_MarketBroadcastInterval,
 }
+
+option POS.MarketNoteActionTime
+{
+    type = integer,
+    default = 300,
+    min = 100,
+    max = 600,
+    page = POS_Sandbox,
+    translation = POS_MarketNoteActionTime,
+}
+
+option POS.EnableMarketBroadcasts
+{
+    type = boolean,
+    default = true,
+    page = POS_Sandbox,
+    translation = POS_EnableMarketBroadcasts,
+}
+
+option POS.MarketBroadcastQuality
+{
+    type = integer,
+    default = 50,
+    min = 0,
+    max = 100,
+    page = POS_Sandbox,
+    translation = POS_MarketBroadcastQuality,
+}

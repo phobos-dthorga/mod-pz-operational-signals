@@ -140,3 +140,46 @@ POS_Constants.MARKET_EXPIRED_DAYS = 14
 
 POS_Constants.TREND_RISING_PCT  = 0.02
 POS_Constants.TREND_FALLING_PCT = 0.02
+
+---------------------------------------------------------------
+-- Market item types
+---------------------------------------------------------------
+
+POS_Constants.ITEM_RAW_MARKET_NOTE    = "PhobosOperationalSignals.RawMarketNote"
+POS_Constants.ITEM_COMPILED_REPORT    = "PhobosOperationalSignals.CompiledMarketReport"
+
+---------------------------------------------------------------
+-- Market modData keys (item-level)
+---------------------------------------------------------------
+
+POS_Constants.MD_NOTE_TYPE       = "POS_NoteType"
+POS_Constants.MD_NOTE_CATEGORY   = "POS_CategoryId"
+POS_Constants.MD_NOTE_SOURCE     = "POS_Source"
+POS_Constants.MD_NOTE_LOCATION   = "POS_Location"
+POS_Constants.MD_NOTE_PRICE      = "POS_Price"
+POS_Constants.MD_NOTE_STOCK      = "POS_Stock"
+POS_Constants.MD_NOTE_RECORDED   = "POS_RecordedDay"
+POS_Constants.MD_NOTE_CONFIDENCE = "POS_Confidence"
+
+POS_Constants.MD_REPORT_TYPE     = "POS_ReportType"
+POS_Constants.MD_REPORT_REGION   = "POS_Region"
+POS_Constants.MD_REPORT_LOW      = "POS_LowPrice"
+POS_Constants.MD_REPORT_HIGH     = "POS_HighPrice"
+POS_Constants.MD_REPORT_AVG      = "POS_AvgPrice"
+POS_Constants.MD_REPORT_SOURCES  = "POS_SourceCount"
+POS_Constants.MD_REPORT_COMPILED = "POS_CompiledDay"
+
+---------------------------------------------------------------
+-- Market action constants
+---------------------------------------------------------------
+
+POS_Constants.MARKET_NOTE_ACTION_TIME     = 300
+POS_Constants.MARKET_REPEAT_DISCOUNT_PCT  = 50
+POS_Constants.MARKET_REPEAT_WINDOW_DAYS   = 7
+POS_Constants.MARKET_COMPILE_MIN_RECORDS  = 3
+
+---------------------------------------------------------------
+-- Market server commands
+---------------------------------------------------------------
+
+POS_Constants.CMD_MARKET_BROADCAST = "MarketBroadcast"

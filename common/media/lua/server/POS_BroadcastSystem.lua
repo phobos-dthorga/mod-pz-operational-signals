@@ -30,6 +30,7 @@
 
 require "PhobosLib"
 require "POS_Constants"
+require "POS_MarketBroadcaster"
 
 POS_BroadcastSystem = {}
 
@@ -146,6 +147,11 @@ function POS_BroadcastSystem.onEveryOneMinute()
     if POS_InvestmentResolver then
         POS_InvestmentResolver.resolveMatured()
     end
+
+    -- Market broadcasts (separate timer, managed by POS_MarketBroadcaster)
+    if POS_MarketBroadcaster then
+        POS_MarketBroadcaster.tick()
+    end
 end
 
 --- Handle client command responses (reserved for future use).
@@ -173,6 +179,12 @@ end
 --- Initialise the broadcast system on server start.
 function POS_BroadcastSystem.init()
     POS_BroadcastSystem.start()
+
+    -- Start market broadcaster alongside operation/investment timers
+    if POS_MarketBroadcaster then
+        POS_MarketBroadcaster.start()
+    end
+
     Events.EveryOneMinute.Add(POS_BroadcastSystem.onEveryOneMinute)
     Events.OnClientCommand.Add(POS_BroadcastSystem.onClientCommand)
     PhobosLib.debug("POS", "Broadcast system initialised")

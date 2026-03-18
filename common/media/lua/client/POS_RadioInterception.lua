@@ -25,6 +25,7 @@
 
 require "PhobosLib"
 require "POS_Constants"
+require "POS_MarketDatabase"
 
 POS_RadioInterception = {}
 
@@ -119,6 +120,16 @@ local function onServerCommand(module, command, args)
     elseif command == POS_Constants.CMD_INVESTMENT_ACK and args then
         PhobosLib.debug("POS", "Server acknowledged investment: "
             .. (args.investmentId or "?"))
+    elseif command == POS_Constants.CMD_MARKET_BROADCAST and args and args.marketData then
+        -- Auto-ingest broadcast market data into the database
+        if POS_MarketDatabase then
+            local added = POS_MarketDatabase.addRecord(args.marketData)
+            if added then
+                PhobosLib.debug("POS", "Market broadcast ingested: "
+                    .. (args.marketData.categoryId or "?")
+                    .. " @ $" .. (args.marketData.price or "?"))
+            end
+        end
     end
 end
 

@@ -29,4 +29,22 @@ module PhobosOperationalSignals {
         Tooltip = Tooltip_POS_FieldReport,
     }
 
+    item RawMarketNote {
+        DisplayCategory = Literature,
+        DisplayName = Raw Market Note,
+        ItemType = base:normal,
+        Weight = 0.05,
+        Icon = Notebook,
+        Tooltip = Tooltip_POS_RawMarketNote,
+    }
+
+    item CompiledMarketReport {
+        DisplayCategory = Literature,
+        DisplayName = Compiled Market Report,
+        ItemType = base:normal,
+        Weight = 0.1,
+        Icon = Notebook,
+        Tooltip = Tooltip_POS_CompiledMarketReport,
+    }
+
 }

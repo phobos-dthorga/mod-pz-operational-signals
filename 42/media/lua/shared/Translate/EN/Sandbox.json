@@ -122,5 +122,12 @@
     "Sandbox_POS_IntelFreshnessDecayDays": "Intel Freshness Decay (days)",
     "Sandbox_POS_IntelFreshnessDecayDays_tooltip": "Number of in-game days before market intel records expire and are purged. <BR> <BR> <INDENT:20> Shorter values force more frequent field reconnaissance. <BR> Range: 3–60. Default: 14",
     "Sandbox_POS_MarketBroadcastInterval": "Market Broadcast Interval (minutes)",
-    "Sandbox_POS_MarketBroadcastInterval_tooltip": "Time in game-minutes between server market data broadcasts. <BR> <BR> <INDENT:20> Lower values = more frequent market updates. <BR> Range: 30–480. Default: 120"
+    "Sandbox_POS_MarketBroadcastInterval_tooltip": "Time in game-minutes between server market data broadcasts. <BR> <BR> <INDENT:20> Lower values = more frequent market updates. <BR> Range: 30–480. Default: 120",
+
+    "Sandbox_POS_MarketNoteActionTime": "Market Note Action Time (ticks)",
+    "Sandbox_POS_MarketNoteActionTime_tooltip": "Duration of the 'Gather Market Intel' timed action in game ticks. <BR> <BR> <INDENT:20> Lower values = faster note-taking. <BR> Range: 100–600. Default: 300",
+    "Sandbox_POS_EnableMarketBroadcasts": "Enable Market Broadcasts",
+    "Sandbox_POS_EnableMarketBroadcasts_tooltip": "When enabled, the server periodically broadcasts market intel data to all players. <BR> <BR> <INDENT:20> Broadcast data is lower quality than field-gathered notes. <BR> Default: ON",
+    "Sandbox_POS_MarketBroadcastQuality": "Market Broadcast Quality (%)",
+    "Sandbox_POS_MarketBroadcastQuality_tooltip": "Quality of server-broadcast market intel (0–100). <BR> <BR> <INDENT:20> Higher values produce more reliable broadcast data. <BR> Field-gathered notes are always higher quality than broadcasts. <BR> Range: 0–100. Default: 50"
 }

@@ -3,5 +3,7 @@
 
     "PhobosOperationalSignals.PortableComputer": "Portable Computer",
     "PhobosOperationalSignals.ReconPhotograph": "Recon Photograph",
-    "PhobosOperationalSignals.FieldReport": "POSnet Field Report"
+    "PhobosOperationalSignals.FieldReport": "POSnet Field Report",
+    "PhobosOperationalSignals.RawMarketNote": "Raw Market Note",
+    "PhobosOperationalSignals.CompiledMarketReport": "Compiled Market Report"
 }

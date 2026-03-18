@@ -70,6 +70,12 @@ globals = {
     "POS_ExchangeEngine",
     "POS_MarketService",
     "POS_RoomCategoryMap",
+    "POS_MarketIngestion",
+    "POS_MarketReconAction",
+    "POS_MarketContextMenu",
+    "POS_MarketBroadcaster",
+    "POS_CrossModMarkets",
+    "POS_TraderIntegration",
 }
 
 read_globals = {
@@ -113,6 +119,7 @@ read_globals = {
     -- Cross-mod (optional, runtime-guarded)
     "PCP_Sandbox",
     "PIP_Sandbox",
+    "DynamicTrading",
 
     -- Auto-generated from PZJavaDocs lua_api.json (1646 entries)
     -- Regenerate: extract globals + exposed classes from lua_api.json

@@ -16,14 +16,16 @@
 
 ---------------------------------------------------------------
 -- POS_Screen_Stockmarket.lua
--- Placeholder "COMING SOON" screen for the Stockmarket feature.
--- Widget-based: uses ISButton/ISLabel children in contentPanel.
+-- Exchange Hub — commodity indices, trends, and market sentiment.
+-- Replaced the original "coming soon" placeholder.
 ---------------------------------------------------------------
 
 require "PhobosLib"
 require "POS_Constants"
 require "POS_ScreenManager"
 require "POS_TerminalWidgets"
+require "POS_MarketService"
+require "POS_ExchangeEngine"
 require "POS_API"
 
 ---------------------------------------------------------------
@@ -33,8 +35,8 @@ screen.id = POS_Constants.SCREEN_STOCKMARKET
 screen.menuPath = {"pos.main"}
 screen.titleKey = "UI_POS_Stock_Header"
 screen.sortOrder = 90
-screen.canOpen = function(_player, _ctx)
-    return false, "UI_POS_Stockmarket_Placeholder"
+screen.shouldShow = function(_player, _ctx)
+    return POS_Sandbox and POS_Sandbox.getEnableExchange and POS_Sandbox.getEnableExchange()
 end
 
 function screen.create(contentPanel, _params, _terminal)
@@ -45,16 +47,74 @@ function screen.create(contentPanel, _params, _terminal)
     -- Header
     W.drawHeader(ctx, "UI_POS_Stock_Header")
 
+    -- Exchange overview
+    local overview = POS_MarketService.getExchangeOverview()
+
+    -- Market sentiment
+    W.createLabel(ctx.panel, 0, ctx.y,
+        W.safeGetText("UI_POS_Exchange_MarketOverview"), C.textBright)
     ctx.y = ctx.y + ctx.lineH
 
-    -- Coming soon message
-    W.createLabel(ctx.panel, 20, ctx.y,
-        W.safeGetText("UI_POS_Stock_ComingSoon"), C.warn)
-    ctx.y = ctx.y + ctx.lineH * 2
+    W.createSeparator(ctx.panel, 0, ctx.y, 40, "-")
+    ctx.y = ctx.y + ctx.lineH
 
+    -- Sentiment indicator
+    local sentimentLabel = W.safeGetText(overview.sentimentKey)
+    local sentimentColour = C.text
+    if overview.sentimentKey == "UI_POS_Market_Sentiment_Bullish" then
+        sentimentColour = C.success
+    elseif overview.sentimentKey == "UI_POS_Market_Sentiment_Bearish" then
+        sentimentColour = C.error
+    end
     W.createLabel(ctx.panel, 8, ctx.y,
-        W.safeGetText("UI_POS_Stock_Message"), C.dim)
-    ctx.y = ctx.y + ctx.lineH * 3
+        W.safeGetText("UI_POS_Exchange_Sentiment") .. ": " .. sentimentLabel,
+        sentimentColour)
+    ctx.y = ctx.y + ctx.lineH + 4
+
+    -- Commodity indices
+    if #overview.indices == 0 then
+        W.createLabel(ctx.panel, 8, ctx.y,
+            W.safeGetText("UI_POS_Market_NoData"), C.dim)
+        ctx.y = ctx.y + ctx.lineH
+    else
+        W.createLabel(ctx.panel, 0, ctx.y,
+            W.safeGetText("UI_POS_Exchange_CommodityIndex"), C.textBright)
+        ctx.y = ctx.y + ctx.lineH
+
+        W.createSeparator(ctx.panel, 0, ctx.y, 40, "-")
+        ctx.y = ctx.y + ctx.lineH
+
+        for _, entry in ipairs(overview.indices) do
+            -- Trend arrow
+            local arrow = "="
+            local colour = C.text
+            if entry.trendKey == "UI_POS_Market_Trend_Rising" then
+                arrow = "^"
+                colour = C.success
+            elseif entry.trendKey == "UI_POS_Market_Trend_Falling" then
+                arrow = "v"
+                colour = C.error
+            end
+
+            -- Change %
+            local changeStr = ""
+            if entry.changePct and entry.changePct ~= 0 then
+                changeStr = " (" .. string.format("%+.1f%%", entry.changePct) .. ")"
+            end
+
+            local line = "  " .. W.safeGetText(entry.labelKey)
+                .. ": " .. string.format("%.1f", entry.index or 100)
+                .. " " .. arrow .. changeStr
+
+            local catId = entry.categoryId
+            W.createButton(ctx.panel, ctx.btnX, ctx.y, ctx.btnW, ctx.btnH, line, nil,
+                function()
+                    POS_ScreenManager.navigateTo(POS_Constants.SCREEN_COMMODITY_DETAIL,
+                        { categoryId = catId })
+                end)
+            ctx.y = ctx.y + ctx.btnH + 4
+        end
+    end
 
     -- Footer
     W.drawFooter(ctx)
@@ -62,8 +122,22 @@ end
 
 screen.destroy = POS_TerminalWidgets.defaultDestroy
 
-function screen.refresh(_params)
-    -- Static screen — no dynamic data
+function screen.refresh(params)
+    POS_TerminalWidgets.dynamicRefresh(screen, params)
+end
+
+screen.getContextData = function(_params)
+    local data = {}
+    local overview = POS_MarketService.getExchangeOverview()
+    table.insert(data, { type = "header", text = "UI_POS_Exchange_MarketOverview" })
+    table.insert(data, { type = "kv", key = "UI_POS_Exchange_Sentiment",
+        value = PhobosLib.safeGetText(overview.sentimentKey) })
+    for _, entry in ipairs(overview.indices) do
+        table.insert(data, { type = "kv",
+            key = entry.labelKey,
+            value = string.format("%.1f", entry.index or 100) })
+    end
+    return data
 end
 
 ---------------------------------------------------------------
