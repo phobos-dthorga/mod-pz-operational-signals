@@ -35,8 +35,9 @@ local LOG_VERSION  = POS_Constants.EVENT_LOG_VERSION       -- 1
 ---------------------------------------------------------------
 
 --- Get the log file path for a given system and day.
+--- Uses flat file names (PZ getFileWriter does not create subdirectories).
 function POS_EventLog.getLogPath(system, day)
-    return LOG_DIR .. system .. "/" .. tostring(day) .. ".log"
+    return "POSNET_" .. system .. "_day" .. tostring(day) .. ".log"
 end
 
 ---------------------------------------------------------------
@@ -88,7 +89,7 @@ end
 function POS_EventLog.writeSnapshot(snapshotType, headerLine, dataLines)
     if not POS_WorldState or not POS_WorldState.isAuthority() then return false end
 
-    local path = SNAPSHOT_DIR .. snapshotType .. "_latest.txt"
+    local path = "POSNET_snapshot_" .. snapshotType .. ".txt"
     local writer = getFileWriter(path, false, false)  -- overwrite
     if not writer then
         PhobosLib.debug("POS", "[EventLog] Failed to open snapshot writer: " .. tostring(path))
@@ -106,7 +107,7 @@ end
 
 --- Read a snapshot file. Returns header string and data array, or nil.
 function POS_EventLog.readSnapshot(snapshotType)
-    local path = SNAPSHOT_DIR .. snapshotType .. "_latest.txt"
+    local path = "POSNET_snapshot_" .. snapshotType .. ".txt"
     local reader = getFileReader(path, false)
     if not reader then return nil, nil end
 
