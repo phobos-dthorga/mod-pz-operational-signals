@@ -69,6 +69,7 @@ globals = {
     "POS_MarketDatabase",
     "POS_ExchangeEngine",
     "POS_MarketService",
+    "POS_RoomCategoryMap",
 }
 
 read_globals = {
