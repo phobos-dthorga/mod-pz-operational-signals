@@ -32,6 +32,7 @@ require "PhobosLib"
 require "POS_Constants"
 require "POS_WorldState"
 require "POS_MarketDatabase"
+require "POS_MarketRegistry"
 require "POS_MarketBroadcaster"
 
 POS_BroadcastSystem = {}
@@ -191,10 +192,37 @@ function POS_BroadcastSystem.onClientCommand(module, command, player, args)
     if module ~= POS_Constants.CMD_MODULE then return end
 
     if command == POS_Constants.CMD_SUBMIT_OBSERVATION then
-        -- Client submitted a market observation (from field recon / note ingestion)
-        if args and args.record then
-            POS_MarketDatabase.addRecord(args.record)
+        if not args or not args.record then return end
+        local record = args.record
+
+        -- Validate required fields
+        if type(record.categoryId) ~= "string" or record.categoryId == "" then
+            PhobosLib.debug("POS", "[Validation] Rejected observation: invalid categoryId from "
+                .. (player:getUsername() or "?"))
+            return
         end
+
+        -- Validate category exists in registry
+        if POS_MarketRegistry and POS_MarketRegistry.getCategory then
+            if not POS_MarketRegistry.getCategory(record.categoryId) then
+                PhobosLib.debug("POS", "[Validation] Rejected observation: unknown category '"
+                    .. tostring(record.categoryId) .. "' from " .. (player:getUsername() or "?"))
+                return
+            end
+        end
+
+        -- Validate price range (reject obviously invalid)
+        if record.price and (type(record.price) ~= "number" or record.price < 0 or record.price > 10000) then
+            PhobosLib.debug("POS", "[Validation] Rejected observation: invalid price "
+                .. tostring(record.price) .. " from " .. (player:getUsername() or "?"))
+            return
+        end
+
+        -- Set server-authoritative fields
+        record.recordedDay = POS_WorldState and POS_WorldState.getWorldDay() or 0
+        record.id = record.id or ("obs_" .. tostring(ZombRand(1000000000)))
+
+        POS_MarketDatabase.addRecord(record)
 
     elseif command == POS_Constants.CMD_REQUEST_MARKET_SNAPSHOT then
         -- Client requesting market overview for their local cache
@@ -224,6 +252,40 @@ function POS_BroadcastSystem.onClientCommand(module, command, player, args)
     elseif command == POS_Constants.CMD_REQUEST_PAYOUTS then
         if POS_InvestmentResolver then
             POS_InvestmentResolver.onRequestPendingPayouts(player)
+        end
+
+    elseif command == POS_Constants.CMD_ADMIN_FORCE_TICK then
+        -- Admin only: force economy tick
+        if PhobosLib.isPlayerAdmin and PhobosLib.isPlayerAdmin(player) then
+            if POS_EconomyTick and POS_EconomyTick.processDayTick then
+                local meta = POS_WorldState.getMeta()
+                meta.lastProcessedDay = -1  -- Force reprocessing
+                POS_EconomyTick.processDayTick()
+                PhobosLib.debug("POS", "[Admin] Force tick executed by " .. (player:getUsername() or "?"))
+            end
+        end
+
+    elseif command == POS_Constants.CMD_ADMIN_DUMP_STATE then
+        -- Admin only: dump compact world state summary
+        if PhobosLib.isPlayerAdmin and PhobosLib.isPlayerAdmin(player) then
+            local world = POS_WorldState.getWorld()
+            local meta = POS_WorldState.getMeta()
+            local summary = {
+                schemaVersion = meta.schemaVersion,
+                lastProcessedDay = meta.lastProcessedDay,
+                categoryCount = 0,
+                totalObservations = 0,
+            }
+            if world.categories then
+                for catId, catData in pairs(world.categories) do
+                    summary.categoryCount = summary.categoryCount + 1
+                    summary.totalObservations = summary.totalObservations
+                        + (catData.observations and #catData.observations or 0)
+                end
+            end
+            sendServerCommand(player, POS_Constants.CMD_MODULE,
+                POS_Constants.CMD_ADMIN_DUMP_STATE, { summary = summary })
+            PhobosLib.debug("POS", "[Admin] State dump sent to " .. (player:getUsername() or "?"))
         end
     end
 end

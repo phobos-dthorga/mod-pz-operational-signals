@@ -159,7 +159,7 @@ Server-authoritative from day one. Single-player runs the server locally, so the
 
 ## Network Protocol
 
-All communication uses PZ `sendServerCommand` / `sendClientCommand` with module `"POSNET"`.
+All communication uses PZ `sendServerCommand` / `sendClientCommand` with module `"POS"` (`POS_Constants.CMD_MODULE`).
 
 ### Client to Server (Submissions)
 
@@ -186,12 +186,82 @@ All communication uses PZ `sendServerCommand` / `sendClientCommand` with module 
 | `BuildingCacheSync` | Updated building cache data |
 | `MailboxCacheSync` | Updated mailbox cache data |
 
-### Admin Commands
+### Admin Commands (Client to Server)
 
-| Command | Purpose |
-|---------|---------|
-| `AdminForceTick` | Force an immediate economy tick (admin only) |
-| `AdminDumpState` | Dump current world ModData to server log (admin only) |
+| Command | Purpose | Guard |
+|---------|---------|-------|
+| `AdminForceTick` | Force an immediate economy tick | `PhobosLib.isPlayerAdmin()` |
+| `AdminDumpState` | Request compact world state summary | `PhobosLib.isPlayerAdmin()` |
+
+Admin commands are rejected silently (no response, no log) when the sending player is not a server admin. `AdminForceTick` resets `meta.lastProcessedDay` to `-1` then invokes `POS_EconomyTick.processDayTick()`. `AdminDumpState` responds to the requesting player with a summary table containing `schemaVersion`, `lastProcessedDay`, `categoryCount`, and `totalObservations`.
+
+---
+
+## Server-Side Validation
+
+### CMD_SUBMIT_OBSERVATION
+
+All market observation submissions pass through server-side validation before reaching `POS_MarketDatabase.addRecord()`:
+
+1. **Nil guard** -- rejects if `args` or `args.record` is nil.
+2. **categoryId type check** -- rejects if `record.categoryId` is not a non-empty string.
+3. **Registry check** -- rejects if `POS_MarketRegistry.getCategory(record.categoryId)` returns nil (unknown category).
+4. **Price range check** -- rejects if `record.price` is present but not a number, negative, or exceeds 10 000.
+5. **Server-authoritative fields** -- the server overwrites `record.recordedDay` with the current world day and assigns `record.id` if the client did not provide one.
+
+All rejections are logged via `PhobosLib.debug` with the submitting player's username.
+
+---
+
+## Intel Gathering Context Menu (4-State Model)
+
+The right-click "Gather Market Intel" option (`POS_MarketContextMenu`) is always visible but transitions through four states:
+
+| State | Condition | Behaviour |
+|-------|-----------|-----------|
+| `wrong_location` | Player is not inside a mapped building room | Greyed out, tooltip explains location requirement |
+| `missing_items` | Player lacks a writing tool or paper | Greyed out, tooltip lists missing items |
+| `cooldown` | Location visited within `IntelCooldownDays` | Greyed out, tooltip shows remaining days |
+| `ready` | All conditions met | Clickable, starts `POS_MarketReconAction` timed action |
+
+### Intel Cooldown System
+
+Cooldown is tracked per-location in **player modData** using keys of the form `POS_IntelVisit_<x>_<y>`, where `<x>` and `<y>` are tile coordinates. The value is the game day of the last visit. The cooldown duration is sandbox-configurable (`IntelCooldownDays`, default 12). Expired cooldown keys are cleaned up when their age exceeds `INTEL_COOLDOWN_DAYS * INTEL_CLEANUP_MULTIPLIER`.
+
+This is intentionally stored in player modData (not world ModData) because it is per-character, tiny (one integer per visited location), and has no server-authority requirement.
+
+---
+
+## VHS Tape Event Log Storage
+
+VHS tapes use a hybrid storage pattern: **summary metadata in item modData** and **full entry data in the event log** (Layer 3).
+
+### Item modData (carried on the tape item)
+
+| Key | Type | Purpose |
+|-----|------|---------|
+| `POS_TapeId` | string | Unique tape identifier for linking entries in the event log |
+| `POS_TapeEntryCount` | integer | Number of entries recorded |
+| `POS_TapeCapacity` | integer | Maximum entries (set by tape type) |
+| `POS_TapeQuality` | string | Quality tier (high, medium, low, very_low) |
+| `POS_TapeRegion` | string | Region of first recording |
+| `POS_TapeDuration` | integer | Cumulative recording duration |
+| `POS_TapeWear` | integer | Degradation percentage (0-100) |
+
+### Event log (detailed entry data)
+
+Each tape recording appends to the `recon` event log system with `eventType = "tape_entry"`. The `actorId` field stores the tape's `POS_TapeId`, allowing all entries for a given tape to be queried by filtering the recon log. This avoids bloating item modData with unbounded arrays while preserving full audit history.
+
+Tape types have different capacities and confidence modifiers (in basis points):
+
+| Tape Type | Capacity | Confidence Mod (BPS) |
+|-----------|----------|---------------------|
+| Factory blank | 20 | 0 |
+| Refurbished | 15 | -1000 |
+| Spliced | 8 | -2500 |
+| Improvised | 4 | -5000 |
+
+Wear further reduces confidence at -100 BPS per wear point. When wear reaches 100, the tape is considered worn out and should be replaced.
 
 ---
 
