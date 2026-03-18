@@ -43,7 +43,7 @@ local TIER_CONFIDENCE = {
 local function getRadioTier(item)
     if not item then return nil end
     local ok, dd = pcall(function()
-        return item:getDeviceData and item:getDeviceData()
+        return item.getDeviceData and item:getDeviceData()
     end)
     if not ok or not dd then return nil end
 
@@ -55,14 +55,14 @@ local function getRadioTier(item)
     -- Check power: battery OR grid
     local hasPower = false
     pcall(function()
-        if dd:getIsBatteryPowered and dd:getIsBatteryPowered() then
-            local power = dd:getPower and dd:getPower() or 0
+        if dd.getIsBatteryPowered and dd:getIsBatteryPowered() then
+            local power = dd.getPower and dd:getPower() or 0
             if power > 0 then hasPower = true end
         end
     end)
     if not hasPower then
         pcall(function()
-            local parent = dd:getParent and dd:getParent()
+            local parent = dd.getParent and dd:getParent()
             if parent then
                 local sq = parent:getSquare and parent:getSquare()
                 if sq and sq:haveElectricity() then hasPower = true end
@@ -73,7 +73,7 @@ local function getRadioTier(item)
 
     -- Get transmit range for tier classification
     local range = 0
-    pcall(function() range = dd:getTransmitRange and dd:getTransmitRange() or 0 end)
+    pcall(function() range = dd.getTransmitRange and dd:getTransmitRange() or 0 end)
 
     if range == 0 then return 1 end  -- Receive-only FM
     if range <= POS_Constants.RADIO_TIER_THRESHOLD_BASIC then return 2 end
