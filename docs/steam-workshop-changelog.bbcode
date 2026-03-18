@@ -1,5 +1,98 @@
 [h1]Changelog[/h1]
 
+[h2]v0.8.0 — 2026-03-18 (Preview Release)[/h2]
+[b]Screen stack architecture, 3-column layout, power consumption[/b]
+
+[u]Screen Stack Architecture[/u]
+[list]
+[*] New POS_API — public screen registration with validation, guards, and extension support
+[*] New POS_Registry — central screen + menu category storage with filtered queries
+[*] New POS_MenuBuilder — dynamic menu generation from registry (replaces hardcoded menus)
+[*] shouldShow / canOpen guard system — screens declare access requirements
+[*] Declarative requires: connected, minSignal, bands — enforced automatically
+[*] onEnter / onExit lifecycle hooks for screen state management
+[*] Breadcrumb navigation path displayed in content header
+[*] Dot-namespaced screen IDs (pos.main, pos.bbs.operations, etc.)
+[*] Menu categories with sortOrder for clean hierarchy
+[*] tryRegisterScreen() for third-party extension safety
+[*] MainMenu + BBS Hub now generate menus dynamically from the registry
+[/list]
+
+[u]3-Column Terminal Layout[/u]
+[list]
+[*] NavPanel (left sidebar) — persistent navigation with signal indicator + menu items
+[*] ContextPanel (right sidebar) — screen-specific detail inspector
+[*] Responsive: ContextPanel auto-collapses below 900px window width
+[*] Stencil clipping on all panels prevents content bleed-over
+[*] 5 screens provide context data: Operations, Deliveries, Investments, Negotiate, BBS
+[*] Sandbox toggles: EnableNavPanel, EnableContextPanel
+[/list]
+
+[u]Terminal Power Consumption[/u]
+[list]
+[*] Desktop terminals consume generator fuel while open (0.15%/min default)
+[*] Grid power is free — drain only applies when grid is off
+[*] Terminal auto-closes with message on power failure
+[*] Connection blocked when desktop has no electricity
+[*] Cross-mod drain detection — highest rate wins, no stacking
+[*] Sandbox: TerminalPowerDrainRate (0 = disabled)
+[/list]
+
+[u]Code Quality[/u]
+[list]
+[*] POS_Constants — centralised cross-file constants (commands, screen IDs, item types, modData keys)
+[*] POS_TerminalWidgets — shared layout helpers (initLayout, drawHeader, drawFooter, defaultDestroy)
+[*] All magic numbers and strings extracted to named constants across 35+ files
+[*] 5 new sandbox options from magic number audit (delivery expiry, scan radii, investment variance/floor)
+[*] safeGetText() canonicalised in PhobosLib (was duplicated 13 times)
+[*] ~200 lines of boilerplate eliminated via shared helpers
+[/list]
+
+[h2]v0.7.0 — 2026-03-18[/h2]
+[b]AZAS dual-band, frequency validation, signal strength[/b]
+
+[list]
+[*] Hard dependency on AZAS Frequency Index — dynamic per-world frequencies
+[*] Dual-band registration: POSnet_Operations (amateur) + POSnet_Tactical (military)
+[*] Radio must be tuned to correct frequency to connect
+[*] Desktop computers display POSnet frequencies for reference
+[*] Band determines content access: amateur = Tier I-II, tactical = Tier III-IV
+[*] Signal strength system: inverse square law from radio TransmitRange
+[*] Signal gates access below threshold + scales rewards 50-100%
+[*] 3 sandbox options: EnableSignalStrength, SignalReferencePower, MinSignalThreshold
+[*] Street addresses via PhobosLib_Address.resolveAddress()
+[*] [MAP] button on active missions opens PZ world map at target location
+[*] Retroactive building + mailbox scan on first mod load (250-tile radius)
+[/list]
+
+[h2]v0.6.0 — 2026-03-18[/h2]
+[b]BBS hub, cancellation, negotiation, pagination[/b]
+
+[list]
+[*] BBS hub sub-menu — Investments, Operations, Courier under one roof
+[*] Mission cancellation at any stage — Tier I free, Tiers II-IV scale upward
+[*] Negotiation system — haggle reward/deadline before accepting
+[*] Reputation-weighted success (30-85%) with max 3 attempts
+[*] PhobosLib_Pagination widget in BBS, Operations, Deliveries screens
+[*] replaceCurrent() avoids back-stack pollution for pagination
+[*] Investment detail view with accept/decline
+[*] Delivery context menu for package pickup/dropoff
+[*] Recon scanner with photograph → field report pipeline
+[*] Unified reputation framework with 5 tiers (0-2500)
+[*] 4 crafting categories: recon photography, field reporting
+[/list]
+
+[h2]v0.5.0 — 2026-03-18[/h2]
+[b]Portable computer, themes, terminal sizing[/b]
+
+[list]
+[*] Portable Computer — 10 kg, rare world loot, battery drains while terminal open
+[*] 4 colour themes: Classic Green, Amber, Cool White, IBM Blue
+[*] 4 font sizes: Small, Medium, Code, Large
+[*] Font-scale-with-window option (independent of PZ settings)
+[*] Terminal window resizable with minimum 720x780
+[/list]
+
 [h2]v0.3.0 — 2026-03-18[/h2]
 [b]Boot sequence + resizable windows[/b]
 
@@ -17,12 +110,10 @@
 [*] Retro CRT-style terminal UI — green monospace text on dark background with scanline effect
 [*] Physical setup: right-click any radio near a vanilla desktop computer to connect
 [*] "Connect to POSnet" context menu on world-placed and inventory radios
-[*] Connection validation: checks radio power, on/off state, and desktop computer proximity (3 tiles)
-[*] Server→client operation delivery via OnServerCommand
-[*] 5 built-in starter missions: screwdriver, nails, wrench, first aid kit, notebook
+[*] Connection validation: checks radio power, on/off state, and desktop computer proximity
+[*] Server-to-client operation delivery via OnServerCommand
+[*] 5 built-in starter missions
 [*] Welcome guide popup explaining setup and usage
-[*] 47 translation keys — all user-facing text is i18n-ready
-[*] 12 Lua modules (5 shared + 6 client + 1 server)
 [/list]
 
 [h2]v0.1.0 — 2026-03-18[/h2]
@@ -31,11 +122,11 @@
 [list]
 [*] POSnet radio channel registration at configurable frequency
 [*] Procedural mission generation from registered templates
-[*] 5 mission categories: Industrial Recovery, Vehicle Salvage, Scientific Research, Survivor Assistance, Infrastructure Repair
+[*] 5 mission categories
 [*] 4 difficulty levels: Easy, Medium, Hard, Critical
 [*] Extensible completion detector with item_acquire built-in checker
 [*] Player-side operation log with persistence in modData
 [*] Server-side timed broadcast system
-[*] 6 sandbox options for full configurability
+[*] 6 sandbox options
 [*] CI pipeline with 9 automated checks
 [/list]

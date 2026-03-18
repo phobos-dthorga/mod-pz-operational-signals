@@ -17,16 +17,16 @@
     "Sandbox_POS_InitialScanRadius_tooltip": "Radius in tiles for the one-time retroactive building and mailbox scan on first mod load. <BR> <BR> <INDENT:20> Larger values find more locations but take longer to process. <BR> Range: 50–500. Default: 250",
     "Sandbox_POS_PassiveScanRadius": "Passive Scan Radius (tiles)",
     "Sandbox_POS_PassiveScanRadius_tooltip": "Radius in tiles for the ongoing building discovery scan that runs every game minute. <BR> <BR> <INDENT:20> Larger values find buildings further from the player. <BR> Range: 20–150. Default: 50",
-    "Sandbox_POS_InvestmentReturnVariance": "Investment Return Variance (%%)",
+    "Sandbox_POS_InvestmentReturnVariance": "Investment Return Variance (%)",
     "Sandbox_POS_InvestmentReturnVariance_tooltip": "Random variance applied to investment return multipliers (as integer %%). <BR> <BR> <INDENT:20> Higher values = more unpredictable returns. 0 = perfectly predictable. <BR> Range: 0–30. Default: 10",
-    "Sandbox_POS_InvestmentMinReturnPct": "Investment Minimum Return (%%)",
+    "Sandbox_POS_InvestmentMinReturnPct": "Investment Minimum Return (%)",
     "Sandbox_POS_InvestmentMinReturnPct_tooltip": "Minimum return multiplier for investments (as integer %%, e.g. 110 = 1.1x). <BR> <BR> <INDENT:20> Set to 100 for a chance to lose everything. 110 = always at least 10%% profit. <BR> Range: 100–150. Default: 110",
 
     "Sandbox_POS_EnableSignalStrength": "Enable Signal Strength",
     "Sandbox_POS_EnableSignalStrength_tooltip": "When enabled, radio hardware quality affects POSnet connection quality. <BR> <BR> <INDENT:20> Weaker radios reduce mission rewards (50-100%% scaling). <BR> Very weak radios cannot connect at all. <BR> When disabled, all radios work equally. <BR> Default: ON",
     "Sandbox_POS_SignalReferencePower": "Signal Reference Power",
     "Sandbox_POS_SignalReferencePower_tooltip": "The TransmitRange value used as the 100%% signal reference point. <BR> <BR> <INDENT:20> Radios at or above this power get full signal strength. <BR> Lower-power radios are scaled via inverse square law. <BR> Range: 1000-30000. Default: 10000",
-    "Sandbox_POS_MinSignalThreshold": "Minimum Signal Threshold (%%)",
+    "Sandbox_POS_MinSignalThreshold": "Minimum Signal Threshold (%)",
     "Sandbox_POS_MinSignalThreshold_tooltip": "Minimum signal strength required to connect to POSnet. <BR> <BR> <INDENT:20> Radios below this threshold cannot connect at all. <BR> Set to 0 to allow any radio regardless of power. <BR> Range: 0-50. Default: 15",
 
     "Sandbox_POS_SignalAffectsMissionRange": "Signal Affects Mission Range",
@@ -112,6 +112,6 @@
     "Sandbox_POS_EnableContextPanel": "Enable Context Panel",
     "Sandbox_POS_EnableContextPanel_tooltip": "Show the context-sensitive detail panel on the right side of the terminal. <BR> <BR> <INDENT:20> Displays mission details, negotiation chances, and investment info. <BR> Automatically collapses on narrow windows. <BR> Disable for more content width. <BR> Default: ON",
 
-    "Sandbox_POS_TerminalPowerDrainRate": "Terminal Power Drain (%%/min)",
+    "Sandbox_POS_TerminalPowerDrainRate": "Terminal Power Drain (%/min)",
     "Sandbox_POS_TerminalPowerDrainRate_tooltip": "Generator fuel drain rate while the desktop terminal is active (as hundredths of %% per real-time minute). <BR> <BR> <INDENT:20> Only applies when grid power is off. Grid power is free. <BR> Set to 0 to disable power drain entirely. <BR> Range: 0–100. Default: 15 (0.15%%/min, ~11 hours per full generator)"
 }
