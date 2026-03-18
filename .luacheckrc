@@ -56,6 +56,7 @@ globals = {
     "POS_ReconScanner",
     "POS_CraftCallbacks",
     "POS_MapMarkers",
+    "POS_TerminalTheme",
 }
 
 read_globals = {
