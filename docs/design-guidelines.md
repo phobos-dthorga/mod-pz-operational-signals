@@ -882,3 +882,21 @@ and sets `meta.cachesMigrated = true` to prevent re-migration.
 Event log files and cache files are **not the source of truth** -- that remains
 in ModData (capped observations, rolling closes). If external files are deleted,
 the game continues normally. Caches rebuild through natural exploration.
+
+---
+
+## 16. Release & Tagging Doctrine
+
+All Phobos PZ mods follow the release architecture defined in
+[`docs/release-architecture.md`](release-architecture.md).
+
+### Key Rules
+
+1. **Annotated tags only**: `git tag -a vX.Y.Z -m "Release vX.Y.Z"`
+2. **Tags are immutable**: never delete, re-tag, or edit a published tag
+3. **Pre-release for dev branches**: use `-beta.N` or `-rc.N` suffixes
+4. **Stable from main only**: bare `vX.Y.Z` tags only on `main`
+5. **SemVer**: `MAJOR.MINOR.PATCH` — commit prefixes determine bump level
+6. **ZIP artifacts**: every release includes a clean mod ZIP + `manifest.json`
+7. **Dependency declarations**: `dependencies.json` at repo root declares hard deps
+8. **Conventional commits**: `feat:`, `fix:`, `docs:`, `chore:` prefixes required
