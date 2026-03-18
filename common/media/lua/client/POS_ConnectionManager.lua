@@ -199,8 +199,15 @@ function POS_ConnectionManager.canConnect(player, radioObj)
     end
 
     -- Check frequency matches a POSnet band
+    -- PZ B42 DeviceData uses getChannel() not getFrequency()
     local tunedFreq = nil
-    pcall(function() tunedFreq = dd:getFrequency() end)
+    pcall(function()
+        if dd.getChannel then
+            tunedFreq = dd:getChannel()
+        elseif dd.getFrequency then
+            tunedFreq = dd:getFrequency()
+        end
+    end)
     local band = POS_AZASIntegration and POS_AZASIntegration.matchFrequency
         and POS_AZASIntegration.matchFrequency(tunedFreq)
     if not band then
