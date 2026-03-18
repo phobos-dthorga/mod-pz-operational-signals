@@ -84,11 +84,25 @@ missions, windows, and sandbox options. All new features must comply.
 - Terminal **font size** is controllable via sandbox option
   (`TerminalFontSize`: Small / Medium / Code / Large; default: Code).
 - **Font-size-to-window-size scaling** is available via sandbox option
-  (`FontScaleWithWindow`; default: false). This is independent of PZ's
-  global font settings, though they still have an effect.
+  (`FontScaleWithWindow`; default: false). When enabled, the font adjusts
+  ±1 step based on window width (<600 = smaller, >900 = larger). This is
+  independent of PZ's global font settings, though they still have an effect.
 - Four **colour themes** are provided via sandbox option
   (`TerminalColourTheme`): Classic Green, Amber, Cool White, IBM Blue.
 - Theme changes take effect on next terminal open.
+
+### 2.5 Terminal Window Sizing
+
+- Default terminal size: **1080x1170** pixels (1.5x the original 720x780).
+- Minimum resizable size: **720x780** pixels (the old default).
+- Resizability is enabled via `PhobosLib.makeWindowResizable()`. Skips
+  automatically if the "Resize Any Window" mod is active.
+- Content panels anchor to window edges on resize.
+- All screen content must use **relative widths** (`contentPanel:getWidth()`)
+  rather than hardcoded pixel values. Button widths: `pw - 10`.
+- `maxChars` for wrapped text should adapt to panel width where practical.
+- Separator character count (currently 40) is acceptable at the default
+  size but should scale with width in future if needed.
 
 ---
 
@@ -177,8 +191,12 @@ The MAP button appears on active mission views only (not negotiate).
 ### 6.3 Explored-Only Locations
 
 Missions must only target locations the player has already explored:
-- `POS_BuildingCache.passiveScan()` restricts to 50-tile radius around
-  the player — inherently explored territory.
-- `POS_MailboxScanner` requires player right-click interaction — inherently
-  explored.
+- `POS_BuildingCache.passiveScan()` scans a 50-tile radius around the
+  player every game-minute — inherently explored territory.
+- `POS_MailboxScanner` uses passive scanning (30-tile radius every
+  game-minute) to discover mailboxes automatically.
+- On **first mod load**, both caches perform a one-time retroactive
+  250-tile radius scan to catch locations the player explored before
+  enabling POSnet. Gated by modData flags (`POS_BuildingScanDone`,
+  `POS_MailboxScanDone`).
 - Any future mission generators must enforce this constraint.

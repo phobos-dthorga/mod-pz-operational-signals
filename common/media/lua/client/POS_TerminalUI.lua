@@ -217,7 +217,7 @@ function POS_TerminalUI:initialise()
 end
 
 function POS_TerminalUI:createChildren()
-    PhobosLib.makeWindowResizable(self, 480, 520)
+    PhobosLib.makeWindowResizable(self, 720, 780)
     ISCollapsableWindow.createChildren(self)
 
     -- Hide standard window chrome — CRT bezel replaces it visually
@@ -497,8 +497,8 @@ function POS_TerminalUI.open(radioName, frequency, portablePC, signalStrength, b
 
     local sw = getCore():getScreenWidth()
     local sh = getCore():getScreenHeight()
-    local w = 720
-    local h = 780
+    local w = 1080
+    local h = 1170
     local x = (sw - w) / 2
     local y = (sh - h) / 2
 
