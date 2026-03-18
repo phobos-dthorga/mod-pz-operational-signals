@@ -389,31 +389,39 @@ function POS_ItemPool.init()
     for i = 0, allItems:size() - 1 do
         local script = allItems:get(i)
         if script then
-            local fullType    = script:getFullName()
-            local displayCat  = script:getDisplayCategory()
-            local itemWeight  = script:getActualWeight()
-            local condMax     = script:getConditionMax()
-            local daysFresh   = script:getDaysFresh()
-            local daysRotten  = script:getDaysTotallyRotten()
-            local isPerishable = (daysFresh and daysFresh > 0)
-                or (daysRotten and daysRotten > 0)
+            -- Only include vanilla (Base) items by default
+            -- Cross-mod items are registered separately via registerItem()
+            local moduleName = nil
+            pcall(function() moduleName = script:getModule() and script:getModule():getName() end)
+            if moduleName and moduleName ~= "Base" then
+                -- Skip: non-vanilla items use registerItem() for cross-mod support
+            else
+                local fullType    = script:getFullName()
+                local displayCat  = script:getDisplayCategory()
+                local itemWeight  = script:getActualWeight()
+                local condMax     = script:getConditionMax()
+                local daysFresh   = script:getDaysFresh()
+                local daysRotten  = script:getDaysTotallyRotten()
+                local isPerishable = (daysFresh and daysFresh > 0)
+                    or (daysRotten and daysRotten > 0)
 
-            local categoryId = resolveCommodityCategory(displayCat, fullType)
-            local subCatId   = resolveSubCategory(fullType, displayCat, categoryId, isPerishable)
-            local hasCondition = condMax and condMax > 0
-            local basePrice  = calculateBasePrice(itemWeight, categoryId, hasCondition)
+                local categoryId = resolveCommodityCategory(displayCat, fullType)
+                local subCatId   = resolveSubCategory(fullType, displayCat, categoryId, isPerishable)
+                local hasCondition = condMax and condMax > 0
+                local basePrice  = calculateBasePrice(itemWeight, categoryId, hasCondition)
 
-            local record = {
-                fullType         = fullType,
-                displayCategory  = displayCat,
-                commodityCategory = categoryId,
-                subCategory      = subCatId,
-                weight           = itemWeight,
-                conditionMax     = condMax,
-                basePrice        = basePrice,
-            }
+                local record = {
+                    fullType         = fullType,
+                    displayCategory  = displayCat,
+                    commodityCategory = categoryId,
+                    subCategory      = subCatId,
+                    weight           = itemWeight,
+                    conditionMax     = condMax,
+                    basePrice        = basePrice,
+                }
 
-            indexItem(record)
+                indexItem(record)
+            end
         end
     end
 

@@ -63,7 +63,7 @@ local function buildNoteTooltipLines(item)
     -- Location
     local location = md[POS_Constants.MD_NOTE_LOCATION]
     if location and location ~= "" then
-        lines[#lines + 1] = { text = "Location: " .. tostring(location),
+        lines[#lines + 1] = { text = "Location: " .. PhobosLib.titleCase(tostring(location)),
             r = COL_LABEL.r, g = COL_LABEL.g, b = COL_LABEL.b }
     end
 
@@ -75,7 +75,7 @@ local function buildNoteTooltipLines(item)
     -- Price estimate
     local price = md[POS_Constants.MD_NOTE_PRICE]
     if price then
-        lines[#lines + 1] = { text = "Price Estimate: $" .. tostring(price),
+        lines[#lines + 1] = { text = "Price Estimate: " .. PhobosLib.formatPrice(price),
             r = COL_VALUE.r, g = COL_VALUE.g, b = COL_VALUE.b }
     end
 
@@ -102,7 +102,7 @@ local function buildNoteTooltipLines(item)
                     local dn = script:getDisplayName()
                     if dn then displayName = dn end
                 end
-                lines[#lines + 1] = { text = "  " .. displayName .. " - $" .. priceStr,
+                lines[#lines + 1] = { text = "  " .. displayName .. " - " .. PhobosLib.formatPrice(tonumber(priceStr)),
                     r = COL_ITEM.r, g = COL_ITEM.g, b = COL_ITEM.b }
             end
         end

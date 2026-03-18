@@ -221,6 +221,60 @@ function POS_MarketReconAction:perform()
         if POS_NoteTooltip and POS_NoteTooltip.applyToNote then
             POS_NoteTooltip.applyToNote(note)
         end
+
+        -- Create readable document pages using PZ Literature API
+        if PhobosLib and PhobosLib.createReadableDocument then
+            local catLabel = self.categoryId
+            if POS_MarketRegistry and POS_MarketRegistry.getCategory then
+                local catDef = POS_MarketRegistry.getCategory(self.categoryId)
+                if catDef and catDef.labelKey then
+                    catLabel = PhobosLib.safeGetText(catDef.labelKey)
+                end
+            end
+
+            local pageLines = {}
+            pageLines[#pageLines + 1] = "=== MARKET INTELLIGENCE REPORT ==="
+            pageLines[#pageLines + 1] = ""
+            pageLines[#pageLines + 1] = "Category: " .. catLabel
+            pageLines[#pageLines + 1] = "Location: " .. PhobosLib.titleCase(self.location or "Unknown")
+            pageLines[#pageLines + 1] = "Date: Day " .. tostring(getGameTime():getNightsSurvived())
+            pageLines[#pageLines + 1] = "Confidence: " .. confidence
+            pageLines[#pageLines + 1] = ""
+            pageLines[#pageLines + 1] = "--- Price Observations ---"
+            pageLines[#pageLines + 1] = ""
+
+            -- Add item observations
+            local noteItems = md[POS_Constants.MD_NOTE_ITEMS]
+            if noteItems and noteItems ~= "" then
+                for entry in noteItems:gmatch("[^|]+") do
+                    local fullType, priceStr = entry:match("([^:]+):(.+)")
+                    if fullType and priceStr then
+                        local displayName = fullType
+                        local itemScript = ScriptManager.instance and ScriptManager.instance:getItem(fullType)
+                        if itemScript then
+                            local dn = itemScript:getDisplayName()
+                            if dn then displayName = dn end
+                        end
+                        pageLines[#pageLines + 1] = displayName .. "  " .. PhobosLib.formatPrice(tonumber(priceStr))
+                    end
+                end
+            else
+                pageLines[#pageLines + 1] = "Price Estimate: " .. PhobosLib.formatPrice(md[POS_Constants.MD_NOTE_PRICE])
+            end
+
+            pageLines[#pageLines + 1] = ""
+            pageLines[#pageLines + 1] = "--- Stock Assessment ---"
+            pageLines[#pageLines + 1] = ""
+            pageLines[#pageLines + 1] = "Supply Level: " .. tostring(md[POS_Constants.MD_NOTE_STOCK] or "Unknown")
+            pageLines[#pageLines + 1] = ""
+            pageLines[#pageLines + 1] = "--- Notes ---"
+            pageLines[#pageLines + 1] = ""
+            pageLines[#pageLines + 1] = "Field observations gathered via direct survey."
+            pageLines[#pageLines + 1] = "Upload to POSnet terminal for market database integration."
+
+            local pageText = table.concat(pageLines, "\n")
+            PhobosLib.createReadableDocument(note, "Market Intel: " .. catLabel, { pageText })
+        end
     end
 
     PhobosLib.debug("POS", "[POS:ReconAction]",

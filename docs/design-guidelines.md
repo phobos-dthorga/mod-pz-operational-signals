@@ -782,3 +782,35 @@ excluding TvAntique (no VCR compatibility).
 | Manual Observation | In-field | Gather Intel (5 min) | RawMarketNote x 1 |
 
 Pen and paper is ALWAYS the final medium before POSnet terminal upload.
+
+---
+
+## 13. Journal & Document System
+
+### 13.1 Readable Market Notes
+
+RawMarketNote items are PZ Literature-type documents that can be "Read"
+by the player. Each note contains a formatted market intelligence report
+with category, location, price observations, and stock assessment.
+
+Document pages are created via `PhobosLib.createReadableDocument()` at
+note creation time. The page content mirrors the dynamic tooltip data
+but in a more detailed, journalistic format.
+
+### 13.2 Price Formatting
+
+All prices displayed to the player MUST use `PhobosLib.formatPrice(value)`
+which ensures consistent 2-decimal-place formatting (e.g., "$0.60" not "$0.6").
+
+### 13.3 Location Display
+
+Locations should display resolved street addresses when available
+(via PhobosLib_Address). When no street data exists, raw room names
+are title-cased via `PhobosLib.titleCase()` (e.g., "grocery" -> "Grocery").
+
+### 13.4 Item Filtering
+
+The item pool only includes vanilla (`Base.*`) items by default.
+Cross-mod items (PCP, PIP) are registered separately via
+`POS_ItemPool.registerItem()` to prevent modded items with incorrect
+DisplayCategories from appearing in wrong market categories.
