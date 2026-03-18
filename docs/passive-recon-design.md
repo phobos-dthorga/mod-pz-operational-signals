@@ -66,19 +66,101 @@ inserted or the buffer is uploaded.
 | Property | Value |
 |----------|-------|
 | Equip slot | N/A (vanilla radio, must be powered on) |
-| Scan radius | Signal-based (uses AZAS frequency + POS_RadioPower inverse square law) |
-| Data quality | Low-Medium |
-| Storage | Feeds directly into POSnet session (no tape required) |
+| Scan radius | Derived from TransmitRange at runtime (see formula below) |
+| Data quality | Tier-dependent (Tier 1 = broadcast only, Tier 4 = high) |
+| Storage | Tape optional -- records to tape if available, otherwise building cache only |
 | Noise | N/A |
+| Power | Battery > 0 OR grid electricity on parent square |
 
-This is NOT a new item. Vanilla radios gain passive scanning capability when
-connected to POSnet. The radio must be powered on (consuming battery) and tuned
-to a valid AZAS frequency. Scanned data takes the form of rumors, distress
-calls, and supply sightings -- lower confidence than field devices but requiring
-no special equipment beyond what the player already carries.
+This is NOT a new item. Any vanilla (or modded) radio gains passive scanning
+capability when powered on. No hardcoded item names are used -- detection is
+fully dynamic via `getDeviceData()`, so radios from any mod work automatically.
 
-Range is determined by the radio hardware's TransmitRange via the existing
-inverse square law signal model.
+#### 2.3.1 Tier Classification
+
+Tiers are derived from the radio's `TransmitRange` at runtime using thresholds
+defined in `POS_Constants`:
+
+| Tier | TransmitRange | Classification | Confidence Modifier (BPS) | Broadcast Quality |
+|------|---------------|----------------|---------------------------|-------------------|
+| 1 | 0 (receive-only) | FM Receiver | -5000 | 30 |
+| 2 | 1 -- 2000 | Basic Two-Way | -3000 | 50 |
+| 3 | 2001 -- 10000 | Advanced Scanner | -1000 | 70 |
+| 4 | > 10000 | Military-Grade | 0 | 90 |
+
+**Tier 1 radios (FM receivers) can only receive market broadcasts -- they do NOT
+perform active building scans.** This reflects their receive-only hardware.
+
+#### 2.3.2 Vanilla Radio Reference
+
+All 12 vanilla PZ Build 42 radios and their tier assignments:
+
+| Radio | TransmitRange | Tier | Scan Radius | Notes |
+|-------|---------------|------|-------------|-------|
+| ValuTech Radio | 0 | 1 | -- | FM receiver, broadcast only |
+| Premium Technologies Radio | 0 | 1 | -- | FM receiver, broadcast only |
+| Radio (generic) | 0 | 1 | -- | FM receiver, broadcast only |
+| Walkie Talkie | 1800 | 2 | 3 | Basic two-way |
+| Ham Radio (Type 1) | 5000 | 3 | 10 | Advanced scanner |
+| Ham Radio (Type 2) | 7500 | 3 | 15 | Advanced scanner |
+| Ham Radio (Type 3) | 10000 | 3 | 20 | Advanced scanner |
+| Military Radio (Handheld) | 12000 | 4 | 24 | Military-grade |
+| Military Radio (Backpack) | 15000 | 4 | 30 | Military-grade |
+| Military Radio (Vehicle) | 20000 | 4 | 40 | Military-grade (max radius) |
+| Police Radio | 3000 | 3 | 6 | Advanced scanner |
+| Emergency Radio | 2500 | 3 | 5 | Advanced scanner |
+
+#### 2.3.3 Scan Radius Formula
+
+```
+radius = floor(TransmitRange / RADIO_RANGE_DIVISOR)
+radius = clamp(1, RADIO_MAX_SCAN_RADIUS, radius)
+```
+
+Where `RADIO_RANGE_DIVISOR = 500` and `RADIO_MAX_SCAN_RADIUS = 40`.
+
+This means a Walkie Talkie (1800) scans 3 tiles, while a Military Vehicle Radio
+(20000) scans the full 40 tiles. FM receivers (TransmitRange=0) do not scan.
+
+#### 2.3.4 Confidence Modifiers
+
+Confidence modifiers are expressed in basis points (BPS) and converted to a
+percentage adjustment on the base confidence of 50:
+
+```
+effective = max(10, 50 + floor(confidenceMod / 100))
+```
+
+| Tier | BPS Modifier | Effective Confidence |
+|------|-------------|---------------------|
+| 1 | -5000 | -- (no scan) |
+| 2 | -3000 | 20 |
+| 3 | -1000 | 40 |
+| 4 | 0 | 50 |
+
+#### 2.3.5 Power Requirements
+
+A radio must be **powered on** to function as a scanner:
+
+1. **Battery-powered**: `getIsBatteryPowered() == true` and `getPower() > 0`
+2. **Grid-powered**: Parent square has electricity (`sq:haveElectricity()`)
+
+If neither condition is met, the radio is skipped. World-placed radios on grid
+power work without battery.
+
+#### 2.3.6 Dynamic Detection
+
+The scanner radio system uses **no hardcoded item type names**. Detection works
+by iterating the player's inventory and calling `getDeviceData()` on each item.
+If the item has valid device data, is turned on, and has power, it qualifies.
+
+This means:
+- All vanilla radios work automatically
+- Modded radios work automatically if they use standard PZ radio device data
+- Future vanilla radios added by TIS will work without code changes
+
+Only one radio scans per minute cycle (first valid radio found), following the
+same stagger rule as other passive recon devices.
 
 ### 2.4 Data Calculator
 

@@ -743,10 +743,20 @@ note-taking but does NOT trigger passive scanning.
 
 ### 12.4 Scanner Radio Specifics
 
-- NOT a new item -- vanilla radios gain passive scanning via POSnet
-- Radio MUST be powered on (consuming battery) to scan
-- Uses existing AZAS frequency system and POS_RadioPower inverse square law
-- Generates rumors, distress calls, supply sightings (lower confidence than field devices)
+- NOT a new item -- any vanilla or modded radio gains passive scanning via POSnet
+- Radio MUST be powered on: battery > 0 OR grid electricity on the parent square
+- Tier is derived from `TransmitRange` at runtime using `POS_Constants` thresholds:
+  - Tier 1 (TransmitRange=0): FM receiver, broadcast listening only, no active scan
+  - Tier 2 (1--2000): Basic two-way radio, small scan radius, low confidence
+  - Tier 3 (2001--10000): Advanced scanner, medium radius and confidence
+  - Tier 4 (>10000): Military-grade, large radius, tactical band access
+- **No hardcoded item names** -- detection is fully dynamic via `getDeviceData()`,
+  so any radio (vanilla or modded) works automatically without code changes
+- Scan radius formula: `floor(TransmitRange / RADIO_RANGE_DIVISOR)`, clamped 1--40
+- Confidence modifiers are in BPS (basis points), converted to percentage adjustment
+- Only one radio scans per minute cycle (stagger rule, same as other devices)
+- FM receivers (TransmitRange=0) receive market broadcasts but do NOT scan buildings
+- Military radios (TransmitRange>10000) can access the tactical band
 
 ### 12.5 VHS Tape Review Workflow
 

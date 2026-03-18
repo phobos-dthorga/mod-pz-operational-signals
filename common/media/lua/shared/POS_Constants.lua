@@ -468,3 +468,20 @@ POS_Constants.NOTEBOOK_CONDITION_PER_NOTE  = 1
 POS_Constants.UI_BUTTON_TEXT_ELLIPSIS   = "..."
 POS_Constants.UI_MIN_SEPARATOR_CHARS    = 10
 POS_Constants.UI_BUTTON_TEXT_PADDING    = 16
+
+---------------------------------------------------------------
+-- Scanner radio tiers (derived from vanilla TransmitRange)
+---------------------------------------------------------------
+
+POS_Constants.RADIO_RANGE_DIVISOR             = 500
+POS_Constants.RADIO_MAX_SCAN_RADIUS           = 40
+POS_Constants.RADIO_TIER_THRESHOLD_BASIC      = 2000
+POS_Constants.RADIO_TIER_THRESHOLD_ADVANCED   = 10000
+POS_Constants.RADIO_CONFIDENCE_TIER1          = -5000
+POS_Constants.RADIO_CONFIDENCE_TIER2          = -3000
+POS_Constants.RADIO_CONFIDENCE_TIER3          = -1000
+POS_Constants.RADIO_CONFIDENCE_TIER4          = 0
+POS_Constants.RADIO_BROADCAST_QUALITY_TIER1   = 30
+POS_Constants.RADIO_BROADCAST_QUALITY_TIER2   = 50
+POS_Constants.RADIO_BROADCAST_QUALITY_TIER3   = 70
+POS_Constants.RADIO_BROADCAST_QUALITY_TIER4   = 90

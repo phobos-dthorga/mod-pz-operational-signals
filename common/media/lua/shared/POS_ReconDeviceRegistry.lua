@@ -46,6 +46,7 @@ function POS_ReconDeviceRegistry.register(def)
         scanType = def.scanType or "building",           -- "building", "environment", "signal"
         labelKey = def.labelKey or "",
         internalCapacity = def.internalCapacity or 0,    -- entries stored without tape (0 = tape required)
+        dynamic = def.dynamic or false,                 -- detected at runtime, not by fixed item type
     }
 end
 
@@ -116,4 +117,21 @@ POS_ReconDeviceRegistry.register({
     scanType = "none",
     labelKey = "UI_POS_Device_Calculator",
     internalCapacity = 0,
+})
+
+POS_ReconDeviceRegistry.register({
+    id = "scanner_radio",
+    itemType = nil,  -- dynamic detection, not a fixed item type
+    scanRadius = 0,  -- calculated from TransmitRange at runtime
+    intelQuality = "low",  -- baseline, upgraded by tier
+    confidenceMod = 0,
+    requiresTape = false,
+    requiresEquipped = false,
+    equipSlot = nil,
+    carryBonus = 0,
+    noiseLevelPct = 0,
+    scanType = "signal",
+    labelKey = "UI_POS_Device_ScannerRadio",
+    internalCapacity = 0,
+    dynamic = true,  -- flag: detected at runtime, not by item type
 })

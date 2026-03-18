@@ -406,5 +406,11 @@
     "UI_POS_VHSReview_NoTape": "No recorded VHS tape in inventory.",
     "UI_POS_VHSReview_NoPaper": "Requires paper and writing implement.",
 
-    "UI_POS_ExitTerminal": "Exit Terminal"
+    "UI_POS_ExitTerminal": "Exit Terminal",
+
+    "UI_POS_Device_ScannerRadio": "Scanner Radio",
+    "UI_POS_RadioTier1": "FM Receiver (broadcast only)",
+    "UI_POS_RadioTier2": "Basic Two-Way Radio",
+    "UI_POS_RadioTier3": "Advanced Scanner",
+    "UI_POS_RadioTier4": "Military-Grade Scanner"
 }
