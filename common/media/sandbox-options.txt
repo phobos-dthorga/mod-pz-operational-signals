@@ -501,3 +501,39 @@ option POS.TerminalPowerDrainRate
     page = POS_Sandbox,
     translation = POS_TerminalPowerDrainRate,
 }
+
+option POS.EnableMarkets
+{
+    type = boolean,
+    default = true,
+    page = POS_Sandbox,
+    translation = POS_EnableMarkets,
+}
+
+option POS.EnableExchange
+{
+    type = boolean,
+    default = false,
+    page = POS_Sandbox,
+    translation = POS_EnableExchange,
+}
+
+option POS.IntelFreshnessDecayDays
+{
+    type = integer,
+    default = 14,
+    min = 3,
+    max = 60,
+    page = POS_Sandbox,
+    translation = POS_IntelFreshnessDecayDays,
+}
+
+option POS.MarketBroadcastInterval
+{
+    type = integer,
+    default = 120,
+    min = 30,
+    max = 480,
+    page = POS_Sandbox,
+    translation = POS_MarketBroadcastInterval,
+}

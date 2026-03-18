@@ -104,3 +104,39 @@ POS_Constants.MSG_POWER_LOST      = "UI_POS_PowerLost"
 POS_Constants.MD_POWER_DRAIN_RATE    = "POS_PowerDrainRate"
 POS_Constants.MD_POWER_DRAIN_SESSION = "POS_PowerDrainSession"
 POS_Constants.POWER_CHECK_INTERVAL   = 60
+
+---------------------------------------------------------------
+-- Market screen IDs (reserved for future implementation)
+---------------------------------------------------------------
+
+POS_Constants.SCREEN_MARKETS            = "pos.markets"
+POS_Constants.SCREEN_COMMODITIES        = "pos.markets.commodities"
+POS_Constants.SCREEN_COMMODITY_DETAIL   = "pos.markets.commodity.detail"
+POS_Constants.SCREEN_TRADERS            = "pos.markets.traders"
+POS_Constants.SCREEN_REPORTS            = "pos.markets.reports"
+POS_Constants.SCREEN_LEDGER             = "pos.markets.ledger"
+POS_Constants.SCREEN_EXCHANGE           = "pos.exchange"
+POS_Constants.SCREEN_EXCHANGE_OVERVIEW  = "pos.exchange.overview"
+POS_Constants.SCREEN_EXCHANGE_PORTFOLIO = "pos.exchange.portfolio"
+
+---------------------------------------------------------------
+-- Market modData keys
+---------------------------------------------------------------
+
+POS_Constants.MD_MARKET_INTEL  = "POS_MarketIntel"
+POS_Constants.MD_PRICE_HISTORY = "POS_PriceHistory"
+
+---------------------------------------------------------------
+-- Market freshness thresholds (game days)
+---------------------------------------------------------------
+
+POS_Constants.MARKET_FRESH_DAYS   = 2
+POS_Constants.MARKET_STALE_DAYS   = 7
+POS_Constants.MARKET_EXPIRED_DAYS = 14
+
+---------------------------------------------------------------
+-- Market trend thresholds (percentage as decimal)
+---------------------------------------------------------------
+
+POS_Constants.TREND_RISING_PCT  = 0.02
+POS_Constants.TREND_FALLING_PCT = 0.02

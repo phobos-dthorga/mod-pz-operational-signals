@@ -65,6 +65,10 @@ globals = {
     "POS_MenuBuilder",
     "POS_NavPanel",
     "POS_ContextPanel",
+    "POS_MarketRegistry",
+    "POS_MarketDatabase",
+    "POS_ExchangeEngine",
+    "POS_MarketService",
 }
 
 read_globals = {

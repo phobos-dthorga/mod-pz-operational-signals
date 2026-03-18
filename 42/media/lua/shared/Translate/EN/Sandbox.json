@@ -113,5 +113,14 @@
     "Sandbox_POS_EnableContextPanel_tooltip": "Show the context-sensitive detail panel on the right side of the terminal. <BR> <BR> <INDENT:20> Displays mission details, negotiation chances, and investment info. <BR> Automatically collapses on narrow windows. <BR> Disable for more content width. <BR> Default: ON",
 
     "Sandbox_POS_TerminalPowerDrainRate": "Terminal Power Drain (%/min)",
-    "Sandbox_POS_TerminalPowerDrainRate_tooltip": "Generator fuel drain rate while the desktop terminal is active (as hundredths of %% per real-time minute). <BR> <BR> <INDENT:20> Only applies when grid power is off. Grid power is free. <BR> Set to 0 to disable power drain entirely. <BR> Range: 0–100. Default: 15 (0.15%%/min, ~11 hours per full generator)"
+    "Sandbox_POS_TerminalPowerDrainRate_tooltip": "Generator fuel drain rate while the desktop terminal is active (as hundredths of %% per real-time minute). <BR> <BR> <INDENT:20> Only applies when grid power is off. Grid power is free. <BR> Set to 0 to disable power drain entirely. <BR> Range: 0–100. Default: 15 (0.15%%/min, ~11 hours per full generator)",
+
+    "Sandbox_POS_EnableMarkets": "Enable Market Intelligence",
+    "Sandbox_POS_EnableMarkets_tooltip": "Master toggle for the market intelligence system. <BR> <BR> <INDENT:20> When enabled, players can gather and compile commodity data. <BR> Default: ON",
+    "Sandbox_POS_EnableExchange": "Enable Commodity Exchange",
+    "Sandbox_POS_EnableExchange_tooltip": "Master toggle for the commodity exchange system. <BR> <BR> <INDENT:20> Provides commodity indices, trends, and portfolio tracking. <BR> Currently experimental — disabled by default. <BR> Default: OFF",
+    "Sandbox_POS_IntelFreshnessDecayDays": "Intel Freshness Decay (days)",
+    "Sandbox_POS_IntelFreshnessDecayDays_tooltip": "Number of in-game days before market intel records expire and are purged. <BR> <BR> <INDENT:20> Shorter values force more frequent field reconnaissance. <BR> Range: 3–60. Default: 14",
+    "Sandbox_POS_MarketBroadcastInterval": "Market Broadcast Interval (minutes)",
+    "Sandbox_POS_MarketBroadcastInterval_tooltip": "Time in game-minutes between server market data broadcasts. <BR> <BR> <INDENT:20> Lower values = more frequent market updates. <BR> Range: 30–480. Default: 120"
 }

@@ -285,3 +285,23 @@ function POS_Sandbox.getTerminalPowerDrainRate()
     local pct = PhobosLib.getSandboxVar("POS", "TerminalPowerDrainRate", 15)
     return pct / 100
 end
+
+---------------------------------------------------------------
+-- Market / exchange sandbox accessors
+---------------------------------------------------------------
+
+function POS_Sandbox.getEnableMarkets()
+    return PhobosLib.getSandboxVar("POS", "EnableMarkets", true)
+end
+
+function POS_Sandbox.getEnableExchange()
+    return PhobosLib.getSandboxVar("POS", "EnableExchange", false)
+end
+
+function POS_Sandbox.getIntelFreshnessDecayDays()
+    return PhobosLib.getSandboxVar("POS", "IntelFreshnessDecayDays", 14)
+end
+
+function POS_Sandbox.getMarketBroadcastInterval()
+    return PhobosLib.getSandboxVar("POS", "MarketBroadcastInterval", 120)
+end
