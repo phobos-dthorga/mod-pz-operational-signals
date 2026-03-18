@@ -247,3 +247,16 @@ local function onPassiveBuildingScan()
 end
 
 Events.EveryOneMinute.Add(onPassiveBuildingScan)
+
+--- One-time retroactive scan on first mod load.
+--- Catches buildings and mailboxes the player has already explored.
+local function onInitialScan()
+    if POS_BuildingCache and POS_BuildingCache.initialScan then
+        POS_BuildingCache.initialScan()
+    end
+    if POS_MailboxScanner and POS_MailboxScanner.initialScan then
+        POS_MailboxScanner.initialScan()
+    end
+end
+
+Events.OnGameStart.Add(onInitialScan)

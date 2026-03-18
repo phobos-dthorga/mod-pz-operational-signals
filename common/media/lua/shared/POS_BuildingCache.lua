@@ -154,6 +154,40 @@ POS_BuildingCache.RECON_ROOMS = {
 -- Passive scanning
 ---------------------------------------------------------------
 
+--- One-time retroactive scan on first mod load.
+--- Scans a large radius to catch buildings the player has already visited.
+--- Gated by modData flag so it only runs once per save.
+function POS_BuildingCache.initialScan()
+    local player = getSpecificPlayer(0)
+    if not player then return end
+
+    local md = player:getModData()
+    if not md then return end
+    if md.POS_BuildingScanDone then return end
+
+    if not POS_Sandbox or not POS_Sandbox.isReconEnabled
+       or not POS_Sandbox.isReconEnabled() then return end
+
+    local px = math.floor(player:getX())
+    local py = math.floor(player:getY())
+
+    -- Large radius scan (loaded chunks, typically ~300 tiles in SP)
+    local buildings = PhobosLib.findNearbyBuildings(
+        px, py, 250, POS_BuildingCache.RECON_ROOMS)
+
+    local added = 0
+    for _, b in ipairs(buildings) do
+        if POS_BuildingCache.addToCache(b.x, b.y, b.matchingRooms) then
+            added = added + 1
+        end
+    end
+
+    md.POS_BuildingScanDone = true
+
+    PhobosLib.debug("POS", "[BuildingCache] Initial scan complete: "
+        .. added .. " new buildings from " .. #buildings .. " found")
+end
+
 --- Scan nearby loaded buildings and cache interesting ones.
 --- Called periodically (every in-game minute).
 function POS_BuildingCache.passiveScan()

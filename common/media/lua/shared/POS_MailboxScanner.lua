@@ -114,6 +114,44 @@ function POS_MailboxScanner.isMailboxSprite(spriteName)
 end
 
 ---------------------------------------------------------------
+-- Initial retroactive scan
+---------------------------------------------------------------
+
+--- One-time retroactive scan on first mod load.
+--- Scans a large radius to catch mailboxes the player has already visited.
+--- Gated by modData flag so it only runs once per save.
+function POS_MailboxScanner.initialScan()
+    local player = getSpecificPlayer(0)
+    if not player then return end
+
+    local md = player:getModData()
+    if not md then return end
+    if md.POS_MailboxScanDone then return end
+
+    if not POS_Sandbox or not POS_Sandbox.isDeliveryEnabled
+       or not POS_Sandbox.isDeliveryEnabled() then return end
+
+    local px = math.floor(player:getX())
+    local py = math.floor(player:getY())
+
+    -- Large radius scan (loaded chunks)
+    local found = PhobosLib.findWorldObjectsBySprite(
+        px, py, 250, POS_MailboxScanner.MAILBOX_SPRITES)
+
+    local added = 0
+    for _, entry in ipairs(found) do
+        if POS_MailboxScanner.addToCache(entry.x, entry.y) then
+            added = added + 1
+        end
+    end
+
+    md.POS_MailboxScanDone = true
+
+    PhobosLib.debug("POS", "[MailboxScanner] Initial scan complete: "
+        .. added .. " new mailboxes from " .. #found .. " found")
+end
+
+---------------------------------------------------------------
 -- Pair selection (from cache)
 ---------------------------------------------------------------
 
