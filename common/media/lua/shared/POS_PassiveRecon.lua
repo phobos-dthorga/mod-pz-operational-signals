@@ -64,7 +64,7 @@ local function getRadioTier(item)
         pcall(function()
             local parent = dd.getParent and dd:getParent()
             if parent then
-                local sq = parent:getSquare and parent:getSquare()
+                local sq = parent.getSquare and parent:getSquare()
                 if sq and sq:haveElectricity() then hasPower = true end
             end
         end)

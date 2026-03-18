@@ -474,13 +474,16 @@ function POS_ItemPool.selectItems(categoryId, count, ctx)
         }
     end
 
+    -- Weight accessor for entries
+    local function getWeight(entry) return entry.weight or 1 end
+
     -- Use PhobosLib weighted selection if available
     if PhobosLib and PhobosLib.weightedRandomMultiple and count > 1 then
-        return PhobosLib.weightedRandomMultiple(entries, count)
+        return PhobosLib.weightedRandomMultiple(entries, count, getWeight)
     elseif PhobosLib and PhobosLib.weightedRandom then
         local result = {}
         for _ = 1, count do
-            result[#result + 1] = PhobosLib.weightedRandom(entries)
+            result[#result + 1] = PhobosLib.weightedRandom(entries, getWeight)
         end
         return result
     end
