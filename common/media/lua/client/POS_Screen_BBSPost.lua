@@ -158,7 +158,7 @@ end
 local screen = {}
 screen.id = POS_Constants.SCREEN_BBS_POST
 screen.menuPath = {}  -- navigated programmatically, not in any menu
-screen.titleKey = "UI_POS_BBSPost_Header"
+screen.titleKey = "UI_POS_BBS_PostHeader"
 
 function screen.create(contentPanel, params, _terminal)
     local W = POS_TerminalWidgets

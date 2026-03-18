@@ -114,7 +114,7 @@ end
 local screen = {}
 screen.id = POS_Constants.SCREEN_DELIVERIES
 screen.menuPath = {"pos.bbs"}
-screen.titleKey = "UI_POS_Deliveries_Header"
+screen.titleKey = "UI_POS_Delivery_Header"
 screen.sortOrder = 30
 screen.shouldShow = function(_player, ctx)
     -- Deliveries not available on tactical band

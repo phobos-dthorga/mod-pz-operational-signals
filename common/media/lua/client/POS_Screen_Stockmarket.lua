@@ -31,7 +31,7 @@ require "POS_API"
 local screen = {}
 screen.id = POS_Constants.SCREEN_STOCKMARKET
 screen.menuPath = {"pos.main"}
-screen.titleKey = "UI_POS_Stockmarket_Header"
+screen.titleKey = "UI_POS_Stock_Header"
 screen.sortOrder = 90
 screen.canOpen = function(_player, _ctx)
     return false, "UI_POS_Stockmarket_Placeholder"

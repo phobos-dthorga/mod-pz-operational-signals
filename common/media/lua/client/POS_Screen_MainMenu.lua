@@ -36,7 +36,7 @@ local C = POS_TerminalWidgets.COLOURS
 local screen = {}
 screen.id = POS_Constants.SCREEN_MAIN_MENU
 screen.menuPath = {}  -- root screen, no parent menu
-screen.titleKey = "UI_POS_MainMenu_Header"
+screen.titleKey = "UI_POS_MainMenuHeader"
 screen.sortOrder = 0
 screen.isRoot = true
 
@@ -150,7 +150,7 @@ end
 POS_API.registerCategory({
     id = "pos.main",
     parent = nil,
-    titleKey = "UI_POS_MainMenu_Header",
+    titleKey = "UI_POS_MainMenuHeader",
     sortOrder = 0,
 })
 

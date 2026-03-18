@@ -301,29 +301,32 @@ function POS_TerminalUI:createChildren()
     -- Create content panel for widget-based screens
     local sx, sy, sw, sh = self:getScreenRect()
     local pad = SCREEN_PAD
-    self.contentPanel = ISPanel:new(sx + pad, sy + pad, sw - pad * 2, sh - pad * 2)
-    self.contentPanel.backgroundColor = { r = 0, g = 0, b = 0, a = 0 }
-    self.contentPanel.borderColor = { r = 0, g = 0, b = 0, a = 0 }
-    self.contentPanel:initialise()
-    self.contentPanel:instantiate()
-    self:addChild(self.contentPanel)
+    -- Helper: create a stencil-clipped ISPanel (prevents content bleed-over)
+    local function createClippedPanel(parent, x, y, w, h)
+        local panel = ISPanel:new(x, y, w, h)
+        panel.backgroundColor = { r = 0, g = 0, b = 0, a = 0 }
+        panel.borderColor = { r = 0, g = 0, b = 0, a = 0 }
+        function panel:prerender()
+            ISPanel.prerender(self)
+            self:setStencilRect(0, 0, self.width, self.height)
+        end
+        function panel:postrender()
+            self:clearStencilRect()
+        end
+        panel:initialise()
+        panel:instantiate()
+        parent:addChild(panel)
+        return panel
+    end
+
+    self.contentPanel = createClippedPanel(self, sx + pad, sy + pad, sw - pad * 2, sh - pad * 2)
 
     -- NavPanel (left sidebar)
-    self.navPanel = ISPanel:new(0, 0, NAV_PANEL_WIDTH, 100)
-    self.navPanel.backgroundColor = { r = 0, g = 0, b = 0, a = 0 }
-    self.navPanel.borderColor = { r = 0, g = 0, b = 0, a = 0 }
-    self.navPanel:initialise()
-    self.navPanel:instantiate()
-    self:addChild(self.navPanel)
+    self.navPanel = createClippedPanel(self, 0, 0, NAV_PANEL_WIDTH, 100)
     self.navPanel:setVisible(false)
 
     -- ContextPanel (right sidebar)
-    self.contextPanel = ISPanel:new(0, 0, CONTEXT_PANEL_WIDTH, 100)
-    self.contextPanel.backgroundColor = { r = 0, g = 0, b = 0, a = 0 }
-    self.contextPanel.borderColor = { r = 0, g = 0, b = 0, a = 0 }
-    self.contextPanel:initialise()
-    self.contextPanel:instantiate()
-    self:addChild(self.contextPanel)
+    self.contextPanel = createClippedPanel(self, 0, 0, CONTEXT_PANEL_WIDTH, 100)
     self.contextPanel:setVisible(false)
 
     -- Register ESC key listener (closure captures self)
@@ -593,6 +596,7 @@ function POS_TerminalUI.open(radioName, frequency, portablePC, signalStrength, b
     ui.frequency = frequency or POS_Sandbox.getPOSnetFrequency()
     ui.signalStrength = signalStrength or 1.0
     ui.band = band or "operations"
+    ui.connected = true
 
     -- Track portable computer for battery drain
     ui.portableComputer = portablePC

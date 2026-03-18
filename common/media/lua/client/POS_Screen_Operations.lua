@@ -129,7 +129,7 @@ end
 local screen = {}
 screen.id = POS_Constants.SCREEN_OPERATIONS
 screen.menuPath = {"pos.bbs"}
-screen.titleKey = "UI_POS_Operations_Header"
+screen.titleKey = "UI_POS_Ops_Header"
 screen.sortOrder = 20
 screen.requires = { connected = true, bands = {"amateur", "tactical"} }
 

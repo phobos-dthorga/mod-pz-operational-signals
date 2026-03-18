@@ -462,7 +462,24 @@ POSnetWindow
 - **ContextPanel** — context-sensitive detail inspector populated by the current
   screen's `getContextData()` callback.
 
-### 9.2 Panel Constants
+### 9.2 Panel Clipping (Mandatory)
+
+All three panels use **stencil clipping** to prevent content from bleeding
+into adjacent panels. This is enforced at panel creation time via
+`setStencilRect()` / `clearStencilRect()` in the panel's `prerender` /
+`postrender` hooks.
+
+**Content bleed-over between panels is never acceptable.** If content is too
+wide for its panel, it must be clipped (truncated) — not allowed to overflow
+into neighboring panels. Clipping is always preferred over overflow.
+
+This applies to:
+- Labels that exceed panel width
+- Buttons wider than their parent panel
+- Wrapped text that miscalculates available width
+- Any widget added to a panel
+
+### 9.3 Panel Constants
 
 All panel dimensions are named constants in `POS_TerminalUI.lua`:
 
@@ -475,7 +492,7 @@ All panel dimensions are named constants in `POS_TerminalUI.lua`:
 
 **Never hardcode panel widths.** Always reference the constants.
 
-### 9.3 Responsive Collapse
+### 9.4 Responsive Collapse
 
 - **Full mode** (window width >= 900px): All 3 panels visible.
 - **Compact mode** (window width < 900px): NavPanel + ContentPanel only.
@@ -483,7 +500,7 @@ All panel dimensions are named constants in `POS_TerminalUI.lua`:
   relative sizing via `ctx.pw` from `initLayout()`, so no screen changes needed.
 - NavPanel never collapses (always visible when enabled).
 
-### 9.4 Sandbox Toggle
+### 9.5 Sandbox Toggle
 
 Both side panels can be disabled by the player:
 - `EnableNavPanel` (default: true)
@@ -492,7 +509,7 @@ Both side panels can be disabled by the player:
 When both are disabled, the terminal reverts to a single full-width content
 panel (original behavior).
 
-### 9.5 NavPanel Contents
+### 9.6 NavPanel Contents
 
 The NavPanel is rendered by `POS_NavPanel.render()` and shows:
 
@@ -504,7 +521,7 @@ The NavPanel is rendered by `POS_NavPanel.render()` and shows:
 
 NavPanel re-renders on every screen transition and refresh cycle.
 
-### 9.6 ContextPanel and `getContextData()` Provider API
+### 9.7 ContextPanel and `getContextData()` Provider API
 
 Each screen can optionally define `getContextData(params)` that returns
 structured data for the context panel:
@@ -536,7 +553,7 @@ end
 
 Screens without `getContextData` leave the context panel empty.
 
-### 9.7 Content That Does NOT Belong in Side Panels
+### 9.8 Content That Does NOT Belong in Side Panels
 
 Per the design philosophy (terminal, not dashboard):
 
@@ -546,7 +563,7 @@ Per the design philosophy (terminal, not dashboard):
 - **No mission spam lists** — mission lists belong in the content panel
   with proper pagination.
 
-### 9.8 Vertical Design Awareness
+### 9.9 Vertical Design Awareness
 
 The CRT bezel consumes 13% top + 30% bottom = 43% of vertical space.
 At 1170px default, usable height is ~667px (~33 lines at 20px lineH).
