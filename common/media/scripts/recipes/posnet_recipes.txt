@@ -69,4 +69,18 @@ module PhobosOperationalSignals {
         needToBeLearn false,
     }
 
+    craftRecipe ReviewVHSTape
+    {
+        item 1 PhobosOperationalSignals.RecordedReconTape,
+        item 1 [Base.SheetPaper2;Base.Notebook],
+        item keep 1 [Base.Pen;Base.Pencil;Base.RedPen;Base.BluePen;Base.GreenPen],
+
+        result PhobosOperationalSignals.RawMarketNote 1,
+
+        time 300,
+        Tags = POS_TVStation;CannotBeResearched,
+        needToBeLearn false,
+        OnCreate POS_CraftCallbacks.onCreateVHSReviewNote,
+    }
+
 }

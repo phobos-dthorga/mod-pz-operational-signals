@@ -716,3 +716,28 @@ note-taking but does NOT trigger passive scanning.
 - Radio MUST be powered on (consuming battery) to scan
 - Uses existing AZAS frequency system and POS_RadioPower inverse square law
 - Generates rumors, distress calls, supply sightings (lower confidence than field devices)
+
+### 12.5 VHS Tape Review Workflow
+
+VHS tapes must be reviewed at a **TV station** (CraftBench entity) to extract
+intelligence. The TV station uses vanilla TvWideScreen and TvBlack sprites,
+excluding TvAntique (no VCR compatibility).
+
+**Review Process:**
+1. Player stands near a TV (vanilla TvWideScreen or TvBlack)
+2. Uses `ReviewVHSTape` craftRecipe (requires recorded tape + pen + paper)
+3. Each entry review takes 5 minutes (sandbox-configurable)
+4. Creates one `RawMarketNote` per entry with category-specific items
+5. Paper consumed: SheetPaper2 fully consumed, Notebook loses condition
+6. Tape entry count decremented; when 0, tape is blank for reuse
+
+**Universal Intelligence Pipeline:**
+
+| Source | Review Location | Action | Output |
+|--------|----------------|--------|--------|
+| VHS Tape | TV with VCR | Review VHS Tape (5 min/entry) | RawMarketNote x N |
+| Field Logger | Any (right-click) | Transcribe Data (future) | RawMarketNote x N |
+| Radio Intercept | VHS tape records | Same as VHS review | RawMarketNote x N |
+| Manual Observation | In-field | Gather Intel (5 min) | RawMarketNote x 1 |
+
+Pen and paper is ALWAYS the final medium before POSnet terminal upload.

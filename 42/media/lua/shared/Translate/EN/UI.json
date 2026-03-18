@@ -400,5 +400,9 @@
     "UI_POS_NoteTooltip_Price": "Price Estimate",
     "UI_POS_NoteTooltip_Stock": "Stock Level",
     "UI_POS_NoteTooltip_Items": "Items Observed",
-    "UI_POS_NoteTooltip_Recorded": "Recorded"
+    "UI_POS_NoteTooltip_Recorded": "Recorded",
+
+    "UI_POS_TVStation_Name": "VHS Review Station",
+    "UI_POS_VHSReview_NoTape": "No recorded VHS tape in inventory.",
+    "UI_POS_VHSReview_NoPaper": "Requires paper and writing implement."
 }

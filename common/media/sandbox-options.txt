@@ -867,3 +867,13 @@ option POS.IntelCooldownDays
     page = POS_Sandbox,
     translation = POS_IntelCooldownDays,
 }
+
+option POS.VHSReviewTimePerEntry
+{
+    type = integer,
+    default = 300,
+    min = 100,
+    max = 600,
+    page = POS_Sandbox,
+    translation = POS_VHSReviewTimePerEntry,
+}

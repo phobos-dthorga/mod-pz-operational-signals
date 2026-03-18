@@ -452,3 +452,11 @@ POS_Constants.INTEL_CLEANUP_MULTIPLIER    = 2
 ---------------------------------------------------------------
 
 POS_Constants.MD_TAPE_ID = "POS_TapeId"
+
+---------------------------------------------------------------
+-- VHS review at TV station
+---------------------------------------------------------------
+
+POS_Constants.VHS_REVIEW_TIME_PER_ENTRY    = 300
+POS_Constants.VHS_REVIEW_SOURCE_LABEL      = "VHS Tape Review"
+POS_Constants.NOTEBOOK_CONDITION_PER_NOTE  = 1

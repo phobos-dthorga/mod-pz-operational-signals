@@ -462,3 +462,11 @@ end
 function POS_Sandbox.getIntelCooldownDays()
     return PhobosLib.getSandboxVar("POS", "IntelCooldownDays", 12)
 end
+
+---------------------------------------------------------------
+-- VHS review at TV station
+---------------------------------------------------------------
+
+function POS_Sandbox.getVHSReviewTimePerEntry()
+    return PhobosLib.getSandboxVar("POS", "VHSReviewTimePerEntry", 300)
+end
