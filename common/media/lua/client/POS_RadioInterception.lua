@@ -104,7 +104,7 @@ local function onServerCommand(module, command, args)
         if POS_InvestmentLog then
             local record = POS_InvestmentLog.resolveInvestment(
                 args.investmentId, args.status)
-            if record and args.status == "matured" and args.returnAmount then
+            if record and args.status == POS_Constants.INV_STATUS_MATURED and args.returnAmount then
                 -- Pay out the return to the player
                 local player = getSpecificPlayer(0)
                 if player then
@@ -112,7 +112,7 @@ local function onServerCommand(module, command, args)
                     PhobosLib.debug("POS", "Investment matured — $"
                         .. args.returnAmount .. " added to inventory")
                 end
-            elseif record and args.status == "defaulted" then
+            elseif record and args.status == POS_Constants.INV_STATUS_DEFAULTED then
                 PhobosLib.debug("POS", "Investment defaulted — $"
                     .. (record.principalAmount or 0) .. " lost")
             end

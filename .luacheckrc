@@ -84,6 +84,7 @@ globals = {
     "POS_MarketNoteGenerator",
     "POS_NegotiationService",
     "POS_OperationService",
+    "POS_InvestmentService",
     "POS_BasisPoints",
     "POS_EventLog",
     "POS_PassiveRecon",
