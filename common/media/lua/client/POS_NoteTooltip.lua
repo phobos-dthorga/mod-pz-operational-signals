@@ -156,6 +156,110 @@ local function buildTapeTooltipLines(item)
     return #lines > 0 and lines or nil
 end
 
+--- Build tooltip lines for unified media items (microcassette, floppy).
+--- @param item any InventoryItem
+--- @return table|nil
+local function buildMediaTooltipLines(item)
+    if not item then return nil end
+    local md = item:getModData()
+    if not md then return nil end
+
+    -- Check for unified media keys
+    local family = md[POS_Constants.MD_MEDIA_FAMILY]
+    if not family then return nil end
+
+    local lines = {}
+    local familyLabel = family == POS_Constants.MEDIA_FAMILY_MICROCASSETTE and "Microcassette"
+        or family == POS_Constants.MEDIA_FAMILY_FLOPPY and "Floppy Disk"
+        or "Media"
+
+    lines[#lines + 1] = { text = "--- " .. familyLabel .. " Data ---",
+        r = COL_HEADER.r, g = COL_HEADER.g, b = COL_HEADER.b }
+
+    local entryCount = tonumber(md[POS_Constants.MD_MEDIA_ENTRY_COUNT]) or 0
+    local capacity = tonumber(md[POS_Constants.MD_MEDIA_CAPACITY]) or "?"
+    lines[#lines + 1] = { text = "Entries: " .. tostring(entryCount) .. " / " .. tostring(capacity),
+        r = COL_VALUE.r, g = COL_VALUE.g, b = COL_VALUE.b }
+
+    local fidelity = md[POS_Constants.MD_MEDIA_FIDELITY]
+    if fidelity then
+        local fidelityLabel = fidelity == POS_Constants.MEDIA_FIDELITY_HIGH and "High (+1000 BPS)"
+            or fidelity == POS_Constants.MEDIA_FIDELITY_DIGITAL and "Digital (+2000 BPS)"
+            or "Standard"
+        lines[#lines + 1] = { text = "Fidelity: " .. fidelityLabel,
+            r = COL_LABEL.r, g = COL_LABEL.g, b = COL_LABEL.b }
+    end
+
+    local region = md[POS_Constants.MD_MEDIA_REGION]
+    if region and region ~= "" then
+        lines[#lines + 1] = { text = "Region: " .. tostring(region),
+            r = COL_LABEL.r, g = COL_LABEL.g, b = COL_LABEL.b }
+    end
+
+    local wear = tonumber(md[POS_Constants.MD_MEDIA_WEAR]) or 0
+    if wear > 0 then
+        lines[#lines + 1] = { text = "Wear: " .. tostring(wear) .. "%",
+            r = COL_DIM.r, g = COL_DIM.g, b = COL_DIM.b }
+    end
+
+    local cycles = tonumber(md[POS_Constants.MD_MEDIA_CYCLE_COUNT]) or 0
+    if cycles > 0 then
+        lines[#lines + 1] = { text = "Cycles: " .. tostring(cycles),
+            r = COL_DIM.r, g = COL_DIM.g, b = COL_DIM.b }
+    end
+
+    return #lines > 0 and lines or nil
+end
+
+--- Build tooltip lines for the Data-Recorder.
+--- @param item any InventoryItem
+--- @return table|nil
+local function buildRecorderTooltipLines(item)
+    if not item then return nil end
+    if item:getFullType() ~= POS_Constants.ITEM_DATA_RECORDER then return nil end
+
+    local md = item:getModData()
+    if not md then return nil end
+
+    local lines = {}
+
+    lines[#lines + 1] = { text = "--- Data-Recorder ---",
+        r = COL_HEADER.r, g = COL_HEADER.g, b = COL_HEADER.b }
+
+    -- Power
+    local cond = PhobosLib.getConditionPercent(item) or 0
+    local powerCol = cond > 20 and COL_VALUE or { r = 1.0, g = 0.3, b = 0.3 }
+    lines[#lines + 1] = { text = "Power: " .. tostring(cond) .. "%",
+        r = powerCol.r, g = powerCol.g, b = powerCol.b }
+
+    -- Buffer
+    local bufCount = tonumber(md[POS_Constants.MD_RECORDER_BUFFER_COUNT]) or 0
+    local bufCap = tonumber(md[POS_Constants.MD_RECORDER_BUFFER_CAP]) or 8
+    lines[#lines + 1] = { text = "Buffer: " .. tostring(bufCount) .. "/" .. tostring(bufCap),
+        r = COL_LABEL.r, g = COL_LABEL.g, b = COL_LABEL.b }
+
+    -- Media
+    local mediaType = md[POS_Constants.MD_RECORDER_MEDIA_TYPE]
+    if mediaType then
+        local mediaUsed = tonumber(md[POS_Constants.MD_RECORDER_MEDIA_USED]) or 0
+        local mediaCap = tonumber(md[POS_Constants.MD_RECORDER_MEDIA_CAP]) or 0
+        lines[#lines + 1] = { text = "Media: " .. tostring(mediaUsed) .. "/" .. tostring(mediaCap),
+            r = COL_VALUE.r, g = COL_VALUE.g, b = COL_VALUE.b }
+    else
+        lines[#lines + 1] = { text = "Media: none inserted",
+            r = COL_DIM.r, g = COL_DIM.g, b = COL_DIM.b }
+    end
+
+    -- Total recorded
+    local totalRec = tonumber(md[POS_Constants.MD_RECORDER_TOTAL_RECORDED]) or 0
+    if totalRec > 0 then
+        lines[#lines + 1] = { text = "Total recorded: " .. tostring(totalRec),
+            r = COL_DIM.r, g = COL_DIM.g, b = COL_DIM.b }
+    end
+
+    return #lines > 0 and lines or nil
+end
+
 ---------------------------------------------------------------
 -- Registration
 ---------------------------------------------------------------
@@ -166,7 +270,15 @@ local function posnetTooltipProvider(item)
     local noteLines = buildNoteTooltipLines(item)
     if noteLines then return noteLines end
 
-    -- Try VHS tape
+    -- Try Data-Recorder
+    local recorderLines = buildRecorderTooltipLines(item)
+    if recorderLines then return recorderLines end
+
+    -- Try unified media (microcassette, floppy)
+    local mediaLines = buildMediaTooltipLines(item)
+    if mediaLines then return mediaLines end
+
+    -- Try legacy VHS tape
     local tapeLines = buildTapeTooltipLines(item)
     if tapeLines then return tapeLines end
 
