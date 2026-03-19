@@ -76,12 +76,11 @@ function POS_WatchlistService.checkForAlerts(player)
     return alerts
 end
 
---- Fire alerts through PhobosNotifications if available.
+--- Fire alerts through PhobosNotifications (with say() fallback).
 --- @param player IsoPlayer
 --- @param alerts table[] from checkForAlerts
 function POS_WatchlistService.fireNotifications(player, alerts)
     if not alerts or #alerts == 0 then return end
-    if not PhobosNotifications then return end
 
     for _, alert in ipairs(alerts) do
         local catLabel = PhobosLib.safeGetText(alert.labelKey)
@@ -89,11 +88,11 @@ function POS_WatchlistService.fireNotifications(player, alerts)
         local message = catLabel .. ": " .. direction
             .. string.format("%.1f%%", alert.changePct)
 
-        PhobosNotifications.toast({
-            title = PhobosLib.safeGetText("UI_POS_Market_PriceAlert"),
-            message = message,
-            colour = alert.changePct >= 0 and "success" or "warning",
-            channel = "POSnet",
+        PhobosLib.notifyOrSay(player, {
+            title    = PhobosLib.safeGetText("UI_POS_Market_PriceAlert"),
+            message  = message,
+            colour   = alert.changePct >= 0 and "success" or "warning",
+            channel  = POS_Constants.PN_CHANNEL_ID,
             priority = "normal",
         })
 

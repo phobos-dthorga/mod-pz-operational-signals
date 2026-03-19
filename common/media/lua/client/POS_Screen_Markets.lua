@@ -98,6 +98,24 @@ function screen.create(contentPanel, _params, _terminal)
                 end
                 PhobosLib.debug("POS", "[POS:Markets]",
                     "Uploaded " .. ingested .. " field notes")
+
+                if ingested > 0 then
+                    PhobosLib.notifyOrSay(p, {
+                        title   = W.safeGetText("UI_POS_Market_UploadTitle"),
+                        message = W.safeGetText("UI_POS_Market_UploadComplete", tostring(ingested)),
+                        icon    = POS_Constants.ITEM_RAW_MARKET_NOTE,
+                        colour  = "success",
+                        channel = POS_Constants.PN_CHANNEL_ID,
+                    })
+                else
+                    PhobosLib.notifyOrSay(p, {
+                        title   = W.safeGetText("UI_POS_Market_UploadTitle"),
+                        message = W.safeGetText("UI_POS_Market_UploadFailed"),
+                        colour  = "warning",
+                        channel = POS_Constants.PN_CHANNEL_ID,
+                    })
+                end
+
                 POS_ScreenManager.markDirty()
             end)
         ctx.y = ctx.y + ctx.btnH + 4

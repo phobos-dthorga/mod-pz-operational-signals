@@ -83,10 +83,8 @@ module PhobosOperationalSignals {
         OnCreate POS_CraftCallbacks.onCreateVHSReviewNote,
     }
 
-    -- RewindMicrocassette and RecycleMicrocassette are portable by default.
-    -- The vanilla microscope sprite is claimed by ZVV's LabMicroscope2 entity,
-    -- so POSnet cannot define its own microscope CraftBench without a sprite
-    -- collision. These recipes remain portable (no station requirement).
+    -- RewindMicrocassette and RecycleMicrocassette are portable by design —
+    -- no CraftBench station required. These are simple field-serviceable tasks.
 
     craftRecipe RewindMicrocassette
     {

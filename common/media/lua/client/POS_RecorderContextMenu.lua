@@ -44,14 +44,24 @@ local function onInsertMedia(items, mediaItem, player, recorder)
         mediaMd[POS_Constants.MD_MEDIA_ENTRY_COUNT] = POS_MediaManager.getEntryCount(mediaItem)
     end
 
-    PhobosLib.say(player, PhobosLib.safeGetText("UI_POS_ContextMenu_InsertMedia") .. ": "
-        .. tostring(mediaItem:getDisplayName()))
+    PhobosLib.notifyOrSay(player, {
+        title   = PhobosLib.safeGetText("UI_POS_ContextMenu_InsertMedia"),
+        message = tostring(mediaItem:getDisplayName()),
+        icon    = POS_Constants.ITEM_DATA_RECORDER,
+        colour  = "success",
+        channel = POS_Constants.PN_CHANNEL_ID,
+    })
 end
 
 local function onEjectMedia(items, player, recorder)
     if not recorder then return end
     POS_DataRecorderService.ejectMedia(recorder)
-    PhobosLib.say(player, PhobosLib.safeGetText("UI_POS_DataManagement_MediaEjected"))
+    PhobosLib.notifyOrSay(player, {
+        message = PhobosLib.safeGetText("UI_POS_DataManagement_MediaEjected"),
+        icon    = POS_Constants.ITEM_DATA_RECORDER,
+        colour  = "info",
+        channel = POS_Constants.PN_CHANNEL_ID,
+    })
 end
 
 local function onViewStatus(items, player, recorder)

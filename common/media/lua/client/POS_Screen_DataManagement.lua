@@ -105,10 +105,20 @@ function screen.create(contentPanel, params, _terminal)
         W.createButton(ctx, W.safeGetText("UI_POS_DataManagement_ProcessAll"), function()
             local processed = POS_ChunkProcessor.processAll(player, recorder)
             if processed > 0 then
-                PhobosLib.say(player, W.safeGetText("UI_POS_DataManagement_ProcessingComplete",
-                    tostring(processed)))
+                PhobosLib.notifyOrSay(player, {
+                    title   = W.safeGetText("UI_POS_DataManagement_Header"),
+                    message = W.safeGetText("UI_POS_DataManagement_ProcessingComplete",
+                        tostring(processed)),
+                    icon    = POS_Constants.ITEM_DATA_RECORDER,
+                    colour  = "success",
+                    channel = POS_Constants.PN_CHANNEL_ID,
+                })
             else
-                PhobosLib.say(player, W.safeGetText("UI_POS_DataManagement_NoData"))
+                PhobosLib.notifyOrSay(player, {
+                    message = W.safeGetText("UI_POS_DataManagement_NoData"),
+                    colour  = "info",
+                    channel = POS_Constants.PN_CHANNEL_ID,
+                })
             end
             W.dynamicRefresh(screen, params)
         end)
@@ -118,8 +128,14 @@ function screen.create(contentPanel, params, _terminal)
         W.createButton(ctx, W.safeGetText("UI_POS_DataManagement_FlushBuffer"), function()
             local flushed = POS_DataRecorderService.flushBufferToMedia(recorder)
             if flushed > 0 then
-                PhobosLib.say(player, W.safeGetText("UI_POS_DataManagement_BufferFlushed",
-                    tostring(flushed)))
+                PhobosLib.notifyOrSay(player, {
+                    title   = W.safeGetText("UI_POS_DataManagement_Header"),
+                    message = W.safeGetText("UI_POS_DataManagement_BufferFlushed",
+                        tostring(flushed)),
+                    icon    = POS_Constants.ITEM_DATA_RECORDER,
+                    colour  = "success",
+                    channel = POS_Constants.PN_CHANNEL_ID,
+                })
             end
             W.dynamicRefresh(screen, params)
         end)
@@ -128,7 +144,12 @@ function screen.create(contentPanel, params, _terminal)
     if status.hasMedia then
         W.createButton(ctx, W.safeGetText("UI_POS_DataManagement_EjectMedia"), function()
             POS_DataRecorderService.ejectMedia(recorder)
-            PhobosLib.say(player, W.safeGetText("UI_POS_DataManagement_MediaEjected"))
+            PhobosLib.notifyOrSay(player, {
+                message = W.safeGetText("UI_POS_DataManagement_MediaEjected"),
+                icon    = POS_Constants.ITEM_DATA_RECORDER,
+                colour  = "info",
+                channel = POS_Constants.PN_CHANNEL_ID,
+            })
             W.dynamicRefresh(screen, params)
         end)
     end
