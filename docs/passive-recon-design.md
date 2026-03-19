@@ -7,20 +7,26 @@ Design document for the passive reconnaissance subsystem in PhobosOperationalSig
 ## 1. Overview
 
 Passive recon replaces manual note-taking with automated device-based reconnaissance.
-When a player equips a compatible device and moves through the world, the system
-silently catalogues nearby buildings, resources, and points of interest without
-requiring any player interaction beyond carrying and equipping the hardware.
+When a player equips a compatible device **and a Data-Recorder**, the system silently
+catalogues nearby buildings, resources, and points of interest without requiring any
+player interaction beyond carrying and equipping the hardware.
 
-The result is a stream of time-stamped recon entries stored on VHS tapes (or internal
-memory), which can later be uploaded to the POSnet terminal to enrich the building
-cache and feed market intelligence observations.
+The result is a stream of raw data chunks stored in the recorder's buffer or inserted
+media, which can later be processed at the POSnet terminal to produce market notes,
+field reports, and building cache entries.
+
+**IMPORTANT: The Data-Recorder is mandatory.** All passive sensor data routes through
+the recorder via `POS_DataRecorderService.appendChunk()`. Without an equipped,
+powered recorder, passive scanning does not occur. This is a breaking change from
+the original design where devices wrote directly to VHS tapes.
 
 Key design goals:
 
-- **Zero-click operation** -- equip device, keep moving, data accumulates
+- **Zero-click operation** -- equip recorder + device, keep moving, data accumulates
 - **Hardware matters** -- different devices have different ranges, quality, and trade-offs
-- **Consumable media** -- VHS tapes degrade over time, creating ongoing demand
+- **Consumable media** -- VHS tapes, microcassettes, and floppy disks degrade over time
 - **Performance-safe** -- chunk-based scanning on EveryOneMinute, not EveryTick
+- **Unified pipeline** -- all sensor data flows through one ingestion point (recorder)
 
 ---
 
@@ -181,9 +187,19 @@ VHS tapes CANNOT be used with the Data Calculator.
 
 ---
 
-## 3. VHS Tape System
+## 3. Media System
 
-VHS tapes are the primary storage medium for passive recon data from the
+VHS tapes are the primary storage medium for passive recon data. Two
+additional media families — **microcassettes** and **floppy disks** — are
+available as higher-fidelity alternatives. All media types are managed by
+`POS_MediaManager.lua` (which replaced the original `POS_TapeManager.lua`).
+
+See `data-recorder-design.md` Section 4 for the full media comparison table,
+microcassette/floppy lifecycle details, and media modData schema.
+
+### VHS Tapes
+
+VHS tapes remain the workhorse medium for passive recon data from the
 Camcorder and Field Survey Logger.
 
 ### 3.1 Quality Tiers
@@ -248,6 +264,10 @@ The minimum duration is sandbox-configurable via `ReconMinTapeDuration`
 Passive scanning runs on the **EveryOneMinute** event hook. This provides
 adequate temporal resolution for building discovery while avoiding the
 performance cost of per-tick processing.
+
+**Recorder gate**: The scan cycle begins with a check for an equipped,
+powered Data-Recorder. If absent, the entire scan cycle is skipped. See
+`data-recorder-design.md` Section 6.3 for details.
 
 ### 4.2 Chunk-Based Detection
 

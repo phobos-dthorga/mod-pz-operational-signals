@@ -385,18 +385,43 @@ Manual recon         ──► POS_MarketReconAction ──► Recorder OR direc
                               RawMarketNote / FieldReport / CompiledMarketReport
 ```
 
-### 6.3 Recorder Presence Detection
+### 6.3 Recorder Presence Detection (MANDATORY — Breaking Change)
 
-`POS_PassiveRecon.lua` currently iterates equipped devices and processes each
-independently. With the recorder, the scan cycle becomes:
+`POS_PassiveRecon.lua` queries equipped devices via the **Data Source Registry**
+(`POS_DataSourceRegistry`) and routes all output through the recorder. The scan
+cycle is:
 
 1. Check if player has a **powered Data-Recorder** equipped (belt slot)
-2. If YES: all sensor data routes through the recorder
-3. If NO: sensors fall back to their existing direct-write behavior (backward
-   compatible — no recorder required to use camcorder/logger)
+2. If YES: query `POS_DataSourceRegistry.getSourcesForRecorder(player, recorder)`
+   for active sources, generate chunks, route through recorder
+3. If NO: **passive scanning does not occur** — the recorder is mandatory
 
-This means the recorder is an **upgrade**, not a gate. Players who never find
-a recorder continue using the existing system unchanged.
+This is a **breaking change**. Players who do not have a Data-Recorder equipped
+will not receive any passive recon data. The recorder is the single mandatory
+ingestion point for all automated sensor data. This simplifies the codebase by
+eliminating the dual-path (recorder vs direct-write) architecture.
+
+### 6.5 Data Source Interface
+
+All sensor devices register as data sources via `POS_DataSourceRegistry.register()`:
+
+```lua
+POS_DataSourceRegistry.register({
+    id = "camcorder",
+    type = POS_Constants.DATA_SOURCE_RECON,
+    displayNameKey = "UI_POS_Source_Camcorder",
+    canRecord = function(player, item) ... end,
+    getSignalQuality = function(player, item) ... end,
+    generateChunk = function(player, item) ... end,
+})
+```
+
+Functions: `register(def)`, `get(id)`, `getAll()`, `getAvailableSources(player)`,
+`getSourcesForRecorder(player, recorder)`, `getByType(sourceType)`.
+
+The recorder queries available sources during the scan cycle rather than
+hardcoding device logic. New devices can be added by registering as a data
+source — no changes to the scan loop required.
 
 ### 6.4 Sensor Priority When Recorder Is Present
 
@@ -764,14 +789,26 @@ to function as-is. The recorder respects `EnablePassiveRecon`,
 
 | Module | Change |
 |--------|--------|
-| `POS_PassiveRecon.lua` | Add recorder-routing path alongside existing direct-write |
-| `POS_RadioInterception.lua` | Route intercepts through recorder when present |
-| `POS_TapeManager.lua` | Refactor to delegate media operations to `POS_MediaManager` |
+| `POS_PassiveRecon.lua` | **Full rewrite** — recorder-mandatory pipeline, Data Source Registry integration |
 | `POS_ReconDeviceRegistry.lua` | Register DataRecorder as a device (no scan, buffer-only) |
-| `POS_CraftCallbacks.lua` | Add callbacks for new recipes |
-| `POS_Constants.lua` | Add chunk type constants, media family constants, screen IDs |
+| `POS_CraftCallbacks.lua` | Add 6 new callbacks, replace all `POS_TapeManager` refs with `POS_MediaManager` |
+| `POS_Constants.lua` | ~100 new constants: chunk types, media families, modData keys, screen IDs, BPS values |
+| `POS_SandboxIntegration.lua` | 8 new getter functions for recorder sandbox options |
+| `POS_NoteTooltip.lua` | Dynamic tooltip builders for recorder + all 8 new media items |
 
-### 13.3 Unchanged Modules
+### 13.3 Deleted Modules
+
+| Module | Reason |
+|--------|--------|
+| `POS_TapeManager.lua` | **Replaced entirely** by `POS_MediaManager.lua` — breaking change, no backward compat |
+
+### 13.4 New Entity Definitions
+
+| Entity | Type | Purpose |
+|--------|------|---------|
+| `POS_Microscope` | CraftBench | Vanilla microscope mapped as workstation for precision microcassette recipes (RewindMicrocassette, RecycleMicrocassette). Sprite: `location_community_medical_01_136` (S), `location_community_medical_01_140` (E). |
+
+### 13.5 Unchanged Modules
 
 The following are explicitly NOT modified:
 
@@ -930,14 +967,19 @@ existing `POS_NoteTooltip` provider pattern via
 
 ---
 
-## 17. Migration & Backward Compatibility
+## 17. Migration & Breaking Changes
 
-### 17.1 No Breaking Changes
+### 17.1 BREAKING: Recorder Is Mandatory
 
-The recorder is **purely additive**. Players who never find a Data-Recorder
-continue using the existing camcorder → VHS tape → TV review pipeline
-exactly as before. No existing items, recipes, or behaviors are removed
-or modified.
+**This is a breaking change.** The Data-Recorder is the mandatory ingestion
+point for all passive/automated sensor data. Without an equipped recorder:
+
+- Passive scanning does **not** occur (camcorder, logger, radio all require recorder)
+- `POS_TapeManager.lua` is **deleted** entirely, replaced by `POS_MediaManager.lua`
+- Sensors that previously wrote directly to VHS tapes now require a recorder
+
+Since POSnet is unreleased, this is acceptable — there are no existing saves
+or users to migrate. No backward-compatibility shims are needed.
 
 ### 17.2 VHS ModData Key Migration
 
@@ -951,7 +993,9 @@ one version cycle to allow rollback. A modData flag
 
 VHS tapes recorded before the Data-Recorder update continue to work at
 TV stations exactly as before. Their `POS_TapeId` event log entries
-remain valid and accessible.
+remain valid and accessible. The `POS_CraftCallbacks` module checks
+both `POS_Media*` and legacy `POS_Tape*` keys for backward compatibility
+in craft callbacks.
 
 ---
 

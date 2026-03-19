@@ -678,7 +678,58 @@ At 1170px default, usable height is ~667px (~33 lines at 20px lineH).
 
 ---
 
-## 10. Item Selection & Market Intelligence
+## 10. Context Menu Sub-Menu Rule
+
+### 10.1 Grouping Principle
+
+When multiple context-menu actions exist on a single inventory object, they
+**must** be grouped into a sub-menu rather than cluttering the top-level
+context menu. This applies to all POSnet items — existing and new.
+
+Examples:
+- **Data-Recorder** → "Data-Recorder" sub-menu containing: Insert Media,
+  Eject Media, View Status
+- **Source devices** (camcorder, logger, radio) → "POSnet" sub-menu
+  containing: Record Using Data-Recorder
+- Any future item with 2+ POSnet context actions must follow this pattern
+
+### 10.2 Nested Sub-Menus
+
+When a sub-menu action itself has multiple choices (e.g., "Insert Media"
+with multiple compatible media items), use a nested sub-menu. Maximum
+nesting depth: 2 levels (top → sub-menu → nested sub-menu).
+
+---
+
+## 11. Data Source Registration
+
+### 11.1 Pattern
+
+All devices that generate passive recon data must register as data sources
+via `POS_DataSourceRegistry.register()`. The recorder queries available
+sources during the scan cycle rather than hardcoding device logic.
+
+### 11.2 Registration Contract
+
+Each source provides:
+- `id` — unique string identifier (e.g., `"camcorder"`)
+- `type` — category constant from `POS_Constants.DATA_SOURCE_*`
+- `displayNameKey` — translation key for UI display
+- `canRecord(player, item)` — returns boolean, whether source can currently record
+- `getSignalQuality(player, item)` — returns BPS confidence modifier
+- `generateChunk(player, item)` — returns chunk table or nil
+
+### 11.3 Component Crafting Philosophy
+
+The Data-Recorder system follows a component-based crafting philosophy:
+- **Tier 0 (Improvised)**: Craftable from scrap — low quality, high availability
+- **Tiers 1-3**: Loot/progression — higher quality, rarer
+- Sub-components are crafted separately, then assembled into the final device
+- Repair recipes restore condition using Electronics skill + scrap materials
+
+---
+
+## 12. Item Selection & Market Intelligence
 
 ### 10.1 Weight-Based Selection
 
@@ -714,7 +765,7 @@ with 4-5 sub-categories per parent, paginated if needed.
 
 ---
 
-## 11. Data Persistence Rules
+## 13. Data Persistence Rules
 
 ### 11.1 World-Scoped State
 
@@ -751,7 +802,7 @@ All rolling windows are capped by sandbox options with constants as fallbacks:
 
 ---
 
-## 12. Passive Recon Device Rules
+## 14. Passive Recon Device Rules
 
 ### 12.1 Device Equip Requirement
 
@@ -826,7 +877,7 @@ Pen and paper is ALWAYS the final medium before POSnet terminal upload.
 
 ---
 
-## 13. Journal & Document System
+## 15. Journal & Document System
 
 ### 13.1 Readable Market Notes
 
@@ -858,7 +909,7 @@ DisplayCategories from appearing in wrong market categories.
 
 ---
 
-## 14. Danger Detection
+## 16. Danger Detection
 
 ### 14.1 PhobosLib.isDangerNearby()
 
@@ -895,7 +946,7 @@ Players in safer areas can reduce this for less restrictive gameplay.
 
 ---
 
-## 15. Data Externalization
+## 17. Data Externalization
 
 ### 15.1 Principle
 
@@ -926,7 +977,7 @@ the game continues normally. Caches rebuild through natural exploration.
 
 ---
 
-## 16. Release & Tagging Doctrine
+## 18. Release & Tagging Doctrine
 
 All Phobos PZ mods follow the release architecture defined in
 [`docs/release-architecture.md`](release-architecture.md).
