@@ -374,6 +374,12 @@
     "UI_POS_Market_FilterBy": "Filter by Sub-Category",
     "UI_POS_Market_TraderCount": "Traders",
     "UI_POS_Market_ReportCount": "Reports",
+    "UI_POS_Market_ViewItems": "View Items",
+    "UI_POS_Market_CommodityItems": "COMMODITY ITEMS",
+    "UI_POS_Market_NoItems": "No item data available for this category.",
+    "UI_POS_Market_ItemCount": "Items",
+    "UI_POS_Market_ItemObservations": "observations",
+    "UI_POS_Market_ItemLastSeen": "Last seen day",
 
     "UI_POS_Device_Camcorder": "Recon Camcorder",
     "UI_POS_Device_Logger": "Field Survey Logger",

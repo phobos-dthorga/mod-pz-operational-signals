@@ -153,6 +153,15 @@ function screen.create(contentPanel, params, _terminal)
         ctx.y = ctx.y + ctx.btnH + 4
     end
 
+    -- View Items
+    W.createButton(ctx.panel, ctx.btnX, ctx.y, ctx.btnW, ctx.btnH,
+        "[4] " .. W.safeGetText("UI_POS_Market_ViewItems"), nil,
+        function()
+            POS_ScreenManager.navigateTo(POS_Constants.SCREEN_COMMODITY_ITEMS,
+                { categoryId = catId })
+        end)
+    ctx.y = ctx.y + ctx.btnH + 4
+
     -- Footer
     W.drawFooter(ctx)
 end

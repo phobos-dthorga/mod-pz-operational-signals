@@ -112,6 +112,7 @@ POS_Constants.POWER_CHECK_INTERVAL   = 60
 POS_Constants.SCREEN_MARKETS            = "pos.markets"
 POS_Constants.SCREEN_COMMODITIES        = "pos.markets.commodities"
 POS_Constants.SCREEN_COMMODITY_DETAIL   = "pos.markets.commodity.detail"
+POS_Constants.SCREEN_COMMODITY_ITEMS   = "pos.markets.commodity.items"
 POS_Constants.SCREEN_TRADERS            = "pos.markets.traders"
 POS_Constants.SCREEN_REPORTS            = "pos.markets.reports"
 POS_Constants.SCREEN_LEDGER             = "pos.markets.ledger"
@@ -289,8 +290,9 @@ POS_Constants.PORTABLE_DRAIN_DIVISOR_DEFAULT = 1800
 -- Page sizes (terminal screens)
 ---------------------------------------------------------------
 
-POS_Constants.PAGE_SIZE_COMMODITIES    = 8
-POS_Constants.PAGE_SIZE_MARKET_REPORTS = 5
+POS_Constants.PAGE_SIZE_COMMODITIES      = 8
+POS_Constants.PAGE_SIZE_COMMODITY_ITEMS  = 8
+POS_Constants.PAGE_SIZE_MARKET_REPORTS   = 5
 
 ---------------------------------------------------------------
 -- Signal bar display (POS_NavPanel)
