@@ -82,8 +82,55 @@ function screen.create(contentPanel, params, _terminal)
     W.createSeparator(ctx.panel, 0, ctx.y, 40, "-")
     ctx.y = ctx.y + ctx.lineH
 
-    -- Fetch items
-    local items = POS_MarketService.getCommodityItems(categoryId)
+    -- Sub-category filter buttons
+    local subCats = POS_MarketRegistry.getVisibleSubCategories(categoryId, nil)
+    local activeSubCat = params and params.subCategoryId
+    local catIdForFilter = categoryId
+
+    if #subCats > 0 then
+        W.createLabel(ctx.panel, 0, ctx.y,
+            W.safeGetText("UI_POS_Market_FilterBy"), C.dim)
+        ctx.y = ctx.y + ctx.lineH
+
+        -- "View All" option
+        if activeSubCat then
+            W.createButton(ctx.panel, ctx.btnX, ctx.y, ctx.btnW, ctx.btnH,
+                W.safeGetText("UI_POS_Market_ViewAll"), nil,
+                function()
+                    POS_ScreenManager.replaceCurrent(
+                        POS_Constants.SCREEN_COMMODITY_ITEMS,
+                        { categoryId = catIdForFilter })
+                end)
+        else
+            W.createLabel(ctx.panel, ctx.btnX + 4, ctx.y + 2,
+                "> " .. W.safeGetText("UI_POS_Market_ViewAll"), C.textBright)
+        end
+        ctx.y = ctx.y + ctx.btnH + 2
+
+        for _, sub in ipairs(subCats) do
+            local subId = sub.id
+            if activeSubCat == subId then
+                W.createLabel(ctx.panel, ctx.btnX + 4, ctx.y + 2,
+                    "> " .. W.safeGetText(sub.labelKey), C.textBright)
+            else
+                W.createButton(ctx.panel, ctx.btnX, ctx.y, ctx.btnW, ctx.btnH,
+                    W.safeGetText(sub.labelKey), nil,
+                    function()
+                        POS_ScreenManager.replaceCurrent(
+                            POS_Constants.SCREEN_COMMODITY_ITEMS,
+                            { categoryId = catIdForFilter, subCategoryId = subId })
+                    end)
+            end
+            ctx.y = ctx.y + ctx.btnH + 2
+        end
+
+        ctx.y = ctx.y + 4
+        W.createSeparator(ctx.panel, 0, ctx.y, 40, "-")
+        ctx.y = ctx.y + ctx.lineH
+    end
+
+    -- Fetch items (filtered by sub-category if active)
+    local items = POS_MarketService.getFilteredCommodityItems(categoryId, activeSubCat)
 
     if #items == 0 then
         W.createLabel(ctx.panel, 8, ctx.y,
@@ -92,9 +139,15 @@ function screen.create(contentPanel, params, _terminal)
     else
         local currentPage = (params and params.itemPage) or 1
         local catIdCopy = categoryId
+        local activeSubCopy = activeSubCat
+        -- Reduce page size when sub-category filters consume vertical space
+        local pageSize = POS_Constants.PAGE_SIZE_COMMODITY_ITEMS
+        if #subCats > 0 then
+            pageSize = math.max(3, pageSize - #subCats - 2)
+        end
         ctx.y = PhobosLib_Pagination.create(ctx.panel, {
             items = items,
-            pageSize = POS_Constants.PAGE_SIZE_COMMODITY_ITEMS,
+            pageSize = pageSize,
             currentPage = currentPage,
             x = ctx.btnX,
             y = ctx.y,
@@ -127,7 +180,8 @@ function screen.create(contentPanel, params, _terminal)
             onPageChange = function(newPage)
                 POS_ScreenManager.replaceCurrent(
                     POS_Constants.SCREEN_COMMODITY_ITEMS,
-                    { categoryId = catIdCopy, itemPage = newPage })
+                    { categoryId = catIdCopy, subCategoryId = activeSubCopy,
+                      itemPage = newPage })
             end,
         })
     end
