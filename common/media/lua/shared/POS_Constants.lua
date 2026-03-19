@@ -508,6 +508,14 @@ POS_Constants.CACHE_FILE_SEPARATOR  = "|"
 POS_Constants.CACHE_FILE_ROOM_SEP   = ","
 
 ---------------------------------------------------------------
+-- Per-player file storage (Zomboid/Lua/POSNET/)
+---------------------------------------------------------------
+
+POS_Constants.PLAYER_FILE_PREFIX    = "POSNET/player_"
+POS_Constants.PLAYER_FILE_EXT       = ".dat"
+POS_Constants.PLAYER_FILE_SEPARATOR = "|"
+
+---------------------------------------------------------------
 -- Context menu intel states
 ---------------------------------------------------------------
 

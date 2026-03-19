@@ -7,7 +7,8 @@ POSnet uses a three-layer persistence model. Each layer has a distinct scope, au
 | Layer | Scope | Location | Authority |
 |-------|-------|----------|-----------|
 | 1. World ModData | Shared economy state | PZ world save (engine-managed) | Server-only writes |
-| 2. Player ModData | Per-character UI/portfolio state | PZ player save (engine-managed) | Server validates, client reads |
+| 2. Player ModData | Per-character scalar state (rep, cash, prefs) | PZ player save (engine-managed) | Server validates, client reads |
+| 2b. Player File Store | Per-character growth-prone arrays (watchlist, alerts, orders, holdings) | `<Zomboid>/Lua/POSNET/player_<username>.dat` | Client writes, flush-on-mutate |
 | 3. Event Logs | Historical append-only records | `<Zomboid>/Lua/POSNET/` on disk | Server-only writes, disposable |
 
 ---
@@ -47,7 +48,7 @@ Older entries are discarded FIFO when caps are exceeded.
 
 ## Layer 2: Player ModData
 
-Tiny character-bound state. Kept deliberately small to avoid save bloat across many players on a server.
+Tiny character-bound scalar state. Kept deliberately small to avoid save bloat across many players on a server. Growth-prone arrays (watchlist, alerts, orders, holdings) are stored in Layer 2b instead.
 
 ### Schema
 
@@ -55,17 +56,42 @@ Tiny character-bound state. Kept deliberately small to avoid save bloat across m
 |-------|------|---------|
 | `rep` | integer | Current reputation score |
 | `cash` | integer | Cash balance (dollars) |
-| `watchlist` | table (category IDs) | Player's watched commodity categories |
-| `openOrders` | table (order stubs) | Active buy/sell orders (max bounded) |
-| `holdings` | table (position stubs) | Current investment/portfolio positions |
 | `intelAccess` | table (category IDs) | Categories player has gathered intel on |
-| `alerts` | table (alert entries) | Market alerts, capped at 20 |
 | `uiPrefs` | table | Terminal colour theme, font size, panel toggles |
 | `lastMarketSyncDay` | integer | Last game day the player received a market snapshot |
+| `fileStoreMigrated` | boolean | Guard flag — true once arrays migrated to Layer 2b |
 
 ### Storage Location
 
 Inside the player character save, managed by the engine via `player:getModData()`.
+
+---
+
+## Layer 2b: Player File Store
+
+Per-player flat file for growth-prone arrays. Externalised from modData to prevent save bloat in long-running games. Managed by `POS_PlayerFileStore.lua`.
+
+### Schema
+
+| Section | Fields | Purpose |
+|---------|--------|---------|
+| `[WATCHLIST]` | `categoryId\|addedDay\|lastSnapshotAvg\|lastSnapshotDay` | Watched commodity categories with price snapshots |
+| `[ALERTS]` | `categoryId\|changePercent\|oldAvg\|newAvg\|day\|acknowledged` | Price alerts, capped at `MAX_PLAYER_ALERTS` |
+| `[ORDERS]` | *(future)* | Active buy/sell orders |
+| `[HOLDINGS]` | *(future)* | Current investment/portfolio positions |
+
+### Storage Location
+
+```
+<Zomboid user folder>/Lua/POSNET/player_<username>.dat
+```
+
+### Behaviour
+
+- **Lazy load**: Data is read from file on first access per session, then cached in memory.
+- **Flush on mutate**: Every add/remove/update writes the full file immediately (same pattern as building/mailbox cache writes).
+- **Migration**: On first load, if no `.dat` file exists, legacy arrays are copied from player modData (Layer 2) and the modData arrays are cleared. A `fileStoreMigrated` flag prevents re-migration.
+- **Disposable**: If deleted, watchlist and alert history are lost but the system continues to function (player can re-add watches).
 
 ---
 
@@ -282,4 +308,4 @@ Wear further reduces confidence at -100 BPS per wear point. When wear reaches 10
 | Binary formats | Not human-readable, not debuggable, unnecessary for the data sizes involved. |
 | Per-player market state copies | Violates single-source-of-truth. Market state lives in world ModData only. |
 | Unbounded arrays | Guaranteed save bloat over long-running servers. Every array must have a cap. |
-| `getFileWriter()` for economy database | Economy state belongs in world ModData (engine-managed, save-consistent). File I/O is reserved for disposable event logs only. |
+| `getFileWriter()` for economy database | Economy state belongs in world ModData (engine-managed, save-consistent). File I/O is reserved for disposable/supplementary data (event logs, player file store, discovery caches). |

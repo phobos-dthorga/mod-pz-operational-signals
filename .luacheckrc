@@ -80,6 +80,7 @@ globals = {
     "POS_PriceEngine",
     "POS_WorldState",
     "POS_PlayerState",
+    "POS_PlayerFileStore",
     "POS_BasisPoints",
     "POS_EventLog",
     "POS_PassiveRecon",
