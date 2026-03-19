@@ -96,12 +96,7 @@ local function buildNoteTooltipLines(item)
         for entry in itemsStr:gmatch("[^|]+") do
             local fullType, priceStr = entry:match("([^:]+):(.+)")
             if fullType and priceStr then
-                local displayName = fullType
-                local script = ScriptManager.instance and ScriptManager.instance:getItem(fullType)
-                if script then
-                    local dn = script:getDisplayName()
-                    if dn then displayName = dn end
-                end
+                local displayName = PhobosLib.getItemDisplayName(fullType)
                 lines[#lines + 1] = { text = "  " .. displayName .. " - " .. PhobosLib.formatPrice(tonumber(priceStr)),
                     r = COL_ITEM.r, g = COL_ITEM.g, b = COL_ITEM.b }
             end

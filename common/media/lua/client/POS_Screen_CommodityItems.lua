@@ -32,21 +32,8 @@ require "POS_API"
 
 ---------------------------------------------------------------
 
---- Resolve a display name for a fullType via ScriptManager.
---- @param fullType string e.g. "Base.Hammer"
---- @return string Display name or the fullType as fallback
-local function getItemDisplayName(fullType)
-    local ok, item = pcall(function()
-        return ScriptManager.instance:getItem(fullType)
-    end)
-    if ok and item then
-        local name = item:getDisplayName()
-        if name and name ~= "" then return name end
-    end
-    -- Strip module prefix for a cleaner fallback
-    local short = fullType:match("%.(.+)$")
-    return short or fullType
-end
+--- Resolve a display name for a fullType via PhobosLib.
+local getItemDisplayName = PhobosLib.getItemDisplayName
 
 ---------------------------------------------------------------
 
