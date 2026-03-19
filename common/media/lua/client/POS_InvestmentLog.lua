@@ -16,23 +16,23 @@
 
 ---------------------------------------------------------------
 -- POS_InvestmentLog.lua
--- Client-side investment tracking and persistence.
+-- Client-side investment tracking — persistence layer.
 --
 -- Stores two types of data in player modData:
---   POS_Opportunities — available BBS investment posts (global, broadcast)
---   POS_Investments   — player's personal investment records
+--   POS_Constants.MODDATA_OPPORTUNITIES — available BBS investment posts
+--   POS_Constants.MODDATA_INVESTMENTS   — player's personal investment records
 --
 -- Opportunities are transient (expire, replaced by new broadcasts).
 -- Investments persist until resolved (matured or defaulted).
+-- All business logic (funding, expiry, resolution) is in
+-- POS_InvestmentService.
 ---------------------------------------------------------------
 
 require "PhobosLib"
 require "POS_Constants"
+require "POS_InvestmentService"
 
 POS_InvestmentLog = {}
-
-local OPPORTUNITIES_KEY = "POS_Opportunities"
-local INVESTMENTS_KEY = "POS_Investments"
 
 ---------------------------------------------------------------
 -- ModData accessors
@@ -52,6 +52,12 @@ local function getStore(key)
     return md[key]
 end
 
+--- Public accessor for opportunities store (used by POS_InvestmentService).
+---@return table Array of opportunity tables
+function POS_InvestmentLog.getOpportunitiesStore()
+    return getStore(POS_Constants.MODDATA_OPPORTUNITIES)
+end
+
 ---------------------------------------------------------------
 -- Opportunities (available BBS posts)
 ---------------------------------------------------------------
@@ -62,7 +68,7 @@ end
 function POS_InvestmentLog.addOpportunity(opportunity)
     if not opportunity or not opportunity.id then return false end
 
-    local opps = getStore(OPPORTUNITIES_KEY)
+    local opps = getStore(POS_Constants.MODDATA_OPPORTUNITIES)
 
     -- Check for duplicate
     for i = 1, #opps do
@@ -80,14 +86,15 @@ end
 --- Get all open (non-expired) opportunities.
 ---@return table Array of opportunity tables
 function POS_InvestmentLog.getOpenOpportunities()
-    local opps = getStore(OPPORTUNITIES_KEY)
+    local opps = getStore(POS_Constants.MODDATA_OPPORTUNITIES)
     local gameTime = getGameTime()
     local currentDay = gameTime and gameTime:getNightsSurvived() or 0
     local results = {}
 
     for i = 1, #opps do
         local opp = opps[i]
-        if opp.status == "open" and (not opp.expiryDay or opp.expiryDay > currentDay) then
+        if opp.status == POS_Constants.OPP_STATUS_OPEN
+           and (not opp.expiryDay or opp.expiryDay > currentDay) then
             table.insert(results, opp)
         end
     end
@@ -99,7 +106,7 @@ end
 ---@param opportunityId string
 ---@return table|nil
 function POS_InvestmentLog.getOpportunity(opportunityId)
-    local opps = getStore(OPPORTUNITIES_KEY)
+    local opps = getStore(POS_Constants.MODDATA_OPPORTUNITIES)
     for i = 1, #opps do
         if opps[i].id == opportunityId then
             return opps[i]
@@ -109,27 +116,23 @@ function POS_InvestmentLog.getOpportunity(opportunityId)
 end
 
 --- Mark an opportunity as funded (invested).
+--- Delegates to POS_InvestmentService.
 ---@param opportunityId string
 function POS_InvestmentLog.markOpportunityFunded(opportunityId)
     local opp = POS_InvestmentLog.getOpportunity(opportunityId)
     if opp then
-        opp.status = "funded"
+        POS_InvestmentService.fundOpportunity(opp)
     end
 end
 
---- Expire old opportunities. Called periodically.
+--- Expire old opportunities.
+--- Delegates to POS_InvestmentService.
 function POS_InvestmentLog.expireOpportunities()
-    local opps = getStore(OPPORTUNITIES_KEY)
+    local opps = getStore(POS_Constants.MODDATA_OPPORTUNITIES)
     local gameTime = getGameTime()
     if not gameTime then return end
     local currentDay = gameTime:getNightsSurvived()
-
-    for i = 1, #opps do
-        local opp = opps[i]
-        if opp.status == "open" and opp.expiryDay and opp.expiryDay <= currentDay then
-            opp.status = "expired"
-        end
-    end
+    POS_InvestmentService.expireOpportunities(opps, currentDay)
 end
 
 ---------------------------------------------------------------
@@ -137,6 +140,7 @@ end
 ---------------------------------------------------------------
 
 --- Record a player's investment.
+--- Uses POS_InvestmentService to create the record.
 ---@param opportunityId string The opportunity being invested in
 ---@param principalAmount number Amount invested
 ---@param returnAmount number Expected return on success
@@ -146,21 +150,14 @@ end
 function POS_InvestmentLog.recordInvestment(opportunityId, principalAmount,
     returnAmount, maturityDay, actualRisk, posterName)
 
-    local investments = getStore(INVESTMENTS_KEY)
+    local investments = getStore(POS_Constants.MODDATA_INVESTMENTS)
 
     local gameTime = getGameTime()
     local currentDay = gameTime and gameTime:getNightsSurvived() or 0
 
-    local record = {
-        investmentId = opportunityId,
-        posterName = posterName or "Unknown",
-        principalAmount = principalAmount,
-        returnAmount = returnAmount,
-        investedDay = currentDay,
-        maturityDay = maturityDay,
-        actualRisk = actualRisk,
-        status = "active",
-    }
+    local record = POS_InvestmentService.createInvestmentRecord(
+        opportunityId, principalAmount, returnAmount,
+        maturityDay, actualRisk, posterName, currentDay)
 
     table.insert(investments, record)
     POS_ScreenManager.markDirty()
@@ -171,7 +168,7 @@ end
 --- Get all player investments.
 ---@return table Array of investment records
 function POS_InvestmentLog.getAllInvestments()
-    return getStore(INVESTMENTS_KEY)
+    return getStore(POS_Constants.MODDATA_INVESTMENTS)
 end
 
 --- Get investments filtered by status.
@@ -194,7 +191,7 @@ function POS_InvestmentLog.countActiveInvestments()
     local all = POS_InvestmentLog.getAllInvestments()
     local count = 0
     for i = 1, #all do
-        if all[i].status == "active" then
+        if all[i].status == POS_Constants.INV_STATUS_ACTIVE then
             count = count + 1
         end
     end
@@ -202,14 +199,16 @@ function POS_InvestmentLog.countActiveInvestments()
 end
 
 --- Resolve an investment (called when server sends InvestmentResolved).
+--- Delegates status mutation to POS_InvestmentService.
 ---@param investmentId string
----@param status string "matured" or "defaulted"
+---@param status string POS_Constants.INV_STATUS_MATURED or INV_STATUS_DEFAULTED
 ---@return table|nil The resolved investment record
 function POS_InvestmentLog.resolveInvestment(investmentId, status)
     local all = POS_InvestmentLog.getAllInvestments()
     for i = 1, #all do
-        if all[i].investmentId == investmentId and all[i].status == "active" then
-            all[i].status = status
+        if all[i].investmentId == investmentId
+           and all[i].status == POS_Constants.INV_STATUS_ACTIVE then
+            POS_InvestmentService.resolveInvestment(all[i], status)
             POS_ScreenManager.markDirty()
             PhobosLib.debug("POS", "[InvLog] Investment resolved: " .. investmentId
                 .. " → " .. status)
@@ -223,25 +222,12 @@ end
 -- Tick handler
 ---------------------------------------------------------------
 
---- Periodic housekeeping — expire old opportunities.
-local lastCheckHour = -1
-
-function POS_InvestmentLog.onEveryOneMinute()
-    local gameTime = getGameTime()
-    if not gameTime then return end
-    local hour = gameTime:getHour()
-    if hour == lastCheckHour then return end
-    lastCheckHour = hour
-
-    POS_InvestmentLog.expireOpportunities()
-end
-
 ---------------------------------------------------------------
 -- Initialisation
 ---------------------------------------------------------------
 
 function POS_InvestmentLog.init()
-    Events.EveryOneMinute.Add(POS_InvestmentLog.onEveryOneMinute)
+    POS_InvestmentService.init()
 
     -- Request any pending payouts from server (offline resolution)
     local player = getSpecificPlayer(0)

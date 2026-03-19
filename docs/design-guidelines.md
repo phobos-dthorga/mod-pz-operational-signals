@@ -333,6 +333,46 @@ Every screen must follow this structure:
 - Values that affect game balance should be sandbox-configurable if the benefit is
   MEDIUM or higher. Use `POS_Sandbox` accessors with the constant as fallback.
 
+### 7.5 UI / Business Logic Separation
+
+Screen files (`client/POS_Screen_*.lua`) are **presentation only**. They must:
+
+- **Read** data from services and logs (query, format, display).
+- **Delegate** all state mutations to shared service modules.
+- **Never** set `op.status`, mutate objectives, grant reputation, pay rewards,
+  apply penalties, roll chances, or perform any game-state side effects directly.
+
+All business logic must live in **shared service modules** (`shared/POS_*Service.lua`):
+
+| Service                    | Responsibility                                       |
+|----------------------------|------------------------------------------------------|
+| `POS_OperationService`     | Operation lifecycle: generate, activate, complete, cancel, expire, tick |
+| `POS_NegotiationService`   | Haggling: attempt rolls, reward/deadline adjustments  |
+| `POS_InvestmentService`    | Investment lifecycle: fund, expire, create records, resolve |
+| `POS_MarketNoteGenerator`  | Market note creation: populate modData, build readable docs |
+
+Screen button callbacks should be **one-liners** that call a service function:
+
+```lua
+-- Good: delegate to service
+POS_OperationService.completeOperation(op, player)
+
+-- Bad: inline business logic in screen
+op.objectives[1].completed = true
+op.status = "completed"
+POS_RewardCalculator.payReward(player, op.scaledReward, op.baseReputation)
+```
+
+This separation ensures:
+
+1. Business rules are testable and reusable without UI dependencies.
+2. Multiple screens or entry points (terminal, context menu, tick handler) share
+   the same logic path — no risk of divergent behaviour.
+3. Screen files remain short, readable, and focused on layout.
+
+Generic utilities that benefit multiple Phobos mods (e.g. `rollChance`,
+`getItemDisplayName`) belong in **PhobosLib**, not in POSnet services.
+
 ---
 
 ## 8. Screen Stack Architecture

@@ -120,7 +120,7 @@ function screen.create(contentPanel, _params, _terminal)
 
     local investments = {}
     if POS_InvestmentLog then
-        investments = POS_InvestmentLog.getInvestmentsByStatus("active")
+        investments = POS_InvestmentLog.getInvestmentsByStatus(POS_Constants.INV_STATUS_ACTIVE)
     end
 
     if #investments == 0 then
@@ -147,8 +147,8 @@ function screen.create(contentPanel, _params, _terminal)
     local matured = {}
     local defaulted = {}
     if POS_InvestmentLog then
-        matured = POS_InvestmentLog.getInvestmentsByStatus("matured")
-        defaulted = POS_InvestmentLog.getInvestmentsByStatus("defaulted")
+        matured = POS_InvestmentLog.getInvestmentsByStatus(POS_Constants.INV_STATUS_MATURED)
+        defaulted = POS_InvestmentLog.getInvestmentsByStatus(POS_Constants.INV_STATUS_DEFAULTED)
     end
 
     if #matured > 0 or #defaulted > 0 then

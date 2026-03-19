@@ -31,6 +31,7 @@ require "POS_RewardCalculator"
 require "POS_BuildingCache"
 require "POS_MapMarkers"
 require "POS_OperationLog"
+require "POS_OperationService"
 require "PhobosLib_Pagination"
 require "PhobosLib_Address"
 require "POS_API"
@@ -61,7 +62,7 @@ local TIER_COLOURS = {
 
 local function getActiveRecon()
     if not POS_OperationLog then return nil end
-    local ops = POS_OperationLog.getByStatus("active")
+    local ops = POS_OperationLog.getByStatus(POS_Constants.STATUS_ACTIVE)
     for _, op in ipairs(ops) do
         if op.objectives and op.objectives[1]
            and op.objectives[1].type == POS_Constants.MISSION_TYPE_RECON then
@@ -81,7 +82,7 @@ local function getAvailableRecons()
     local maxTier = band == "tactical" and 4 or 2
 
     local results = {}
-    local ops = POS_OperationLog.getByStatus("available")
+    local ops = POS_OperationLog.getByStatus(POS_Constants.STATUS_AVAILABLE)
     for _, op in ipairs(ops) do
         if op.objectives and op.objectives[1]
            and op.objectives[1].type == POS_Constants.MISSION_TYPE_RECON then
@@ -97,13 +98,9 @@ local function getAvailableRecons()
        and POS_Sandbox.isReconEnabled() then
         local player = getSpecificPlayer(0)
         if player then
-            local op = POS_ReconGenerator.generate(player)
-            if op and POS_OperationLog then
-                local tier = op.tier or 1
-                if tier >= minTier and tier <= maxTier then
-                    POS_OperationLog.addOperation(op)
-                    table.insert(results, op)
-                end
+            local op = POS_OperationService.generateAndRegister(player, minTier, maxTier)
+            if op then
+                table.insert(results, op)
             end
         end
     end
@@ -114,7 +111,7 @@ end
 local function getCompletedRecons()
     if not POS_OperationLog then return {} end
     local results = {}
-    local ops = POS_OperationLog.getByStatus("completed")
+    local ops = POS_OperationLog.getByStatus(POS_Constants.STATUS_COMPLETED)
     for _, op in ipairs(ops) do
         if op.objectives and op.objectives[1]
            and op.objectives[1].type == POS_Constants.MISSION_TYPE_RECON then
@@ -246,43 +243,12 @@ function screen.create(contentPanel, _params, _terminal)
                         local p = getSpecificPlayer(0)
                         if not p then return end
 
-                        -- Remove the FieldReport from inventory
-                        local pInv = p:getInventory()
-                        if pInv then
-                            pcall(function()
-                                local reportItems = pInv:getItemsFromFullType(
-                                    POS_Constants.ITEM_FIELD_REPORT)
-                                if reportItems then
-                                    for i = 0, reportItems:size() - 1 do
-                                        local rItem = reportItems:get(i)
-                                        local rMd = rItem:getModData()
-                                        if rMd and rMd.POS_OperationId == activeId then
-                                            pInv:Remove(rItem)
-                                            break
-                                        end
-                                    end
-                                end
-                            end)
-                        end
+                        local op = POS_OperationLog and POS_OperationLog.get(activeId)
+                        if not op then return end
 
-                        -- Pay reward and grant reputation
-                        POS_RewardCalculator.payReward(p, activeReward, activeRep)
-
-                        -- Remove map marker
-                        if POS_MapMarkers then
-                            POS_MapMarkers.removeMarker(activeId)
-                        end
-
-                        -- Complete the operation
-                        if POS_OperationLog then
-                            local op = POS_OperationLog.get(activeId)
-                            if op and op.objectives and op.objectives[1] then
-                                op.objectives[1].completed = true
-                            end
-                            -- Note: don't call completeOperation() here as it would
-                            -- double-pay. Just set status directly.
-                            if op then op.status = "completed" end
-                        end
+                        -- Consume report, pay reward, grant rep, remove marker
+                        POS_OperationService.consumeFieldReport(p, activeId)
+                        POS_OperationService.completeOperation(op, p)
 
                         p:Say(W.safeGetText("UI_POS_Ops_TurnInComplete",
                             tostring(activeReward),
@@ -337,7 +303,7 @@ function screen.create(contentPanel, _params, _terminal)
             local currentPage = (_params and _params.opsPage) or 1
             ctx.y = PhobosLib_Pagination.create(ctx.panel, {
                 items = available,
-                pageSize = 5,
+                pageSize = POS_Constants.OPERATIONS_PAGE_SIZE,
                 currentPage = currentPage,
                 x = ctx.btnX,
                 y = ctx.y,
@@ -364,15 +330,11 @@ function screen.create(contentPanel, _params, _terminal)
                                     { operationId = opId })
                             else
                                 -- Direct accept (negotiation disabled)
-                                if POS_OperationLog and POS_OperationLog.get then
-                                    local operation = POS_OperationLog.get(opId)
-                                    if operation then
-                                        operation.status = "active"
-                                        if POS_MapMarkers then
-                                            POS_MapMarkers.placeMarker(operation)
-                                        end
-                                        POS_ScreenManager.markDirty()
-                                    end
+                                local operation = POS_OperationLog
+                                    and POS_OperationLog.get(opId)
+                                if operation then
+                                    POS_OperationService.activateOperation(operation)
+                                    POS_ScreenManager.markDirty()
                                 end
                             end
                         end)
@@ -399,7 +361,7 @@ function screen.create(contentPanel, _params, _terminal)
 
         local shown = 0
         for i = #completed, 1, -1 do
-            if shown >= 5 then break end
+            if shown >= POS_Constants.OPERATIONS_COMPLETED_DISPLAY then break end
             local op = completed[i]
             local tierColour = TIER_COLOURS[op.tier or 1] or C.text
             local line = "  [OK] [T" .. (op.tier or "?") .. "] "
@@ -425,7 +387,7 @@ screen.getContextData = function(_params)
     local data = {}
     -- Show active mission info if available
     local active = POS_OperationLog and POS_OperationLog.getByStatus
-        and POS_OperationLog.getByStatus("active")
+        and POS_OperationLog.getByStatus(POS_Constants.STATUS_ACTIVE)
     if active and #active > 0 then
         local op = active[1]
         table.insert(data, { type = "header", text = "UI_POS_Context_MissionInfo" })

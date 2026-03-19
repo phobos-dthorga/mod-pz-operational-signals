@@ -24,6 +24,7 @@
 
 require "PhobosLib"
 require "POS_Constants"
+require "POS_MarketNoteGenerator"
 
 POS_CraftCallbacks = POS_CraftCallbacks or {}
 
@@ -70,9 +71,11 @@ function POS_CraftCallbacks.onCreateFieldReport(items, result, player)
 
     -- Damage writing implement
     local chancePct = POS_Sandbox and POS_Sandbox.getWritingDamageChance
-        and POS_Sandbox.getWritingDamageChance() or 20
+        and POS_Sandbox.getWritingDamageChance()
+        or POS_Constants.WRITING_DAMAGE_CHANCE_DEFAULT
     local damageAmt = POS_Sandbox and POS_Sandbox.getWritingDamageAmount
-        and POS_Sandbox.getWritingDamageAmount() or 7
+        and POS_Sandbox.getWritingDamageAmount()
+        or POS_Constants.WRITING_DAMAGE_AMOUNT_DEFAULT
 
     local inv = player:getInventory()
     if inv then
@@ -81,7 +84,10 @@ function POS_CraftCallbacks.onCreateFieldReport(items, result, player)
                 local fullType = item:getFullType()
                 if WRITING_IMPLEMENTS[fullType] then
                     local damaged = PhobosLib.damageItemCondition(
-                        item, math.max(1, damageAmt - 2), damageAmt + 2, chancePct)
+                        item,
+                        math.max(1, damageAmt - POS_Constants.WRITING_DAMAGE_VARIANCE_OFFSET),
+                        damageAmt + POS_Constants.WRITING_DAMAGE_VARIANCE_OFFSET,
+                        chancePct)
                     if damaged then
                         PhobosLib.debug("POS", "[CraftCallback] Writing implement damaged: " .. fullType)
                     end
@@ -149,7 +155,8 @@ function POS_CraftCallbacks.onCreateVHSReviewNote(items, result, player)
     local tape = nil
     if items and PhobosLib.iterateItems then
         PhobosLib.iterateItems(items, function(item)
-            if POS_TapeManager and POS_TapeManager.isUsableTape and POS_TapeManager.isUsableTape(item) then
+            if POS_TapeManager and POS_TapeManager.isUsableTape
+                    and POS_TapeManager.isUsableTape(item) then
                 tape = item
                 return true  -- stop iteration
             end
@@ -157,76 +164,39 @@ function POS_CraftCallbacks.onCreateVHSReviewNote(items, result, player)
     end
 
     -- Get tape modData for entry info
-    local tapeId = nil
     local tapeMd = tape and PhobosLib.getModData(tape)
-    if tapeMd then
-        tapeId = tapeMd[POS_Constants.MD_TAPE_ID]
-    end
 
-    -- Build note modData from tape context
-    local md = result:getModData()
-    if not md then return end
-
-    md[POS_Constants.MD_NOTE_TYPE] = "market"
-    md[POS_Constants.MD_NOTE_SOURCE] = POS_Constants.VHS_REVIEW_SOURCE_LABEL
-    md[POS_Constants.MD_NOTE_RECORDED] = getGameTime():getNightsSurvived()
-
-    -- Get tape region for location context
-    local region = tapeMd and tapeMd[POS_Constants.MD_TAPE_REGION] or "Unknown"
-    md[POS_Constants.MD_NOTE_LOCATION] = region
-
-    -- Determine category from tape region or use a default
-    local categoryId = "tools"  -- fallback
+    -- Determine category from tape region
+    local region = tapeMd and tapeMd[POS_Constants.MD_TAPE_REGION]
+        or PhobosLib.safeGetText("UI_POS_Market_Unknown")
+    local categoryId = "tools"
     if POS_RoomCategoryMap and tapeMd then
         local inferredCat = POS_RoomCategoryMap.getCategory(region)
         if inferredCat then categoryId = inferredCat end
     end
-    md[POS_Constants.MD_NOTE_CATEGORY] = categoryId
-
-    -- Generate items and prices for the category
-    local poolSize = POS_Sandbox and POS_Sandbox.getItemSelectionPoolSize
-        and POS_Sandbox.getItemSelectionPoolSize() or 3
-    local ctx = { sourceTier = POS_Constants.SOURCE_TIER_FIELD }
-    local selectedItems = POS_ItemPool and POS_ItemPool.selectItems(categoryId, poolSize, ctx)
-    if selectedItems and #selectedItems > 0
-            and POS_PriceEngine and POS_PriceEngine.generatePrices then
-        local prices = POS_PriceEngine.generatePrices(selectedItems, categoryId, ctx)
-        if prices and #prices > 0 then
-            local itemData = {}
-            for i, p in ipairs(prices) do
-                itemData[i] = p.fullType .. ":" .. tostring(p.price)
-            end
-            md[POS_Constants.MD_NOTE_ITEMS] = table.concat(itemData, "|")
-        end
-    end
 
     -- Apply tape quality to confidence
-    local confidence = "medium"
+    local confidence = POS_Constants.CONFIDENCE_MEDIUM
     if tape and POS_TapeManager and POS_TapeManager.getConfidenceMod then
         local confMod = POS_TapeManager.getConfidenceMod(tape)
-        if confMod <= POS_Constants.VHS_CONFIDENCE_MOD_IMPROVISED then
-            confidence = "low"
-        elseif confMod <= POS_Constants.VHS_CONFIDENCE_MOD_SPLICED then
-            confidence = "low"
+        if confMod <= POS_Constants.VHS_CONFIDENCE_MOD_SPLICED then
+            confidence = POS_Constants.CONFIDENCE_LOW
         elseif confMod <= POS_Constants.VHS_CONFIDENCE_MOD_REFURBISHED then
-            confidence = "medium"
+            confidence = POS_Constants.CONFIDENCE_MEDIUM
         else
-            confidence = "high"
-        end
-    end
-    md[POS_Constants.MD_NOTE_CONFIDENCE] = confidence
-
-    -- Generate a price estimate
-    if POS_PriceEngine and POS_PriceEngine.generatePrice then
-        local priceItems = POS_ItemPool and POS_ItemPool.getItemsForCategory(categoryId)
-        if priceItems and #priceItems > 0 then
-            local item = priceItems[ZombRand(#priceItems) + 1]
-            md[POS_Constants.MD_NOTE_PRICE] = POS_PriceEngine.generatePrice(item.fullType, categoryId, ctx)
+            confidence = POS_Constants.CONFIDENCE_HIGH
         end
     end
 
-    -- Stock level from tape data
-    md[POS_Constants.MD_NOTE_STOCK] = "medium"
+    -- Populate note modData via shared generator
+    local ctx = { sourceTier = POS_Constants.SOURCE_TIER_FIELD }
+    POS_MarketNoteGenerator.populateNoteModData(result, categoryId, region, confidence, ctx)
+
+    -- Override source to VHS review label (generator sets a procedural name)
+    local md = result:getModData()
+    if md then
+        md[POS_Constants.MD_NOTE_SOURCE] = POS_Constants.VHS_REVIEW_SOURCE_LABEL
+    end
 
     -- Decrement tape entry count
     if tapeMd then
@@ -239,11 +209,13 @@ function POS_CraftCallbacks.onCreateVHSReviewNote(items, result, player)
         POS_NoteTooltip.applyToNote(result)
     end
 
-    -- Damage writing implement (same pattern as field note creation)
+    -- Damage writing implement
     local chancePct = POS_Sandbox and POS_Sandbox.getWritingDamageChance
-        and POS_Sandbox.getWritingDamageChance() or 20
+        and POS_Sandbox.getWritingDamageChance()
+        or POS_Constants.WRITING_DAMAGE_CHANCE_DEFAULT
     local damageAmt = POS_Sandbox and POS_Sandbox.getWritingDamageAmount
-        and POS_Sandbox.getWritingDamageAmount() or 7
+        and POS_Sandbox.getWritingDamageAmount()
+        or POS_Constants.WRITING_DAMAGE_AMOUNT_DEFAULT
 
     if items and PhobosLib.iterateItems then
         PhobosLib.iterateItems(items, function(item)
@@ -251,7 +223,10 @@ function POS_CraftCallbacks.onCreateVHSReviewNote(items, result, player)
                 local fullType = item:getFullType()
                 if WRITING_IMPLEMENTS[fullType] then
                     local damaged = PhobosLib.damageItemCondition(
-                        item, math.max(1, damageAmt - 2), damageAmt + 2, chancePct)
+                        item,
+                        math.max(1, damageAmt - POS_Constants.WRITING_DAMAGE_VARIANCE_OFFSET),
+                        damageAmt + POS_Constants.WRITING_DAMAGE_VARIANCE_OFFSET,
+                        chancePct)
                     if damaged then
                         PhobosLib.debug("POS", "[CraftCallback] Writing implement damaged: " .. fullType)
                     end

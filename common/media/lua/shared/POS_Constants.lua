@@ -546,3 +546,121 @@ POS_Constants.INTEL_STATE_WRONG_LOCATION = "wrong_location"
 POS_Constants.INTEL_STATE_DANGER_NEARBY  = "danger_nearby"
 POS_Constants.INTEL_STATE_MISSING_ITEMS  = "missing_items"
 POS_Constants.INTEL_STATE_ON_COOLDOWN    = "on_cooldown"
+
+---------------------------------------------------------------
+-- Operation statuses
+---------------------------------------------------------------
+
+POS_Constants.STATUS_AVAILABLE = "available"
+POS_Constants.STATUS_ACTIVE    = "active"
+POS_Constants.STATUS_COMPLETED = "completed"
+POS_Constants.STATUS_EXPIRED   = "expired"
+POS_Constants.STATUS_FAILED    = "failed"
+POS_Constants.STATUS_CANCELLED = "cancelled"
+
+---------------------------------------------------------------
+-- Opportunity statuses
+---------------------------------------------------------------
+
+POS_Constants.OPP_STATUS_OPEN    = "open"
+POS_Constants.OPP_STATUS_FUNDED  = "funded"
+POS_Constants.OPP_STATUS_EXPIRED = "expired"
+
+---------------------------------------------------------------
+-- Investment statuses
+---------------------------------------------------------------
+
+POS_Constants.INV_STATUS_ACTIVE    = "active"
+POS_Constants.INV_STATUS_MATURED   = "matured"
+POS_Constants.INV_STATUS_DEFAULTED = "defaulted"
+
+---------------------------------------------------------------
+-- Stock levels
+---------------------------------------------------------------
+
+POS_Constants.STOCK_NONE   = "none"
+POS_Constants.STOCK_LOW    = "low"
+POS_Constants.STOCK_MEDIUM = "medium"
+POS_Constants.STOCK_HIGH   = "high"
+
+---------------------------------------------------------------
+-- Confidence levels
+---------------------------------------------------------------
+
+POS_Constants.CONFIDENCE_LOW    = "low"
+POS_Constants.CONFIDENCE_MEDIUM = "medium"
+POS_Constants.CONFIDENCE_HIGH   = "high"
+
+---------------------------------------------------------------
+-- Negotiation parameters
+---------------------------------------------------------------
+
+POS_Constants.NEGOTIATE_MAX_ATTEMPTS     = 3
+POS_Constants.NEGOTIATE_REWARD_BONUS_PCT = 20
+POS_Constants.NEGOTIATE_REWARD_CUT_PCT   = 15
+POS_Constants.NEGOTIATE_DAY_REDUCTION    = 1
+POS_Constants.NEGOTIATE_DAY_EXTENSION    = 2
+POS_Constants.NEGOTIATE_TIER_CHANCES     = { 30, 50, 70, 85, 85 }
+
+---------------------------------------------------------------
+-- Market recon thresholds
+---------------------------------------------------------------
+
+POS_Constants.STOCK_THRESHOLD_NONE           = 10
+POS_Constants.STOCK_THRESHOLD_LOW            = 40
+POS_Constants.STOCK_THRESHOLD_MEDIUM         = 75
+POS_Constants.CONFIDENCE_TIER_HIGH           = 4
+POS_Constants.CONFIDENCE_TIER_MEDIUM         = 2
+POS_Constants.ITEM_SELECTION_POOL_SIZE_DEFAULT = 3
+POS_Constants.CHARACTER_MUMBLE_CHANCE        = 300
+
+---------------------------------------------------------------
+-- Writing tool damage defaults
+---------------------------------------------------------------
+
+POS_Constants.WRITING_DAMAGE_CHANCE_DEFAULT  = 20
+POS_Constants.WRITING_DAMAGE_AMOUNT_DEFAULT  = 7
+POS_Constants.WRITING_DAMAGE_VARIANCE        = 5
+POS_Constants.WRITING_DAMAGE_VARIANCE_OFFSET = 2
+
+---------------------------------------------------------------
+-- Persistence modData keys (operations / investments)
+---------------------------------------------------------------
+
+POS_Constants.MODDATA_OPERATIONS    = "POS_Operations"
+POS_Constants.MODDATA_OPPORTUNITIES = "POS_Opportunities"
+POS_Constants.MODDATA_INVESTMENTS   = "POS_Investments"
+
+---------------------------------------------------------------
+-- Operations display
+---------------------------------------------------------------
+
+POS_Constants.OPERATIONS_PAGE_SIZE              = 5
+POS_Constants.OPERATIONS_COMPLETED_DISPLAY      = 5
+POS_Constants.EXPIRY_REPUTATION_PENALTY_DEFAULT = 25
+
+---------------------------------------------------------------
+-- Objective types
+---------------------------------------------------------------
+
+POS_Constants.OBJECTIVE_TYPE_DELIVERY = "delivery"
+
+---------------------------------------------------------------
+-- Market note category base prices (fallback when PriceEngine
+-- or ItemPool are not yet initialised)
+---------------------------------------------------------------
+
+POS_Constants.MARKET_NOTE_BASE_PRICES = {
+    fuel       = 8.0,
+    medicine   = 12.0,
+    food       = 5.0,
+    ammunition = 15.0,
+    tools      = 10.0,
+    radio      = 20.0,
+    chemicals  = 18.0,
+    agriculture = 6.0,
+    biofuel    = 9.0,
+    specimens  = 25.0,
+    biohazard  = 30.0,
+}
+POS_Constants.MARKET_NOTE_BASE_PRICE_DEFAULT = 10.0

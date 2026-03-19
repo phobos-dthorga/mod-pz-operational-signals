@@ -121,12 +121,12 @@ function POS_InvestmentResolver.resolveMatured()
             local returnAmount = 0
 
             if roll < entry.actualRisk then
-                status = "defaulted"
+                status = POS_Constants.INV_STATUS_DEFAULTED
                 PhobosLib.debug("POS", "[InvResolver] DEFAULTED: " .. entry.investmentId
                     .. " (roll=" .. string.format("%.3f", roll)
                     .. " < risk=" .. string.format("%.3f", entry.actualRisk) .. ")")
             else
-                status = "matured"
+                status = POS_Constants.INV_STATUS_MATURED
                 returnAmount = entry.returnAmount
                 PhobosLib.debug("POS", "[InvResolver] MATURED: " .. entry.investmentId
                     .. " (roll=" .. string.format("%.3f", roll)
