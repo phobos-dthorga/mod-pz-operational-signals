@@ -164,18 +164,18 @@ function screen.create(contentPanel, _params, _terminal)
         -- Collect and show last 5 results (most recent first)
         local results = {}
         for _, inv in ipairs(matured) do
-            table.insert(results, { inv = inv, status = "matured" })
+            table.insert(results, { inv = inv, status = POS_Constants.INV_STATUS_MATURED })
         end
         for _, inv in ipairs(defaulted) do
-            table.insert(results, { inv = inv, status = "defaulted" })
+            table.insert(results, { inv = inv, status = POS_Constants.INV_STATUS_DEFAULTED })
         end
 
         local shown = 0
         for i = #results, 1, -1 do
-            if shown >= 5 then break end
+            if shown >= POS_Constants.RECENT_RESULTS_DISPLAY_LIMIT then break end
             local r = results[i]
             local prefix, colour
-            if r.status == "matured" then
+            if r.status == POS_Constants.INV_STATUS_MATURED then
                 prefix = "  [OK] "
                 colour = C.success
             else
@@ -184,7 +184,7 @@ function screen.create(contentPanel, _params, _terminal)
             end
             local line = prefix .. (r.inv.posterName or "???")
                 .. " -- $" .. (r.inv.principalAmount or 0)
-            if r.status == "matured" then
+            if r.status == POS_Constants.INV_STATUS_MATURED then
                 line = line .. " -> $" .. (r.inv.returnAmount or 0) .. " PAID"
             else
                 line = line .. " DEFAULTED"

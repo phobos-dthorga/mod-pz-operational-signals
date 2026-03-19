@@ -42,7 +42,7 @@ local tickCounter = 0
 ---@return table|nil The active recon operation, or nil
 local function getPhotoReadyRecon()
     if not POS_OperationLog then return nil end
-    local ops = POS_OperationLog.getByStatus("active")
+    local ops = POS_OperationLog.getByStatus(POS_Constants.STATUS_ACTIVE)
     for _, op in ipairs(ops) do
         if op.objectives and op.objectives[1]
            and op.objectives[1].type == POS_Constants.MISSION_TYPE_RECON

@@ -80,10 +80,10 @@ end
 --- @return string
 local function generateBroadcastStock()
     local r = ZombRand(100)
-    if r < 15 then return "none" end
-    if r < 45 then return "low" end
-    if r < 80 then return "medium" end
-    return "high"
+    if r < 15 then return POS_Constants.STOCK_NONE end
+    if r < 45 then return POS_Constants.STOCK_LOW end
+    if r < 80 then return POS_Constants.STOCK_MEDIUM end
+    return POS_Constants.STOCK_HIGH
 end
 
 --- Generate a single market intel broadcast packet.

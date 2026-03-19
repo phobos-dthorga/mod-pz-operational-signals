@@ -30,6 +30,7 @@ require "POS_PathTracker"
 require "POS_DeliveryGenerator"
 require "POS_RewardCalculator"
 require "POS_OperationLog"
+require "POS_OperationService"
 require "PhobosLib_Pagination"
 require "PhobosLib_Address"
 require "POS_API"
@@ -53,10 +54,10 @@ end
 --- Find the active delivery from the operation log.
 local function getActiveDelivery()
     if not POS_OperationLog then return nil end
-    local ops = POS_OperationLog.getByStatus("active")
+    local ops = POS_OperationLog.getByStatus(POS_Constants.STATUS_ACTIVE)
     for _, op in ipairs(ops) do
         if op.objectives and op.objectives[1]
-           and op.objectives[1].type == "delivery" then
+           and op.objectives[1].type == POS_Constants.OBJECTIVE_TYPE_DELIVERY then
             return op
         end
     end
@@ -67,10 +68,10 @@ end
 local function getCompletedDeliveries()
     if not POS_OperationLog then return {} end
     local results = {}
-    local ops = POS_OperationLog.getByStatus("completed")
+    local ops = POS_OperationLog.getByStatus(POS_Constants.STATUS_COMPLETED)
     for _, op in ipairs(ops) do
         if op.objectives and op.objectives[1]
-           and op.objectives[1].type == "delivery" then
+           and op.objectives[1].type == POS_Constants.OBJECTIVE_TYPE_DELIVERY then
             table.insert(results, op)
         end
     end
@@ -84,10 +85,10 @@ local function getAvailableDeliveries()
     if not POS_OperationLog then return {} end
 
     local results = {}
-    local ops = POS_OperationLog.getByStatus("available")
+    local ops = POS_OperationLog.getByStatus(POS_Constants.STATUS_AVAILABLE)
     for _, op in ipairs(ops) do
         if op.objectives and op.objectives[1]
-           and op.objectives[1].type == "delivery" then
+           and op.objectives[1].type == POS_Constants.OBJECTIVE_TYPE_DELIVERY then
             table.insert(results, op)
         end
     end
@@ -281,7 +282,7 @@ function screen.create(contentPanel, _params, _terminal)
                                 if POS_OperationLog and POS_OperationLog.get then
                                     local operation = POS_OperationLog.get(opId)
                                     if operation then
-                                        operation.status = "active"
+                                        POS_OperationService.activateOperation(operation)
                                         POS_ScreenManager.markDirty()
                                     end
                                 end
@@ -336,11 +337,11 @@ end
 screen.getContextData = function(_params)
     local data = {}
     local active = POS_OperationLog and POS_OperationLog.getByStatus
-        and POS_OperationLog.getByStatus("active")
+        and POS_OperationLog.getByStatus(POS_Constants.STATUS_ACTIVE)
     if active then
         for _, op in ipairs(active) do
             if op.objectives and op.objectives[1]
-               and op.objectives[1].type == "delivery" then
+               and op.objectives[1].type == POS_Constants.OBJECTIVE_TYPE_DELIVERY then
                 local obj = op.objectives[1]
                 table.insert(data, { type = "header", text = "UI_POS_Context_MissionInfo" })
                 if obj.pickupX and obj.pickupY then

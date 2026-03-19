@@ -241,8 +241,8 @@ function POS_ReconGenerator.generate(player)
                 templateId = target.id,
                 category = "Recon",
                 tier = target.tier,
-                difficulty = ({ "easy", "medium", "hard", "critical" })[target.tier] or "easy",
-                status = "available",
+                difficulty = POS_Constants.DIFFICULTY_LEVELS[target.tier] or POS_Constants.DIFFICULTY_EASY,
+                status = POS_Constants.STATUS_AVAILABLE,
                 nameKey = target.nameKey,
                 descKey = target.descKey,
                 objectives = {

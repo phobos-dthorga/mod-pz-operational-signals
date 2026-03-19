@@ -53,9 +53,9 @@ function screen.create(contentPanel, _params, _terminal)
 
     local reconCount = 0
     local deliveryCount = 0
-    local allOps = POS_OperationLog.getByStatus("active")
+    local allOps = POS_OperationLog.getByStatus(POS_Constants.STATUS_ACTIVE)
     for i = 1, #allOps do
-        if allOps[i].type == "delivery" then
+        if allOps[i].type == POS_Constants.OBJECTIVE_TYPE_DELIVERY then
             deliveryCount = deliveryCount + 1
         else
             reconCount = reconCount + 1

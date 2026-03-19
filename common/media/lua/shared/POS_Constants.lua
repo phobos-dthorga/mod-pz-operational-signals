@@ -646,6 +646,31 @@ POS_Constants.EXPIRY_REPUTATION_PENALTY_DEFAULT = 25
 POS_Constants.OBJECTIVE_TYPE_DELIVERY = "delivery"
 
 ---------------------------------------------------------------
+-- Freshness labels (market data age)
+---------------------------------------------------------------
+
+POS_Constants.FRESHNESS_FRESH   = "fresh"
+POS_Constants.FRESHNESS_STALE   = "stale"
+POS_Constants.FRESHNESS_EXPIRED = "expired"
+
+---------------------------------------------------------------
+-- Difficulty labels (operation tier mapping)
+---------------------------------------------------------------
+
+POS_Constants.DIFFICULTY_EASY     = "easy"
+POS_Constants.DIFFICULTY_MEDIUM   = "medium"
+POS_Constants.DIFFICULTY_HARD     = "hard"
+POS_Constants.DIFFICULTY_CRITICAL = "critical"
+POS_Constants.DIFFICULTY_LEVELS   = { "easy", "medium", "hard", "critical" }
+
+---------------------------------------------------------------
+-- Delivery defaults
+---------------------------------------------------------------
+
+POS_Constants.DELIVERY_DIFFICULTY_THRESHOLD = 7500
+POS_Constants.RECENT_RESULTS_DISPLAY_LIMIT = 5
+
+---------------------------------------------------------------
 -- Market note category base prices (fallback when PriceEngine
 -- or ItemPool are not yet initialised)
 ---------------------------------------------------------------

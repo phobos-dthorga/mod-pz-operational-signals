@@ -189,7 +189,7 @@ function POS_InvestmentGenerator.generate()
         displayedRisk = math.floor(risk.displayedRisk * 1000) / 1000,
         createdDay = currentDay,
         expiryDay = expiryDay,
-        status = "open",
+        status = POS_Constants.OPP_STATUS_OPEN,
     }
 
     PhobosLib.debug("POS", "[InvGen] Generated opportunity: " .. opportunity.id

@@ -107,7 +107,7 @@ end)
 -- periodic polling. This checker simply reads the completion
 -- flag that the context menu action sets.
 ---------------------------------------------------------------
-POS_CompletionDetector.registerChecker("delivery", function(_player, obj)
+POS_CompletionDetector.registerChecker(POS_Constants.OBJECTIVE_TYPE_DELIVERY, function(_player, obj)
     return obj.completed == true
 end)
 

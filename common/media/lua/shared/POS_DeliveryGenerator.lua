@@ -82,11 +82,12 @@ function POS_DeliveryGenerator.generate(player)
         id = "POS_DEL_" .. tostring(getTimestampMs()),
         templateId = "pos_delivery_antibiotics",
         category = "Courier",
-        difficulty = estimatedRoad > 7500 and "medium" or "easy",
-        status = "available",
+        difficulty = estimatedRoad > POS_Constants.DELIVERY_DIFFICULTY_THRESHOLD
+            and POS_Constants.DIFFICULTY_MEDIUM or POS_Constants.DIFFICULTY_EASY,
+        status = POS_Constants.STATUS_AVAILABLE,
         objectives = {
             {
-                type = "delivery",
+                type = POS_Constants.OBJECTIVE_TYPE_DELIVERY,
                 itemType = "Base.Antibiotics",
                 pickupX = pair.pickup.x,
                 pickupY = pair.pickup.y,

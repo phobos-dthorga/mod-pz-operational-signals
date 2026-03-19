@@ -160,19 +160,19 @@ function POS_EconomyTick.rebuildCategoryAggregate(catId, catData, currentDay)
     local avg = totalWeight > 0 and (weightedSum / totalWeight) or 0
 
     -- Compute confidence tier
-    local confidence = "low"
+    local confidence = POS_Constants.CONFIDENCE_LOW
     if sourceCount >= 5 and (currentDay - freshestDay) <= POS_Constants.MARKET_FRESH_DAYS then
-        confidence = "high"
+        confidence = POS_Constants.CONFIDENCE_HIGH
     elseif sourceCount >= 3 then
-        confidence = "medium"
+        confidence = POS_Constants.CONFIDENCE_MEDIUM
     end
 
     -- Compute freshness
-    local freshness = "expired"
+    local freshness = POS_Constants.FRESHNESS_EXPIRED
     if freshestDay >= 0 then
         local age = currentDay - freshestDay
-        if age <= POS_Constants.MARKET_FRESH_DAYS then freshness = "fresh"
-        elseif age <= POS_Constants.MARKET_STALE_DAYS then freshness = "stale"
+        if age <= POS_Constants.MARKET_FRESH_DAYS then freshness = POS_Constants.FRESHNESS_FRESH
+        elseif age <= POS_Constants.MARKET_STALE_DAYS then freshness = POS_Constants.FRESHNESS_STALE
         end
     end
 

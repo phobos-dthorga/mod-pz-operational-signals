@@ -100,72 +100,13 @@ function POS_RewardCalculator.applyPenalty(player, basePenalty)
     return POS_Reputation.add(player, -basePenalty)
 end
 
---- Calculate and apply the cancellation reputation penalty for an operation.
+--- Calculate the cancellation penalty for an operation (pure computation).
 --- Tier I missions have zero penalty. Tiers II-IV scale upward.
 --- Deliveries use a separate base penalty; doubles if package picked up.
 --- A 25% progress discount applies if the player started objectives.
----@param player any IsoPlayer
 ---@param operation table Operation data table
----@return number penalty The actual penalty applied (0 if none)
-function POS_RewardCalculator.applyCancellationPenalty(player, operation)
-    if not player or not operation then return 0 end
-
-    -- Check if cancellation penalties are enabled
-    if POS_Sandbox and POS_Sandbox.isCancellationPenaltyEnabled
-       and not POS_Sandbox.isCancellationPenaltyEnabled() then
-        return 0
-    end
-
-    local tier = operation.tier or 1
-
-    -- Tier I (low risk): no penalty
-    if tier <= 1 then return 0 end
-
-    local obj = operation.objectives and operation.objectives[1]
-    local isDelivery = obj and obj.type == "delivery"
-
-    -- Base penalty
-    local basePenalty
-    if isDelivery then
-        basePenalty = POS_Sandbox and POS_Sandbox.getBaseCancelPenaltyDelivery
-            and POS_Sandbox.getBaseCancelPenaltyDelivery() or 15
-        -- Double if package already picked up
-        if obj.pickedUp then
-            basePenalty = basePenalty * 2
-        end
-    else
-        basePenalty = POS_Sandbox and POS_Sandbox.getBaseCancelPenalty
-            and POS_Sandbox.getBaseCancelPenalty() or 30
-    end
-
-    -- Tier scaling: II=0.5x, III=1.0x, IV=1.5x
-    local tierMultiplier = (tier - 1) * TIER_MULTIPLIER_STEP
-    local penalty = math.floor(basePenalty * tierMultiplier)
-
-    -- Progress discount: -25% if player started objectives
-    if obj then
-        local hasProgress = obj.entered or obj.photographed
-            or obj.notesWritten or obj.pickedUp
-        if hasProgress then
-            penalty = math.floor(penalty * PROGRESS_DISCOUNT)
-        end
-    end
-
-    if penalty <= 0 then return 0 end
-
-    local newRep = POS_Reputation.add(player, -penalty)
-
-    PhobosLib.debug("POS", "[Reward] Cancel penalty: -" .. penalty
-        .. " rep (tier=" .. tier .. ", delivery=" .. tostring(isDelivery)
-        .. ") → " .. newRep)
-
-    return penalty
-end
-
---- Preview the cancellation penalty without applying it.
----@param operation table Operation data table
----@return number penalty The penalty that would be applied
-function POS_RewardCalculator.previewCancellationPenalty(operation)
+---@return number penalty The computed penalty (≥0)
+local function calculateCancellationPenalty(operation)
     if not operation then return 0 end
 
     if POS_Sandbox and POS_Sandbox.isCancellationPenaltyEnabled
@@ -177,13 +118,13 @@ function POS_RewardCalculator.previewCancellationPenalty(operation)
     if tier <= 1 then return 0 end
 
     local obj = operation.objectives and operation.objectives[1]
-    local isDelivery = obj and obj.type == "delivery"
+    local isDelivery = obj and obj.type == POS_Constants.OBJECTIVE_TYPE_DELIVERY
 
     local basePenalty
     if isDelivery then
         basePenalty = POS_Sandbox and POS_Sandbox.getBaseCancelPenaltyDelivery
             and POS_Sandbox.getBaseCancelPenaltyDelivery() or 15
-        if obj.pickedUp then basePenalty = basePenalty * 2 end
+        if obj and obj.pickedUp then basePenalty = basePenalty * 2 end
     else
         basePenalty = POS_Sandbox and POS_Sandbox.getBaseCancelPenalty
             and POS_Sandbox.getBaseCancelPenalty() or 30
@@ -201,4 +142,30 @@ function POS_RewardCalculator.previewCancellationPenalty(operation)
     end
 
     return math.max(0, penalty)
+end
+
+--- Calculate and apply the cancellation reputation penalty for an operation.
+---@param player any IsoPlayer
+---@param operation table Operation data table
+---@return number penalty The actual penalty applied (0 if none)
+function POS_RewardCalculator.applyCancellationPenalty(player, operation)
+    if not player or not operation then return 0 end
+
+    local penalty = calculateCancellationPenalty(operation)
+    if penalty <= 0 then return 0 end
+
+    local newRep = POS_Reputation.add(player, -penalty)
+
+    PhobosLib.debug("POS", "[Reward] Cancel penalty: -" .. penalty
+        .. " rep (tier=" .. (operation.tier or 1)
+        .. ") → " .. newRep)
+
+    return penalty
+end
+
+--- Preview the cancellation penalty without applying it.
+---@param operation table Operation data table
+---@return number penalty The penalty that would be applied
+function POS_RewardCalculator.previewCancellationPenalty(operation)
+    return calculateCancellationPenalty(operation)
 end

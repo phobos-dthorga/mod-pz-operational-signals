@@ -57,7 +57,7 @@ function POS_MissionGenerator.generate(player)
         category = selected.category,
         difficulty = selected.difficulty,
         objectives = {},
-        status = "active",
+        status = POS_Constants.STATUS_ACTIVE,
         createdDay = day,
         expiryDay = day + POS_Sandbox.getOperationExpiryDays(),
     }
