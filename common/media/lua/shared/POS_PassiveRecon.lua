@@ -18,15 +18,20 @@
 -- POS_PassiveRecon.lua
 -- The passive recon scanning engine.
 -- Hooks into EveryOneMinute for performance.
+--
+-- BREAKING CHANGE: All passive scan data now routes through an
+-- equipped Data-Recorder. No recorder = no passive scanning.
+-- Direct tape writes and internal device buffers are removed.
+-- Sensor devices register as data sources via POS_DataSourceRegistry.
 ---------------------------------------------------------------
 
 require "POS_Constants"
 require "POS_ReconDeviceRegistry"
-require "POS_TapeManager"
+require "POS_DataSourceRegistry"
+require "POS_DataRecorderService"
+require "POS_MediaManager"
 
 POS_PassiveRecon = {}
-
-local lastScanMinute = -1
 
 ---------------------------------------------------------------
 -- Radio tier detection (dynamic — works with any radio item)
@@ -92,100 +97,57 @@ local function getRadioScanRadius(radioItem)
     return math.max(1, math.min(radius, POS_Constants.RADIO_MAX_SCAN_RADIUS))
 end
 
---- Perform a passive radio scan for nearby buildings.
---- Tier 1 (FM receivers) receive broadcasts only — no active building scan.
-local function performRadioScan(player, radioItem, tier)
-    if tier == 1 then
-        -- Tier 1 (FM receivers): broadcast listening only, no active scan
-        -- They receive market broadcasts but don't scan buildings
-        return
-    end
+---------------------------------------------------------------
+-- Data source: generate chunks from sensor devices
+---------------------------------------------------------------
 
-    local px = player:getX()
-    local py = player:getY()
-    local radius = getRadioScanRadius(radioItem)
+--- Generate a building scan chunk from a device scan.
+local function generateBuildingScanChunk(player, deviceDef, bldg, day, confidenceBps)
+    local roomType = (bldg.rooms and bldg.rooms[1]) or "unknown"
+    local category = POS_RoomCategoryMap and POS_RoomCategoryMap.getCategory(roomType) or nil
+    return {
+        type       = POS_Constants.CHUNK_TYPE_BUILDING_SCAN,
+        entityId   = roomType,
+        category   = category,
+        x          = bldg.x,
+        y          = bldg.y,
+        region     = bldg.region or "",
+        day        = day,
+        confidence = confidenceBps,
+        mediaMod   = 0,  -- set by recorder at write time
+        carryMod   = 0,
+        signalMod  = 0,
+        scanType   = deviceDef and deviceDef.scanType or "building",
+    }
+end
 
-    -- Find nearby buildings (same as device scan)
-    local buildings = nil
-    if PhobosLib and PhobosLib.findNearbyBuildings then
-        buildings = PhobosLib.findNearbyBuildings(px, py, radius,
-            POS_BuildingCache and POS_BuildingCache.RECON_ROOMS or nil)
-    end
-    if not buildings or #buildings == 0 then return end
-
-    -- Find tape for recording (optional — radio can work without tape)
-    local tape = POS_TapeManager and POS_TapeManager.findUsableTape(player) or nil
-    local day = POS_WorldState and POS_WorldState.getWorldDay() or 0
+--- Generate a radio intercept chunk.
+local function generateRadioInterceptChunk(player, radioItem, tier, bldg, day)
+    local roomType = (bldg.rooms and bldg.rooms[1]) or "unknown"
     local confidenceMod = TIER_CONFIDENCE[tier] or POS_Constants.RADIO_CONFIDENCE_TIER2
-    local recorded = 0
-
-    for _, bldg in ipairs(buildings) do
-        if tape and POS_TapeManager.isFull(tape) then break end
-
-        local roomType = (bldg.rooms and bldg.rooms[1]) or "unknown"
-        local category = POS_RoomCategoryMap and POS_RoomCategoryMap.getCategory(roomType) or nil
-
-        local baseConfidence = 50
-        -- Apply tier confidence modifier (BPS -> percentage adjustment)
-        baseConfidence = math.max(10, baseConfidence + math.floor(confidenceMod / 100))
-
-        local entry = {
-            roomType = roomType,
-            category = category,
-            x = bldg.x,
-            y = bldg.y,
-            day = day,
-            confidence = baseConfidence,
-            scanType = "signal",
-        }
-
-        -- Record to tape if available
-        if tape and POS_TapeManager and POS_TapeManager.recordEntry then
-            if POS_TapeManager.recordEntry(tape, entry) then
-                recorded = recorded + 1
-            end
-        end
-
-        -- Also add to building cache
-        if POS_BuildingCache and POS_BuildingCache.addToCache then
-            POS_BuildingCache.addToCache(bldg.x, bldg.y, bldg.rooms)
-        end
-    end
-
-    if recorded > 0 then
-        PhobosLib.debug("POS", "[PassiveRecon] Radio tier " .. tostring(tier)
-            .. " recorded " .. tostring(recorded) .. " entries")
-    end
+    local baseBps = POS_Constants.CONFIDENCE_BASE_EFFECTIVE * POS_Constants.CONFIDENCE_BPS_DIVISOR
+    return {
+        type       = POS_Constants.CHUNK_TYPE_RADIO_INTERCEPT,
+        entityId   = roomType,
+        category   = POS_RoomCategoryMap and POS_RoomCategoryMap.getCategory(roomType) or nil,
+        x          = bldg.x,
+        y          = bldg.y,
+        region     = bldg.region or "",
+        day        = day,
+        confidence = baseBps + confidenceMod,
+        mediaMod   = 0,
+        carryMod   = 0,
+        signalMod  = confidenceMod,
+        scanType   = "signal",
+    }
 end
 
---- Check if a device is actively scanning (equipped + powered + tape if required).
-local function isDeviceActive(player, deviceDef)
-    if not deviceDef.requiresEquipped then return false end
+---------------------------------------------------------------
+-- Scanning logic (recorder-mandatory)
+---------------------------------------------------------------
 
-    -- Check if item is equipped
-    local inv = player:getInventory()
-    if not inv then return false end
-
-    local items = inv:getItemsFromFullType(deviceDef.itemType)
-    if not items or items:size() == 0 then return false end
-
-    local device = items:get(0)
-    if not device then return false end
-
-    -- Check battery
-    if device:getCondition() <= 0 then return false end
-
-    -- Check tape requirement
-    if deviceDef.requiresTape then
-        local tape = POS_TapeManager.findUsableTape(player)
-        if not tape then return false end
-    end
-
-    return true, device
-end
-
---- Perform one passive scan cycle for a device.
-local function performScan(player, deviceDef, device)
+--- Perform a passive device scan cycle, routing all output through the recorder.
+local function performDeviceScan(player, deviceDef, device, recorder)
     local px = player:getX()
     local py = player:getY()
 
@@ -205,69 +167,28 @@ local function performScan(player, deviceDef, device)
         buildings = PhobosLib.findNearbyBuildings(px, py, radius,
             POS_BuildingCache and POS_BuildingCache.RECON_ROOMS or nil)
     end
-
     if not buildings or #buildings == 0 then return end
-
-    -- Find active tape
-    local tape = nil
-    if deviceDef.requiresTape then
-        tape = POS_TapeManager.findUsableTape(player)
-        if not tape then return end
-    end
-
-    -- Use internal storage for devices that don't require tape
-    local useInternal = not deviceDef.requiresTape and deviceDef.internalCapacity > 0
 
     local day = POS_WorldState and POS_WorldState.getWorldDay() or 0
     local recorded = 0
 
+    -- Calculate device confidence in BPS
+    local deviceConfBps = POS_Constants.DEVICE_CONFIDENCE_CAMCORDER
+    if deviceDef.id == "logger" then
+        deviceConfBps = POS_Constants.DEVICE_CONFIDENCE_LOGGER
+    end
+
     for _, bldg in ipairs(buildings) do
-        -- Check tape/internal capacity
-        if tape and POS_TapeManager.isFull(tape) then break end
+        local chunk = generateBuildingScanChunk(player, deviceDef, bldg, day, deviceConfBps)
 
-        -- Get room category for market intelligence
-        local roomType = (bldg.rooms and bldg.rooms[1]) or "unknown"
-        local category = POS_RoomCategoryMap and POS_RoomCategoryMap.getCategory(roomType) or nil
+        -- Add carry bonus from inventory devices
+        chunk.carryMod = POS_PassiveRecon.getCarryConfidenceBonus(player)
 
-        local entry = {
-            roomType = roomType,
-            category = category,
-            x = bldg.x,
-            y = bldg.y,
-            day = day,
-            confidence = 50,  -- base confidence, modified by tape quality + device
-            scanType = deviceDef.scanType,
-        }
-
-        -- Apply device quality modifier
-        if deviceDef.intelQuality == "high" then
-            entry.confidence = 80
-        elseif deviceDef.intelQuality == "medium" then
-            entry.confidence = 60
-        elseif deviceDef.intelQuality == "low" then
-            entry.confidence = 40
-        end
-
-        -- Record to tape or internal storage
-        if tape then
-            if POS_TapeManager.recordEntry(tape, entry) then
-                recorded = recorded + 1
-            end
-        elseif useInternal then
-            -- Store in device modData (limited internal capacity)
-            local md = PhobosLib.getModData(device)
-            if md then
-                local count = tonumber(md[POS_Constants.MD_TAPE_ENTRY_COUNT]) or 0
-                if count < deviceDef.internalCapacity then
-                    md[POS_Constants.MD_TAPE_ENTRY_COUNT] = count + 1
-                    local existing = md[POS_Constants.MD_TAPE_ENTRIES] or ""
-                    local entryStr = tostring(entry.roomType) .. ":" .. tostring(entry.x)
-                        .. ":" .. tostring(entry.y) .. ":" .. tostring(entry.day)
-                        .. ":" .. tostring(entry.confidence)
-                    md[POS_Constants.MD_TAPE_ENTRIES] = existing ~= "" and (existing .. "|" .. entryStr) or entryStr
-                    recorded = recorded + 1
-                end
-            end
+        -- Route through recorder
+        if POS_DataRecorderService.appendChunk(recorder, chunk) then
+            recorded = recorded + 1
+        else
+            break  -- storage full
         end
 
         -- Also add to building cache (shared discovery)
@@ -276,7 +197,7 @@ local function performScan(player, deviceDef, device)
         end
     end
 
-    -- Drain battery proportional to scan effort
+    -- Drain device battery proportional to scan effort
     if device and recorded > 0 then
         local drain = math.max(1, math.floor(recorded / 2))
         local newCond = math.max(0, device:getCondition() - drain)
@@ -284,9 +205,70 @@ local function performScan(player, deviceDef, device)
     end
 
     if recorded > 0 then
-        PhobosLib.debug("POS", "[PassiveRecon] " .. deviceDef.id .. " recorded " .. tostring(recorded) .. " entries")
+        PhobosLib.debug("POS", "PassiveRecon", deviceDef.id .. " recorded " .. tostring(recorded) .. " chunks via recorder")
     end
 end
+
+--- Perform a passive radio scan, routing output through the recorder.
+local function performRadioScan(player, radioItem, tier, recorder)
+    if tier == 1 then return end  -- Tier 1 (FM receivers): broadcast only, no scan
+
+    local px = player:getX()
+    local py = player:getY()
+    local radius = getRadioScanRadius(radioItem)
+
+    local buildings = nil
+    if PhobosLib and PhobosLib.findNearbyBuildings then
+        buildings = PhobosLib.findNearbyBuildings(px, py, radius,
+            POS_BuildingCache and POS_BuildingCache.RECON_ROOMS or nil)
+    end
+    if not buildings or #buildings == 0 then return end
+
+    local day = POS_WorldState and POS_WorldState.getWorldDay() or 0
+    local recorded = 0
+
+    for _, bldg in ipairs(buildings) do
+        local chunk = generateRadioInterceptChunk(player, radioItem, tier, bldg, day)
+        chunk.carryMod = POS_PassiveRecon.getCarryConfidenceBonus(player)
+
+        if POS_DataRecorderService.appendChunk(recorder, chunk) then
+            recorded = recorded + 1
+        else
+            break  -- storage full
+        end
+
+        if POS_BuildingCache and POS_BuildingCache.addToCache then
+            POS_BuildingCache.addToCache(bldg.x, bldg.y, bldg.rooms)
+        end
+    end
+
+    if recorded > 0 then
+        PhobosLib.debug("POS", "PassiveRecon", "radio tier " .. tostring(tier) .. " recorded " .. tostring(recorded) .. " chunks via recorder")
+    end
+end
+
+--- Check if a device is actively scanning (equipped + powered).
+local function isDeviceActive(player, deviceDef)
+    if not deviceDef.requiresEquipped then return false end
+
+    local inv = player:getInventory()
+    if not inv then return false end
+
+    local items = inv:getItemsFromFullType(deviceDef.itemType)
+    if not items or items:size() == 0 then return false end
+
+    local device = items:get(0)
+    if not device then return false end
+
+    -- Check battery
+    if device:getCondition() <= 0 then return false end
+
+    return true, device
+end
+
+---------------------------------------------------------------
+-- Main scan tick
+---------------------------------------------------------------
 
 --- Main scan tick -- called every game minute.
 function POS_PassiveRecon.onEveryOneMinute()
@@ -299,44 +281,58 @@ function POS_PassiveRecon.onEveryOneMinute()
     local player = getSpecificPlayer(0)
     if not player then return end
 
+    -- BREAKING: Recorder is mandatory for ALL passive scanning
+    local recorder = POS_DataRecorderService.findEquippedRecorder(player)
+    if not recorder then return end
+    if not POS_DataRecorderService.isPowered(recorder) then return end
+
+    POS_DataRecorderService.ensureInitialized(recorder)
+
     -- Danger detection gate
     if PhobosLib and PhobosLib.isDangerNearby then
         local radius = POS_Sandbox and POS_Sandbox.getDangerCheckRadius
             and POS_Sandbox.getDangerCheckRadius()
             or POS_Constants.DANGER_CHECK_RADIUS
         if PhobosLib.isDangerNearby(player, radius) then
-            PhobosLib.debug("POS", "[PassiveRecon] Scanning paused — danger nearby")
+            PhobosLib.debug("POS", "PassiveRecon", "scanning paused — danger nearby")
             return
         end
     end
 
-    -- Get all registered devices
+    -- Scan with registered devices (one per minute = stagger)
     local allDevices = POS_ReconDeviceRegistry.getAll()
+    local scanned = false
 
     for _, deviceDef in ipairs(allDevices) do
-        if deviceDef.scanType ~= "none" then
+        if not scanned and deviceDef.scanType ~= "none" and not deviceDef.dynamic then
             local active, device = isDeviceActive(player, deviceDef)
             if active and device then
-                performScan(player, deviceDef, device)
+                performDeviceScan(player, deviceDef, device, recorder)
+                scanned = true  -- stagger: one device per tick
             end
         end
     end
 
     -- Dynamic radio scanner check (any powered-on radio in inventory)
-    local inv = player:getInventory()
-    if inv then
-        local allItems = inv:getItems()
-        if allItems then
-            for i = 0, allItems:size() - 1 do
-                local item = allItems:get(i)
-                local tier = getRadioTier(item)
-                if tier then
-                    performRadioScan(player, item, tier)
-                    break  -- Only scan with the best radio found (stagger)
+    if not scanned then
+        local inv = player:getInventory()
+        if inv then
+            local allItems = inv:getItems()
+            if allItems then
+                for i = 0, allItems:size() - 1 do
+                    local item = allItems:get(i)
+                    local tier = getRadioTier(item)
+                    if tier then
+                        performRadioScan(player, item, tier, recorder)
+                        break  -- stagger: one radio per tick
+                    end
                 end
             end
         end
     end
+
+    -- Drain recorder power (1 minute = 1/60 hour)
+    POS_DataRecorderService.drainPower(recorder, 1 / 60)
 end
 
 --- Get total carry confidence bonus from all recon devices in inventory.
@@ -349,7 +345,7 @@ function POS_PassiveRecon.getCarryConfidenceBonus(player)
     local allDevices = POS_ReconDeviceRegistry.getAll()
 
     for _, deviceDef in ipairs(allDevices) do
-        if deviceDef.carryBonus > 0 then
+        if deviceDef.carryBonus > 0 and deviceDef.itemType then
             local items = inv:getItemsFromFullType(deviceDef.itemType)
             if items and items:size() > 0 then
                 totalBonus = totalBonus + deviceDef.carryBonus

@@ -396,6 +396,7 @@
     "UI_POS_Device_Camcorder": "Recon Camcorder",
     "UI_POS_Device_Logger": "Field Survey Logger",
     "UI_POS_Device_Calculator": "Data Calculator",
+    "UI_POS_Device_DataRecorder": "Data-Recorder",
     "UI_POS_Recon_TapeFull": "VHS tape is full. Replace or upload.",
     "UI_POS_Recon_DeviceActive": "Passive recon active",
     "UI_POS_Recon_UploadComplete": "Recon upload complete",

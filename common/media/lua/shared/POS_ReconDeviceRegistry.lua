@@ -135,3 +135,19 @@ POS_ReconDeviceRegistry.register({
     internalCapacity = 0,
     dynamic = true,  -- flag: detected at runtime, not by item type
 })
+
+POS_ReconDeviceRegistry.register({
+    id = "data_recorder",
+    itemType = POS_Constants.ITEM_DATA_RECORDER,
+    scanRadius = 0,  -- recorder does not scan; it ingests from other sources
+    intelQuality = "none",
+    confidenceMod = 0,
+    requiresTape = false,
+    requiresEquipped = false,
+    equipSlot = "belt",
+    carryBonus = 0,
+    noiseLevelPct = 0,
+    scanType = "none",  -- not a scanning device
+    labelKey = "UI_POS_Device_DataRecorder",
+    internalCapacity = 0,
+})

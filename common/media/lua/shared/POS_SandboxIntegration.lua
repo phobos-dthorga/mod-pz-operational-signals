@@ -491,3 +491,44 @@ function POS_Sandbox.getWatchlistAlertThresholdPct()
     return PhobosLib.getSandboxVar("POS", "WatchlistAlertThresholdPct",
         POS_Constants.WATCHLIST_PRICE_CHANGE_PCT)
 end
+
+---------------------------------------------------------------
+-- Data-Recorder
+---------------------------------------------------------------
+
+function POS_Sandbox.getEnableDataRecorder()
+    return PhobosLib.getSandboxVar("POS", "EnableDataRecorder", true)
+end
+
+function POS_Sandbox.getRecorderInternalBufferSize()
+    return PhobosLib.getSandboxVar("POS", "RecorderInternalBufferSize",
+        POS_Constants.RECORDER_INTERNAL_BUFFER_DEFAULT)
+end
+
+function POS_Sandbox.getRecorderPowerDrainRate()
+    return PhobosLib.getSandboxVar("POS", "RecorderPowerDrainRate",
+        POS_Constants.RECORDER_POWER_DRAIN_RATE_DEFAULT)
+end
+
+function POS_Sandbox.getRecorderProcessingTime()
+    return PhobosLib.getSandboxVar("POS", "RecorderProcessingTime",
+        POS_Constants.RECORDER_PROCESSING_TIME_DEFAULT)
+end
+
+function POS_Sandbox.getEnableMicrocassettes()
+    return PhobosLib.getSandboxVar("POS", "EnableMicrocassettes", true)
+end
+
+function POS_Sandbox.getEnableFloppyDisks()
+    return PhobosLib.getSandboxVar("POS", "EnableFloppyDisks", true)
+end
+
+function POS_Sandbox.getFloppyCorruptionChance()
+    return PhobosLib.getSandboxVar("POS", "FloppyCorruptionChance",
+        POS_Constants.FLOPPY_CORRUPTION_CHANCE_DEFAULT)
+end
+
+function POS_Sandbox.getMicrocassetteMaxRewinds()
+    return PhobosLib.getSandboxVar("POS", "MicrocassetteMaxRewinds",
+        POS_Constants.MICROCASSETTE_MAX_REWINDS_DEFAULT)
+end
