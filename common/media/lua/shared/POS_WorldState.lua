@@ -23,6 +23,7 @@
 
 require "PhobosLib"
 require "POS_Constants"
+require "POS_MarketFileStore"
 
 POS_WorldState = {}
 
@@ -292,9 +293,78 @@ function POS_WorldState.bootstrap()
     -- Migrate building/mailbox caches from ModData to external files
     POS_WorldState.migrateModDataCaches()
 
+    -- Load market data from external file store
+    POS_MarketFileStore.load()
+
+    -- One-time migration of market observations/closes from ModData to file store
+    POS_WorldState.migrateMarketDataToFile()
+
     PhobosLib.debug("POS", "[WorldState] Bootstrap complete, schema v"
         .. tostring(meta.schemaVersion) .. ", seed=" .. tostring(meta.worldSeed))
 end
+
+---------------------------------------------------------------
+-- Market data migration (ModData → external file store)
+---------------------------------------------------------------
+
+--- One-time migration: move observations and rollingCloses from
+--- world.categories ModData into the file-backed store.
+--- Keeps aggregates in ModData for MP client snapshot delivery.
+function POS_WorldState.migrateMarketDataToFile()
+    local meta = POS_WorldState.getMeta()
+    if meta.marketDataMigrated then return end
+
+    local world = POS_WorldState.getWorld()
+    if not world.categories then
+        meta.marketDataMigrated = true
+        return
+    end
+
+    local migratedCats = 0
+    local migratedObs = 0
+
+    for catId, catData in pairs(world.categories) do
+        local fileData = POS_MarketFileStore.getCategory(catId)
+
+        -- Transfer observations
+        if catData.observations and #catData.observations > 0 then
+            for _, obs in ipairs(catData.observations) do
+                table.insert(fileData.observations, obs)
+            end
+            migratedObs = migratedObs + #catData.observations
+            catData.observations = nil
+        end
+
+        -- Transfer rolling closes
+        if catData.rollingCloses and #catData.rollingCloses > 0 then
+            fileData.rollingCloses = catData.rollingCloses
+            catData.rollingCloses = nil
+        end
+
+        -- Keep aggregate in ModData (for MP snapshot delivery)
+        migratedCats = migratedCats + 1
+    end
+
+    if migratedObs > 0 then
+        POS_MarketFileStore.save()
+        PhobosLib.debug("POS", "[WorldState] Migrated market data to file store: "
+            .. tostring(migratedCats) .. " categories, "
+            .. tostring(migratedObs) .. " observations")
+    end
+
+    meta.marketDataMigrated = true
+end
+
+---------------------------------------------------------------
+-- Dirty-flag flush: persist unsaved market data every minute
+---------------------------------------------------------------
+
+Events.EveryOneMinute.Add(function()
+    if POS_WorldState.isAuthority()
+            and POS_MarketFileStore.isDirty() then
+        POS_MarketFileStore.save()
+    end
+end)
 
 -- Hook bootstrap
 Events.OnGameStart.Add(function()

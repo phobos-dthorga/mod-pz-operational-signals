@@ -526,6 +526,18 @@ POS_Constants.CACHE_FILE_SEPARATOR  = "|"
 POS_Constants.CACHE_FILE_ROOM_SEP   = ","
 
 ---------------------------------------------------------------
+-- Market data file store (observations + rolling closes)
+---------------------------------------------------------------
+
+POS_Constants.MARKET_DATA_FILE            = "POSNET_market_data.dat"
+POS_Constants.MARKET_FILE_SECTION_PREFIX  = "[CATEGORY:"
+POS_Constants.MARKET_FILE_SECTION_SUFFIX  = "]"
+POS_Constants.MARKET_FILE_OBS_HEADER      = "[OBS]"
+POS_Constants.MARKET_FILE_CLOSES_HEADER   = "[CLOSES]"
+POS_Constants.MARKET_FILE_ITEM_SEP        = ";"
+POS_Constants.MARKET_FILE_ITEM_KV_SEP     = ":"
+
+---------------------------------------------------------------
 -- Per-player file storage (Zomboid/Lua/POSNET/)
 ---------------------------------------------------------------
 

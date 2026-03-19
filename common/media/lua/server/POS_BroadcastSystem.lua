@@ -32,6 +32,7 @@ require "PhobosLib"
 require "POS_Constants"
 require "POS_WorldState"
 require "POS_MarketDatabase"
+require "POS_MarketFileStore"
 require "POS_MarketRegistry"
 require "POS_MarketBroadcaster"
 
@@ -229,14 +230,17 @@ function POS_BroadcastSystem.onClientCommand(module, command, player, args)
         if player then
             local snapshot = {}
             local world = POS_WorldState and POS_WorldState.getWorld()
-            if world and world.categories then
-                for catId, catData in pairs(world.categories) do
-                    snapshot[catId] = {
-                        observations = catData.observations or {},
-                        rollingCloses = catData.rollingCloses or {},
-                        aggregate = catData.aggregate or {},
-                    }
-                end
+            -- Observations and rolling closes come from file store;
+            -- aggregates are mirrored to ModData by EconomyTick.
+            for catId, catData in pairs(POS_MarketFileStore.getAllCategories()) do
+                local agg = (world and world.categories
+                    and world.categories[catId]
+                    and world.categories[catId].aggregate) or {}
+                snapshot[catId] = {
+                    observations = catData.observations or {},
+                    rollingCloses = catData.rollingCloses or {},
+                    aggregate = agg,
+                }
             end
             sendServerCommand(player, POS_Constants.CMD_MODULE,
                 POS_Constants.CMD_MARKET_SNAPSHOT, { data = snapshot })
@@ -268,7 +272,6 @@ function POS_BroadcastSystem.onClientCommand(module, command, player, args)
     elseif command == POS_Constants.CMD_ADMIN_DUMP_STATE then
         -- Admin only: dump compact world state summary
         if PhobosLib.isPlayerAdmin and PhobosLib.isPlayerAdmin(player) then
-            local world = POS_WorldState.getWorld()
             local meta = POS_WorldState.getMeta()
             local summary = {
                 schemaVersion = meta.schemaVersion,
@@ -276,12 +279,10 @@ function POS_BroadcastSystem.onClientCommand(module, command, player, args)
                 categoryCount = 0,
                 totalObservations = 0,
             }
-            if world.categories then
-                for catId, catData in pairs(world.categories) do
-                    summary.categoryCount = summary.categoryCount + 1
-                    summary.totalObservations = summary.totalObservations
-                        + (catData.observations and #catData.observations or 0)
-                end
+            for _, catData in pairs(POS_MarketFileStore.getAllCategories()) do
+                summary.categoryCount = summary.categoryCount + 1
+                summary.totalObservations = summary.totalObservations
+                    + (catData.observations and #catData.observations or 0)
             end
             sendServerCommand(player, POS_Constants.CMD_MODULE,
                 POS_Constants.CMD_ADMIN_DUMP_STATE, { summary = summary })

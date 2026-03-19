@@ -26,6 +26,7 @@ require "PhobosLib"
 require "POS_Constants"
 require "POS_WorldState"
 require "POS_MarketDatabase"
+require "POS_MarketFileStore"
 require "POS_BasisPoints"
 require "POS_EventLog"
 
@@ -58,25 +59,28 @@ function POS_EconomyTick.processDayTick()
         PhobosLib.debug("POS", "[EconomyTick] Purged " .. tostring(purged) .. " expired observations")
     end
 
-    -- Phase 2: Aggregate category summaries
+    -- Phase 2: Aggregate category summaries (from file store)
+    -- Mirror aggregates back to ModData for MP client snapshots.
     local world = POS_WorldState.getWorld()
-    if world.categories then
-        for catId, catData in pairs(world.categories) do
-            POS_EconomyTick.rebuildCategoryAggregate(catId, catData, currentDay)
+    world.categories = world.categories or {}
+    for catId, catData in pairs(POS_MarketFileStore.getAllCategories()) do
+        POS_EconomyTick.rebuildCategoryAggregate(catId, catData, currentDay)
+        -- Mirror aggregate to ModData (used by BroadcastSystem snapshot)
+        if not world.categories[catId] then
+            world.categories[catId] = {}
         end
+        world.categories[catId].aggregate = catData.aggregate
     end
 
-    -- Phase 3: Trim rolling closes and events
+    -- Phase 3: Trim rolling closes and events (from file store)
     local maxCloses = POS_Sandbox and POS_Sandbox.getMaxRollingCloses
         and POS_Sandbox.getMaxRollingCloses() or POS_Constants.MAX_ROLLING_CLOSES
     local maxEvents = POS_Sandbox and POS_Sandbox.getMaxGlobalEvents
         and POS_Sandbox.getMaxGlobalEvents() or POS_Constants.MAX_GLOBAL_EVENTS
 
-    if world.categories then
-        for _, catData in pairs(world.categories) do
-            if catData.rollingCloses then
-                PhobosLib.trimArray(catData.rollingCloses, maxCloses)
-            end
+    for _, catData in pairs(POS_MarketFileStore.getAllCategories()) do
+        if catData.rollingCloses then
+            PhobosLib.trimArray(catData.rollingCloses, maxCloses)
         end
     end
     if world.recentEvents then
@@ -97,6 +101,11 @@ function POS_EconomyTick.processDayTick()
 
     -- Phase 6: Mark day processed
     meta.lastProcessedDay = currentDay
+
+    -- Phase 6.5: Persist market data to external file
+    if POS_MarketFileStore and POS_MarketFileStore.save then
+        POS_MarketFileStore.save()
+    end
 
     -- Phase 7: Notify clients
     if POS_BroadcastSystem and POS_BroadcastSystem.broadcastToAll then

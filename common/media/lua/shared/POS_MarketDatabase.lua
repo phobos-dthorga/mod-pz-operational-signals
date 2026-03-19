@@ -17,12 +17,13 @@
 ---------------------------------------------------------------
 -- POS_MarketDatabase.lua
 -- Intel record storage and aggregation.
--- Server/SP: reads/writes from world-scoped Global ModData.
+-- Server/SP: reads/writes from POS_MarketFileStore (file-backed).
 -- Client (MP): reads from a local ephemeral cache.
 ---------------------------------------------------------------
 
 require "PhobosLib"
 require "POS_Constants"
+require "POS_MarketFileStore"
 
 POS_MarketDatabase = {}
 
@@ -33,18 +34,13 @@ POS_MarketDatabase = {}
 --- Ephemeral client-side cache (MP clients only).
 local clientCache = {}
 
---- Get the observations array for a category from world state.
---- On server/SP: reads from ModData.getOrCreate("POSNET.World")
---- On client in MP: reads from local cache
+--- Get the observations/closes for a category.
+--- On server/SP: reads from POS_MarketFileStore (file-backed session cache).
+--- On client in MP: reads from local ephemeral cache.
 local function getWorldCategoryData(categoryId)
     if POS_WorldState and POS_WorldState.isAuthority() then
-        -- Server/SP: read from world ModData
-        local world = POS_WorldState.getWorld()
-        if not world.categories then world.categories = {} end
-        if not world.categories[categoryId] then
-            world.categories[categoryId] = { observations = {}, rollingCloses = {}, aggregate = {} }
-        end
-        return world.categories[categoryId]
+        -- Server/SP: read from file-backed session cache
+        return POS_MarketFileStore.getCategory(categoryId)
     else
         -- MP client: read from local cache
         if not clientCache[categoryId] then
@@ -125,6 +121,7 @@ function POS_MarketDatabase.addRecord(record)
     if record.items then obs.items = record.items end
 
     PhobosLib.pushRolling(catData.observations, obs, maxObs)
+    POS_MarketFileStore.markDirty()
 
     -- Also log to event log
     if POS_EventLog and POS_EventLog.append then
@@ -354,11 +351,10 @@ function POS_MarketDatabase.getKnownTraders()
     local maxAge = getMaxAgeDays()
     local traderMap = {}
 
-    -- Iterate all known categories from world state
+    -- Iterate all known categories from appropriate store
     local categories = {}
     if POS_WorldState and POS_WorldState.isAuthority() then
-        local world = POS_WorldState.getWorld()
-        if world and world.categories then categories = world.categories end
+        categories = POS_MarketFileStore.getAllCategories()
     else
         categories = clientCache
     end
@@ -406,20 +402,21 @@ end
 function POS_MarketDatabase.purgeExpired(maxDays)
     if not POS_WorldState or not POS_WorldState.isAuthority() then return 0 end
 
-    local world = POS_WorldState.getWorld()
-    if not world.categories then return 0 end
-
     local day = getCurrentDay()
     local maxAge = maxDays or getMaxAgeDays()
     local total = 0
 
-    for catId, catData in pairs(world.categories) do
+    for _, catData in pairs(POS_MarketFileStore.getAllCategories()) do
         if catData.observations then
-            total = total + PhobosLib.trimByAge(catData.observations, "day", maxAge, day)
+            local purged = PhobosLib.trimByAge(catData.observations, "day", maxAge, day)
+            if purged > 0 then
+                total = total + purged
+            end
         end
     end
 
     if total > 0 then
+        POS_MarketFileStore.markDirty()
         PhobosLib.debug("POS", "[MarketDB] Purged " .. total .. " expired observations")
     end
 
