@@ -802,11 +802,13 @@ to function as-is. The recorder respects `EnablePassiveRecon`,
 |--------|--------|
 | `POS_TapeManager.lua` | **Replaced entirely** by `POS_MediaManager.lua` — breaking change, no backward compat |
 
-### 13.4 New Entity Definitions
+### 13.4 Entity Decisions
 
-| Entity | Type | Purpose |
-|--------|------|---------|
-| `POS_Microscope` | CraftBench | Vanilla microscope mapped as workstation for precision microcassette recipes (RewindMicrocassette, RecycleMicrocassette). Sprite: `location_community_medical_01_136` (S), `location_community_medical_01_140` (E). |
+No new CraftBench entities are defined for the Data-Recorder feature. The vanilla
+microscope sprite (`location_community_medical_01_136`) is claimed by ZVV's
+`LabMicroscope2` entity, so POSnet cannot define its own microscope workstation
+without a sprite collision. Microcassette precision recipes (RewindMicrocassette,
+RecycleMicrocassette) are portable instead.
 
 ### 13.5 Unchanged Modules
 

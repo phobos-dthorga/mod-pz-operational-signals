@@ -84,10 +84,9 @@ module PhobosOperationalSignals {
     }
 
     -- RewindMicrocassette and RecycleMicrocassette are portable by default.
-    -- When ZVV (ZVirusVaccine42BETA) is installed, its LabMicroscope2 entity
-    -- provides a thematic microscope workstation using recipe tag
-    -- "ZVirusVaccine42BETA:Microscope". POS_MicroscopeCompat re-gates these
-    -- recipes to that workstation at runtime if ZVV is detected.
+    -- The vanilla microscope sprite is claimed by ZVV's LabMicroscope2 entity,
+    -- so POSnet cannot define its own microscope CraftBench without a sprite
+    -- collision. These recipes remain portable (no station requirement).
 
     craftRecipe RewindMicrocassette
     {
