@@ -992,3 +992,47 @@ All Phobos PZ mods follow the release architecture defined in
 6. **ZIP artifacts**: every release includes a clean mod ZIP + `manifest.json`
 7. **Dependency declarations**: `dependencies.json` at repo root declares hard deps
 8. **Conventional commits**: `feat:`, `fix:`, `docs:`, `chore:` prefixes required
+
+---
+
+## 19. Notification Integration
+
+### 19.1 PhobosLib.notifyOrSay() Pattern
+
+All transient user feedback (action confirmations, warnings, informational
+messages) **must** use `PhobosLib.notifyOrSay(player, opts)` instead of raw
+`PhobosLib.say()` or direct `PhobosNotifications.toast()` calls.
+
+This wrapper tries PhobosNotifications toast first, then falls back to
+`PhobosLib.say()` overhead speech bubble. Players without PN installed still
+receive feedback.
+
+Always pass `channel = POS_Constants.PN_CHANNEL_ID` so notifications appear
+under the POSnet channel in PN's filter settings.
+
+### 19.2 Channel Registration
+
+POSnet registers one PN channel (`"POSnet"`) via `POS_NotifyInit.lua` on
+`Events.OnGameStart`. The channel label key is
+`POS_Constants.PN_CHANNEL_LABEL_KEY` (`"UI_POS_Channel_POSnet"`).
+
+If PhobosNotifications is not installed, registration is silently skipped.
+
+### 19.3 Feedback Philosophy
+
+| Mechanism | Use Case | Example |
+|-----------|----------|---------|
+| `notifyOrSay()` success | Action completed | Upload notes, process chunks |
+| `notifyOrSay()` warning | Action had issues | 0 notes ingested |
+| `notifyOrSay()` info | Status/informational | Media ejected |
+| `PhobosLib.say()` raw | Player-requested inline info | View recorder status |
+| Modal popup | Important one-time info | Guide, changelog |
+
+### 19.4 Colour & Priority Guidelines
+
+- **success**: Positive completion (green toast / green text).
+- **warning**: Something unexpected or degraded (yellow toast).
+- **info**: Neutral status change (default toast colour).
+- **error**: Failure that blocks a player goal (red toast). Use sparingly.
+- Priority `"normal"` for all routine notifications.
+  Reserve `"high"` for time-sensitive alerts (e.g. watchlist price spikes).
