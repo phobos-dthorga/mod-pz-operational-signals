@@ -104,7 +104,7 @@ local function onFillInventoryObjectContextMenu(playerNum, context, items)
                 if POS_DataRecorderService.hasMedia(invItem) then
                     insertOption.notAvailable = true
                     local tt = ISWorldObjectContextMenu.addToolTip()
-                    tt.description = "Media already inserted. Eject first."
+                    tt.description = PhobosLib.safeGetText("UI_POS_ContextMenu_MediaAlreadyInserted")
                     insertOption.toolTip = tt
                 else
                     -- Build insert media submenu with available media
@@ -140,7 +140,8 @@ local function onFillInventoryObjectContextMenu(playerNum, context, items)
                     end
 
                     if not foundMedia then
-                        local noMedia = insertMenu:addOption("(none available)", items, nil)
+                        local noMedia = insertMenu:addOption(
+                            PhobosLib.safeGetText("UI_POS_ContextMenu_NoMediaAvailable"), items, nil)
                         noMedia.notAvailable = true
                     end
                 end

@@ -295,7 +295,9 @@
     "UI_POS_Market_GatherIntel_Tooltip": "Observe the local market and record prices, stock levels, and contacts. <BR> Requires paper and a writing tool.",
     "UI_POS_Market_Mumble": "Taking notes...",
     "UI_POS_Market_UploadNotes": "Upload Field Notes",
-    "UI_POS_Market_UploadComplete": "Field notes uploaded to database.",
+    "UI_POS_Market_UploadTitle": "Field Notes",
+    "UI_POS_Market_UploadComplete": "Uploaded %1 field notes to database.",
+    "UI_POS_Market_UploadFailed": "No valid notes could be processed.",
     "UI_POS_Market_NoNotes": "No field notes to upload.",
     "UI_POS_Market_FieldNotes": "Field Notes",
     "UI_POS_Market_NotesCount": "Notes",
@@ -497,5 +499,35 @@
     "UI_POS_ContextMenu_RecordUsingRecorder": "Record Using Data-Recorder",
     "UI_POS_ContextMenu_POSnet": "POSnet",
 
-    "UI_POS_MainMenuOption_Data": "Data Management"
+    "UI_POS_MainMenuOption_Data": "Data Management",
+
+    "UI_POS_Channel_POSnet": "POSnet Operations",
+
+    "UI_POS_DataManagement_ChunksAvailable": "Chunks available: %1",
+    "UI_POS_Recorder_TotalRecorded": "Total Recorded",
+
+    "UI_POS_ContextMenu_MediaAlreadyInserted": "Media already inserted. Eject first.",
+    "UI_POS_ContextMenu_NoMediaAvailable": "(none available)",
+
+    "UI_POS_IntelSummary_Title": "INTELLIGENCE SUMMARY",
+    "UI_POS_IntelSummary_Coverage": "MARKET COVERAGE",
+    "UI_POS_IntelSummary_CategoriesTracked": "Categories tracked",
+    "UI_POS_IntelSummary_FreshCount": "Fresh (< %1 days)",
+    "UI_POS_IntelSummary_StaleCount": "Stale (%1\u2013%2 days)",
+    "UI_POS_IntelSummary_ExpiredCount": "Expired (> %1 days)",
+    "UI_POS_IntelSummary_Confidence": "CONFIDENCE OVERVIEW",
+    "UI_POS_IntelSummary_HighConfidence": "High confidence",
+    "UI_POS_IntelSummary_MedConfidence": "Medium confidence",
+    "UI_POS_IntelSummary_LowConfidence": "Low confidence",
+    "UI_POS_IntelSummary_Trends": "CATEGORY TRENDS",
+    "UI_POS_IntelSummary_TrendRising": "Rising",
+    "UI_POS_IntelSummary_TrendFalling": "Falling",
+    "UI_POS_IntelSummary_TrendStable": "Stable",
+    "UI_POS_IntelSummary_FieldNotes": "FIELD NOTES",
+    "UI_POS_IntelSummary_UnprocessedNotes": "Unprocessed notes",
+    "UI_POS_IntelSummary_RecorderStatus": "RECORDER STATUS",
+    "UI_POS_IntelSummary_TotalChunks": "Total chunks recorded",
+    "UI_POS_IntelSummary_Watchlist": "WATCHLIST",
+    "UI_POS_IntelSummary_ActiveAlerts": "Active alerts",
+    "UI_POS_IntelSummary_NoData": "No intelligence gathered yet. Gather field notes or tune in to market broadcasts."
 }

@@ -833,3 +833,17 @@ POS_Constants.EVENT_MEDIA_EJECT      = "media_eject"
 POS_Constants.CONFIDENCE_MIN_EFFECTIVE  = 10
 POS_Constants.CONFIDENCE_BASE_EFFECTIVE = 50
 POS_Constants.CONFIDENCE_BPS_DIVISOR    = 100
+
+---------------------------------------------------------------
+-- PhobosNotifications channel
+---------------------------------------------------------------
+
+POS_Constants.PN_CHANNEL_ID        = "POSnet"
+POS_Constants.PN_CHANNEL_LABEL_KEY = "UI_POS_Channel_POSnet"
+
+---------------------------------------------------------------
+-- Intelligence Summary screen
+---------------------------------------------------------------
+
+POS_Constants.SCREEN_INTEL_SUMMARY = "pos.markets.summary"
+

@@ -95,7 +95,7 @@ function screen.create(contentPanel, params, _terminal)
 
     -- Total chunks available for processing
     local totalChunks = status.bufferCount + status.mediaUsed
-    local totalText = "Chunks available: " .. tostring(totalChunks)
+    local totalText = W.safeGetText("UI_POS_DataManagement_ChunksAvailable", tostring(totalChunks))
     W.createLabel(ctx, totalText, totalChunks > 0 and C.value or C.dim)
 
     W.createSeparator(ctx)
@@ -161,7 +161,7 @@ screen.getContextData = function(params)
             value = tostring(status.mediaUsed) .. "/" .. tostring(status.mediaCap) })
     end
 
-    table.insert(data, { type = "kv", key = "Total Recorded",
+    table.insert(data, { type = "kv", key = POS_TerminalWidgets.safeGetText("UI_POS_Recorder_TotalRecorded"),
         value = tostring(status.totalRecorded) })
 
     return data
