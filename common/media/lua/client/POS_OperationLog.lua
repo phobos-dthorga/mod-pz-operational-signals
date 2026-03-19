@@ -16,22 +16,21 @@
 
 ---------------------------------------------------------------
 -- POS_OperationLog.lua
--- Player-side operation journal — persistence and management.
+-- Player-side operation journal — persistence layer.
 --
 -- Stores active, completed, and expired operations in the
--- player's modData. Provides add/remove/query functions for
--- the UI layer and completion detector.
+-- player's modData. Provides add/remove/query functions.
+-- All business logic (completion, cancellation, expiry,
+-- reputation, rewards) is in POS_OperationService.
 --
--- Operations are stored under modData key "POS_Operations"
--- as an array of operation tables.
+-- Operations are stored under modData key POS_Constants.MODDATA_OPERATIONS.
 ---------------------------------------------------------------
 
 require "PhobosLib"
 require "POS_Constants"
+require "POS_OperationService"
 
 POS_OperationLog = {}
-
-local MODDATA_KEY = "POS_Operations"
 
 --- Get the operations array from player modData, creating if needed.
 --- @param player IsoPlayer
@@ -40,10 +39,10 @@ local function getOperationsStore(player)
     if not player then return {} end
     local md = PhobosLib.getModData(player)
     if not md then return {} end
-    if not md[MODDATA_KEY] then
-        md[MODDATA_KEY] = {}
+    if not md[POS_Constants.MODDATA_OPERATIONS] then
+        md[POS_Constants.MODDATA_OPERATIONS] = {}
     end
-    return md[MODDATA_KEY]
+    return md[POS_Constants.MODDATA_OPERATIONS]
 end
 
 --- Add a new operation to the player's log.
@@ -62,7 +61,7 @@ function POS_OperationLog.addOperation(operation)
     -- Count current active operations
     local activeCount = 0
     for i = 1, #ops do
-        if ops[i].status == "active" then
+        if ops[i].status == POS_Constants.STATUS_ACTIVE then
             activeCount = activeCount + 1
         end
     end
@@ -121,172 +120,49 @@ function POS_OperationLog.get(operationId)
 end
 
 --- Mark an operation as completed.
+--- Delegates to POS_OperationService for reward/reputation logic.
 --- @param operationId string
 --- @return boolean
 function POS_OperationLog.completeOperation(operationId)
     local op = POS_OperationLog.get(operationId)
     if not op then return false end
-    op.status = "completed"
-
-    -- Grant reputation for completing recon missions
-    if op.baseReputation and op.baseReputation > 0 then
-        local player = getSpecificPlayer(0)
-        if player and POS_Reputation then
-            POS_Reputation.add(player, op.baseReputation)
-        end
-    end
-
-    -- Pay reward for recon missions
-    if op.scaledReward and op.scaledReward > 0
-       and op.objectives and op.objectives[1]
-       and op.objectives[1].type == POS_Constants.MISSION_TYPE_RECON then
-        local player = getSpecificPlayer(0)
-        if player then
-            PhobosLib.addMoney(player, op.scaledReward)
-        end
-    end
-
-    PhobosLib.debug("POS", "Operation completed: " .. operationId)
+    local player = getSpecificPlayer(0)
+    POS_OperationService.completeOperation(op, player)
     return true
 end
 
---- Cancel an active operation and apply tier-scaled reputation penalty.
---- Tier I missions incur no penalty; higher tiers scale upward.
+--- Cancel an active operation.
+--- Delegates to POS_OperationService for penalty/cleanup logic.
 --- @param operationId string
 --- @return boolean True if cancelled successfully
 function POS_OperationLog.cancelOperation(operationId)
     local op = POS_OperationLog.get(operationId)
     if not op then return false end
-    if op.status ~= "active" then return false end
-
-    op.status = "cancelled"
-
-    -- Apply cancellation penalty
     local player = getSpecificPlayer(0)
-    if player and POS_RewardCalculator
-       and POS_RewardCalculator.applyCancellationPenalty then
-        POS_RewardCalculator.applyCancellationPenalty(player, op)
-    end
-
-    -- Remove map marker
-    if POS_MapMarkers and POS_MapMarkers.removeMarker then
-        POS_MapMarkers.removeMarker(operationId)
-    end
-
-    -- For deliveries: remove package item from inventory if picked up
-    local obj = op.objectives and op.objectives[1]
-    if obj and obj.type == "delivery" and obj.pickedUp and player then
-        pcall(function()
-            local inv = player:getInventory()
-            if not inv then return end
-            local items = inv:getItemsFromFullType(
-                POS_Constants.ITEM_POSNET_PACKAGE)
-            if items then
-                for i = 0, items:size() - 1 do
-                    local item = items:get(i)
-                    local md = item:getModData()
-                    if md and md[POS_Constants.MD_OPERATION_ID] == operationId then
-                        inv:Remove(item)
-                        break
-                    end
-                end
-            end
-        end)
-    end
-
-    PhobosLib.debug("POS", "Operation cancelled: " .. operationId)
-    return true
-end
-
---- Mark an operation as expired and apply reputation penalty.
---- @param operationId string
---- @return boolean
-function POS_OperationLog.expireOperation(operationId)
-    local op = POS_OperationLog.get(operationId)
-    if not op then return false end
-    op.status = "expired"
-
-    -- Apply expiry reputation penalty
-    local penalty = POS_Sandbox and POS_Sandbox.getExpiryReputationPenalty
-        and POS_Sandbox.getExpiryReputationPenalty() or 25
-    if penalty > 0 and POS_Reputation then
-        local player = getSpecificPlayer(0)
-        if player then
-            POS_Reputation.add(player, -penalty)
-        end
-    end
-
-    PhobosLib.debug("POS", "Operation expired: " .. operationId)
-    return true
-end
-
---- Check for expired operations and update their status.
---- Called periodically (e.g. every in-game hour).
-function POS_OperationLog.checkExpiry()
-    local player = getSpecificPlayer(0)
-    if not player then return end
-
-    local gameTime = getGameTime()
-    if not gameTime then return end
-    local currentDay = gameTime:getNightsSurvived()
-
-    local ops = getOperationsStore(player)
-    for i = 1, #ops do
-        local op = ops[i]
-        if op.status == "active" and op.expiryDay then
-            if currentDay >= op.expiryDay then
-                op.status = "expired"
-                PhobosLib.debug("POS", "Operation auto-expired: " .. (op.id or "?"))
-            end
-        end
-    end
-end
-
---- Tick handler — checks objectives and expiry.
---- Runs once per in-game hour.
-local lastCheckHour = -1
-
-function POS_OperationLog.onEveryOneMinute()
-    local gameTime = getGameTime()
-    if not gameTime then return end
-    local hour = gameTime:getHour()
-    if hour == lastCheckHour then return end
-    lastCheckHour = hour
-
-    local player = getSpecificPlayer(0)
-    if not player then return end
-
-    -- Check expiry
-    POS_OperationLog.checkExpiry()
-
-    -- Check completion for active operations
-    local ops = getOperationsStore(player)
-    for i = 1, #ops do
-        local op = ops[i]
-        if op.status == "active" then
-            if POS_CompletionDetector.checkOperation(player, op) then
-                op.status = "completed"
-                PhobosLib.debug("POS", "All objectives met — operation completed: " .. (op.id or "?"))
-            end
-        end
-    end
+    return POS_OperationService.cancelOperation(op, player)
 end
 
 --- Get count of operations by status.
 --- @return table Map of status → count
 function POS_OperationLog.getCounts()
     local all = POS_OperationLog.getAll()
-    local counts = { active = 0, completed = 0, expired = 0, failed = 0, cancelled = 0 }
+    local counts = {
+        [POS_Constants.STATUS_ACTIVE]    = 0,
+        [POS_Constants.STATUS_COMPLETED] = 0,
+        [POS_Constants.STATUS_EXPIRED]   = 0,
+        [POS_Constants.STATUS_FAILED]    = 0,
+        [POS_Constants.STATUS_CANCELLED] = 0,
+    }
     for i = 1, #all do
-        local s = all[i].status or "active"
+        local s = all[i].status or POS_Constants.STATUS_ACTIVE
         counts[s] = (counts[s] or 0) + 1
     end
     return counts
 end
 
---- Initialise the operation log tick handler.
+--- Initialise the operation service tick handler.
 function POS_OperationLog.init()
-    Events.EveryOneMinute.Add(POS_OperationLog.onEveryOneMinute)
+    POS_OperationService.init()
     PhobosLib.debug("POS", "Operation log initialised")
 end
 

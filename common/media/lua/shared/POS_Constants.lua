@@ -551,6 +551,7 @@ POS_Constants.INTEL_STATE_ON_COOLDOWN    = "on_cooldown"
 -- Operation statuses
 ---------------------------------------------------------------
 
+POS_Constants.STATUS_AVAILABLE = "available"
 POS_Constants.STATUS_ACTIVE    = "active"
 POS_Constants.STATUS_COMPLETED = "completed"
 POS_Constants.STATUS_EXPIRED   = "expired"

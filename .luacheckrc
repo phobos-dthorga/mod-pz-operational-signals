@@ -83,6 +83,7 @@ globals = {
     "POS_PlayerFileStore",
     "POS_MarketNoteGenerator",
     "POS_NegotiationService",
+    "POS_OperationService",
     "POS_BasisPoints",
     "POS_EventLog",
     "POS_PassiveRecon",
