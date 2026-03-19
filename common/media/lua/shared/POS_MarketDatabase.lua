@@ -97,7 +97,7 @@ function POS_MarketDatabase.addRecord(record)
     if record.items ~= nil and type(record.items) ~= "table" then
         record.items = nil
     end
-    if record.sourceTier and record.sourceTier ~= "field" and record.sourceTier ~= "broadcast" then
+    if record.sourceTier and record.sourceTier ~= POS_Constants.SOURCE_TIER_FIELD and record.sourceTier ~= POS_Constants.SOURCE_TIER_BROADCAST then
         record.sourceTier = nil
     end
     if record.quality then
@@ -117,7 +117,7 @@ function POS_MarketDatabase.addRecord(record)
         source = record.source,
         location = record.location,
         confidence = record.confidence,
-        sourceTier = record.sourceTier or "field",
+        sourceTier = record.sourceTier or POS_Constants.SOURCE_TIER_FIELD,
         quality = record.quality,
     }
 
@@ -128,10 +128,10 @@ function POS_MarketDatabase.addRecord(record)
 
     -- Also log to event log
     if POS_EventLog and POS_EventLog.append then
-        POS_EventLog.append("economy", "observation",
+        POS_EventLog.append(POS_Constants.EVENT_SYSTEM_ECONOMY, "observation",
             record.categoryId, "", "", 0,
             POS_BasisPoints and POS_BasisPoints.toBps(record.price or 0) or 0,
-            record.sourceTier or "field")
+            record.sourceTier or POS_Constants.SOURCE_TIER_FIELD)
     end
 
     PhobosLib.debug("POS", "[MarketDB] Added intel record: "
@@ -211,9 +211,9 @@ function POS_MarketDatabase.getSummary(categoryId)
             end
             -- Weight by sourceTier
             local w = POS_Constants.SOURCE_TIER_WEIGHT_DEFAULT
-            if r.sourceTier == "field" then
+            if r.sourceTier == POS_Constants.SOURCE_TIER_FIELD then
                 w = POS_Constants.SOURCE_TIER_WEIGHT_FIELD
-            elseif r.sourceTier == "broadcast" then
+            elseif r.sourceTier == POS_Constants.SOURCE_TIER_BROADCAST then
                 w = POS_Constants.SOURCE_TIER_WEIGHT_BROADCAST
             end
             weightedTotal = weightedTotal + (price * w)

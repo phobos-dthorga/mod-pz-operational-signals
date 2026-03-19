@@ -1,9 +1,9 @@
 name=Phobos' Operational Signals
 id=PhobosOperationalSignals
-modversion=0.10.0
+modversion=0.11.0
 versionMin=42.15.0
 require=\PhobosLib,\AZASFrequencyIndex_RefactorTest
-loadModAfter=\PhobosLib,\AZASFrequencyIndex_RefactorTest,\PhobosChemistryPathways,\PhobosIndustrialPathology
+loadModAfter=\PhobosLib,\AZASFrequencyIndex_RefactorTest,\PhobosChemistryPathways,\PhobosIndustrialPathology,\PhobosNotifications
 poster=poster.png
 description=Radio-driven procedural operations and market intelligence system for Project Zomboid Build 42. Intercept POSnet transmissions, gather field intelligence with 90s-era recon devices, trade commodity data via VHS tapes, and deploy into the field. Features passive reconnaissance (camcorder, field logger, scanner radio), a commodity market simulation with price drift and speculation, server-authoritative multiplayer economy, and a CRT terminal interface. Requires PhobosLib 1.40.0+ and AZAS Frequency Index.
 url=https://github.com/phobos-dthorga/mod-pz-operational-signals

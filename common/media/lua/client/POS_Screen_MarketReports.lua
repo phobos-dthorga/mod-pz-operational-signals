@@ -146,6 +146,14 @@ function screen.refresh(params)
     POS_TerminalWidgets.dynamicRefresh(screen, params)
 end
 
+screen.getContextData = function(_params)
+    local data = {}
+    local reports = getCompiledReports()
+    table.insert(data, { type = "kv", key = "UI_POS_Market_ReportCount",
+        value = tostring(#reports) })
+    return data
+end
+
 ---------------------------------------------------------------
 
 POS_API.registerScreen(screen)

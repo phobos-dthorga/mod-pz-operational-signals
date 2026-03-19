@@ -280,7 +280,11 @@ function screen.create(contentPanel, params, _terminal)
         end)
     ctx.y = ctx.y + ctx.btnH + 4
 
-    -- [0] Decline
+    -- Footer separator + [0] Decline
+    ctx.y = ctx.y + 4
+    W.createSeparator(ctx.panel, 0, ctx.y, 40, "-")
+    ctx.y = ctx.y + ctx.lineH + 4
+
     W.createButton(ctx.panel, ctx.btnX, ctx.y, ctx.btnW, ctx.btnH,
         "[0] " .. W.safeGetText("UI_POS_Negotiate_Decline"), nil,
         function() POS_ScreenManager.goBack() end)

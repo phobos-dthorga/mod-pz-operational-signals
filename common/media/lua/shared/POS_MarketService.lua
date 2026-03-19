@@ -163,3 +163,35 @@ function POS_MarketService.getCommodityItems(categoryId)
     local records = POS_MarketDatabase.getItemRecords(categoryId)
     return records or {}
 end
+
+--- Get item-level commodity data filtered by sub-category name patterns.
+--- @param categoryId string
+--- @param subCategoryId string
+--- @return table[] Filtered array of { fullType, avgPrice, priceCount, lastSeen }
+function POS_MarketService.getFilteredCommodityItems(categoryId, subCategoryId)
+    local allItems = POS_MarketService.getCommodityItems(categoryId)
+    if not subCategoryId then return allItems end
+
+    local subs = POS_MarketRegistry.getSubCategories(categoryId)
+    local subDef
+    for _, sub in ipairs(subs) do
+        if sub.id == subCategoryId then
+            subDef = sub
+            break
+        end
+    end
+
+    if not subDef or not subDef.namePatterns then return allItems end
+
+    local filtered = {}
+    for _, item in ipairs(allItems) do
+        local ft = item.fullType or ""
+        for _, pattern in ipairs(subDef.namePatterns) do
+            if ft:find(pattern, 1, true) then
+                table.insert(filtered, item)
+                break
+            end
+        end
+    end
+    return filtered
+end

@@ -26,6 +26,7 @@ require "POS_ScreenManager"
 require "POS_TerminalWidgets"
 require "POS_MarketRegistry"
 require "POS_MarketDatabase"
+require "POS_MarketService"
 require "POS_API"
 
 ---------------------------------------------------------------
@@ -135,6 +136,24 @@ screen.destroy = POS_TerminalWidgets.defaultDestroy
 
 function screen.refresh(params)
     POS_TerminalWidgets.dynamicRefresh(screen, params)
+end
+
+screen.getContextData = function(params)
+    local data = {}
+    local categoryId = params and params.categoryId
+    if categoryId then
+        local summary = POS_MarketService.getCommoditySummary(categoryId)
+        if summary then
+            table.insert(data, { type = "header", text = summary.labelKey })
+            if summary.avgPrice then
+                table.insert(data, { type = "kv", key = "UI_POS_Market_AveragePrice",
+                    value = "$" .. string.format("%.2f", summary.avgPrice) })
+            end
+            table.insert(data, { type = "kv", key = "UI_POS_Market_Trend",
+                value = PhobosLib.safeGetText(summary.trendKey) })
+        end
+    end
+    return data
 end
 
 ---------------------------------------------------------------

@@ -80,6 +80,7 @@ globals = {
     "POS_PriceEngine",
     "POS_WorldState",
     "POS_PlayerState",
+    "POS_PlayerFileStore",
     "POS_BasisPoints",
     "POS_EventLog",
     "POS_PassiveRecon",
@@ -87,6 +88,7 @@ globals = {
     "POS_NoteTooltip",
     "POS_ReconDeviceRegistry",
     "POS_EconomyTick",
+    "POS_WatchlistService",
 }
 
 read_globals = {
@@ -98,6 +100,9 @@ read_globals = {
     "AZAS_STATIONS",
     "AZAS_FrequencyIndex",
     "getRadioScriptManager",
+
+    -- PhobosNotifications (optional cross-mod)
+    "PhobosNotifications",
 
     -- PZ Lua classes and enums (not in JavaDocs — pure Lua, must stay manual)
     "Keyboard",

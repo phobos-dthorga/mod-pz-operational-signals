@@ -147,10 +147,10 @@ function POS_MarketBroadcaster.generatePacket()
     local itemsPerPacket = POS_Sandbox and POS_Sandbox.getBroadcastItemsPerPacket
         and POS_Sandbox.getBroadcastItemsPerPacket() or 2
     local selectedItems = POS_ItemPool and POS_ItemPool.selectItems(
-        categoryId, itemsPerPacket, { sourceTier = "broadcast" })
+        categoryId, itemsPerPacket, { sourceTier = POS_Constants.SOURCE_TIER_BROADCAST })
     if selectedItems and #selectedItems > 0 then
         local prices = POS_PriceEngine and POS_PriceEngine.generatePrices(
-            selectedItems, categoryId, { sourceTier = "broadcast" })
+            selectedItems, categoryId, { sourceTier = POS_Constants.SOURCE_TIER_BROADCAST })
         if prices then
             packet.items = prices
         end
@@ -187,7 +187,7 @@ function POS_MarketBroadcaster.broadcast()
             location = packet.location or "",
             recordedDay = POS_WorldState and POS_WorldState.getWorldDay() or 0,
             confidence = packet.confidence or "low",
-            sourceTier = "broadcast",
+            sourceTier = POS_Constants.SOURCE_TIER_BROADCAST,
             quality = POS_Sandbox and POS_Sandbox.getMarketBroadcastQuality
                 and POS_Sandbox.getMarketBroadcastQuality() or 50,
             items = packet.items,

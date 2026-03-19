@@ -64,7 +64,7 @@ local function getActiveRecon()
     local ops = POS_OperationLog.getByStatus("active")
     for _, op in ipairs(ops) do
         if op.objectives and op.objectives[1]
-           and op.objectives[1].type == "recon" then
+           and op.objectives[1].type == POS_Constants.MISSION_TYPE_RECON then
             return op
         end
     end
@@ -84,7 +84,7 @@ local function getAvailableRecons()
     local ops = POS_OperationLog.getByStatus("available")
     for _, op in ipairs(ops) do
         if op.objectives and op.objectives[1]
-           and op.objectives[1].type == "recon" then
+           and op.objectives[1].type == POS_Constants.MISSION_TYPE_RECON then
             local tier = op.tier or 1
             if tier >= minTier and tier <= maxTier then
                 table.insert(results, op)
@@ -117,7 +117,7 @@ local function getCompletedRecons()
     local ops = POS_OperationLog.getByStatus("completed")
     for _, op in ipairs(ops) do
         if op.objectives and op.objectives[1]
-           and op.objectives[1].type == "recon" then
+           and op.objectives[1].type == POS_Constants.MISSION_TYPE_RECON then
             table.insert(results, op)
         end
     end

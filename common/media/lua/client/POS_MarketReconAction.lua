@@ -181,7 +181,7 @@ function POS_MarketReconAction:perform()
     -- Create Raw Market Note
     local note = inv:AddItem(POS_Constants.ITEM_RAW_MARKET_NOTE)
     if note then
-        local ctx = { sourceTier = "field" }
+        local ctx = { sourceTier = POS_Constants.SOURCE_TIER_FIELD }
         local md = note:getModData()
         md[POS_Constants.MD_NOTE_TYPE] = "market"
         md[POS_Constants.MD_NOTE_CATEGORY] = self.categoryId

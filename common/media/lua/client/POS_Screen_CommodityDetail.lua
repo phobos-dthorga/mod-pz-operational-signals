@@ -27,6 +27,7 @@ require "POS_ScreenManager"
 require "POS_TerminalWidgets"
 require "POS_MarketService"
 require "POS_MarketIngestion"
+require "POS_PlayerState"
 require "POS_API"
 
 ---------------------------------------------------------------
@@ -151,6 +152,40 @@ function screen.create(contentPanel, params, _terminal)
                 POS_ScreenManager.markDirty()
             end)
         ctx.y = ctx.y + ctx.btnH + 4
+    end
+
+    -- View Items
+    W.createButton(ctx.panel, ctx.btnX, ctx.y, ctx.btnW, ctx.btnH,
+        "[4] " .. W.safeGetText("UI_POS_Market_ViewItems"), nil,
+        function()
+            POS_ScreenManager.navigateTo(POS_Constants.SCREEN_COMMODITY_ITEMS,
+                { categoryId = catId })
+        end)
+    ctx.y = ctx.y + ctx.btnH + 4
+
+    -- Watch/Unwatch toggle (only when watchlist is enabled)
+    if POS_Sandbox and POS_Sandbox.getEnableWatchlist
+        and POS_Sandbox.getEnableWatchlist() then
+        local player = getSpecificPlayer(0)
+        if player then
+            local isWatching = POS_PlayerState.isWatching(player, catId)
+            local watchKey = isWatching
+                and "UI_POS_Market_UnwatchCategory"
+                or "UI_POS_Market_WatchCategory"
+            W.createButton(ctx.panel, ctx.btnX, ctx.y, ctx.btnW, ctx.btnH,
+                "[5] " .. W.safeGetText(watchKey), nil,
+                function()
+                    local p = getSpecificPlayer(0)
+                    if not p then return end
+                    if POS_PlayerState.isWatching(p, catId) then
+                        POS_PlayerState.removeFromWatchlist(p, catId)
+                    else
+                        POS_PlayerState.addToWatchlist(p, catId)
+                    end
+                    POS_ScreenManager.markDirty()
+                end)
+            ctx.y = ctx.y + ctx.btnH + 4
+        end
     end
 
     -- Footer

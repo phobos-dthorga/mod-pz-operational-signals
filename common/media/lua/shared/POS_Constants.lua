@@ -55,6 +55,12 @@ POS_Constants.SCREEN_NEGOTIATE   = "pos.negotiate"
 POS_Constants.SCREEN_STOCKMARKET = "pos.stockmarket"
 
 ---------------------------------------------------------------
+-- Mission type identifiers
+---------------------------------------------------------------
+
+POS_Constants.MISSION_TYPE_RECON = "recon"
+
+---------------------------------------------------------------
 -- Item full types
 ---------------------------------------------------------------
 
@@ -112,9 +118,11 @@ POS_Constants.POWER_CHECK_INTERVAL   = 60
 POS_Constants.SCREEN_MARKETS            = "pos.markets"
 POS_Constants.SCREEN_COMMODITIES        = "pos.markets.commodities"
 POS_Constants.SCREEN_COMMODITY_DETAIL   = "pos.markets.commodity.detail"
+POS_Constants.SCREEN_COMMODITY_ITEMS   = "pos.markets.commodity.items"
 POS_Constants.SCREEN_TRADERS            = "pos.markets.traders"
 POS_Constants.SCREEN_REPORTS            = "pos.markets.reports"
 POS_Constants.SCREEN_LEDGER             = "pos.markets.ledger"
+POS_Constants.SCREEN_WATCHLIST          = "pos.markets.watchlist"
 POS_Constants.SCREEN_EXCHANGE           = "pos.exchange"
 POS_Constants.SCREEN_EXCHANGE_OVERVIEW  = "pos.exchange.overview"
 POS_Constants.SCREEN_EXCHANGE_PORTFOLIO = "pos.exchange.portfolio"
@@ -211,6 +219,13 @@ POS_Constants.PRICE_MIN_OUTPUT             = 0.01
 POS_Constants.REP_VARIANCE_MULTIPLIERS = { 1.5, 1.2, 1.0, 0.8, 0.6 }
 
 ---------------------------------------------------------------
+-- Source tier identifiers
+---------------------------------------------------------------
+
+POS_Constants.SOURCE_TIER_FIELD     = "field"
+POS_Constants.SOURCE_TIER_BROADCAST = "broadcast"
+
+---------------------------------------------------------------
 -- Source tier weights (market intel averaging)
 ---------------------------------------------------------------
 
@@ -289,8 +304,12 @@ POS_Constants.PORTABLE_DRAIN_DIVISOR_DEFAULT = 1800
 -- Page sizes (terminal screens)
 ---------------------------------------------------------------
 
-POS_Constants.PAGE_SIZE_COMMODITIES    = 8
-POS_Constants.PAGE_SIZE_MARKET_REPORTS = 5
+POS_Constants.PAGE_SIZE_COMMODITIES      = 8
+POS_Constants.PAGE_SIZE_COMMODITY_ITEMS  = 8
+POS_Constants.PAGE_SIZE_MARKET_REPORTS   = 5
+POS_Constants.PAGE_SIZE_WATCHLIST        = 6
+POS_Constants.WATCHLIST_MAX_ENTRIES      = 20
+POS_Constants.WATCHLIST_PRICE_CHANGE_PCT = 10
 
 ---------------------------------------------------------------
 -- Signal bar display (POS_NavPanel)
@@ -350,6 +369,11 @@ POS_Constants.EVENT_SNAPSHOT_DIR     = "POSNET/snapshots/"
 POS_Constants.EVENT_LOG_SEPARATOR    = "|"
 POS_Constants.EVENT_LOG_VERSION      = 1
 POS_Constants.EVENT_LOG_PURGE_BUFFER = 5
+
+-- Event log system names
+POS_Constants.EVENT_SYSTEM_ECONOMY   = "economy"
+POS_Constants.EVENT_SYSTEM_STOCKS    = "stocks"
+POS_Constants.EVENT_SYSTEM_RECON     = "recon"
 
 ---------------------------------------------------------------
 -- Server commands (persistence / snapshot protocol)
@@ -500,6 +524,18 @@ POS_Constants.CACHE_FILE_BUILDINGS  = "POSNET_buildings.dat"
 POS_Constants.CACHE_FILE_MAILBOXES  = "POSNET_mailboxes.dat"
 POS_Constants.CACHE_FILE_SEPARATOR  = "|"
 POS_Constants.CACHE_FILE_ROOM_SEP   = ","
+
+---------------------------------------------------------------
+-- Per-player file storage (Zomboid/Lua/POSNET/)
+---------------------------------------------------------------
+
+POS_Constants.PLAYER_FILE_PREFIX    = "POSNET/player_"
+POS_Constants.PLAYER_FILE_EXT       = ".dat"
+POS_Constants.PLAYER_FILE_SEPARATOR = "|"
+POS_Constants.PLAYER_FILE_SECTION_WATCHLIST = "[WATCHLIST]"
+POS_Constants.PLAYER_FILE_SECTION_ALERTS    = "[ALERTS]"
+POS_Constants.PLAYER_FILE_SECTION_ORDERS    = "[ORDERS]"
+POS_Constants.PLAYER_FILE_SECTION_HOLDINGS  = "[HOLDINGS]"
 
 ---------------------------------------------------------------
 -- Context menu intel states

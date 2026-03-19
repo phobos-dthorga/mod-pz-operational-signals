@@ -138,9 +138,9 @@ function POS_EconomyTick.rebuildCategoryAggregate(catId, catData, currentDay)
 
             -- Source tier weight
             local tierWeight = POS_Constants.SOURCE_TIER_WEIGHT_DEFAULT
-            if obs.sourceTier == "field" then
+            if obs.sourceTier == POS_Constants.SOURCE_TIER_FIELD then
                 tierWeight = POS_Constants.SOURCE_TIER_WEIGHT_FIELD
-            elseif obs.sourceTier == "broadcast" then
+            elseif obs.sourceTier == POS_Constants.SOURCE_TIER_BROADCAST then
                 tierWeight = POS_Constants.SOURCE_TIER_WEIGHT_BROADCAST
             end
 
@@ -227,7 +227,7 @@ function POS_EconomyTick.writeEconomySnapshot(world, currentDay)
         end
     end
 
-    POS_EventLog.writeSnapshot("economy", header, dataLines)
+    POS_EventLog.writeSnapshot(POS_Constants.EVENT_SYSTEM_ECONOMY, header, dataLines)
 end
 
 ---------------------------------------------------------------

@@ -141,7 +141,7 @@ function POS_PriceEngine.generatePrice(fullType, categoryId, ctx)
 
     -- Variance based on source tier and reputation
     local variancePct = POS_Constants.PRICE_BASE_VARIANCE_PCT
-    if ctx and ctx.sourceTier == "broadcast" then
+    if ctx and ctx.sourceTier == POS_Constants.SOURCE_TIER_BROADCAST then
         variancePct = POS_Constants.PRICE_BROADCAST_VARIANCE_PCT
     end
 

@@ -108,6 +108,22 @@ function screen.refresh(params)
     POS_TerminalWidgets.dynamicRefresh(screen, params)
 end
 
+screen.getContextData = function(params)
+    local data = {}
+    local filterCategory = params and params.filterCategory
+    local traders = POS_MarketService.getTraders(filterCategory)
+    table.insert(data, { type = "kv", key = "UI_POS_Market_TraderCount",
+        value = tostring(#traders) })
+    if filterCategory then
+        local catDef = POS_MarketRegistry.getCategory(filterCategory)
+        if catDef then
+            table.insert(data, { type = "header",
+                text = PhobosLib.safeGetText(catDef.labelKey) })
+        end
+    end
+    return data
+end
+
 ---------------------------------------------------------------
 
 POS_API.registerScreen(screen)
