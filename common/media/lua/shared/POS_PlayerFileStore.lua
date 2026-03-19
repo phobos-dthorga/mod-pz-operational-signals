@@ -69,7 +69,7 @@ local function writeLine(writer, ...)
         local v = select(i, ...)
         parts[i] = tostring(v or "")
     end
-    writer:writeLine(table.concat(parts, SEP))
+    writer:writeln(table.concat(parts, SEP))
 end
 
 local function parseWatchlistLine(line)
@@ -162,7 +162,7 @@ local function saveToFile(player, data)
     end
 
     -- Watchlist section
-    writer:writeLine(POS_Constants.PLAYER_FILE_SECTION_WATCHLIST)
+    writer:writeln(POS_Constants.PLAYER_FILE_SECTION_WATCHLIST)
     for _, entry in ipairs(data.watchlist) do
         writeLine(writer,
             entry.categoryId,
@@ -172,7 +172,7 @@ local function saveToFile(player, data)
     end
 
     -- Alerts section
-    writer:writeLine(POS_Constants.PLAYER_FILE_SECTION_ALERTS)
+    writer:writeln(POS_Constants.PLAYER_FILE_SECTION_ALERTS)
     for _, entry in ipairs(data.alerts) do
         writeLine(writer,
             entry.categoryId,
@@ -184,10 +184,10 @@ local function saveToFile(player, data)
     end
 
     -- Orders section (future)
-    writer:writeLine(POS_Constants.PLAYER_FILE_SECTION_ORDERS)
+    writer:writeln(POS_Constants.PLAYER_FILE_SECTION_ORDERS)
 
     -- Holdings section (future)
-    writer:writeLine(POS_Constants.PLAYER_FILE_SECTION_HOLDINGS)
+    writer:writeln(POS_Constants.PLAYER_FILE_SECTION_HOLDINGS)
 
     writer:close()
 

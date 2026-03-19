@@ -98,7 +98,7 @@ function POS_WorldState.saveBuildingCache()
         if entry.rooms then
             rooms = table.concat(entry.rooms, POS_Constants.CACHE_FILE_ROOM_SEP)
         end
-        writer:writeLine(tostring(entry.x) .. POS_Constants.CACHE_FILE_SEPARATOR
+        writer:writeln(tostring(entry.x) .. POS_Constants.CACHE_FILE_SEPARATOR
             .. tostring(entry.y) .. POS_Constants.CACHE_FILE_SEPARATOR .. rooms)
     end
     writer:close()
@@ -146,7 +146,7 @@ function POS_WorldState.saveMailboxCache()
     end
 
     for _, entry in ipairs(mailboxes.entries) do
-        writer:writeLine(tostring(entry.x) .. POS_Constants.CACHE_FILE_SEPARATOR
+        writer:writeln(tostring(entry.x) .. POS_Constants.CACHE_FILE_SEPARATOR
             .. tostring(entry.y))
     end
     writer:close()
