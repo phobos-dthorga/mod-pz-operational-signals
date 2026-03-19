@@ -83,6 +83,12 @@ module PhobosOperationalSignals {
         OnCreate POS_CraftCallbacks.onCreateVHSReviewNote,
     }
 
+    -- RewindMicrocassette and RecycleMicrocassette are portable by default.
+    -- When ZVV (ZVirusVaccine42BETA) is installed, its LabMicroscope2 entity
+    -- provides a thematic microscope workstation using recipe tag
+    -- "ZVirusVaccine42BETA:Microscope". POS_MicroscopeCompat re-gates these
+    -- recipes to that workstation at runtime if ZVV is detected.
+
     craftRecipe RewindMicrocassette
     {
         item 1 PhobosOperationalSignals.RecordedMicrocassette,
@@ -92,7 +98,7 @@ module PhobosOperationalSignals {
 
         time 60,
         category PhobosFieldOps,
-        Tags = POS_Microscope;CannotBeResearched,
+        Tags = CannotBeResearched,
         needToBeLearn false,
         OnCreate POS_CraftCallbacks.onCreateRewindMicrocassette,
     }
@@ -105,7 +111,7 @@ module PhobosOperationalSignals {
 
         time 60,
         category PhobosFieldOps,
-        Tags = POS_Microscope;CannotBeResearched,
+        Tags = CannotBeResearched,
         needToBeLearn false,
         OnCreate POS_CraftCallbacks.onCreateRecycleMicrocassette,
     }
