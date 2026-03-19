@@ -372,6 +372,8 @@
     "UI_POS_Market_SubCategory": "Sub-Category",
     "UI_POS_Market_ViewAll": "View All",
     "UI_POS_Market_FilterBy": "Filter by Sub-Category",
+    "UI_POS_Market_TraderCount": "Traders",
+    "UI_POS_Market_ReportCount": "Reports",
 
     "UI_POS_Device_Camcorder": "Recon Camcorder",
     "UI_POS_Device_Logger": "Field Survey Logger",
