@@ -25,6 +25,8 @@ require "POS_Constants"
 require "POS_ScreenManager"
 require "POS_TerminalWidgets"
 require "POS_MarketIngestion"
+require "POS_WatchlistService"
+require "POS_PlayerState"
 require "POS_API"
 require "POS_MenuBuilder"
 
@@ -123,6 +125,14 @@ screen.getContextData = function(_params)
         table.insert(data, { type = "header", text = "UI_POS_Market_FieldNotes" })
         table.insert(data, { type = "kv", key = "UI_POS_Market_NotesCount",
             value = tostring(noteCount) })
+    end
+    if player and POS_Sandbox and POS_Sandbox.getEnableWatchlist
+        and POS_Sandbox.getEnableWatchlist() then
+        local alertCount = POS_WatchlistService.countPendingAlerts(player)
+        if alertCount > 0 then
+            table.insert(data, { type = "kv", key = "UI_POS_Market_AlertCount",
+                value = tostring(alertCount) })
+        end
     end
     return data
 end

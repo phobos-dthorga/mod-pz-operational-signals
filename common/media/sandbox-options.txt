@@ -887,3 +887,21 @@ option POS.VHSReviewTimePerEntry
     page = POS_Sandbox,
     translation = POS_VHSReviewTimePerEntry,
 }
+
+option POS.EnableWatchlist
+{
+    type = boolean,
+    default = true,
+    page = POS_Sandbox,
+    translation = POS_EnableWatchlist,
+}
+
+option POS.WatchlistAlertThresholdPct
+{
+    type = integer,
+    default = 10,
+    min = 1,
+    max = 50,
+    page = POS_Sandbox,
+    translation = POS_WatchlistAlertThresholdPct,
+}

@@ -110,3 +110,50 @@ end
 function POS_PlayerState.getWatchlist(player)
     return POS_PlayerState.get(player).watchlist
 end
+
+--- Check if a category is on the player's watchlist.
+--- @param player IsoPlayer
+--- @param categoryId string
+--- @return boolean
+function POS_PlayerState.isWatching(player, categoryId)
+    local wl = POS_PlayerState.getWatchlist(player)
+    for _, entry in ipairs(wl) do
+        if entry.categoryId == categoryId then return true end
+    end
+    return false
+end
+
+--- Add a category to the player's watchlist.
+--- @param player IsoPlayer
+--- @param categoryId string
+--- @return boolean true if added, false if already watching or at max
+function POS_PlayerState.addToWatchlist(player, categoryId)
+    if POS_PlayerState.isWatching(player, categoryId) then return false end
+    local wl = POS_PlayerState.getWatchlist(player)
+    local maxEntries = POS_Constants.WATCHLIST_MAX_ENTRIES
+    if #wl >= maxEntries then return false end
+    local gt = getGameTime and getGameTime()
+    local day = gt and gt:getNightsSurvived() or 0
+    table.insert(wl, {
+        categoryId = categoryId,
+        addedDay = day,
+        lastSnapshotAvg = nil,
+        lastSnapshotDay = 0,
+    })
+    return true
+end
+
+--- Remove a category from the player's watchlist.
+--- @param player IsoPlayer
+--- @param categoryId string
+--- @return boolean true if removed
+function POS_PlayerState.removeFromWatchlist(player, categoryId)
+    local wl = POS_PlayerState.getWatchlist(player)
+    for i, entry in ipairs(wl) do
+        if entry.categoryId == categoryId then
+            table.remove(wl, i)
+            return true
+        end
+    end
+    return false
+end

@@ -116,6 +116,7 @@ POS_Constants.SCREEN_COMMODITY_ITEMS   = "pos.markets.commodity.items"
 POS_Constants.SCREEN_TRADERS            = "pos.markets.traders"
 POS_Constants.SCREEN_REPORTS            = "pos.markets.reports"
 POS_Constants.SCREEN_LEDGER             = "pos.markets.ledger"
+POS_Constants.SCREEN_WATCHLIST          = "pos.markets.watchlist"
 POS_Constants.SCREEN_EXCHANGE           = "pos.exchange"
 POS_Constants.SCREEN_EXCHANGE_OVERVIEW  = "pos.exchange.overview"
 POS_Constants.SCREEN_EXCHANGE_PORTFOLIO = "pos.exchange.portfolio"
@@ -293,6 +294,9 @@ POS_Constants.PORTABLE_DRAIN_DIVISOR_DEFAULT = 1800
 POS_Constants.PAGE_SIZE_COMMODITIES      = 8
 POS_Constants.PAGE_SIZE_COMMODITY_ITEMS  = 8
 POS_Constants.PAGE_SIZE_MARKET_REPORTS   = 5
+POS_Constants.PAGE_SIZE_WATCHLIST        = 6
+POS_Constants.WATCHLIST_MAX_ENTRIES      = 20
+POS_Constants.WATCHLIST_PRICE_CHANGE_PCT = 10
 
 ---------------------------------------------------------------
 -- Signal bar display (POS_NavPanel)

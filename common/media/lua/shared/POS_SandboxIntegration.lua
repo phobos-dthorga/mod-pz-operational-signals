@@ -478,3 +478,16 @@ end
 function POS_Sandbox.getVHSReviewTimePerEntry()
     return PhobosLib.getSandboxVar("POS", "VHSReviewTimePerEntry", 300)
 end
+
+---------------------------------------------------------------
+-- Watchlist
+---------------------------------------------------------------
+
+function POS_Sandbox.getEnableWatchlist()
+    return PhobosLib.getSandboxVar("POS", "EnableWatchlist", true)
+end
+
+function POS_Sandbox.getWatchlistAlertThresholdPct()
+    return PhobosLib.getSandboxVar("POS", "WatchlistAlertThresholdPct",
+        POS_Constants.WATCHLIST_PRICE_CHANGE_PCT)
+end
