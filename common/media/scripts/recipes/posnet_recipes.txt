@@ -83,4 +83,90 @@ module PhobosOperationalSignals {
         OnCreate POS_CraftCallbacks.onCreateVHSReviewNote,
     }
 
+    craftRecipe RewindMicrocassette
+    {
+        item 1 PhobosOperationalSignals.RecordedMicrocassette,
+        item keep 1 Base.Pencil,
+
+        result PhobosOperationalSignals.RewoundMicrocassette 1,
+
+        time 60,
+        category PhobosFieldOps,
+        Tags = POS_Microscope;CannotBeResearched,
+        needToBeLearn false,
+        OnCreate POS_CraftCallbacks.onCreateRewindMicrocassette,
+    }
+
+    craftRecipe RecycleMicrocassette
+    {
+        item 1 PhobosOperationalSignals.SpentMicrocassette,
+
+        result PhobosOperationalSignals.MagneticTapeScrap 1,
+
+        time 60,
+        category PhobosFieldOps,
+        Tags = POS_Microscope;CannotBeResearched,
+        needToBeLearn false,
+        OnCreate POS_CraftCallbacks.onCreateRecycleMicrocassette,
+    }
+
+    craftRecipe ReviewMicrocassette
+    {
+        item 1 [PhobosOperationalSignals.RecordedMicrocassette;PhobosOperationalSignals.RewoundMicrocassette],
+        item 1 [Base.SheetPaper2;Base.Notebook],
+        item keep 1 [Base.Pen;Base.Pencil;Base.RedPen;Base.BluePen;Base.GreenPen],
+
+        result PhobosOperationalSignals.RawMarketNote 1,
+
+        time 200,
+        category PhobosFieldOps,
+        needToBeLearn false,
+        OnCreate POS_CraftCallbacks.onCreateReviewMicrocassette,
+    }
+
+    craftRecipe ReviewFloppyDisk
+    {
+        item 1 [PhobosOperationalSignals.RecordedFloppyDisk;PhobosOperationalSignals.WornFloppyDisk],
+        item 1 [Base.SheetPaper2;Base.Notebook],
+        item keep 1 [Base.Pen;Base.Pencil;Base.RedPen;Base.BluePen;Base.GreenPen],
+
+        result PhobosOperationalSignals.RawMarketNote 1,
+
+        time 150,
+        category PhobosFieldOps,
+        Tags = POS_TerminalStation;CannotBeResearched,
+        needToBeLearn false,
+        OnCreate POS_CraftCallbacks.onCreateReviewFloppyDisk,
+    }
+
+    craftRecipe SalvageCorruptFloppy
+    {
+        item 1 PhobosOperationalSignals.CorruptFloppyDisk,
+        item keep 1 Base.Screwdriver,
+
+        result Base.ElectronicsScrap 1,
+
+        time 60,
+        category PhobosFieldOps,
+        Tags = POS_TerminalStation;CannotBeResearched,
+        needToBeLearn false,
+        SkillRequired Electrical=2,
+        OnCreate POS_CraftCallbacks.onCreateSalvageCorruptFloppy,
+    }
+
+    craftRecipe RepairDataRecorder
+    {
+        item 1 PhobosOperationalSignals.DataRecorder,
+        item 1 Base.ElectronicsScrap,
+        item keep 1 Base.Screwdriver,
+
+        result PhobosOperationalSignals.DataRecorder 1,
+
+        time 300,
+        category PhobosFieldOps,
+        needToBeLearn false,
+        SkillRequired Electrical=3,
+        OnCreate POS_CraftCallbacks.onCreateRepairDataRecorder,
+    }
+
 }
