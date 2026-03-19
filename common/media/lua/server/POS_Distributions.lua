@@ -20,8 +20,9 @@
 --
 -- Items distributed here:
 --   Devices:  PortableComputer, ReconCamcorder, FieldSurveyLogger,
---             DataCalculator
+--             DataCalculator, DataRecorder
 --   Tapes:    BlankVHSCTape, DamagedVHSTape, MagneticTapeScrap
+--   Media:    Microcassette, SpentMicrocassette, BlankFloppyDisk, CorruptFloppyDisk
 --
 -- Items NOT distributed (crafted/mission-generated only):
 --   RawMarketNote, CompiledMarketReport, FieldReport,
@@ -53,6 +54,11 @@ local CALC     = POS_Constants.ITEM_DATA_CALCULATOR
 local BLANK    = POS_Constants.ITEM_BLANK_VHS_TAPE
 local DAMAGED  = POS_Constants.ITEM_DAMAGED_VHS_TAPE
 local SCRAP    = POS_Constants.ITEM_MAGNETIC_TAPE_SCRAP
+local RECORDER = POS_Constants.ITEM_DATA_RECORDER
+local MICRO    = POS_Constants.ITEM_MICROCASSETTE
+local MICRO_S  = POS_Constants.ITEM_SPENT_MICROCASSETTE
+local FLOPPY   = POS_Constants.ITEM_BLANK_FLOPPY_DISK
+local FLOPPY_C = POS_Constants.ITEM_CORRUPT_FLOPPY_DISK
 
 -----------------------------------------------------
 -- PORTABLE COMPUTER
@@ -160,3 +166,60 @@ dist("GloveBox",                  DAMAGED, 0.05)
 dist("GloveBox",                  CALC,    0.02)
 dist("GloveBoxPolice",            LOGGER,  0.03)
 dist("GloveBoxPolice",            CAMCORD, 0.02)
+
+-----------------------------------------------------
+-- DATA-RECORDER
+-- Rare military/research field equipment
+-----------------------------------------------------
+
+dist("ArmyStorageElectronics",    RECORDER, 0.04)
+dist("ArmyBunkerStorage",         RECORDER, 0.03)
+dist("PoliceStorageElectronics",  RECORDER, 0.02)
+dist("OfficeDesk",                RECORDER, 0.01)
+dist("WarehouseTools",            RECORDER, 0.01)
+dist("SchoolLockers",             RECORDER, 0.01)
+dist("ElectronicStoreComputers",  RECORDER, 0.02)
+
+-----------------------------------------------------
+-- MICROCASSETTE
+-- Uncommon — offices, police, journalism, medical
+-----------------------------------------------------
+
+dist("OfficeDesk",                MICRO, 0.08)
+dist("OfficeDrawers",             MICRO, 0.06)
+dist("PoliceDesk",                MICRO, 0.06)
+dist("DeskDrawers",               MICRO, 0.04)
+dist("BedroomDresser",            MICRO, 0.03)
+dist("ElectronicStoreMisc",       MICRO, 0.05)
+
+-----------------------------------------------------
+-- SPENT MICROCASSETTE
+-- Uncommon — discarded in offices, homes
+-----------------------------------------------------
+
+dist("OfficeDrawers",             MICRO_S, 0.05)
+dist("LivingRoomSideTable",       MICRO_S, 0.04)
+dist("BedroomSideTable",          MICRO_S, 0.03)
+dist("GarageShelves",             MICRO_S, 0.03)
+dist("ClosetShelves",             MICRO_S, 0.02)
+
+-----------------------------------------------------
+-- BLANK FLOPPY DISK
+-- Very rare — university labs, government, military
+-----------------------------------------------------
+
+dist("OfficeDesk",                FLOPPY, 0.02)
+dist("ArmyStorageElectronics",    FLOPPY, 0.03)
+dist("ElectronicStoreComputers",  FLOPPY, 0.02)
+dist("SchoolLockers",             FLOPPY, 0.01)
+dist("LibraryBooks",              FLOPPY, 0.01)
+
+-----------------------------------------------------
+-- CORRUPT FLOPPY DISK
+-- Rare — old discarded floppies in tech locations
+-----------------------------------------------------
+
+dist("OfficeDrawers",             FLOPPY_C, 0.03)
+dist("GarageShelves",             FLOPPY_C, 0.02)
+dist("ElectronicStoreMisc",       FLOPPY_C, 0.02)
+dist("SchoolLockers",             FLOPPY_C, 0.01)
