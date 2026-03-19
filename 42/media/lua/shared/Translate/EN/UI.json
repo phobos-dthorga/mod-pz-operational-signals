@@ -427,5 +427,18 @@
     "UI_POS_RadioTier3": "Advanced Scanner",
     "UI_POS_RadioTier4": "Military-Grade Scanner",
 
-    "UI_POS_Market_GatherIntel_DangerNearby": "Cannot gather intel — threats detected nearby. Clear the area first."
+    "UI_POS_Market_GatherIntel_DangerNearby": "Cannot gather intel — threats detected nearby. Clear the area first.",
+
+    "UI_POS_Note_Category": "Category",
+    "UI_POS_Note_Location": "Location",
+    "UI_POS_Note_Date": "Date",
+    "UI_POS_Note_Confidence": "Confidence",
+    "UI_POS_Note_PriceObservations": "Price Observations",
+    "UI_POS_Note_PriceEstimate": "Price Estimate",
+    "UI_POS_Note_StockAssessment": "Stock Assessment",
+    "UI_POS_Note_SupplyLevel": "Supply Level",
+    "UI_POS_Note_Notes": "Notes",
+    "UI_POS_Note_FieldObservations": "Field observations gathered via direct survey.",
+    "UI_POS_Note_UploadInstructions": "Upload to POSnet terminal for market database integration.",
+    "UI_POS_Note_Title": "Market Intel"
 }
