@@ -142,7 +142,11 @@ function POS_EventLog.purgeOldLogs(maxAgeDays)
     -- Purging is best-effort: we track the current day and delete known
     -- old files by constructing their expected paths.
     local currentDay = POS_WorldState.getWorldDay()
-    local systems = { "economy", "stocks", "recon" }
+    local systems = {
+        POS_Constants.EVENT_SYSTEM_ECONOMY,
+        POS_Constants.EVENT_SYSTEM_STOCKS,
+        POS_Constants.EVENT_SYSTEM_RECON,
+    }
     local purged = 0
 
     for _, system in ipairs(systems) do

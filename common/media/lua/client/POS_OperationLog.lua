@@ -139,7 +139,7 @@ function POS_OperationLog.completeOperation(operationId)
     -- Pay reward for recon missions
     if op.scaledReward and op.scaledReward > 0
        and op.objectives and op.objectives[1]
-       and op.objectives[1].type == "recon" then
+       and op.objectives[1].type == POS_Constants.MISSION_TYPE_RECON then
         local player = getSpecificPlayer(0)
         if player then
             PhobosLib.addMoney(player, op.scaledReward)

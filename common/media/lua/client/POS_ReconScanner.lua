@@ -45,7 +45,7 @@ local function getPhotoReadyRecon()
     local ops = POS_OperationLog.getByStatus("active")
     for _, op in ipairs(ops) do
         if op.objectives and op.objectives[1]
-           and op.objectives[1].type == "recon"
+           and op.objectives[1].type == POS_Constants.MISSION_TYPE_RECON
            and op.objectives[1].entered
            and not op.objectives[1].photographed then
             return op

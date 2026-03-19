@@ -121,7 +121,7 @@ end)
 --- Distance threshold for considering a player "at" the target building (tiles).
 local ROOM_ENTRY_THRESHOLD = 100
 
-POS_CompletionDetector.registerChecker("recon", function(player, obj)
+POS_CompletionDetector.registerChecker(POS_Constants.MISSION_TYPE_RECON, function(player, obj)
     if obj.completed then return true end
     if not obj.targetRoomDefs or not obj.targetBuildingX then return false end
 

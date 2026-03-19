@@ -91,7 +91,7 @@ function POS_TapeManager.recordEntry(item, entry)
     -- Store full entry data in event log (not in item modData)
     if POS_EventLog and POS_EventLog.append then
         POS_EventLog.append(
-            "recon",                          -- system
+            POS_Constants.EVENT_SYSTEM_RECON,  -- system
             "tape_entry",                     -- eventType
             entry.roomType or "unknown",      -- entityId
             entry.region or "",               -- regionId

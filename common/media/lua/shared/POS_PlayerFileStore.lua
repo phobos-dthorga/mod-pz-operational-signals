@@ -113,13 +113,13 @@ local function loadFromFile(player)
     local line = reader:readLine()
     while line do
         -- Section headers
-        if line == "[WATCHLIST]" then
+        if line == POS_Constants.PLAYER_FILE_SECTION_WATCHLIST then
             currentSection = "watchlist"
-        elseif line == "[ALERTS]" then
+        elseif line == POS_Constants.PLAYER_FILE_SECTION_ALERTS then
             currentSection = "alerts"
-        elseif line == "[ORDERS]" then
+        elseif line == POS_Constants.PLAYER_FILE_SECTION_ORDERS then
             currentSection = "orders"
-        elseif line == "[HOLDINGS]" then
+        elseif line == POS_Constants.PLAYER_FILE_SECTION_HOLDINGS then
             currentSection = "holdings"
         elseif currentSection and line ~= "" then
             if currentSection == "watchlist" then
@@ -162,7 +162,7 @@ local function saveToFile(player, data)
     end
 
     -- Watchlist section
-    writer:writeLine("[WATCHLIST]")
+    writer:writeLine(POS_Constants.PLAYER_FILE_SECTION_WATCHLIST)
     for _, entry in ipairs(data.watchlist) do
         writeLine(writer,
             entry.categoryId,
@@ -172,7 +172,7 @@ local function saveToFile(player, data)
     end
 
     -- Alerts section
-    writer:writeLine("[ALERTS]")
+    writer:writeLine(POS_Constants.PLAYER_FILE_SECTION_ALERTS)
     for _, entry in ipairs(data.alerts) do
         writeLine(writer,
             entry.categoryId,
@@ -184,10 +184,10 @@ local function saveToFile(player, data)
     end
 
     -- Orders section (future)
-    writer:writeLine("[ORDERS]")
+    writer:writeLine(POS_Constants.PLAYER_FILE_SECTION_ORDERS)
 
     -- Holdings section (future)
-    writer:writeLine("[HOLDINGS]")
+    writer:writeLine(POS_Constants.PLAYER_FILE_SECTION_HOLDINGS)
 
     writer:close()
 

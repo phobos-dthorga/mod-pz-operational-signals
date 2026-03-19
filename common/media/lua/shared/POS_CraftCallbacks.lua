@@ -186,7 +186,7 @@ function POS_CraftCallbacks.onCreateVHSReviewNote(items, result, player)
     -- Generate items and prices for the category
     local poolSize = POS_Sandbox and POS_Sandbox.getItemSelectionPoolSize
         and POS_Sandbox.getItemSelectionPoolSize() or 3
-    local ctx = { sourceTier = "field" }
+    local ctx = { sourceTier = POS_Constants.SOURCE_TIER_FIELD }
     local selectedItems = POS_ItemPool and POS_ItemPool.selectItems(categoryId, poolSize, ctx)
     if selectedItems and #selectedItems > 0
             and POS_PriceEngine and POS_PriceEngine.generatePrices then

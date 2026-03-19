@@ -685,10 +685,11 @@ with 4-5 sub-categories per parent, paginated if needed.
 
 ### 11.2 Player ModData Scope
 
-Player modData is limited to per-player state only:
-- Reputation, cash balance, watchlist, active orders, alert preferences, cooldowns.
-- VHS tape full entries are stored in the event log; only a summary is kept in
-  item modData.
+Player modData is limited to per-player **scalar** state only:
+- Reputation, cash balance, intel access bands, UI preferences, cooldowns.
+- Growth-prone arrays (watchlist, alerts, orders, holdings) are stored in
+  per-player flat files via `POS_PlayerFileStore` (see `persistence-architecture.md`
+  Layer 2b). VHS tape entries are in the event log; only a summary is in item modData.
 
 ### 11.3 Authority Model
 

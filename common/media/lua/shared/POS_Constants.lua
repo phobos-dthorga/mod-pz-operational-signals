@@ -55,6 +55,12 @@ POS_Constants.SCREEN_NEGOTIATE   = "pos.negotiate"
 POS_Constants.SCREEN_STOCKMARKET = "pos.stockmarket"
 
 ---------------------------------------------------------------
+-- Mission type identifiers
+---------------------------------------------------------------
+
+POS_Constants.MISSION_TYPE_RECON = "recon"
+
+---------------------------------------------------------------
 -- Item full types
 ---------------------------------------------------------------
 
@@ -213,6 +219,13 @@ POS_Constants.PRICE_MIN_OUTPUT             = 0.01
 POS_Constants.REP_VARIANCE_MULTIPLIERS = { 1.5, 1.2, 1.0, 0.8, 0.6 }
 
 ---------------------------------------------------------------
+-- Source tier identifiers
+---------------------------------------------------------------
+
+POS_Constants.SOURCE_TIER_FIELD     = "field"
+POS_Constants.SOURCE_TIER_BROADCAST = "broadcast"
+
+---------------------------------------------------------------
 -- Source tier weights (market intel averaging)
 ---------------------------------------------------------------
 
@@ -356,6 +369,11 @@ POS_Constants.EVENT_SNAPSHOT_DIR     = "POSNET/snapshots/"
 POS_Constants.EVENT_LOG_SEPARATOR    = "|"
 POS_Constants.EVENT_LOG_VERSION      = 1
 POS_Constants.EVENT_LOG_PURGE_BUFFER = 5
+
+-- Event log system names
+POS_Constants.EVENT_SYSTEM_ECONOMY   = "economy"
+POS_Constants.EVENT_SYSTEM_STOCKS    = "stocks"
+POS_Constants.EVENT_SYSTEM_RECON     = "recon"
 
 ---------------------------------------------------------------
 -- Server commands (persistence / snapshot protocol)
@@ -514,6 +532,10 @@ POS_Constants.CACHE_FILE_ROOM_SEP   = ","
 POS_Constants.PLAYER_FILE_PREFIX    = "POSNET/player_"
 POS_Constants.PLAYER_FILE_EXT       = ".dat"
 POS_Constants.PLAYER_FILE_SEPARATOR = "|"
+POS_Constants.PLAYER_FILE_SECTION_WATCHLIST = "[WATCHLIST]"
+POS_Constants.PLAYER_FILE_SECTION_ALERTS    = "[ALERTS]"
+POS_Constants.PLAYER_FILE_SECTION_ORDERS    = "[ORDERS]"
+POS_Constants.PLAYER_FILE_SECTION_HOLDINGS  = "[HOLDINGS]"
 
 ---------------------------------------------------------------
 -- Context menu intel states

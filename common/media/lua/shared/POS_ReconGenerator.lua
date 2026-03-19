@@ -247,7 +247,7 @@ function POS_ReconGenerator.generate(player)
                 descKey = target.descKey,
                 objectives = {
                     {
-                        type = "recon",
+                        type = POS_Constants.MISSION_TYPE_RECON,
                         targetRoomDefs = target.roomDefs,
                         targetBuildingX = building.x,
                         targetBuildingY = building.y,
