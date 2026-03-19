@@ -237,5 +237,22 @@
     "Sandbox_POS_EnableWatchlist_tooltip": "Allow players to watch commodity categories and receive price alerts. <BR> <BR> <INDENT:20> When disabled, the watchlist screen and watch/unwatch buttons are hidden. <BR> Default: ON",
 
     "Sandbox_POS_WatchlistAlertThresholdPct": "Watchlist Alert Threshold (%)",
-    "Sandbox_POS_WatchlistAlertThresholdPct_tooltip": "Percentage price change that triggers a watchlist alert. <BR> <BR> <INDENT:20> A value of 10 means alerts fire when a watched category's average price changes by 10% or more since the last check. <BR> Range: 1-50. Default: 10"
+    "Sandbox_POS_WatchlistAlertThresholdPct_tooltip": "Percentage price change that triggers a watchlist alert. <BR> <BR> <INDENT:20> A value of 10 means alerts fire when a watched category's average price changes by 10% or more since the last check. <BR> Range: 1-50. Default: 10",
+
+    "Sandbox_POS_EnableDataRecorder": "Enable Data-Recorder System",
+    "Sandbox_POS_EnableDataRecorder_tooltip": "Master toggle for the Data-Recorder passive ingestion system. <BR> <BR> <INDENT:20> When enabled, all passive recon data routes through an equipped Data-Recorder. <BR> When disabled, the recorder item still exists but passive scanning reverts to legacy behaviour. <BR> Default: ON",
+    "Sandbox_POS_RecorderInternalBufferSize": "Recorder Internal Buffer Size",
+    "Sandbox_POS_RecorderInternalBufferSize_tooltip": "Number of data chunks the recorder can store internally when no media is inserted. <BR> <BR> <INDENT:20> Overflow chunks are lost. Insert media for extended storage. <BR> Range: 4-32. Default: 8",
+    "Sandbox_POS_RecorderPowerDrainRate": "Recorder Power Drain Rate",
+    "Sandbox_POS_RecorderPowerDrainRate_tooltip": "Condition loss per in-game hour while the Data-Recorder is actively recording. <BR> <BR> <INDENT:20> Expressed in hundredths of condition (50 = 0.5 condition per hour). <BR> Range: 10-200. Default: 50",
+    "Sandbox_POS_RecorderProcessingTime": "Recorder Processing Time (ticks)",
+    "Sandbox_POS_RecorderProcessingTime_tooltip": "Duration of each chunk processing action at a POSnet terminal in game ticks. <BR> <BR> <INDENT:20> Lower values = faster processing. <BR> Range: 10-100. Default: 30",
+    "Sandbox_POS_EnableMicrocassettes": "Enable Microcassettes",
+    "Sandbox_POS_EnableMicrocassettes_tooltip": "When enabled, microcassette tapes appear in loot and can be used with the Data-Recorder. <BR> <BR> <INDENT:20> High-fidelity medium (+1000 BPS confidence). 10 entries per tape. <BR> Default: ON",
+    "Sandbox_POS_EnableFloppyDisks": "Enable Floppy Disks",
+    "Sandbox_POS_EnableFloppyDisks_tooltip": "When enabled, floppy disks appear in loot and can be used with the Data-Recorder. <BR> <BR> <INDENT:20> Digital precision (+2000 BPS confidence). 40 entries per disk. Extremely rare. <BR> Default: ON",
+    "Sandbox_POS_FloppyCorruptionChance": "Floppy Corruption Chance (%)",
+    "Sandbox_POS_FloppyCorruptionChance_tooltip": "Percentage chance that a worn floppy disk corrupts irreparably on each review cycle. <BR> <BR> <INDENT:20> Set to 0 for indestructible floppies. <BR> Range: 0-50. Default: 15",
+    "Sandbox_POS_MicrocassetteMaxRewinds": "Microcassette Max Rewinds",
+    "Sandbox_POS_MicrocassetteMaxRewinds_tooltip": "Maximum number of times a microcassette can be rewound for reuse. <BR> <BR> <INDENT:20> After reaching this limit, the tape becomes spent and must be recycled. <BR> Range: 1-5. Default: 1"
 }

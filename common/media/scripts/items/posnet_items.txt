@@ -152,4 +152,87 @@ module PhobosOperationalSignals {
         Tooltip = Tooltip_POS_ImprovisedReconTape,
     }
 
+    item DataRecorder {
+        DisplayCategory = Electronics,
+        DisplayName = Data-Recorder,
+        ItemType = base:normal,
+        Weight = 1.2,
+        Icon = Item_POS_DataRecorder,
+        Tooltip = Tooltip_POS_DataRecorder,
+        ConditionMax = 100,
+        Tags = Electronic,
+    }
+
+    item Microcassette {
+        DisplayCategory = Electronics,
+        DisplayName = Microcassette,
+        ItemType = base:normal,
+        Weight = 0.05,
+        Icon = Item_POS_Microcassette,
+        Tooltip = Tooltip_POS_Microcassette,
+    }
+
+    item RecordedMicrocassette {
+        DisplayCategory = Electronics,
+        DisplayName = Recorded Microcassette,
+        ItemType = base:normal,
+        Weight = 0.05,
+        Icon = Item_POS_RecordedMicrocassette,
+        Tooltip = Tooltip_POS_RecordedMicrocassette,
+    }
+
+    item RewoundMicrocassette {
+        DisplayCategory = Electronics,
+        DisplayName = Rewound Microcassette,
+        ItemType = base:normal,
+        Weight = 0.05,
+        Icon = Item_POS_RewoundMicrocassette,
+        Tooltip = Tooltip_POS_RewoundMicrocassette,
+    }
+
+    item SpentMicrocassette {
+        DisplayCategory = Junk,
+        DisplayName = Spent Microcassette,
+        ItemType = base:normal,
+        Weight = 0.05,
+        Icon = Item_POS_SpentMicrocassette,
+        Tooltip = Tooltip_POS_SpentMicrocassette,
+    }
+
+    item BlankFloppyDisk {
+        DisplayCategory = Electronics,
+        DisplayName = Blank Floppy Disk,
+        ItemType = base:normal,
+        Weight = 0.05,
+        Icon = Item_POS_BlankFloppyDisk,
+        Tooltip = Tooltip_POS_BlankFloppyDisk,
+    }
+
+    item RecordedFloppyDisk {
+        DisplayCategory = Electronics,
+        DisplayName = Recorded Floppy Disk,
+        ItemType = base:normal,
+        Weight = 0.05,
+        Icon = Item_POS_RecordedFloppyDisk,
+        Tooltip = Tooltip_POS_RecordedFloppyDisk,
+    }
+
+    item WornFloppyDisk {
+        DisplayCategory = Electronics,
+        DisplayName = Worn Floppy Disk,
+        ItemType = base:normal,
+        Weight = 0.05,
+        Icon = Item_POS_WornFloppyDisk,
+        Tooltip = Tooltip_POS_WornFloppyDisk,
+    }
+
+    item CorruptFloppyDisk {
+        DisplayCategory = Junk,
+        DisplayName = Corrupt Floppy Disk,
+        ItemType = base:normal,
+        Weight = 0.05,
+        Icon = Item_POS_CorruptFloppyDisk,
+        Tooltip = Tooltip_POS_CorruptFloppyDisk,
+    }
+
 }

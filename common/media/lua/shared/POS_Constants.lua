@@ -689,3 +689,147 @@ POS_Constants.MARKET_NOTE_BASE_PRICES = {
     biohazard  = 30.0,
 }
 POS_Constants.MARKET_NOTE_BASE_PRICE_DEFAULT = 10.0
+
+---------------------------------------------------------------
+-- Data-Recorder screen IDs
+---------------------------------------------------------------
+
+POS_Constants.SCREEN_DATA_MANAGEMENT = "pos.data"
+
+---------------------------------------------------------------
+-- Data-Recorder item types
+---------------------------------------------------------------
+
+POS_Constants.ITEM_DATA_RECORDER          = "PhobosOperationalSignals.DataRecorder"
+POS_Constants.ITEM_MICROCASSETTE          = "PhobosOperationalSignals.Microcassette"
+POS_Constants.ITEM_RECORDED_MICROCASSETTE = "PhobosOperationalSignals.RecordedMicrocassette"
+POS_Constants.ITEM_REWOUND_MICROCASSETTE  = "PhobosOperationalSignals.RewoundMicrocassette"
+POS_Constants.ITEM_SPENT_MICROCASSETTE    = "PhobosOperationalSignals.SpentMicrocassette"
+POS_Constants.ITEM_BLANK_FLOPPY_DISK     = "PhobosOperationalSignals.BlankFloppyDisk"
+POS_Constants.ITEM_RECORDED_FLOPPY_DISK  = "PhobosOperationalSignals.RecordedFloppyDisk"
+POS_Constants.ITEM_WORN_FLOPPY_DISK      = "PhobosOperationalSignals.WornFloppyDisk"
+POS_Constants.ITEM_CORRUPT_FLOPPY_DISK   = "PhobosOperationalSignals.CorruptFloppyDisk"
+
+---------------------------------------------------------------
+-- Media family identifiers
+---------------------------------------------------------------
+
+POS_Constants.MEDIA_FAMILY_VHS          = "vhs"
+POS_Constants.MEDIA_FAMILY_MICROCASSETTE = "microcassette"
+POS_Constants.MEDIA_FAMILY_FLOPPY       = "floppy"
+
+---------------------------------------------------------------
+-- Media fidelity levels
+---------------------------------------------------------------
+
+POS_Constants.MEDIA_FIDELITY_STANDARD = "standard"
+POS_Constants.MEDIA_FIDELITY_HIGH     = "high"
+POS_Constants.MEDIA_FIDELITY_DIGITAL  = "digital"
+
+---------------------------------------------------------------
+-- Media capacity (entries)
+---------------------------------------------------------------
+
+POS_Constants.MICROCASSETTE_CAPACITY       = 10
+POS_Constants.MICROCASSETTE_REWIND_CAP     = 10
+POS_Constants.FLOPPY_CAPACITY              = 40
+
+---------------------------------------------------------------
+-- Media confidence modifiers (basis points)
+---------------------------------------------------------------
+
+POS_Constants.MICROCASSETTE_CONFIDENCE_MOD         = 1000
+POS_Constants.MICROCASSETTE_REWOUND_CONFIDENCE_MOD = 500
+POS_Constants.FLOPPY_CONFIDENCE_MOD                = 2000
+POS_Constants.FLOPPY_WORN_CONFIDENCE_MOD           = 1000
+
+---------------------------------------------------------------
+-- Data-Recorder modData keys
+---------------------------------------------------------------
+
+POS_Constants.MD_RECORDER_ID             = "POS_RecorderId"
+POS_Constants.MD_RECORDER_BUFFER_COUNT   = "POS_RecorderBufferCount"
+POS_Constants.MD_RECORDER_BUFFER_CAP     = "POS_RecorderBufferCapacity"
+POS_Constants.MD_RECORDER_MEDIA_TYPE     = "POS_RecorderMediaType"
+POS_Constants.MD_RECORDER_MEDIA_ID       = "POS_RecorderMediaId"
+POS_Constants.MD_RECORDER_MEDIA_USED     = "POS_RecorderMediaUsed"
+POS_Constants.MD_RECORDER_MEDIA_CAP      = "POS_RecorderMediaCapacity"
+POS_Constants.MD_RECORDER_TOTAL_RECORDED = "POS_RecorderTotalRecorded"
+POS_Constants.MD_RECORDER_LAST_REGION    = "POS_RecorderLastRegion"
+POS_Constants.MD_RECORDER_POWERED        = "POS_RecorderPowered"
+POS_Constants.MD_RECORDER_SOURCE_ID      = "POS_RecorderSourceId"
+POS_Constants.MD_RECORDER_TUTORIAL_SHOWN = "POS_RecorderTutorialShown"
+
+---------------------------------------------------------------
+-- Unified media modData keys (replaces POS_Tape* keys)
+---------------------------------------------------------------
+
+POS_Constants.MD_MEDIA_ID           = "POS_MediaId"
+POS_Constants.MD_MEDIA_FAMILY       = "POS_MediaFamily"
+POS_Constants.MD_MEDIA_ENTRY_COUNT  = "POS_MediaEntryCount"
+POS_Constants.MD_MEDIA_CAPACITY     = "POS_MediaCapacity"
+POS_Constants.MD_MEDIA_FIDELITY     = "POS_MediaFidelity"
+POS_Constants.MD_MEDIA_CONF_MOD     = "POS_MediaConfidenceMod"
+POS_Constants.MD_MEDIA_WEAR         = "POS_MediaWear"
+POS_Constants.MD_MEDIA_REGION       = "POS_MediaRegion"
+POS_Constants.MD_MEDIA_CYCLE_COUNT  = "POS_MediaCycleCount"
+POS_Constants.MD_MEDIA_MIGRATED     = "POS_MediaMigrated"
+
+---------------------------------------------------------------
+-- Data chunk types
+---------------------------------------------------------------
+
+POS_Constants.CHUNK_TYPE_BUILDING_SCAN      = "building_scan"
+POS_Constants.CHUNK_TYPE_RADIO_INTERCEPT    = "radio_intercept"
+POS_Constants.CHUNK_TYPE_MARKET_OBSERVATION = "market_observation"
+POS_Constants.CHUNK_TYPE_SIGNAL_PROBE       = "signal_probe"
+POS_Constants.CHUNK_TYPE_ENVIRONMENTAL      = "environmental"
+
+---------------------------------------------------------------
+-- Data source categories
+---------------------------------------------------------------
+
+POS_Constants.DATA_SOURCE_RADIO   = "radio"
+POS_Constants.DATA_SOURCE_RECON   = "recon"
+POS_Constants.DATA_SOURCE_PASSIVE = "passive"
+
+---------------------------------------------------------------
+-- Device confidence base values (basis points)
+---------------------------------------------------------------
+
+POS_Constants.DEVICE_CONFIDENCE_CAMCORDER = 3000
+POS_Constants.DEVICE_CONFIDENCE_LOGGER    = 1000
+POS_Constants.DEVICE_CONFIDENCE_RECORDER  = 0
+
+---------------------------------------------------------------
+-- Recorder parameters
+---------------------------------------------------------------
+
+POS_Constants.RECORDER_INTERNAL_BUFFER_DEFAULT   = 8
+POS_Constants.RECORDER_POWER_DRAIN_RATE_DEFAULT  = 50
+POS_Constants.RECORDER_PROCESSING_TIME_DEFAULT   = 30
+POS_Constants.RECORDER_CONDITION_BPS_PER_PERCENT = 50
+
+---------------------------------------------------------------
+-- Floppy disk corruption
+---------------------------------------------------------------
+
+POS_Constants.FLOPPY_CORRUPTION_CHANCE_DEFAULT = 5
+POS_Constants.MICROCASSETTE_MAX_REWINDS_DEFAULT = 1
+
+---------------------------------------------------------------
+-- Data-Recorder event log types
+---------------------------------------------------------------
+
+POS_Constants.EVENT_RECORDER_CHUNK   = "recorder_chunk"
+POS_Constants.EVENT_RECORDER_PROCESS = "recorder_process"
+POS_Constants.EVENT_MEDIA_INSERT     = "media_insert"
+POS_Constants.EVENT_MEDIA_EJECT      = "media_eject"
+
+---------------------------------------------------------------
+-- Confidence formula constants
+---------------------------------------------------------------
+
+POS_Constants.CONFIDENCE_MIN_EFFECTIVE  = 10
+POS_Constants.CONFIDENCE_BASE_EFFECTIVE = 50
+POS_Constants.CONFIDENCE_BPS_DIVISOR    = 100

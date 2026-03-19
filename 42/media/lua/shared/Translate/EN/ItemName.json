@@ -17,5 +17,15 @@
     "PhobosOperationalSignals.MagneticTapeScrap": "Magnetic Tape Scrap",
     "PhobosOperationalSignals.RefurbishedVHSCTape": "Refurbished VHS-C Tape",
     "PhobosOperationalSignals.SplicedReconTape": "Spliced Recon Tape",
-    "PhobosOperationalSignals.ImprovisedReconTape": "Improvised Recon Tape"
+    "PhobosOperationalSignals.ImprovisedReconTape": "Improvised Recon Tape",
+
+    "PhobosOperationalSignals.DataRecorder": "Data-Recorder",
+    "PhobosOperationalSignals.Microcassette": "Microcassette",
+    "PhobosOperationalSignals.RecordedMicrocassette": "Recorded Microcassette",
+    "PhobosOperationalSignals.RewoundMicrocassette": "Rewound Microcassette",
+    "PhobosOperationalSignals.SpentMicrocassette": "Spent Microcassette",
+    "PhobosOperationalSignals.BlankFloppyDisk": "Blank Floppy Disk",
+    "PhobosOperationalSignals.RecordedFloppyDisk": "Recorded Floppy Disk",
+    "PhobosOperationalSignals.WornFloppyDisk": "Worn Floppy Disk",
+    "PhobosOperationalSignals.CorruptFloppyDisk": "Corrupt Floppy Disk"
 }

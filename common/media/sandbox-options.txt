@@ -905,3 +905,77 @@ option POS.WatchlistAlertThresholdPct
     page = POS_Sandbox,
     translation = POS_WatchlistAlertThresholdPct,
 }
+
+option POS.EnableDataRecorder
+{
+    type = boolean,
+    default = true,
+    page = POS_Sandbox,
+    translation = POS_EnableDataRecorder,
+}
+
+option POS.RecorderInternalBufferSize
+{
+    type = integer,
+    default = 8,
+    min = 4,
+    max = 32,
+    page = POS_Sandbox,
+    translation = POS_RecorderInternalBufferSize,
+}
+
+option POS.RecorderPowerDrainRate
+{
+    type = integer,
+    default = 50,
+    min = 10,
+    max = 200,
+    page = POS_Sandbox,
+    translation = POS_RecorderPowerDrainRate,
+}
+
+option POS.RecorderProcessingTime
+{
+    type = integer,
+    default = 30,
+    min = 10,
+    max = 100,
+    page = POS_Sandbox,
+    translation = POS_RecorderProcessingTime,
+}
+
+option POS.EnableMicrocassettes
+{
+    type = boolean,
+    default = true,
+    page = POS_Sandbox,
+    translation = POS_EnableMicrocassettes,
+}
+
+option POS.EnableFloppyDisks
+{
+    type = boolean,
+    default = true,
+    page = POS_Sandbox,
+    translation = POS_EnableFloppyDisks,
+}
+
+option POS.FloppyCorruptionChance
+{
+    type = integer,
+    default = 15,
+    min = 0,
+    max = 50,
+    page = POS_Sandbox,
+    translation = POS_FloppyCorruptionChance,
+}
+
+option POS.MicrocassetteMaxRewinds
+{
+    type = integer,
+    default = 1,
+    min = 1,
+    max = 5,
+    page = POS_Sandbox,
+    translation = POS_MicrocassetteMaxRewinds,
+}

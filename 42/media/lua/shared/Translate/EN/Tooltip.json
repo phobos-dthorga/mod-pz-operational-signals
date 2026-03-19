@@ -18,5 +18,15 @@
     "Tooltip_POS_MagneticTapeScrap": "Loose magnetic tape ribbon salvaged from VHS cassettes. <BR> Used to craft improvised recon tapes.",
     "Tooltip_POS_RefurbishedVHSCTape": "A repaired VHS-C tape with visible adhesive patches. <BR> Lower quality than factory tapes (15 entries, reduced confidence).",
     "Tooltip_POS_SplicedReconTape": "A makeshift VHS-C tape spliced from multiple damaged tapes. <BR> Functional but unreliable (8 entries, low confidence, may corrupt data).",
-    "Tooltip_POS_ImprovisedReconTape": "A crude improvised cassette assembled from scavenged materials. <BR> Extremely unreliable (4 entries, very low confidence, signal corruption likely)."
+    "Tooltip_POS_ImprovisedReconTape": "A crude improvised cassette assembled from scavenged materials. <BR> Extremely unreliable (4 entries, very low confidence, signal corruption likely).",
+
+    "Tooltip_POS_DataRecorder": "A ruggedized 1990s field data logger with belt clip and media slot. <BR> Equip on belt to passively capture sensor data from nearby devices. <BR> Insert media (VHS-C, microcassette, or floppy disk) for extended storage. <BR> Process recorded data at a POSnet terminal.",
+    "Tooltip_POS_Microcassette": "A factory-fresh microcassette tape for dictaphone-style recording. <BR> Higher fidelity than VHS (10 entries, +1000 BPS confidence). <BR> Insert into a Data-Recorder to begin recording.",
+    "Tooltip_POS_RecordedMicrocassette": "A microcassette containing recorded field data. <BR> Review with pen and paper to extract market intelligence (portable — no station required). <BR> Can be rewound once at a microscope for reuse.",
+    "Tooltip_POS_RewoundMicrocassette": "A previously recorded microcassette that has been rewound for reuse. <BR> Reduced fidelity (+500 BPS). Cannot be rewound again after next recording.",
+    "Tooltip_POS_SpentMicrocassette": "A microcassette that has reached the end of its useful life. <BR> The tape mechanism is worn beyond reliable recording. <BR> Recycle at a microscope for magnetic tape scrap.",
+    "Tooltip_POS_BlankFloppyDisk": "A 3.5-inch floppy disk — the highest-capacity recording medium available. <BR> Digital precision (+2000 BPS confidence), 40 entries. <BR> Extremely rare. Found in university labs, government offices, and military installations.",
+    "Tooltip_POS_RecordedFloppyDisk": "A floppy disk containing recorded digital field data. <BR> Review at a POSnet terminal with pen and paper to extract intelligence. <BR> May degrade with repeated use.",
+    "Tooltip_POS_WornFloppyDisk": "A floppy disk showing signs of magnetic degradation. <BR> Still functional but with reduced confidence (+1000 BPS). <BR> Risk of corruption increases with each review cycle.",
+    "Tooltip_POS_CorruptFloppyDisk": "A floppy disk with unrecoverable data corruption. <BR> The magnetic surface is damaged beyond reading. <BR> Salvage at a computer terminal for electronics scrap (requires Electrical 2)."
 }

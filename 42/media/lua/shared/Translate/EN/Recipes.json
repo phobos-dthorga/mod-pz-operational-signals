@@ -8,5 +8,12 @@
     "ImproviseReconTape": "Improvise Recon Tape",
     "RecycleTapeToScrap": "Recycle Tape to Scrap",
 
-    "ReviewVHSTape": "Review VHS Tape Entry"
+    "ReviewVHSTape": "Review VHS Tape Entry",
+
+    "RewindMicrocassette": "Rewind Microcassette",
+    "RecycleMicrocassette": "Recycle Microcassette",
+    "ReviewMicrocassette": "Review Microcassette",
+    "ReviewFloppyDisk": "Review Floppy Disk",
+    "SalvageCorruptFloppy": "Salvage Corrupt Floppy Disk",
+    "RepairDataRecorder": "Repair Data-Recorder"
 }
