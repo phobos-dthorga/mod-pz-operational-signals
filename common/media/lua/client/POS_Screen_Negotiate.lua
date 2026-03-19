@@ -28,45 +28,12 @@ require "PhobosLib"
 require "POS_Constants"
 require "POS_ScreenManager"
 require "POS_TerminalWidgets"
-require "POS_Reputation"
+require "POS_NegotiationService"
 require "POS_RewardCalculator"
 require "POS_MapMarkers"
 require "POS_OperationLog"
 require "PhobosLib_Address"
 require "POS_API"
-
----------------------------------------------------------------
--- Negotiation mechanics
----------------------------------------------------------------
-
-local MAX_ATTEMPTS = 3
-
---- Base success chance by reputation tier (1-5).
-local TIER_SUCCESS_CHANCE = {
-    [1] = 30,   -- Untrusted
-    [2] = 50,   -- Known
-    [3] = 70,   -- Trusted
-    [4] = 85,   -- Established
-    [5] = 85,   -- Legendary (same as IV)
-}
-
---- Calculate the success chance for a negotiation attempt.
----@param player any IsoPlayer
----@return number Chance as 0-100
-local function getSuccessChance(player)
-    local tier = POS_Reputation.getTier(player)
-    local base = TIER_SUCCESS_CHANCE[tier] or 30
-    local bonus = POS_Sandbox and POS_Sandbox.getNegotiationSuccessBonus
-        and POS_Sandbox.getNegotiationSuccessBonus() or 0
-    return math.max(0, math.min(100, base + bonus))
-end
-
---- Roll for negotiation success.
----@param chance number 0-100
----@return boolean
-local function rollSuccess(chance)
-    return ZombRand(100) < chance
-end
 
 ---------------------------------------------------------------
 
@@ -94,23 +61,13 @@ function screen.create(contentPanel, params, _terminal)
 
     local player = getSpecificPlayer(0)
     local obj = op.objectives and op.objectives[1]
-    local isDelivery = obj and obj.type == "delivery"
+    local isDelivery = obj and obj.type == POS_Constants.OBJECTIVE_TYPE_DELIVERY
 
-    -- Track negotiation state on the operation table
-    op.negotiationAttempts = op.negotiationAttempts or 0
-    if not op.originalReward then
-        if isDelivery then
-            op.originalReward = op.estimatedReward
-        else
-            op.originalReward = op.scaledReward
-        end
-    end
-    if not op.originalExpiryDay then
-        op.originalExpiryDay = op.expiryDay
-    end
+    -- Initialise negotiation state via service
+    POS_NegotiationService.initNegotiation(op)
 
-    local attemptsLeft = MAX_ATTEMPTS - op.negotiationAttempts
-    local chance = getSuccessChance(player)
+    local attemptsLeft = POS_NegotiationService.getAttemptsLeft(op)
+    local chance = POS_NegotiationService.getSuccessChance(player)
     local lastResult = params and params.lastResult
 
     -- Header
@@ -213,25 +170,9 @@ function screen.create(contentPanel, params, _terminal)
         W.createButton(ctx.panel, ctx.btnX, ctx.y, ctx.btnW, ctx.btnH,
             "[1] " .. W.safeGetText("UI_POS_Negotiate_HigherPay"), nil,
             function()
-                op.negotiationAttempts = op.negotiationAttempts + 1
-                if rollSuccess(chance) then
-                    -- +20% reward, -1 day deadline
-                    local bonus = math.floor(reward * 0.20)
-                    if isDelivery then
-                        op.estimatedReward = (op.estimatedReward or 0) + bonus
-                    else
-                        op.scaledReward = (op.scaledReward or 0) + bonus
-                    end
-                    if op.expiryDay then
-                        op.expiryDay = op.expiryDay - 1
-                    end
-                    op.negotiated = true
-                    POS_ScreenManager.replaceCurrent(POS_Constants.SCREEN_NEGOTIATE,
-                        { operationId = opId, lastResult = "success" })
-                else
-                    POS_ScreenManager.replaceCurrent(POS_Constants.SCREEN_NEGOTIATE,
-                        { operationId = opId, lastResult = "failed" })
-                end
+                local _, result = POS_NegotiationService.attemptHigherPay(op, player)
+                POS_ScreenManager.replaceCurrent(POS_Constants.SCREEN_NEGOTIATE,
+                    { operationId = opId, lastResult = result })
             end)
         ctx.y = ctx.y + ctx.btnH + 4
 
@@ -239,25 +180,9 @@ function screen.create(contentPanel, params, _terminal)
         W.createButton(ctx.panel, ctx.btnX, ctx.y, ctx.btnW, ctx.btnH,
             "[2] " .. W.safeGetText("UI_POS_Negotiate_MoreTime"), nil,
             function()
-                op.negotiationAttempts = op.negotiationAttempts + 1
-                if rollSuccess(chance) then
-                    -- +2 days, -15% reward
-                    local cut = math.floor(reward * 0.15)
-                    if isDelivery then
-                        op.estimatedReward = math.max(0, (op.estimatedReward or 0) - cut)
-                    else
-                        op.scaledReward = math.max(0, (op.scaledReward or 0) - cut)
-                    end
-                    if op.expiryDay then
-                        op.expiryDay = op.expiryDay + 2
-                    end
-                    op.negotiated = true
-                    POS_ScreenManager.replaceCurrent(POS_Constants.SCREEN_NEGOTIATE,
-                        { operationId = opId, lastResult = "success" })
-                else
-                    POS_ScreenManager.replaceCurrent(POS_Constants.SCREEN_NEGOTIATE,
-                        { operationId = opId, lastResult = "failed" })
-                end
+                local _, result = POS_NegotiationService.attemptMoreTime(op, player)
+                POS_ScreenManager.replaceCurrent(POS_Constants.SCREEN_NEGOTIATE,
+                    { operationId = opId, lastResult = result })
             end)
         ctx.y = ctx.y + ctx.btnH + 4
     else
@@ -270,7 +195,7 @@ function screen.create(contentPanel, params, _terminal)
     W.createButton(ctx.panel, ctx.btnX, ctx.y, ctx.btnW, ctx.btnH,
         "[3] " .. W.safeGetText("UI_POS_Negotiate_Accept"), nil,
         function()
-            op.status = "active"
+            POS_NegotiationService.acceptOperation(op)
             -- Place waypoint for recon
             if not isDelivery and POS_MapMarkers then
                 POS_MapMarkers.placeMarker(op)
@@ -305,19 +230,14 @@ screen.getContextData = function(params)
             and POS_OperationLog.get(params.operationId)
         if op and op.negotiationAttempts then
             table.insert(data, { type = "kv", key = "UI_POS_Context_Attempts",
-                value = tostring(op.negotiationAttempts) .. "/3" })
+                value = tostring(op.negotiationAttempts) .. "/"
+                    .. tostring(POS_Constants.NEGOTIATE_MAX_ATTEMPTS) })
         end
     end
-    -- Negotiation chance calculation
+    -- Negotiation chance calculation via service
     local player = getSpecificPlayer(0)
-    if player then
-        local tier = POS_Reputation and POS_Reputation.getTier
-            and POS_Reputation.getTier(player) or 1
-        local tierChances = { 30, 50, 70, 85, 85 }
-        local baseChance = tierChances[math.min(tier, 5)] or 30
-        local repBonus = POS_Sandbox and POS_Sandbox.getNegotiationSuccessBonus
-            and POS_Sandbox.getNegotiationSuccessBonus() or 0
-        local finalChance = math.max(0, math.min(100, baseChance + repBonus))
+    if player and POS_NegotiationService then
+        local finalChance = POS_NegotiationService.getSuccessChance(player)
         table.insert(data, { type = "separator" })
         table.insert(data, { type = "kv", key = "UI_POS_Context_Chance",
             value = tostring(finalChance) .. "%",
