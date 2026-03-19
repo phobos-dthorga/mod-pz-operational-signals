@@ -19,14 +19,14 @@ module Base
         }
         component SpriteConfig
         {
-            face SINGLE
+            face S
             {
                 layer
                 {
                     row = appliances_television_01_0,
                 }
             }
-            face SINGLE
+            face E
             {
                 layer
                 {
