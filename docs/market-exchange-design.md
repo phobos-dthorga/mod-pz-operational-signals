@@ -8,6 +8,7 @@ pipeline for POSnet's economic systems: the Marketplace (commodity
 intelligence) and the Exchange (commodity indices and portfolio tracking).
 
 For UI/UX rules, see `design-guidelines.md` Sections 2, 7, 8, and 9.
+For the autonomous economy simulation (Layer 0), see `living-market-design.md`.
 
 ---
 

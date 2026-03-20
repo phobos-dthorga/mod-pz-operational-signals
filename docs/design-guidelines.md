@@ -1327,4 +1327,60 @@ architecture described below.
 
 - `POS_TutorialService.init()` checks for existing `MD_RECORDER_TUTORIAL_SHOWN`
   modData and auto-awards `first_data_recorder_use` if set.
+
+---
+
+## 24. Living Market & Autonomous Economy
+
+> Full design: `docs/living-market-design.md`
+
+### 24.1 Layer 0 Principle
+
+The market system adds **Layer 0: World Economy** beneath the existing
+three-layer architecture. The world produces economic data autonomously;
+the player intercepts and exploits it through existing intelligence
+pipelines.
+
+### 24.2 Market Agents
+
+- Seven archetypes: Scavenger Trader, Quartermaster, Wholesaler, Smuggler,
+  Military Logistician, Speculator, Specialist Crafter.
+- Agents are **invisible** — the player infers their existence through
+  patterns in observations, not through direct identification.
+- Each archetype differs not just by price but by **relationship to
+  truth**: some know more than they say, some say more than they know.
+
+### 24.3 Observation Pipeline
+
+- Agents emit observations in the **same schema** as existing intel
+  records (`market-exchange-design.md` § 4). The simulation layer is a
+  producer of familiar inputs, not a rewrite.
+- Three signal classes: **hard** (database records), **soft** (rumours/
+  bulletins), **structural** (invisible modifiers to other agents).
+
+### 24.4 Wholesaler Design Rules
+
+- Wholesalers shape the **environment** that observations emerge from.
+  They do not directly generate UI data.
+- Use **abstract bulk state** (stockLevel, pressure, disruption) — never
+  exact crate inventories.
+- Six operational states: Stable, Tight, Strained, Dumping, Withholding,
+  Collapsing.
+- Downstream influence propagates with **delay** (day 1: rumours →
+  day 2: stock changes → day 3+: price impact).
+
+### 24.5 Market Zones
+
+- Economy is **geographically fractured**, not global. Each zone tracks
+  localised supply, demand, and pressure per category.
+- Wholesaler influence may spill over into adjacent zones.
+
+### 24.6 Anti-Patterns
+
+- No exact inventories — abstract only.
+- No routefinding convoys — abstract transit state.
+- No direct player-wholesaler UI — felt through market effects.
+- No wholesaler-to-wholesaler commerce in Phase 1.
+- Smugglers must be risky, not clownish.
+- Speculators must be rare — too many makes the economy silly.
 - Old keys are preserved (not deleted) for backward compatibility.
