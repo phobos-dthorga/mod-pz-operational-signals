@@ -261,6 +261,105 @@ local function buildRecorderTooltipLines(item)
 end
 
 ---------------------------------------------------------------
+-- Intel Fragment tooltip builder
+---------------------------------------------------------------
+
+--- Tier display names and colours for intel fragments.
+local FRAGMENT_TIER_COLOURS = {
+    [POS_Constants.FRAGMENT_TIER_FRAGMENTARY] = { r = 0.6, g = 0.6, b = 0.6 },
+    [POS_Constants.FRAGMENT_TIER_UNVERIFIED]  = { r = 0.8, g = 0.8, b = 0.4 },
+    [POS_Constants.FRAGMENT_TIER_CORRELATED]  = { r = 0.4, g = 0.8, b = 1.0 },
+    [POS_Constants.FRAGMENT_TIER_CONFIRMED]   = { r = 0.4, g = 1.0, b = 0.4 },
+}
+
+--- Tier display name keys.
+local FRAGMENT_TIER_KEYS = {
+    [POS_Constants.FRAGMENT_TIER_FRAGMENTARY] = "UI_POS_Fragment_Fragmentary",
+    [POS_Constants.FRAGMENT_TIER_UNVERIFIED]  = "UI_POS_Fragment_Unverified",
+    [POS_Constants.FRAGMENT_TIER_CORRELATED]  = "UI_POS_Fragment_Correlated",
+    [POS_Constants.FRAGMENT_TIER_CONFIRMED]   = "UI_POS_Fragment_Confirmed",
+}
+
+--- Build tooltip lines for Intel Fragment items.
+---@param item InventoryItem
+---@return table[]|nil Array of {text, r, g, b} lines, or nil
+local function buildIntelFragmentTooltipLines(item)
+    if not item then return nil end
+    local md = PhobosLib.getModData(item)
+    if not md or not md.POS_FragmentTier then return nil end
+
+    local lines = {}
+    local tier = md.POS_FragmentTier
+
+    -- Header: Fragment tier
+    local tierKey = FRAGMENT_TIER_KEYS[tier] or "UI_POS_Fragment_Fragmentary"
+    local tierCol = FRAGMENT_TIER_COLOURS[tier] or COL_VALUE
+    lines[#lines + 1] = {
+        text = PhobosLib.safeGetText("UI_POS_Analysis_FragmentHeader"),
+        r = COL_HEADER.r, g = COL_HEADER.g, b = COL_HEADER.b
+    }
+    lines[#lines + 1] = {
+        text = "Tier: " .. PhobosLib.safeGetText(tierKey),
+        r = tierCol.r, g = tierCol.g, b = tierCol.b
+    }
+
+    -- Confidence
+    local confidence = tonumber(md.POS_Confidence) or 0
+    lines[#lines + 1] = {
+        text = "Confidence: " .. tostring(confidence) .. "%",
+        r = COL_VALUE.r, g = COL_VALUE.g, b = COL_VALUE.b
+    }
+
+    -- Category
+    local cat = md.POS_Category
+    if cat and cat ~= "" and cat ~= "mixed" then
+        lines[#lines + 1] = {
+            text = "Category: " .. cat,
+            r = COL_LABEL.r, g = COL_LABEL.g, b = COL_LABEL.b
+        }
+    end
+
+    -- Source count
+    local srcCount = tonumber(md.POS_SourceCount) or 0
+    if srcCount > 0 then
+        lines[#lines + 1] = {
+            text = "Sources: " .. tostring(srcCount) .. " input(s)",
+            r = COL_DIM.r, g = COL_DIM.g, b = COL_DIM.b
+        }
+    end
+
+    -- Cross-reference flag
+    if md.POS_CrossRef then
+        lines[#lines + 1] = {
+            text = "Cross-referenced",
+            r = FRAGMENT_TIER_COLOURS[POS_Constants.FRAGMENT_TIER_CORRELATED].r,
+            g = FRAGMENT_TIER_COLOURS[POS_Constants.FRAGMENT_TIER_CORRELATED].g,
+            b = FRAGMENT_TIER_COLOURS[POS_Constants.FRAGMENT_TIER_CORRELATED].b,
+        }
+    end
+
+    -- Analysis day
+    local day = tonumber(md.POS_AnalysisDay) or 0
+    if day > 0 then
+        lines[#lines + 1] = {
+            text = "Day " .. tostring(day),
+            r = COL_DIM.r, g = COL_DIM.g, b = COL_DIM.b
+        }
+    end
+
+    -- SIGINT level used
+    local sigLevel = tonumber(md.POS_SIGINTLevel) or 0
+    if sigLevel > 0 then
+        lines[#lines + 1] = {
+            text = "SIGINT L" .. tostring(sigLevel),
+            r = COL_DIM.r, g = COL_DIM.g, b = COL_DIM.b
+        }
+    end
+
+    return #lines > 0 and lines or nil
+end
+
+---------------------------------------------------------------
 -- Registration
 ---------------------------------------------------------------
 
@@ -269,6 +368,10 @@ local function posnetTooltipProvider(item)
     -- Try market note first
     local noteLines = buildNoteTooltipLines(item)
     if noteLines then return noteLines end
+
+    -- Try Intel Fragment
+    local fragmentLines = buildIntelFragmentTooltipLines(item)
+    if fragmentLines then return fragmentLines end
 
     -- Try Data-Recorder
     local recorderLines = buildRecorderTooltipLines(item)
