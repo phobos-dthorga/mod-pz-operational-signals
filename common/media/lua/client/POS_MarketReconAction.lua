@@ -160,9 +160,16 @@ function POS_MarketReconAction:perform()
         end
     end
 
-    -- Apply SIGINT field confidence bonus (+1 per 3 levels, max +3)
+    -- Apply SIGINT field confidence bonus (tier upgrade: +1 per 3 levels, max +3)
     if POS_SIGINTService and POS_SIGINTService.getFieldConfidenceBonus then
-        confidence = confidence + POS_SIGINTService.getFieldConfidenceBonus(player)
+        local bonus = POS_SIGINTService.getFieldConfidenceBonus(player)
+        if bonus >= 2 and confidence == POS_Constants.CONFIDENCE_LOW then
+            confidence = POS_Constants.CONFIDENCE_HIGH
+        elseif bonus >= 1 and confidence == POS_Constants.CONFIDENCE_LOW then
+            confidence = POS_Constants.CONFIDENCE_MEDIUM
+        elseif bonus >= 2 and confidence == POS_Constants.CONFIDENCE_MEDIUM then
+            confidence = POS_Constants.CONFIDENCE_HIGH
+        end
     end
 
     -- Create Raw Market Note
@@ -197,6 +204,11 @@ function POS_MarketReconAction:perform()
     if POS_SIGINTSkill and POS_SIGINTSkill.isAvailable
         and POS_SIGINTSkill.isAvailable() then
         POS_SIGINTSkill.addXP(player, POS_Constants.SIGINT_XP_MANUAL_NOTE)
+    end
+
+    -- Tutorial: first market note milestone
+    if POS_TutorialService and POS_TutorialService.tryAward then
+        POS_TutorialService.tryAward(player, POS_Constants.TUTORIAL_FIRST_MARKET_NOTE)
     end
 
     PhobosLib.debug("POS", "[POS:ReconAction]",

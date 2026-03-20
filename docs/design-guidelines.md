@@ -1220,3 +1220,62 @@ Room type detection **must** use `PhobosLib.getPlayerRoomName(player)` which
 resolves via `getRoom() → getRoomDef() → getName()`. Direct calls to
 `IsoRoom:getName()` return an instance identifier, not the room type string,
 and must **never** be used for category lookup.
+
+---
+
+## 23. Tutorial & Guidance System
+
+All player-facing tutorials and progressive hints use the milestone-driven
+architecture described below.
+
+### 23.1 Milestone-Driven Architecture
+
+- All tutorials are gated by `PhobosLib_Milestone` (`PhobosLib.registerMilestone`,
+  `PhobosLib.awardMilestone`, `PhobosLib.hasMilestone`).
+- Business logic calls `POS_TutorialService.tryAward(player, milestoneId)`.
+- Delivery is decoupled via `triggerEvent("PhobosLib_MilestoneAwarded")`.
+- `POS_TutorialService` listens for the event, dispatches toasts, and sets
+  popup-ready modData flags.
+
+### 23.2 Delivery Balance
+
+- **Major tier transitions** → Notice Popups (5 total): first connection,
+  first operation completed, SIGINT L3, first camera compile, first satellite
+  broadcast.
+- **Incremental achievements** → toast notifications (9 total): first op
+  received, first market note, first analysis, SIGINT L6, SIGINT L9, first
+  investment, first delivery, first data recorder use, first cross-correlation.
+- Toasts use the `"tutorial"` colour preset (teal) from PhobosNotifications.
+
+### 23.3 Sandbox Gate
+
+- All tutorial activity respects `POS.EnableTutorialHints` (default: true).
+- `POS_TutorialService.isEnabled()` is checked before every award attempt.
+- When disabled, the system is completely inert — no modData writes, no
+  events, no UI.
+
+### 23.4 Idempotency
+
+- `tryAward()` is safe to call from hot paths (every tick, every action).
+- After first award, `PhobosLib.awardMilestone()` returns `false` immediately.
+- Popup `shouldShow()` gates check both `PopupReady` and `PopupShown` flags.
+
+### 23.5 Translation
+
+- Every tutorial message uses `PhobosLib.safeGetText()`.
+- Toast keys: `UI_POS_Tutorial_Toast_*`
+- Popup keys: `UI_POS_Tutorial_Popup_*_Title`, `*_Line1` through `*_Line4`
+- Sandbox keys: `Sandbox_POS_EnableTutorialHints`, `*_tooltip`
+
+### 23.6 Constants
+
+- All milestone IDs use `POS_Constants.TUTORIAL_*`. No inline strings.
+- Milestone groups: `TUTORIAL_GROUP_CORE`, `TUTORIAL_GROUP_SIGINT`,
+  `TUTORIAL_GROUP_INTEL`.
+- ModData prefixes: `TUTORIAL_POPUP_READY_PREFIX`, `TUTORIAL_POPUP_SHOWN_PREFIX`.
+
+### 23.7 Legacy Migration
+
+- `POS_TutorialService.init()` checks for existing `MD_RECORDER_TUTORIAL_SHOWN`
+  modData and auto-awards `first_data_recorder_use` if set.
+- Old keys are preserved (not deleted) for backward compatibility.

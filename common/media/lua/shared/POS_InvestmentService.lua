@@ -33,9 +33,14 @@ POS_InvestmentService = {}
 
 --- Mark an opportunity as funded (player has invested).
 ---@param opportunity table The opportunity to mark
-function POS_InvestmentService.fundOpportunity(opportunity)
+function POS_InvestmentService.fundOpportunity(opportunity, player)
     if not opportunity then return end
     opportunity.status = POS_Constants.OPP_STATUS_FUNDED
+
+    -- Tutorial: first investment milestone
+    if player and POS_TutorialService and POS_TutorialService.tryAward then
+        POS_TutorialService.tryAward(player, POS_Constants.TUTORIAL_FIRST_INVESTMENT)
+    end
 end
 
 --- Expire opportunities whose deadline has passed.

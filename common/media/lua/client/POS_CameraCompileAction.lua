@@ -117,6 +117,11 @@ function POS_CameraCompileAction:perform()
             priority = "normal",
             colour = "success",
         })
+
+        -- Tutorial: first camera compile milestone
+        if POS_TutorialService and POS_TutorialService.tryAward then
+            POS_TutorialService.tryAward(player, POS_Constants.TUTORIAL_FIRST_CAMERA)
+        end
     end
 
     ISBaseTimedAction.perform(self)

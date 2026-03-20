@@ -153,10 +153,18 @@ function POS_SIGINTSkill.addXP(player, baseAmount)
     -- Round to nearest integer (PZ XP system uses integers)
     scaledAmount = math.max(1, math.floor(scaledAmount + 0.5))
 
+    -- Capture level before XP award for tutorial threshold detection
+    local levelBefore = POS_SIGINTSkill.getLevel(player)
+
     local ok = PhobosLib.addXP(player, sigintPerk, scaledAmount)
 
     -- Track total XP in modData (for ZScience mirror and stats)
     if ok then
+        -- Tutorial: check for SIGINT level-up milestones
+        local levelAfter = POS_SIGINTSkill.getLevel(player)
+        if POS_TutorialService and POS_TutorialService.checkSIGINTLevelUp then
+            POS_TutorialService.checkSIGINTLevelUp(player, levelBefore, levelAfter)
+        end
         local modData = player:getModData()
         if modData then
             local totalKey = POS_Constants.MODDATA_SIGINT_TOTAL_XP

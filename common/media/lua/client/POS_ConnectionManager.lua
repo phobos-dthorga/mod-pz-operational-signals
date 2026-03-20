@@ -298,6 +298,11 @@ function POS_ConnectionManager.connect(player, radioObj)
 
     POS_TerminalUI.open(radioName, freq, portablePC, signalStrength, band)
 
+    -- Tutorial: first connection milestone
+    if POS_TutorialService and POS_TutorialService.tryAward then
+        POS_TutorialService.tryAward(player, POS_Constants.TUTORIAL_FIRST_CONNECTION)
+    end
+
     PhobosLib.debug("POS", "Connected to POSnet via " .. radioName
         .. " [" .. (band or "?") .. "] (signal: "
         .. string.format("%.0f%%", signalStrength * 100) .. ")")

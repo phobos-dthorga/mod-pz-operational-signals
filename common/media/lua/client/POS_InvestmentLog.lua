@@ -118,10 +118,11 @@ end
 --- Mark an opportunity as funded (invested).
 --- Delegates to POS_InvestmentService.
 ---@param opportunityId string
-function POS_InvestmentLog.markOpportunityFunded(opportunityId)
+---@param player IsoPlayer|nil Optional player for tutorial tracking
+function POS_InvestmentLog.markOpportunityFunded(opportunityId, player)
     local opp = POS_InvestmentLog.getOpportunity(opportunityId)
     if opp then
-        POS_InvestmentService.fundOpportunity(opp)
+        POS_InvestmentService.fundOpportunity(opp, player)
     end
 end
 

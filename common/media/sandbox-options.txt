@@ -1303,3 +1303,11 @@ option POS.SatelliteDecalibrationDays
     page = POS_Sandbox,
     translation = POS_SatelliteDecalibrationDays,
 }
+
+option POS.EnableTutorialHints
+{
+    type = boolean,
+    default = true,
+    page = POS_Sandbox,
+    translation = POS_EnableTutorialHints,
+}

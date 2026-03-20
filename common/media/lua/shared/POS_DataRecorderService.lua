@@ -181,6 +181,11 @@ function POS_DataRecorderService.appendChunk(recorder, chunk)
                 )
             end
 
+            -- Tutorial: first data recorder use milestone
+            if chunk.player and POS_TutorialService and POS_TutorialService.tryAward then
+                POS_TutorialService.tryAward(chunk.player, POS_Constants.TUTORIAL_FIRST_DATA_RECORDER)
+            end
+
             PhobosLib.debug("POS", "DataRecorderService", "chunk written to media (" .. mediaUsed + 1 .. "/" .. mediaCap .. ")")
             return true
         end

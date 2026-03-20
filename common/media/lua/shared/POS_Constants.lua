@@ -1095,3 +1095,44 @@ POS_Constants.SATELLITE_DISH_SPRITES           = {}
 -- Equipment condition threshold for bonus
 POS_Constants.SATELLITE_DISH_CONDITION_BONUS_MIN = 80
 
+---------------------------------------------------------------
+-- Tutorial Milestones
+---------------------------------------------------------------
+
+POS_Constants.TUTORIAL_MOD_ID                   = "POS"
+
+POS_Constants.TUTORIAL_FIRST_CONNECTION         = "first_connection"
+POS_Constants.TUTORIAL_FIRST_OP_RECEIVED        = "first_operation_received"
+POS_Constants.TUTORIAL_FIRST_OP_COMPLETED       = "first_operation_completed"
+POS_Constants.TUTORIAL_FIRST_MARKET_NOTE        = "first_market_note"
+POS_Constants.TUTORIAL_SIGINT_L3                = "sigint_level_3"
+POS_Constants.TUTORIAL_SIGINT_L6                = "sigint_level_6"
+POS_Constants.TUTORIAL_SIGINT_L9                = "sigint_level_9"
+POS_Constants.TUTORIAL_FIRST_ANALYSIS           = "first_terminal_analysis"
+POS_Constants.TUTORIAL_FIRST_CAMERA             = "first_camera_compile"
+POS_Constants.TUTORIAL_FIRST_SATELLITE          = "first_satellite_broadcast"
+POS_Constants.TUTORIAL_FIRST_INVESTMENT         = "first_investment"
+POS_Constants.TUTORIAL_FIRST_DELIVERY           = "first_delivery"
+POS_Constants.TUTORIAL_FIRST_DATA_RECORDER      = "first_data_recorder_use"
+POS_Constants.TUTORIAL_FIRST_CROSS_CORRELATION  = "first_cross_correlation"
+
+POS_Constants.TUTORIAL_TOAST_TAG                = "pos_tutorial"
+POS_Constants.TUTORIAL_TOAST_COLOUR             = "tutorial"
+
+-- Tutorial milestone group names (for PhobosLib_Milestone registry)
+POS_Constants.TUTORIAL_GROUP_CORE               = "core"
+POS_Constants.TUTORIAL_GROUP_SIGINT             = "sigint"
+POS_Constants.TUTORIAL_GROUP_INTEL              = "intel"
+
+-- Tutorial popup modData prefix (for mid-session popup queueing)
+POS_Constants.TUTORIAL_POPUP_READY_PREFIX       = "POS_TutorialPopupReady_"
+POS_Constants.TUTORIAL_POPUP_SHOWN_PREFIX       = "POS_TutorialPopupShown_"
+
+-- SIGINT level thresholds for tutorial milestones
+POS_Constants.TUTORIAL_SIGINT_THRESHOLD_L3      = 3
+POS_Constants.TUTORIAL_SIGINT_THRESHOLD_L6      = 6
+POS_Constants.TUTORIAL_SIGINT_THRESHOLD_L9      = 9
+
+-- Legacy modData key (backward compat migration)
+POS_Constants.MD_RECORDER_TUTORIAL_SHOWN_LEGACY = "MD_RECORDER_TUTORIAL_SHOWN"
+

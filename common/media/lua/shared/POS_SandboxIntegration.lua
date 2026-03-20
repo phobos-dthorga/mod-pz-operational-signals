@@ -704,3 +704,11 @@ function POS_Sandbox.getSatelliteDecalibrationDays()
     return PhobosLib.getSandboxVar("POS", "SatelliteDecalibrationDays",
         POS_Constants.SATELLITE_DECALIBRATION_DAYS)
 end
+
+---------------------------------------------------------------
+-- Tutorial
+---------------------------------------------------------------
+
+function POS_Sandbox.getEnableTutorialHints()
+    return PhobosLib.getSandboxVar("POS", "EnableTutorialHints", true)
+end

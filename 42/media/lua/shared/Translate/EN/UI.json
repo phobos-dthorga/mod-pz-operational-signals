@@ -645,5 +645,50 @@
     "UI_POS_Satellite_Decalibrated": "Satellite dish lost calibration due to extended power outage.",
     "UI_POS_Satellite_LowFuel_Warning": "Generator fuel low — broadcast strength reduced.",
 
-    "UI_POS_Market_GatherIntel_MultiLocation": "Multiple commodity sources detected at this location."
+    "UI_POS_Market_GatherIntel_MultiLocation": "Multiple commodity sources detected at this location.",
+
+    "UI_POS_Tutorial_Toast_FirstConnection": "Connected to POSnet! Check the BBS for operations and market data.",
+    "UI_POS_Tutorial_Toast_FirstOpReceived": "Your first operation has arrived! Check the BBS terminal.",
+    "UI_POS_Tutorial_Toast_FirstOpCompleted": "Operation complete! Explore market intel and the SIGINT skill.",
+    "UI_POS_Tutorial_Toast_FirstMarketNote": "Market intel captured! Gather more for Terminal Analysis.",
+    "UI_POS_Tutorial_Toast_SigintL3": "SIGINT: Pattern Seeker! Terminal Analysis is now available.",
+    "UI_POS_Tutorial_Toast_SigintL6": "SIGINT: Analyst tier reached! Cross-correlation now available.",
+    "UI_POS_Tutorial_Toast_SigintL9": "SIGINT: Intel Operator tier reached! Maximum analysis output.",
+    "UI_POS_Tutorial_Toast_FirstAnalysis": "Intel fragment produced! Higher SIGINT levels improve quality.",
+    "UI_POS_Tutorial_Toast_FirstCamera": "Camera workstation compile complete! Try different artifact types.",
+    "UI_POS_Tutorial_Toast_FirstSatellite": "Satellite broadcast transmitted! Market prices propagated.",
+    "UI_POS_Tutorial_Toast_FirstInvestment": "Investment placed. Returns mature over time at the BBS.",
+    "UI_POS_Tutorial_Toast_FirstDelivery": "Delivery complete! Courier missions build reputation quickly.",
+    "UI_POS_Tutorial_Toast_FirstDataRecorder": "Data captured on recorder. Process media at a terminal.",
+    "UI_POS_Tutorial_Toast_FirstCrossCorrelation": "Cross-correlation detected! Multiple intel sources combined.",
+
+    "UI_POS_Tutorial_Popup_FirstConnection_Title": "Welcome to POSnet",
+    "UI_POS_Tutorial_Popup_FirstConnection_Line1": "You have connected to the POSnet Bulletin Board System. This terminal is your gateway to field operations, market intelligence, and the underground economy.",
+    "UI_POS_Tutorial_Popup_FirstConnection_Line2": "Check the BBS for available operations — these are your primary source of income and reputation. Complete missions to unlock higher tiers.",
+    "UI_POS_Tutorial_Popup_FirstConnection_Line3": "Visit commercial areas (shops, warehouses, gas stations) and right-click to gather Market Intel. Raw notes can be processed later at a computer terminal.",
+    "UI_POS_Tutorial_Popup_FirstConnection_Line4": "Tip: Keep your radio tuned to the correct frequency and stay near a computer. Signal strength affects what you can access.",
+
+    "UI_POS_Tutorial_Popup_FirstOpCompleted_Title": "First Operation Complete",
+    "UI_POS_Tutorial_Popup_FirstOpCompleted_Line1": "Congratulations on completing your first field operation! Your reputation with POSnet contacts is growing.",
+    "UI_POS_Tutorial_Popup_FirstOpCompleted_Line2": "Gather Market Intel from commercial locations — right-click in shops, gas stations, and warehouses. Each note captures local price data.",
+    "UI_POS_Tutorial_Popup_FirstOpCompleted_Line3": "Your SIGINT skill improves as you complete operations and gather intel. At Level 3, you will unlock Terminal Analysis — a powerful tool for processing raw data.",
+    "UI_POS_Tutorial_Popup_FirstOpCompleted_Line4": "Tip: Diversify your activities between operations, deliveries, and intel gathering. Each contributes to your SIGINT progression.",
+
+    "UI_POS_Tutorial_Popup_SigintL3_Title": "SIGINT: Pattern Seeker",
+    "UI_POS_Tutorial_Popup_SigintL3_Line1": "You have reached SIGINT Level 3 — Pattern Seeker. A new capability is now available: Terminal Analysis.",
+    "UI_POS_Tutorial_Popup_SigintL3_Line2": "Find a computer terminal and use Process Intelligence to convert raw market notes into refined intelligence fragments. Feed in multiple notes for better results.",
+    "UI_POS_Tutorial_Popup_SigintL3_Line3": "Look for data recorders and media (microcassettes, floppy disks) in the field. These passive devices capture ambient intelligence that supplements your notes.",
+    "UI_POS_Tutorial_Popup_SigintL3_Line4": "Tip: At SIGINT Level 6, cross-correlation becomes available — combining diverse sources produces high-confidence insights.",
+
+    "UI_POS_Tutorial_Popup_FirstCamera_Title": "Camera Workstation Mastery",
+    "UI_POS_Tutorial_Popup_FirstCamera_Line1": "You have produced your first compiled intelligence artifact at a camera workstation. These Tier III products are the backbone of advanced market analysis.",
+    "UI_POS_Tutorial_Popup_FirstCamera_Line2": "Camera workstations offer three operations: Site Survey Compilation, Recorded Tape Review, and Market Bulletin Production. Each creates different artifact types.",
+    "UI_POS_Tutorial_Popup_FirstCamera_Line3": "Market Bulletins grant bonus reputation and influence category prices when distributed. Look for satellite dishes to broadcast your compiled reports even further.",
+    "UI_POS_Tutorial_Popup_FirstCamera_Line4": "Tip: Higher equipment condition and SIGINT skill improve artifact quality. Keep your gear maintained.",
+
+    "UI_POS_Tutorial_Popup_FirstSatellite_Title": "Satellite Uplink Active",
+    "UI_POS_Tutorial_Popup_FirstSatellite_Line1": "Your first satellite broadcast has been transmitted. This is the apex of the intelligence hierarchy — Tier IV market propagation.",
+    "UI_POS_Tutorial_Popup_FirstSatellite_Line2": "Satellite broadcasts push compiled intelligence into the regional market, affecting prices and generating significant reputation. Stronger reports have greater impact.",
+    "UI_POS_Tutorial_Popup_FirstSatellite_Line3": "Dishes require calibration and electricity. Power outages cause decalibration over time, so maintain your generators. A terminal within range receives enhancement bonuses.",
+    "UI_POS_Tutorial_Popup_FirstSatellite_Line4": "Tip: The endgame loop is gather → process → compile → broadcast. Each cycle improves your standing and market influence."
 }

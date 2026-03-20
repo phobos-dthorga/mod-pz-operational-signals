@@ -438,6 +438,14 @@ function POS_TerminalAnalysisService.processIntelligence(player, inputs)
     -- 10. Record cooldown
     POS_TerminalAnalysisService.recordCooldown(player)
 
+    -- 11. Tutorial milestones
+    if POS_TutorialService and POS_TutorialService.tryAward then
+        POS_TutorialService.tryAward(player, POS_Constants.TUTORIAL_FIRST_ANALYSIS)
+        if results.crossCorrelation then
+            POS_TutorialService.tryAward(player, POS_Constants.TUTORIAL_FIRST_CROSS_CORRELATION)
+        end
+    end
+
     PhobosLib.debug("POS", "[POS:Analysis]",
         "Processed " .. inputCount .. " inputs → "
         .. #results.fragments .. " fragments (SIGINT L" .. level .. ")")

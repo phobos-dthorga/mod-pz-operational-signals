@@ -328,5 +328,8 @@
     "Sandbox_POS_SatelliteMarketCoupling": "Satellite Market Coupling",
     "Sandbox_POS_SatelliteMarketCoupling_tooltip": "When enabled, satellite broadcasts cause price propagation in the regional market economy. <BR> <BR> <INDENT:20> Default: ON",
     "Sandbox_POS_SatelliteDecalibrationDays": "Satellite Decalibration (days)",
-    "Sandbox_POS_SatelliteDecalibrationDays_tooltip": "Days without power before a calibrated dish requires recalibration. <BR> <BR> <INDENT:20> 0 = dishes never decalibrate once set up. <BR> Range: 0-30. Default: 7"
+    "Sandbox_POS_SatelliteDecalibrationDays_tooltip": "Days without power before a calibrated dish requires recalibration. <BR> <BR> <INDENT:20> 0 = dishes never decalibrate once set up. <BR> Range: 0-30. Default: 7",
+
+    "Sandbox_POS_EnableTutorialHints": "Enable Tutorial Hints",
+    "Sandbox_POS_EnableTutorialHints_tooltip": "When enabled, progressive tutorial toasts and popups guide the player through POSnet features as they reach each milestone. <BR> <BR> <INDENT:20> Disable for experienced players. <BR> Default: ON"
 }

@@ -128,6 +128,11 @@ local function onDeliverPackage(worldObjects, player, operation)
     -- Notify player
     player:Say(POS_TerminalWidgets.safeGetText("UI_POS_Delivery_Completed", tostring(finalReward)))
 
+    -- Tutorial: first delivery milestone
+    if POS_TutorialService and POS_TutorialService.tryAward then
+        POS_TutorialService.tryAward(player, POS_Constants.TUTORIAL_FIRST_DELIVERY)
+    end
+
     PhobosLib.debug("POS", "[Delivery] Delivered " .. operation.id
         .. " — actual distance: " .. math.floor(actualDistance)
         .. " tiles, reward: $" .. finalReward)

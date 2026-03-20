@@ -70,6 +70,11 @@ function POS_OperationService.activateOperation(operation)
     if POS_MapMarkers and POS_MapMarkers.placeMarker then
         POS_MapMarkers.placeMarker(operation)
     end
+
+    -- Tutorial: first operation received milestone
+    if POS_TutorialService and POS_TutorialService.tryAward and operation._player then
+        POS_TutorialService.tryAward(operation._player, POS_Constants.TUTORIAL_FIRST_OP_RECEIVED)
+    end
 end
 
 ---------------------------------------------------------------
@@ -100,6 +105,11 @@ function POS_OperationService.completeOperation(operation, player)
     -- Remove map marker
     if POS_MapMarkers and POS_MapMarkers.removeMarker then
         POS_MapMarkers.removeMarker(operation.id)
+    end
+
+    -- Tutorial: first operation completed milestone
+    if POS_TutorialService and POS_TutorialService.tryAward then
+        POS_TutorialService.tryAward(player, POS_Constants.TUTORIAL_FIRST_OP_COMPLETED)
     end
 
     PhobosLib.debug("POS", "Operation completed: " .. (operation.id or "?"))
