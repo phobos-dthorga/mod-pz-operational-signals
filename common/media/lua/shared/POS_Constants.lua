@@ -1069,6 +1069,7 @@ POS_Constants.SATELLITE_CALIBRATED_KEY_PREFIX  = "POS_SatelliteCalibrated_"
 POS_Constants.SATELLITE_LINK_RANGE             = 50   -- tiles
 POS_Constants.SATELLITE_BROADCAST_COOLDOWN_DEFAULT = 24  -- hours
 POS_Constants.SATELLITE_CALIBRATION_TIME_DEFAULT   = 300 -- seconds
+POS_Constants.SATELLITE_BROADCAST_TIME_DEFAULT     = 120 -- seconds
 POS_Constants.SATELLITE_DECALIBRATION_DAYS         = 7
 
 -- Broadcast reputation values (hundredths of rep point)

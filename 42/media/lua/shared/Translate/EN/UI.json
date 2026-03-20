@@ -634,6 +634,14 @@
     "UI_POS_Satellite_StatusUnlinked": "Terminal link: No terminal in range.",
     "UI_POS_Satellite_StatusLastBroadcast": "Last broadcast: Day %1.",
     "UI_POS_Satellite_StatusNoBroadcast": "Last broadcast: Never.",
+    "UI_POS_Satellite_CalibrateReady": "Ready to calibrate dish.",
+    "UI_POS_Satellite_CheckStatusTip": "View dish calibration, link, and fuel status.",
+    "UI_POS_Satellite_BroadcastComplete_Summary": "Broadcast transmitted — %1 market impact.",
+    "UI_POS_Satellite_ImpactStrong": "strong",
+    "UI_POS_Satellite_ImpactModerate": "moderate",
+    "UI_POS_Satellite_ImpactWeak": "weak",
+    "UI_POS_Satellite_Decalibrated": "Satellite dish lost calibration due to extended power outage.",
+    "UI_POS_Satellite_LowFuel_Warning": "Generator fuel low — broadcast strength reduced.",
 
     "UI_POS_Market_GatherIntel_MultiLocation": "Multiple commodity sources detected at this location."
 }
