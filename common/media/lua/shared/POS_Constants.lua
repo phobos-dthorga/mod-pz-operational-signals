@@ -101,6 +101,7 @@ POS_Constants.ERR_NOT_CONNECTED   = "UI_POS_Error_NotConnected"
 POS_Constants.ERR_EXTENSION_FAIL  = "UI_POS_Error_ExtensionFailed"
 POS_Constants.ERR_SCREEN_BLOCKED  = "UI_POS_Error_ScreenBlocked"
 POS_Constants.ERR_NO_POWER        = "UI_POS_Error_NoPower"
+POS_Constants.ERR_NO_RECORDER     = "UI_POS_Error_NoRecorder"
 POS_Constants.MSG_POWER_LOST      = "UI_POS_PowerLost"
 
 ---------------------------------------------------------------

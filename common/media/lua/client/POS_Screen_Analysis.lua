@@ -27,6 +27,7 @@ require "POS_ScreenManager"
 require "POS_TerminalWidgets"
 require "POS_TerminalAnalysisService"
 require "POS_TerminalAnalysisAction"
+require "POS_DataRecorderService"
 require "POS_SIGINTSkill"
 require "POS_SIGINTService"
 require "POS_API"
@@ -38,6 +39,19 @@ screen.id = POS_Constants.SCREEN_ID_ANALYSIS
 screen.menuPath = {"pos.bbs"}
 screen.titleKey = "UI_POS_Analysis_ScreenTitle"
 screen.sortOrder = 30
+
+--- Guard: requires a Data Recorder in inventory OR existing raw intel.
+screen.canOpen = function()
+    local player = getSpecificPlayer(0)
+    if not player then return false, POS_Constants.ERR_NO_RECORDER end
+    -- Allow if player already has raw intel to process
+    local rawItems = POS_TerminalAnalysisService.findRawIntelItems(player)
+    if #rawItems > 0 then return true end
+    -- Allow if player has a data recorder (can collect intel)
+    local recorder = POS_DataRecorderService.findEquippedRecorder(player)
+    if recorder then return true end
+    return false, POS_Constants.ERR_NO_RECORDER
+end
 
 --- Track selected items for the current screen instance.
 local selectedItems = {}

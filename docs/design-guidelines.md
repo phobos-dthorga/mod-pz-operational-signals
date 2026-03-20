@@ -476,6 +476,30 @@ Two guards control screen access:
 Guards are enforced by `POS_ScreenManager.navigateTo()` and by
 `POS_MenuBuilder.buildMenu()`.
 
+#### Equipment-Gated Screens
+
+Screens that depend on physical equipment (Data Recorder, Camera Workstation,
+Satellite Dish) must use **`canOpen`** — never `shouldShow`. This ensures the
+player can see the screen exists and understands what they need to unlock it,
+rather than being unaware the feature is there at all.
+
+- **Visible but locked**: the menu entry appears greyed-out with a short reason
+  (e.g., `"Requires Data Recorder"`).
+- **Soft prerequisite**: check for the equipment OR its output (raw intel items
+  for Analysis, compiled reports for Reports). If the player has the output but
+  not the equipment, they should still be able to use the screen.
+- **Reason keys**: use `POS_Constants.ERR_*` constants pointing to `UI_POS_Error_*`
+  translation keys. Keep reasons concise — the menu renders them inline as
+  `"    Screen Title  (Reason)"`.
+
+**Guard hierarchy summary**:
+
+| Guard          | When to use                             | Effect        |
+|---------------|-----------------------------------------|---------------|
+| `shouldShow`  | Sandbox toggles, band filtering         | Hidden        |
+| `canOpen`     | Equipment, processed-data prerequisites | Disabled      |
+| `requires`    | Connection, signal, band (declarative)  | Disabled      |
+
 ### 8.4 Lifecycle Flow
 
 ```
