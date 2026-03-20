@@ -231,6 +231,7 @@ POS_Constants.SOURCE_TIER_BROADCAST = "broadcast"
 
 POS_Constants.SOURCE_TIER_WEIGHT_FIELD     = 1.0
 POS_Constants.SOURCE_TIER_WEIGHT_BROADCAST = 0.7
+POS_Constants.SOURCE_TIER_WEIGHT_STUDIO   = 1.2
 POS_Constants.SOURCE_TIER_WEIGHT_DEFAULT   = 0.85
 
 ---------------------------------------------------------------

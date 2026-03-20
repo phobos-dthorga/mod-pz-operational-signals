@@ -99,6 +99,11 @@ function POS_EconomyTick.processDayTick()
         POS_EventLog.purgeOldLogs(retention)
     end
 
+    -- Phase 5.5: Satellite decalibration check
+    if POS_SatelliteService and POS_SatelliteService.checkDecalibration then
+        POS_SatelliteService.checkDecalibration()
+    end
+
     -- Phase 6: Mark day processed
     meta.lastProcessedDay = currentDay
 
@@ -141,7 +146,9 @@ function POS_EconomyTick.rebuildCategoryAggregate(catId, catData, currentDay)
 
     for _, obs in ipairs(catData.observations) do
         local age = currentDay - (obs.day or 0)
-        if age <= POS_Constants.MARKET_STALE_DAYS then
+        -- Staleness multiplier extends effective lifespan (satellite broadcasts persist longer)
+        local effectiveStaleLimit = POS_Constants.MARKET_STALE_DAYS * (obs.staleness or 1.0)
+        if age <= effectiveStaleLimit then
             -- Freshness multiplier: newer = more weight
             local freshMult = math.max(0.25, 1.0 - (age * 0.1))
 
@@ -151,6 +158,8 @@ function POS_EconomyTick.rebuildCategoryAggregate(catId, catData, currentDay)
                 tierWeight = POS_Constants.SOURCE_TIER_WEIGHT_FIELD
             elseif obs.sourceTier == POS_Constants.SOURCE_TIER_BROADCAST then
                 tierWeight = POS_Constants.SOURCE_TIER_WEIGHT_BROADCAST
+            elseif obs.sourceTier == POS_Constants.SOURCE_TIER_STUDIO then
+                tierWeight = POS_Constants.SOURCE_TIER_WEIGHT_STUDIO
             end
 
             local w = math.max(1, math.floor(50 * freshMult * tierWeight))

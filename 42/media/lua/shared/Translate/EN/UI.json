@@ -612,6 +612,8 @@
     "UI_POS_Fragment_Confirmed": "Confirmed",
     "UI_POS_Fragment_Confirmed_desc": "Verified insight, high confidence.",
 
+    "UI_POS_Camera_ArtifactHeader": "--- Compiled Intelligence ---",
+
     "UI_POS_Satellite_SubMenu": "POSnet Satellite Uplink",
     "UI_POS_Satellite_Broadcast": "Broadcast Compiled Report",
     "UI_POS_Satellite_Calibrate": "Calibrate Dish",

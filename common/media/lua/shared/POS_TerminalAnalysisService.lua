@@ -317,8 +317,20 @@ function POS_TerminalAnalysisService.processIntelligence(player, inputs)
         end
     end
 
+    -- 6b. Satellite link enhancement
+    local hasSatelliteLink = false
+    if POS_SatelliteService and POS_SatelliteService.hasTerminalLink then
+        local sq = player:getSquare()
+        if sq then
+            hasSatelliteLink = POS_SatelliteService.hasTerminalLink(sq)
+        end
+    end
+
     -- 7. Generate fragments
     local confidenceBase = POS_SIGINTService.getConfidenceBonus(player) + diversityBonus
+    if hasSatelliteLink then
+        confidenceBase = confidenceBase + POS_Constants.ANALYSIS_SATELLITE_CONFIDENCE
+    end
     local primaryCategory = nil
     if inputs[1] then
         local md = PhobosLib.getModData(inputs[1])
@@ -333,6 +345,15 @@ function POS_TerminalAnalysisService.processIntelligence(player, inputs)
         if tier == POS_Constants.FRAGMENT_TIER_FRAGMENTARY and noiseFilter > 0 then
             if ZombRand(100) < noiseFilter then
                 tier = POS_Constants.FRAGMENT_TIER_UNVERIFIED
+            end
+        end
+
+        -- Satellite link tier upgrade chance
+        if hasSatelliteLink and ZombRand(100) < POS_Constants.ANALYSIS_SATELLITE_TIER_UPGRADE then
+            if tier == POS_Constants.FRAGMENT_TIER_FRAGMENTARY then
+                tier = POS_Constants.FRAGMENT_TIER_UNVERIFIED
+            elseif tier == POS_Constants.FRAGMENT_TIER_UNVERIFIED then
+                tier = POS_Constants.FRAGMENT_TIER_CORRELATED
             end
         end
 
@@ -409,7 +430,12 @@ function POS_TerminalAnalysisService.processIntelligence(player, inputs)
         results.xpAwarded = results.xpAwarded + POS_Constants.SIGINT_XP_RESOLVE_CONTRADICTION
     end
 
-    -- 9. Record cooldown
+    -- 9. ZScience specimen roll (optional cross-mod)
+    if POS_ZScienceIntegration and POS_ZScienceIntegration.rollSpecimen then
+        POS_ZScienceIntegration.rollSpecimen(player, level)
+    end
+
+    -- 10. Record cooldown
     POS_TerminalAnalysisService.recordCooldown(player)
 
     PhobosLib.debug("POS", "[POS:Analysis]",

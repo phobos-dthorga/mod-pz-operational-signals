@@ -360,6 +360,92 @@ local function buildIntelFragmentTooltipLines(item)
 end
 
 ---------------------------------------------------------------
+-- Camera Artifact Tooltip
+---------------------------------------------------------------
+
+-- Artifact type display name keys
+local ARTIFACT_TYPE_KEYS = {
+    [POS_Constants.CAMERA_COMPILE_ACTION]      = "UI_POS_Camera_CompileSurvey",
+    [POS_Constants.CAMERA_TAPE_REVIEW_ACTION]  = "UI_POS_Camera_ReviewTape",
+    [POS_Constants.CAMERA_BULLETIN_ACTION]     = "UI_POS_Camera_ProduceBulletin",
+}
+
+--- Build tooltip lines for Camera Workstation artifact items.
+--- Covers CompiledSiteSurvey, VerifiedIntelReport, MarketBulletin.
+---@param item InventoryItem
+---@return table[]|nil Array of {text, r, g, b} lines, or nil
+local function buildCameraArtifactTooltipLines(item)
+    if not item then return nil end
+    local md = PhobosLib.getModData(item)
+    if not md or not md.POS_ArtifactType then return nil end
+
+    local artType = md.POS_ArtifactType
+    if not ARTIFACT_TYPE_KEYS[artType] then return nil end
+
+    local lines = {}
+
+    -- Header: artifact type
+    lines[#lines + 1] = {
+        text = PhobosLib.safeGetText("UI_POS_Camera_ArtifactHeader"),
+        r = COL_HEADER.r, g = COL_HEADER.g, b = COL_HEADER.b
+    }
+    lines[#lines + 1] = {
+        text = PhobosLib.safeGetText(ARTIFACT_TYPE_KEYS[artType]),
+        r = COL_VALUE.r, g = COL_VALUE.g, b = COL_VALUE.b
+    }
+
+    -- Confidence
+    local confidence = tonumber(md.POS_Confidence) or 0
+    lines[#lines + 1] = {
+        text = "Confidence: " .. tostring(confidence) .. "%",
+        r = COL_VALUE.r, g = COL_VALUE.g, b = COL_VALUE.b
+    }
+
+    -- Category
+    local cat = md.POS_Category
+    if cat and cat ~= "" and cat ~= "mixed" then
+        lines[#lines + 1] = {
+            text = "Category: " .. cat,
+            r = COL_LABEL.r, g = COL_LABEL.g, b = COL_LABEL.b
+        }
+    elseif cat == "mixed" then
+        lines[#lines + 1] = {
+            text = "Category: Multi-source",
+            r = COL_LABEL.r, g = COL_LABEL.g, b = COL_LABEL.b
+        }
+    end
+
+    -- Source count
+    local srcCount = tonumber(md.POS_SourceCount) or 0
+    if srcCount > 0 then
+        lines[#lines + 1] = {
+            text = "Sources: " .. tostring(srcCount) .. " input(s)",
+            r = COL_DIM.r, g = COL_DIM.g, b = COL_DIM.b
+        }
+    end
+
+    -- Compilation day
+    local day = tonumber(md.POS_CompileDay) or 0
+    if day > 0 then
+        lines[#lines + 1] = {
+            text = "Compiled: Day " .. tostring(day),
+            r = COL_DIM.r, g = COL_DIM.g, b = COL_DIM.b
+        }
+    end
+
+    -- SIGINT level
+    local sigLevel = tonumber(md.POS_SIGINTLevel) or 0
+    if sigLevel > 0 then
+        lines[#lines + 1] = {
+            text = "SIGINT L" .. tostring(sigLevel),
+            r = COL_DIM.r, g = COL_DIM.g, b = COL_DIM.b
+        }
+    end
+
+    return #lines > 0 and lines or nil
+end
+
+---------------------------------------------------------------
 -- Registration
 ---------------------------------------------------------------
 
@@ -372,6 +458,10 @@ local function posnetTooltipProvider(item)
     -- Try Intel Fragment
     local fragmentLines = buildIntelFragmentTooltipLines(item)
     if fragmentLines then return fragmentLines end
+
+    -- Try Camera Artifact (compiled survey, verified report, bulletin)
+    local artifactLines = buildCameraArtifactTooltipLines(item)
+    if artifactLines then return artifactLines end
 
     -- Try Data-Recorder
     local recorderLines = buildRecorderTooltipLines(item)

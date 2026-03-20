@@ -107,6 +107,7 @@ globals = {
     "POS_SatelliteService",
     "POS_SatelliteContextMenu",
     "POS_SatelliteBroadcastAction",
+    "POS_ZScienceIntegration",
 }
 
 read_globals = {

@@ -162,6 +162,11 @@ function POS_SIGINTSkill.addXP(player, baseAmount)
             local totalKey = POS_Constants.MODDATA_SIGINT_TOTAL_XP
             modData[totalKey] = (modData[totalKey] or 0) + scaledAmount
         end
+
+        -- Mirror XP to ZScience (optional cross-mod)
+        if POS_ZScienceIntegration and POS_ZScienceIntegration.mirrorXP then
+            POS_ZScienceIntegration.mirrorXP(player, scaledAmount)
+        end
     end
 
     return ok == true

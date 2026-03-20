@@ -93,7 +93,10 @@ function POS_MarketDatabase.addRecord(record)
     if record.items ~= nil and type(record.items) ~= "table" then
         record.items = nil
     end
-    if record.sourceTier and record.sourceTier ~= POS_Constants.SOURCE_TIER_FIELD and record.sourceTier ~= POS_Constants.SOURCE_TIER_BROADCAST then
+    if record.sourceTier
+        and record.sourceTier ~= POS_Constants.SOURCE_TIER_FIELD
+        and record.sourceTier ~= POS_Constants.SOURCE_TIER_BROADCAST
+        and record.sourceTier ~= POS_Constants.SOURCE_TIER_STUDIO then
         record.sourceTier = nil
     end
     if record.quality then
@@ -115,6 +118,7 @@ function POS_MarketDatabase.addRecord(record)
         confidence = record.confidence,
         sourceTier = record.sourceTier or POS_Constants.SOURCE_TIER_FIELD,
         quality = record.quality,
+        staleness = record.staleness,  -- multiplier from satellite broadcast (>1 = longer persistence)
     }
 
     -- Store items if present
@@ -212,6 +216,8 @@ function POS_MarketDatabase.getSummary(categoryId)
                 w = POS_Constants.SOURCE_TIER_WEIGHT_FIELD
             elseif r.sourceTier == POS_Constants.SOURCE_TIER_BROADCAST then
                 w = POS_Constants.SOURCE_TIER_WEIGHT_BROADCAST
+            elseif r.sourceTier == POS_Constants.SOURCE_TIER_STUDIO then
+                w = POS_Constants.SOURCE_TIER_WEIGHT_STUDIO
             end
             weightedTotal = weightedTotal + (price * w)
             totalWeight = totalWeight + w
