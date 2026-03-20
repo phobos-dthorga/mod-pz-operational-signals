@@ -934,6 +934,24 @@ The intel gathering context menu uses a 6-state priority system:
 | 5 | On cooldown | Grey | Intel recently gathered here |
 | 6 | Ready | Green | Gather intel |
 
+### 14.2a Intel Cooldown Scope
+
+The cooldown is **per room zone**, not per tile. The visit key is:
+
+```
+POS_IntelVisit_<buildingDefX>_<buildingDefY>_<roomName>
+```
+
+This means:
+- Moving to a different tile within the **same room** does NOT reset the cooldown.
+- A **different room type** in the same building (e.g. pharmacy vs office) has its
+  own independent cooldown.
+- A **different building** always has a fresh cooldown.
+- Default cooldown: 12 game days (sandbox-configurable via `IntelCooldownDays`).
+
+The key uses `BuildingDef.getX()/getY()` for stable building identity across
+save/loads, combined with `IsoRoom.getName()` for room type discrimination.
+
 ### 14.3 Passive Recon Gate
 
 Passive recon devices (camcorder, field logger, scanner radio) pause scanning
@@ -960,6 +978,7 @@ under `Zomboid/Lua/`.
 |------|--------|----------|--------|
 | `POSNET_buildings.dat` | Pipe-delimited | Building discovery cache | Server/SP |
 | `POSNET_mailboxes.dat` | Pipe-delimited | Mailbox discovery cache | Server/SP |
+| `POSNET_market_data.dat` | Section-header + pipe-delimited | Market observations + rolling closes | Server/SP |
 | `POSNET_economy_day{N}.log` | Pipe-delimited | Market event log (per day) | Server/SP |
 | `POSNET_snapshot_economy.txt` | Pipe-delimited | Economy state snapshot | Server/SP |
 
@@ -969,11 +988,29 @@ On first load after the externalization update, `POS_WorldState.migrateModDataCa
 checks for building/mailbox data in ModData, writes to external files, clears ModData,
 and sets `meta.cachesMigrated = true` to prevent re-migration.
 
+Market observations and rolling closes are migrated separately by
+`POS_WorldState.migrateMarketDataToFile()`. This moves ~105 KB of data from
+`POSNET.World.categories[*].observations[]` and `.rollingCloses[]` to
+`POSNET_market_data.dat`, guarded by `meta.marketDataMigrated`. Category
+aggregates (~0.6 KB) remain in ModData for MP client snapshot delivery.
+
 ### 15.4 Disposability
 
-Event log files and cache files are **not the source of truth** -- that remains
-in ModData (capped observations, rolling closes). If external files are deleted,
-the game continues normally. Caches rebuild through natural exploration.
+Discovery caches (buildings, mailboxes) are **disposable** -- if deleted, they
+rebuild through natural exploration. Event log files are similarly disposable.
+
+`POSNET_market_data.dat` is the **authoritative store** for market observations
+and rolling closes. If deleted, historical intel is lost but the system continues
+functioning (aggregates in ModData allow screens to display cached summaries until
+new intel is gathered).
+
+### 15.5 Cache Persistence Rules
+
+All discovery caches (buildings, mailboxes) **must** persist to their `.dat` file
+after every code path that adds entries: initial scan, passive periodic scan, and
+interactive discovery (e.g. right-click mailbox). This avoids data loss between
+sessions. The building cache follows this pattern correctly; the mailbox cache
+must do the same.
 
 ---
 

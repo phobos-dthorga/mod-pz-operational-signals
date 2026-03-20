@@ -31,6 +31,32 @@ require "TimedActions/ISBaseTimedAction"
 
 POS_MarketReconAction = ISBaseTimedAction:derive("POS_MarketReconAction")
 
+--- Build a visit key scoped to the entire room zone (building + room name).
+--- Shared between context menu (cooldown check) and action (cooldown recording).
+---@param sq IsoGridSquare
+---@return string|nil visitKey, or nil if not in a valid room
+function POS_MarketReconAction.getVisitKey(sq)
+    if not sq then return nil end
+    local building = sq:getBuilding()
+    if not building then return nil end
+    local room = sq:getRoom()
+    if not room then return nil end
+
+    -- Building def coordinates give a stable per-building identity
+    local bx, by = 0, 0
+    pcall(function()
+        local def = building:getDef()
+        if def then
+            bx = def:getX()
+            by = def:getY()
+        end
+    end)
+
+    local roomName = room:getName() or "unknown"
+    return POS_Constants.INTEL_VISIT_KEY_PREFIX
+        .. tostring(bx) .. "_" .. tostring(by) .. "_" .. roomName
+end
+
 local WRITING_TOOLS = {
     "Base.Pen", "Base.Pencil", "Base.RedPen", "Base.BluePen",
     "Base.GreenPen", "Base.PenMultiColor", "Base.PenFancy",
@@ -148,14 +174,13 @@ function POS_MarketReconAction:perform()
         POS_MarketNoteGenerator.populateNoteModData(
             note, self.categoryId, self.location, confidence, ctx)
 
-        -- Record visit timestamp for cooldown
+        -- Record visit timestamp for cooldown (scoped to room zone)
         local sq = player:getSquare()
         if sq then
-            local bx = math.floor(sq:getX())
-            local by = math.floor(sq:getY())
-            local visitKey = POS_Constants.INTEL_VISIT_KEY_PREFIX
-                .. tostring(bx) .. "_" .. tostring(by)
-            player:getModData()[visitKey] = getGameTime():getNightsSurvived()
+            local visitKey = POS_MarketReconAction.getVisitKey(sq)
+            if visitKey then
+                player:getModData()[visitKey] = getGameTime():getNightsSurvived()
+            end
         end
 
         -- Apply dynamic tooltip

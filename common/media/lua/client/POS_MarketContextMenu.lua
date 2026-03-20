@@ -80,6 +80,11 @@ local function getRoomCategory(player)
     return nil, nil
 end
 
+--- Delegate to POS_MarketReconAction.getVisitKey for room-zone-scoped cooldown.
+local function getVisitKey(sq)
+    return POS_MarketReconAction.getVisitKey(sq)
+end
+
 function POS_MarketContextMenu.onFillWorldObjectContextMenu(playerNum, context, worldobjects, test)
     if test then return end
 
@@ -129,12 +134,10 @@ function POS_MarketContextMenu.onFillWorldObjectContextMenu(playerNum, context, 
             state = POS_Constants.INTEL_STATE_MISSING_ITEMS
             tooltipText = PhobosLib.safeGetText("UI_POS_Market_GatherIntel_MissingItems")
         else
-            -- Check cooldown
+            -- Check cooldown (scoped to entire room zone, not individual tiles)
             local sq = player:getSquare()
-            if sq then
-                local bx = math.floor(sq:getX())
-                local by = math.floor(sq:getY())
-                local visitKey = POS_Constants.INTEL_VISIT_KEY_PREFIX .. tostring(bx) .. "_" .. tostring(by)
+            local visitKey = sq and getVisitKey(sq)
+            if visitKey then
                 local lastVisitDay = player:getModData()[visitKey] or -999
                 local currentDay = getGameTime():getNightsSurvived()
                 local cooldownDays = POS_Sandbox and POS_Sandbox.getIntelCooldownDays
