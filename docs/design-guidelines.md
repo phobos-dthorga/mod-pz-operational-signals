@@ -1073,3 +1073,86 @@ If PhobosNotifications is not installed, registration is silently skipped.
 - **error**: Failure that blocks a player goal (red toast). Use sparingly.
 - Priority `"normal"` for all routine notifications.
   Reserve `"high"` for time-sensitive alerts (e.g. watchlist price spikes).
+
+---
+
+## 20. Four-Tier Intelligence Hierarchy
+
+POSnet's intelligence pipeline is structured as a four-tier hierarchy. Each tier
+represents a distinct level of sophistication, location, and strategic value.
+All tiers are independently useful — no tier is a hard dependency on another.
+
+### 20.1 Tier Overview
+
+| Tier | Node | Location | Artifact | Primary Modifier |
+|------|------|----------|----------|-----------------|
+| I — Capture | Field | Anywhere | Raw Market Notes, recorded media | Equipment quality |
+| II — Analysis | Terminal | Radio + computer | Intel Fragments | **SIGINT skill** |
+| III — Compilation | Camera Workstation | TV stations | Compiled reports, bulletins | Location + SIGINT |
+| IV — Broadcast | Satellite Uplink | Rooftops, military | Regional market effects | SIGINT credibility |
+
+### 20.2 Design Principles
+
+1. **No mandatory bottlenecks.** Raw Market Notes can skip Tiers II-IV and go
+   directly into the market database. Each tier is an optional premium path.
+2. **Progressive investment.** Higher tiers require more travel, infrastructure,
+   materials, and time — but produce proportionally more impactful results.
+3. **Independent value.** A player using only Tier I (pen and paper) has a
+   complete, functional experience. Each additional tier adds depth, not fixes
+   a deficiency.
+4. **SIGINT as throughline.** The SIGINT skill connects all tiers as an
+   analytical progression — minimal effect at Tier I, primary domain at Tier II,
+   secondary influence at Tier III, tertiary influence at Tier IV.
+
+### 20.3 Design Documents
+
+| Tier | Design Document |
+|------|----------------|
+| I | `passive-recon-design.md`, `data-recorder-design.md` |
+| II | `terminal-analysis-design.md` |
+| III | `camera-workstation-design.md` |
+| IV | `satellite-uplink-design.md` |
+| Skill | `sigint-skill-design.md` |
+
+---
+
+## 21. SIGINT Skill Rules
+
+### 21.1 Perk Registration
+
+SIGINT is a custom PZ perk registered under the `Passiv` (passive skills)
+parent category. It scales from Level 0 to Level 10 with qualitative tier
+names: Noise Drowner (0-2), Pattern Seeker (3-5), Analyst (6-8), Intelligence
+Operator (9-10).
+
+### 21.2 Skill Expression Per Tier
+
+| Tier | SIGINT Effect | Strength |
+|------|--------------|----------|
+| I — Capture | +1 confidence per 3 levels (max +3) | Minimal |
+| II — Analysis | Yield, noise filter, time, cross-correlation | **Primary** |
+| III — Compilation | Confidence bonus, verification strength | Secondary |
+| IV — Broadcast | Credibility weight, persistence | Tertiary |
+
+### 21.3 XP Rules
+
+- XP is earned through **analytical work**, not passive accumulation.
+- Primary source: Terminal Analysis (15-25 XP per action).
+- XP awards are NOT modified by SIGINT level (no runaway progression).
+- Skill books follow the standard PZ pattern (5 books, 2 levels each).
+- See `sigint-skill-design.md` Section 5 for the complete XP table.
+
+### 21.4 Trait Rules
+
+- 3 positive traits (Analytical Mind, Radio Hobbyist, Systems Thinker) and
+  3 negative traits (Impatient, Disorganised Thinker, Signal Blindness).
+- Traits are registered in `POS_Registries.lua`.
+- Signal Blindness imposes a hard cap at Level 5 — the only SIGINT-limiting
+  trait.
+- See `sigint-skill-design.md` Section 7 for costs and effects.
+
+### 21.5 Cross-Mod
+
+- ZScienceSkill: optional XP mirror (0.5x ratio) + 3 SIGINT specimens.
+- Dynamic Trading: high-SIGINT discount on information trades (optional).
+- See `sigint-skill-design.md` Section 8 for integration details.

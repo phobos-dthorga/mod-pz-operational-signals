@@ -126,47 +126,63 @@ The existing POSnet pipeline has a sophistication ceiling:
 
 ## 3. Conceptual Architecture
 
-### 3.1 The Three-Tier Information System
+### 3.1 The Four-Tier Intelligence Hierarchy
 
-The Camera Workstation formalises POSnet's information into three distinct tiers:
+The Camera Workstation sits at **Tier III** of POSnet's complete intelligence
+hierarchy. For the full four-tier system, see `satellite-uplink-design.md`
+Section 3.
 
-| Tier | Artifact | Source | Confidence Range | Market Value |
-|------|----------|--------|------------------|--------------|
-| **Unverified** | Raw Market Note | Field recon (pen + paper) | 20-65 | Base |
-| **Reviewed** | Reviewed Recording | Data-Recorder + terminal processing | 40-80 | 1.5x |
-| **Certified** | Compiled Intelligence Package | Camera Workstation compilation | 70-95 | 2.5x |
+| Tier | Node | Artifact | Confidence Range | Market Value |
+|------|------|----------|------------------|--------------|
+| **I — Capture** | Field (pen + paper, recorders) | Raw Market Note | 20-65 | Base |
+| **II — Analysis** | Terminal (Process Intelligence) | Intel Fragments | 30-95 | 1.5x |
+| **III — Compilation** | Camera Workstation | Compiled reports, bulletins | 70-95 | 2.5x |
+| **IV — Broadcast** | Satellite Uplink | Regional market effects | N/A | Reputation |
 
-Each tier maps to a distinct artifact item type with its own tooltip, icon, and
-market pricing modifier. Higher tiers require more player investment (travel to
-a TV station, consume more materials, spend more time).
+Each tier maps to a distinct artifact type with its own tooltip, icon, and
+market pricing modifier. Higher tiers require more player investment (travel,
+materials, time, infrastructure).
+
+**Key change**: The Terminal Analysis layer (Tier II, see
+`terminal-analysis-design.md`) now sits between field capture and camera
+compilation. Intel Fragments produced by Terminal Analysis are **premium inputs**
+for camera compilation, tagged with `POS_CameraInput`.
 
 ### 3.2 Pipeline Position
 
 ```
-    ┌─────────────────────────────────────────────────────────┐
-    │                    FIELD COLLECTION                      │
-    │  Pen+Paper  │  Recorder+VHS  │  Recorder+Floppy/Micro  │
-    └──────┬──────┴───────┬────────┴───────────┬──────────────┘
+    ┌──────────────────────────────────────────────────────────┐
+    │                    FIELD COLLECTION (Tier I)              │
+    │  Pen+Paper  │  Recorder+VHS  │  Recorder+Floppy/Micro   │
+    └──────┬──────┴───────┬────────┴───────────┬───────────────┘
            │              │                    │
            ▼              ▼                    ▼
     ┌──────────────────────────────────────────────────────────┐
-    │                   RAW ARTIFACTS                          │
-    │  Raw Market Note  │  Recorded Tape  │  Recorder Buffer  │
-    └──────┬────────────┴────────┬────────┴────────┬──────────┘
+    │                   RAW ARTIFACTS                           │
+    │  Raw Market Note  │  Recorded Tape  │  Recorder Buffer   │
+    └──────┬────────────┴────────┬────────┴────────┬───────────┘
            │                     │                  │
-           │    ┌────────────────┘                  │
-           │    │    ┌─────────────────────────────┘
-           │    │    │
-           ▼    ▼    ▼
+           ▼                     ▼                  ▼
     ┌──────────────────────────────────────────────────────────┐
-    │                CAMERA WORKSTATION                         │
+    │            TERMINAL ANALYSIS (Tier II) [OPTIONAL]        │
+    │        (see terminal-analysis-design.md)                 │
+    │  Input: 1-5 raw intel items                              │
+    │  Output: Intel Fragments (POS_CameraInput tagged)        │
+    │  SIGINT skill: PRIMARY effect zone                       │
+    └──────────────────────────┬───────────────────────────────┘
+                               │
+           ┌───────────────────┤  (raw artifacts also accepted)
+           │                   │
+           ▼                   ▼
+    ┌──────────────────────────────────────────────────────────┐
+    │            CAMERA WORKSTATION (Tier III)                  │
     │           (TV station CraftBench entity)                 │
     │                                                          │
-    │  Input: 1-5 raw artifacts + paper + tape (optional)      │
+    │  Input: 1-5 artifacts (raw OR fragments) + paper + tape  │
     │  Action: Timed compilation (ISBaseTimedAction)            │
     │  Output: Compiled Intelligence Package                   │
     │                                                          │
-    │  Bonuses: location type, source diversity, equipment     │
+    │  Bonuses: location, diversity, equipment, SIGINT skill   │
     └──────────────────────────┬───────────────────────────────┘
                                │
                                ▼
@@ -174,6 +190,7 @@ a TV station, consume more materials, spend more time).
     │              COMPILED INTELLIGENCE PACKAGE                │
     │  High-confidence, sellable, broadcast-transmittable      │
     │  Feeds: market database, mission completion, BBS upload  │
+    │  → SATELLITE UPLINK (Tier IV) for regional broadcast     │
     └──────────────────────────────────────────────────────────┘
 ```
 
@@ -445,7 +462,8 @@ Compiled artifacts integrate with existing systems without modification:
 ## 7. Quality Modifiers
 
 Output confidence is not a flat multiplier. It is composed from multiple factors
-that reward player investment in equipment, location, and source diversity.
+that reward player investment in equipment, location, source diversity, and
+analytical skill.
 
 ### 7.1 Confidence Formula
 
@@ -457,13 +475,31 @@ bonuses += locationBonus       -- +10 if inside a real TV/media building
 bonuses += diversityBonus      -- +3 per unique source location (cap +15)
 bonuses += categoryBonus       -- +3 per unique category (bulletins only, cap +15)
 bonuses += equipmentBonus      -- +5 if recorder condition > 80%
+bonuses += sigintBonus         -- SIGINT confidence bonus (see sigint-skill-design.md §3.2)
+bonuses += fragmentBonus       -- +5 per Intel Fragment input (vs raw note)
 
 multiplier = actionMultiplier  -- 1.4 (survey), 1.5 (tape), 1.6 (bulletin)
+multiplier += sigintVerification -- +1% per SIGINT level (max +10%)
 
 finalConfidence = min(cap, floor((baseConfidence + bonuses) * multiplier))
 ```
 
 Where `cap` is 90 for surveys, 95 for reports and bulletins.
+
+### 7.1a SIGINT Skill Influence
+
+The SIGINT perk (see `sigint-skill-design.md`) provides two modifiers to camera
+compilation:
+
+1. **Confidence bonus**: Flat additive bonus from the SIGINT confidence table
+   (0 at L0, +25 at L10). Applied alongside equipment and location bonuses.
+2. **Verification strength**: +1% per SIGINT level added to the action
+   multiplier (max +10% at L10). This represents the analyst's ability to
+   verify and strengthen compiled intelligence.
+
+Intel Fragments tagged with `POS_CameraInput` (produced by Terminal Analysis
+at SIGINT L6+) provide an additional +5 confidence per fragment input,
+representing the value of pre-processed analytical work.
 
 ### 7.2 Location Bonus
 
@@ -951,25 +987,33 @@ These items build ON TOP of this system and are explicitly deferred:
 
 | Document | Relationship |
 |----------|-------------|
+| `terminal-analysis-design.md` | Terminal Analysis produces **Intel Fragments** that are premium camera inputs (`POS_CameraInput` tag) |
+| `sigint-skill-design.md` | SIGINT skill provides **confidence bonus** and **verification strength** modifier to camera compilation |
+| `satellite-uplink-design.md` | Satellite Uplink **broadcasts** compiled artifacts for regional market effects |
 | `data-recorder-design.md` | Recorder is the **input provider** — recorded media is a primary input to camera compilation |
 | `passive-recon-design.md` | Passive recon devices fill tapes/media that feed the camera workstation |
 | `design-guidelines.md` | Camera follows all existing guidelines (Section 12.5: paper is final medium; Section 14.2a: building-scoped cooldowns) |
 
-The Camera Workstation is the **compilation step** in a larger pipeline:
+The Camera Workstation is the **compilation step** (Tier III) in the full
+four-tier intelligence pipeline:
 
 ```
-passive-recon-design.md    →    data-recorder-design.md    →    camera-workstation-design.md
-(field acquisition)             (portable buffering)            (studio compilation)
-         │                              │                               │
-         ▼                              ▼                               ▼
-  Devices scan nearby          Recorder captures chunks        Camera compiles into
-  buildings/radio signals      Media stores raw data           premium artifacts
+passive-recon    data-recorder    terminal-analysis    CAMERA WORKSTATION    satellite-uplink
+  (capture)       (buffering)      (understanding)      (compilation)         (projection)
+  Tier I          Tier I           Tier II              Tier III              Tier IV
+      │               │                │                    │                     │
+      └───────────────┴────────────────┴────────────────────┴─────────────────────┘
+                                       │
+                                 SIGINT SKILL
+                            (analytical throughline)
 ```
 
-All three systems are independently useful. The camera adds value on top of
-field-gathered notes even without a recorder. The recorder adds value even
-without a camera. Neither is a hard dependency on the other — they are
-complementary layers in a sophistication ladder.
+All systems are independently useful. The camera adds value on top of raw
+field-gathered notes even without terminal analysis or a recorder. Terminal
+Analysis adds value even without a camera (fragments sell directly). The
+satellite adds value even with simple compiled surveys. No tier is a hard
+dependency on another — they are complementary layers in a sophistication
+ladder that rewards progressive investment.
 
 ---
 
