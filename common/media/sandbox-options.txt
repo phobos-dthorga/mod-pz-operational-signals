@@ -979,3 +979,327 @@ option POS.MicrocassetteMaxRewinds
     page = POS_Sandbox,
     translation = POS_MicrocassetteMaxRewinds,
 }
+
+option POS.EnableCameraWorkstation
+{
+    type = boolean,
+    default = true,
+    page = POS_Sandbox,
+    translation = POS_EnableCameraWorkstation,
+}
+
+option POS.CameraCompileTime
+{
+    type = integer,
+    default = 300,
+    min = 120,
+    max = 600,
+    page = POS_Sandbox,
+    translation = POS_CameraCompileTime,
+}
+
+option POS.CameraTapeReviewTime
+{
+    type = integer,
+    default = 200,
+    min = 60,
+    max = 400,
+    page = POS_Sandbox,
+    translation = POS_CameraTapeReviewTime,
+}
+
+option POS.CameraBulletinTime
+{
+    type = integer,
+    default = 450,
+    min = 180,
+    max = 900,
+    page = POS_Sandbox,
+    translation = POS_CameraBulletinTime,
+}
+
+option POS.CameraCompileCooldownHours
+{
+    type = integer,
+    default = 6,
+    min = 0,
+    max = 48,
+    page = POS_Sandbox,
+    translation = POS_CameraCompileCooldownHours,
+}
+
+option POS.CameraTapeReviewCooldownHours
+{
+    type = integer,
+    default = 4,
+    min = 0,
+    max = 48,
+    page = POS_Sandbox,
+    translation = POS_CameraTapeReviewCooldownHours,
+}
+
+option POS.CameraBulletinCooldownHours
+{
+    type = integer,
+    default = 12,
+    min = 0,
+    max = 48,
+    page = POS_Sandbox,
+    translation = POS_CameraBulletinCooldownHours,
+}
+
+option POS.CameraConfidenceMultiplier
+{
+    type = integer,
+    default = 100,
+    min = 50,
+    max = 200,
+    page = POS_Sandbox,
+    translation = POS_CameraConfidenceMultiplier,
+}
+
+option POS.CameraLocationBonusEnabled
+{
+    type = boolean,
+    default = true,
+    page = POS_Sandbox,
+    translation = POS_CameraLocationBonusEnabled,
+}
+
+option POS.CameraBulletinRepBonus
+{
+    type = integer,
+    default = 50,
+    min = 0,
+    max = 200,
+    page = POS_Sandbox,
+    translation = POS_CameraBulletinRepBonus,
+}
+
+option POS.EnableSIGINTSkill
+{
+    type = boolean,
+    default = true,
+    page = POS_Sandbox,
+    translation = POS_EnableSIGINTSkill,
+}
+
+option POS.SIGINTXPMultiplier
+{
+    type = integer,
+    default = 100,
+    min = 25,
+    max = 400,
+    page = POS_Sandbox,
+    translation = POS_SIGINTXPMultiplier,
+}
+
+option POS.SIGINTNoiseReduction
+{
+    type = integer,
+    default = 3,
+    min = 1,
+    max = 4,
+    page = POS_Sandbox,
+    translation = POS_SIGINTNoiseReduction,
+}
+
+option POS.SIGINTTimeReduction
+{
+    type = boolean,
+    default = true,
+    page = POS_Sandbox,
+    translation = POS_SIGINTTimeReduction,
+}
+
+option POS.SIGINTCrossCorrelationLevel
+{
+    type = integer,
+    default = 6,
+    min = 3,
+    max = 10,
+    page = POS_Sandbox,
+    translation = POS_SIGINTCrossCorrelationLevel,
+}
+
+option POS.SIGINTConfidenceBonus
+{
+    type = integer,
+    default = 3,
+    min = 1,
+    max = 4,
+    page = POS_Sandbox,
+    translation = POS_SIGINTConfidenceBonus,
+}
+
+option POS.SIGINTTraitsEnabled
+{
+    type = boolean,
+    default = true,
+    page = POS_Sandbox,
+    translation = POS_SIGINTTraitsEnabled,
+}
+
+option POS.SIGINTBookSpawns
+{
+    type = boolean,
+    default = true,
+    page = POS_Sandbox,
+    translation = POS_SIGINTBookSpawns,
+}
+
+option POS.EnableTerminalAnalysis
+{
+    type = boolean,
+    default = true,
+    page = POS_Sandbox,
+    translation = POS_EnableTerminalAnalysis,
+}
+
+option POS.AnalysisBaseTime
+{
+    type = integer,
+    default = 180,
+    min = 60,
+    max = 600,
+    page = POS_Sandbox,
+    translation = POS_AnalysisBaseTime,
+}
+
+option POS.AnalysisMaxInputs
+{
+    type = integer,
+    default = 5,
+    min = 1,
+    max = 10,
+    page = POS_Sandbox,
+    translation = POS_AnalysisMaxInputs,
+}
+
+option POS.AnalysisJunkChance
+{
+    type = integer,
+    default = 40,
+    min = 0,
+    max = 80,
+    page = POS_Sandbox,
+    translation = POS_AnalysisJunkChance,
+}
+
+option POS.AnalysisSatelliteBonus
+{
+    type = boolean,
+    default = true,
+    page = POS_Sandbox,
+    translation = POS_AnalysisSatelliteBonus,
+}
+
+option POS.AnalysisCooldownMinutes
+{
+    type = integer,
+    default = 30,
+    min = 0,
+    max = 120,
+    page = POS_Sandbox,
+    translation = POS_AnalysisCooldownMinutes,
+}
+
+option POS.AnalysisDiversityBonus
+{
+    type = boolean,
+    default = true,
+    page = POS_Sandbox,
+    translation = POS_AnalysisDiversityBonus,
+}
+
+option POS.EnableSatelliteUplink
+{
+    type = boolean,
+    default = true,
+    page = POS_Sandbox,
+    translation = POS_EnableSatelliteUplink,
+}
+
+option POS.SatelliteBroadcastCooldownHours
+{
+    type = integer,
+    default = 24,
+    min = 0,
+    max = 72,
+    page = POS_Sandbox,
+    translation = POS_SatelliteBroadcastCooldownHours,
+}
+
+option POS.SatelliteBroadcastStrength
+{
+    type = integer,
+    default = 100,
+    min = 25,
+    max = 200,
+    page = POS_Sandbox,
+    translation = POS_SatelliteBroadcastStrength,
+}
+
+option POS.SatelliteBroadcastRepBonus
+{
+    type = integer,
+    default = 100,
+    min = 0,
+    max = 300,
+    page = POS_Sandbox,
+    translation = POS_SatelliteBroadcastRepBonus,
+}
+
+option POS.SatellitePowerDrain
+{
+    type = boolean,
+    default = true,
+    page = POS_Sandbox,
+    translation = POS_SatellitePowerDrain,
+}
+
+option POS.SatelliteCalibrationRequired
+{
+    type = boolean,
+    default = true,
+    page = POS_Sandbox,
+    translation = POS_SatelliteCalibrationRequired,
+}
+
+option POS.SatelliteCalibrationTime
+{
+    type = integer,
+    default = 300,
+    min = 60,
+    max = 600,
+    page = POS_Sandbox,
+    translation = POS_SatelliteCalibrationTime,
+}
+
+option POS.SatelliteLinkRange
+{
+    type = integer,
+    default = 50,
+    min = 20,
+    max = 100,
+    page = POS_Sandbox,
+    translation = POS_SatelliteLinkRange,
+}
+
+option POS.SatelliteMarketCoupling
+{
+    type = boolean,
+    default = true,
+    page = POS_Sandbox,
+    translation = POS_SatelliteMarketCoupling,
+}
+
+option POS.SatelliteDecalibrationDays
+{
+    type = integer,
+    default = 7,
+    min = 0,
+    max = 30,
+    page = POS_Sandbox,
+    translation = POS_SatelliteDecalibrationDays,
+}

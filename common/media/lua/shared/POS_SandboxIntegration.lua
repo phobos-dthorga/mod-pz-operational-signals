@@ -532,3 +532,175 @@ function POS_Sandbox.getMicrocassetteMaxRewinds()
     return PhobosLib.getSandboxVar("POS", "MicrocassetteMaxRewinds",
         POS_Constants.MICROCASSETTE_MAX_REWINDS_DEFAULT)
 end
+
+---------------------------------------------------------------
+-- Camera Workstation
+---------------------------------------------------------------
+
+function POS_Sandbox.getEnableCameraWorkstation()
+    return PhobosLib.getSandboxVar("POS", "EnableCameraWorkstation", true)
+end
+
+function POS_Sandbox.getCameraCompileTime()
+    return PhobosLib.getSandboxVar("POS", "CameraCompileTime",
+        POS_Constants.CAMERA_COMPILE_TIME_DEFAULT)
+end
+
+function POS_Sandbox.getCameraTapeReviewTime()
+    return PhobosLib.getSandboxVar("POS", "CameraTapeReviewTime",
+        POS_Constants.CAMERA_TAPE_REVIEW_TIME_DEFAULT)
+end
+
+function POS_Sandbox.getCameraBulletinTime()
+    return PhobosLib.getSandboxVar("POS", "CameraBulletinTime",
+        POS_Constants.CAMERA_BULLETIN_TIME_DEFAULT)
+end
+
+function POS_Sandbox.getCameraCompileCooldownHours()
+    return PhobosLib.getSandboxVar("POS", "CameraCompileCooldownHours",
+        POS_Constants.CAMERA_COMPILE_COOLDOWN_DEFAULT)
+end
+
+function POS_Sandbox.getCameraTapeReviewCooldownHours()
+    return PhobosLib.getSandboxVar("POS", "CameraTapeReviewCooldownHours",
+        POS_Constants.CAMERA_TAPE_COOLDOWN_DEFAULT)
+end
+
+function POS_Sandbox.getCameraBulletinCooldownHours()
+    return PhobosLib.getSandboxVar("POS", "CameraBulletinCooldownHours",
+        POS_Constants.CAMERA_BULLETIN_COOLDOWN_DEFAULT)
+end
+
+function POS_Sandbox.getCameraConfidenceMultiplier()
+    return PhobosLib.getSandboxVar("POS", "CameraConfidenceMultiplier", 100)
+end
+
+function POS_Sandbox.getCameraLocationBonusEnabled()
+    return PhobosLib.getSandboxVar("POS", "CameraLocationBonusEnabled", true)
+end
+
+function POS_Sandbox.getCameraBulletinRepBonus()
+    return PhobosLib.getSandboxVar("POS", "CameraBulletinRepBonus",
+        POS_Constants.CAMERA_BULLETIN_REP_DEFAULT)
+end
+
+---------------------------------------------------------------
+-- SIGINT Skill
+---------------------------------------------------------------
+
+function POS_Sandbox.getEnableSIGINTSkill()
+    return PhobosLib.getSandboxVar("POS", "EnableSIGINTSkill", true)
+end
+
+function POS_Sandbox.getSIGINTXPMultiplier()
+    return PhobosLib.getSandboxVar("POS", "SIGINTXPMultiplier", 100)
+end
+
+function POS_Sandbox.getSIGINTNoiseReduction()
+    return PhobosLib.getSandboxVar("POS", "SIGINTNoiseReduction", 3)
+end
+
+function POS_Sandbox.getSIGINTTimeReduction()
+    return PhobosLib.getSandboxVar("POS", "SIGINTTimeReduction", true)
+end
+
+function POS_Sandbox.getSIGINTCrossCorrelationLevel()
+    return PhobosLib.getSandboxVar("POS", "SIGINTCrossCorrelationLevel",
+        POS_Constants.SIGINT_CROSS_CORRELATION_LEVEL)
+end
+
+function POS_Sandbox.getSIGINTConfidenceBonus()
+    return PhobosLib.getSandboxVar("POS", "SIGINTConfidenceBonus", 3)
+end
+
+function POS_Sandbox.getSIGINTTraitsEnabled()
+    return PhobosLib.getSandboxVar("POS", "SIGINTTraitsEnabled", true)
+end
+
+function POS_Sandbox.getSIGINTBookSpawns()
+    return PhobosLib.getSandboxVar("POS", "SIGINTBookSpawns", true)
+end
+
+---------------------------------------------------------------
+-- Terminal Analysis
+---------------------------------------------------------------
+
+function POS_Sandbox.getEnableTerminalAnalysis()
+    return PhobosLib.getSandboxVar("POS", "EnableTerminalAnalysis", true)
+end
+
+function POS_Sandbox.getAnalysisBaseTime()
+    return PhobosLib.getSandboxVar("POS", "AnalysisBaseTime",
+        POS_Constants.ANALYSIS_BASE_TIME)
+end
+
+function POS_Sandbox.getAnalysisMaxInputs()
+    return PhobosLib.getSandboxVar("POS", "AnalysisMaxInputs",
+        POS_Constants.ANALYSIS_MAX_INPUTS)
+end
+
+function POS_Sandbox.getAnalysisJunkChance()
+    return PhobosLib.getSandboxVar("POS", "AnalysisJunkChance",
+        POS_Constants.ANALYSIS_BASE_JUNK_CHANCE)
+end
+
+function POS_Sandbox.getAnalysisSatelliteBonus()
+    return PhobosLib.getSandboxVar("POS", "AnalysisSatelliteBonus", true)
+end
+
+function POS_Sandbox.getAnalysisCooldownMinutes()
+    return PhobosLib.getSandboxVar("POS", "AnalysisCooldownMinutes",
+        POS_Constants.ANALYSIS_COOLDOWN_MINUTES)
+end
+
+function POS_Sandbox.getAnalysisDiversityBonus()
+    return PhobosLib.getSandboxVar("POS", "AnalysisDiversityBonus", true)
+end
+
+---------------------------------------------------------------
+-- Satellite Uplink
+---------------------------------------------------------------
+
+function POS_Sandbox.getEnableSatelliteUplink()
+    return PhobosLib.getSandboxVar("POS", "EnableSatelliteUplink", true)
+end
+
+function POS_Sandbox.getSatelliteBroadcastCooldownHours()
+    return PhobosLib.getSandboxVar("POS", "SatelliteBroadcastCooldownHours",
+        POS_Constants.SATELLITE_BROADCAST_COOLDOWN_DEFAULT)
+end
+
+function POS_Sandbox.getSatelliteBroadcastStrength()
+    return PhobosLib.getSandboxVar("POS", "SatelliteBroadcastStrength", 100)
+end
+
+function POS_Sandbox.getSatelliteBroadcastRepBonus()
+    return PhobosLib.getSandboxVar("POS", "SatelliteBroadcastRepBonus", 100)
+end
+
+function POS_Sandbox.getSatellitePowerDrain()
+    return PhobosLib.getSandboxVar("POS", "SatellitePowerDrain", true)
+end
+
+function POS_Sandbox.getSatelliteCalibrationRequired()
+    return PhobosLib.getSandboxVar("POS", "SatelliteCalibrationRequired", true)
+end
+
+function POS_Sandbox.getSatelliteCalibrationTime()
+    return PhobosLib.getSandboxVar("POS", "SatelliteCalibrationTime",
+        POS_Constants.SATELLITE_CALIBRATION_TIME_DEFAULT)
+end
+
+function POS_Sandbox.getSatelliteLinkRange()
+    return PhobosLib.getSandboxVar("POS", "SatelliteLinkRange",
+        POS_Constants.SATELLITE_LINK_RANGE)
+end
+
+function POS_Sandbox.getSatelliteMarketCoupling()
+    return PhobosLib.getSandboxVar("POS", "SatelliteMarketCoupling", true)
+end
+
+function POS_Sandbox.getSatelliteDecalibrationDays()
+    return PhobosLib.getSandboxVar("POS", "SatelliteDecalibrationDays",
+        POS_Constants.SATELLITE_DECALIBRATION_DAYS)
+end
