@@ -94,6 +94,19 @@ globals = {
     "POS_ReconDeviceRegistry",
     "POS_EconomyTick",
     "POS_WatchlistService",
+    "POS_SIGINTSkill",
+    "POS_SIGINTService",
+    "POS_SIGINTTraits",
+    "POS_SIGINTBooks",
+    "POS_TerminalAnalysisService",
+    "POS_TerminalAnalysisAction",
+    "POS_TerminalAnalysisScreen",
+    "POS_CameraService",
+    "POS_CameraContextMenu",
+    "POS_CameraCompileAction",
+    "POS_SatelliteService",
+    "POS_SatelliteContextMenu",
+    "POS_SatelliteBroadcastAction",
 }
 
 read_globals = {
