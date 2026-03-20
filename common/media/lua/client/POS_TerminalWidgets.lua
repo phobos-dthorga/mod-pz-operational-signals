@@ -267,6 +267,74 @@ function POS_TerminalWidgets.createWrappedText(parent, x, y, maxChars, text, col
     return labels, currentY
 end
 
+--- Create a CRT-themed text-based progress bar.
+--- Renders as: [####--------] 65%
+--- Uses monospace characters for consistent alignment.
+--- @param parent any ISPanel parent
+--- @param x number X position
+--- @param y number Y position
+--- @param w number Total width available for the bar
+--- @param value number Current value (0-100, clamped)
+--- @param colour table|nil Fill colour (defaults to terminal green)
+--- @param bgColour table|nil Empty colour (defaults to dim)
+--- @return any ISLabel
+function POS_TerminalWidgets.createProgressBar(parent, x, y, w, value, colour, bgColour)
+    value = math.max(0, math.min(100, value or 0))
+
+    -- Determine bar width in characters
+    local charW = PhobosLib and PhobosLib.measureCharWidth
+        and PhobosLib.measureCharWidth(UIFont.Code) or 8
+    -- Reserve space for brackets, space, and percentage text (e.g. " 100%")
+    local reservedChars = 8  -- "[ ] 100%"
+    local barChars = math.max(4, math.floor(w / charW) - reservedChars)
+
+    local fillCount = math.floor(barChars * value / 100 + 0.5)
+    local emptyCount = barChars - fillCount
+
+    local fillChar = POS_Constants.UI_PROGRESS_FILL_CHAR or "#"
+    local emptyChar = POS_Constants.UI_PROGRESS_EMPTY_CHAR or "-"
+
+    local barText = "[" .. string.rep(fillChar, fillCount)
+        .. string.rep(emptyChar, emptyCount) .. "] "
+        .. string.format("%3d%%", value)
+
+    local c = colour or C.text
+    return POS_TerminalWidgets.createLabel(parent, x, y, barText, c)
+end
+
+--- Draw a labelled progress bar using the ctx cursor.
+--- Renders: "Label: [####----] 45%"
+--- Mutates ctx.y.
+--- @param ctx table Layout context from initLayout
+--- @param labelKey string Translation key for the label
+--- @param value number 0-100
+--- @param colour table|nil Fill colour (defaults based on value)
+function POS_TerminalWidgets.drawProgressBar(ctx, labelKey, value, colour)
+    local W = POS_TerminalWidgets
+    value = math.max(0, math.min(100, value or 0))
+
+    -- Auto-colour: green > 50, warn 20-50, error < 20
+    if not colour then
+        if value >= 50 then
+            colour = C.text
+        elseif value >= 20 then
+            colour = C.warn
+        else
+            colour = C.error
+        end
+    end
+
+    -- Label on one line
+    W.createLabel(ctx.panel, 8, ctx.y,
+        W.safeGetText(labelKey) .. ":", colour)
+    ctx.y = ctx.y + ctx.lineH
+
+    -- Progress bar on next line, indented
+    W.createProgressBar(ctx.panel, 8, ctx.y,
+        ctx.pw - 16, value, colour)
+    ctx.y = ctx.y + ctx.lineH
+end
+
 --- Remove all children from a panel (used by screen destroy).
 --- Uses PZ's built-in ISUIElement:clearChildren() which resets
 --- the Lua children table and calls javaObject:ClearChildren().

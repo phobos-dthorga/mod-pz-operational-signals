@@ -113,7 +113,7 @@ function screen.create(contentPanel, _params, _terminal)
         return
     end
 
-    -- SIGINT level display
+    -- SIGINT level display with XP progress bar
     local sigintLevel = POS_SIGINTSkill.getLevel(player)
     local tierKey = POS_SIGINTSkill.getTierNameKey(sigintLevel)
     W.createLabel(ctx.panel, 8, ctx.y,
@@ -123,6 +123,13 @@ function screen.create(contentPanel, _params, _terminal)
         C.text)
     ctx.y = ctx.y + ctx.lineH
 
+    -- XP progress bar toward next level
+    if sigintLevel < POS_Constants.SIGINT_MAX_LEVEL then
+        local xpProgress = POS_SIGINTSkill.getLevelProgress(player)
+        W.createProgressBar(ctx.panel, 8, ctx.y, ctx.pw - 16, xpProgress, C.text)
+        ctx.y = ctx.y + ctx.lineH
+    end
+
     -- Find available raw intel
     local rawItems = POS_TerminalAnalysisService.findRawIntelItems(player)
 
@@ -130,7 +137,22 @@ function screen.create(contentPanel, _params, _terminal)
         ctx.y = ctx.y + 4
         W.createLabel(ctx.panel, 8, ctx.y,
             W.safeGetText("UI_POS_Analysis_NoInputs"), C.dim)
+        ctx.y = ctx.y + ctx.lineH + 4
+
+        -- Guidance text for empty state
+        W.createLabel(ctx.panel, 8, ctx.y,
+            W.safeGetText("UI_POS_Analysis_EmptyGuidance_Line1"), C.dim)
         ctx.y = ctx.y + ctx.lineH
+        W.createLabel(ctx.panel, 8, ctx.y,
+            W.safeGetText("UI_POS_Analysis_EmptyGuidance_Line2"), C.dim)
+        ctx.y = ctx.y + ctx.lineH
+        W.createLabel(ctx.panel, 8, ctx.y,
+            W.safeGetText("UI_POS_Analysis_EmptyGuidance_Line3"), C.dim)
+        ctx.y = ctx.y + ctx.lineH
+        W.createLabel(ctx.panel, 8, ctx.y,
+            W.safeGetText("UI_POS_Analysis_EmptyGuidance_Line4"), C.dim)
+        ctx.y = ctx.y + ctx.lineH
+
         W.drawFooter(ctx)
         return
     end

@@ -690,5 +690,11 @@
     "UI_POS_Tutorial_Popup_FirstSatellite_Line1": "Your first satellite broadcast has been transmitted. This is the apex of the intelligence hierarchy — Tier IV market propagation.",
     "UI_POS_Tutorial_Popup_FirstSatellite_Line2": "Satellite broadcasts push compiled intelligence into the regional market, affecting prices and generating significant reputation. Stronger reports have greater impact.",
     "UI_POS_Tutorial_Popup_FirstSatellite_Line3": "Dishes require calibration and electricity. Power outages cause decalibration over time, so maintain your generators. A terminal within range receives enhancement bonuses.",
-    "UI_POS_Tutorial_Popup_FirstSatellite_Line4": "Tip: The endgame loop is gather → process → compile → broadcast. Each cycle improves your standing and market influence."
+    "UI_POS_Tutorial_Popup_FirstSatellite_Line4": "Tip: The endgame loop is gather → process → compile → broadcast. Each cycle improves your standing and market influence.",
+
+    "UI_POS_Analysis_EmptyGuidance_Line1": "Gather intel via field reconnaissance:",
+    "UI_POS_Analysis_EmptyGuidance_Line2": "  - Market notes from observation posts",
+    "UI_POS_Analysis_EmptyGuidance_Line3": "  - Data recorder captures from radio signals",
+    "UI_POS_Analysis_EmptyGuidance_Line4": "  - Camera footage from surveillance points",
+    "UI_POS_Analysis_SIGINTProgress": "SIGINT Progress"
 }

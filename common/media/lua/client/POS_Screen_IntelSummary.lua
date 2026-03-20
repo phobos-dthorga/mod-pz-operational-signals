@@ -122,29 +122,26 @@ function screen.create(contentPanel, _params, _terminal)
         "=== " .. W.safeGetText("UI_POS_IntelSummary_Coverage") .. " ===", C.textBright)
     ctx.y = ctx.y + ctx.lineH
 
+    -- Coverage progress bar
+    local coveragePct = totalCategories > 0
+        and math.floor(#summaries / totalCategories * 100 + 0.5) or 0
     W.createLabel(ctx.panel, 8, ctx.y,
         W.safeGetText("UI_POS_IntelSummary_CategoriesTracked") .. ":  "
         .. tostring(#summaries) .. "/" .. tostring(totalCategories), C.text)
     ctx.y = ctx.y + ctx.lineH
+    W.createProgressBar(ctx.panel, 8, ctx.y, ctx.pw - 16, coveragePct, C.text)
+    ctx.y = ctx.y + ctx.lineH
 
+    -- Freshness summary (compact single line)
     local fresh, stale, expired = countByFreshness(summaries)
-    W.createLabel(ctx.panel, 8, ctx.y,
-        W.safeGetText("UI_POS_IntelSummary_FreshCount",
-            tostring(POS_Constants.MARKET_FRESH_DAYS)) .. ":    " .. tostring(fresh),
-        fresh > 0 and C.success or C.dim)
-    ctx.y = ctx.y + ctx.lineH
-
-    W.createLabel(ctx.panel, 8, ctx.y,
-        W.safeGetText("UI_POS_IntelSummary_StaleCount",
+    local freshnessLine = W.safeGetText("UI_POS_IntelSummary_FreshCount",
+            tostring(POS_Constants.MARKET_FRESH_DAYS)) .. ": " .. tostring(fresh)
+        .. "   " .. W.safeGetText("UI_POS_IntelSummary_StaleCount",
             tostring(POS_Constants.MARKET_FRESH_DAYS),
-            tostring(POS_Constants.MARKET_STALE_DAYS)) .. ":    " .. tostring(stale),
-        stale > 0 and C.warn or C.dim)
-    ctx.y = ctx.y + ctx.lineH
-
-    W.createLabel(ctx.panel, 8, ctx.y,
-        W.safeGetText("UI_POS_IntelSummary_ExpiredCount",
-            tostring(POS_Constants.MARKET_STALE_DAYS)) .. ":    " .. tostring(expired),
-        expired > 0 and C.error or C.dim)
+            tostring(POS_Constants.MARKET_STALE_DAYS)) .. ": " .. tostring(stale)
+        .. "   " .. W.safeGetText("UI_POS_IntelSummary_ExpiredCount",
+            tostring(POS_Constants.MARKET_STALE_DAYS)) .. ": " .. tostring(expired)
+    W.createLabel(ctx.panel, 8, ctx.y, freshnessLine, C.text)
     ctx.y = ctx.y + ctx.lineH + 4
 
     -- === CONFIDENCE OVERVIEW ===
@@ -168,43 +165,28 @@ function screen.create(contentPanel, _params, _terminal)
         low > 0 and C.warn or C.dim)
     ctx.y = ctx.y + ctx.lineH + 4
 
-    -- === CATEGORY TRENDS ===
+    -- === CATEGORY TRENDS (compact) ===
     W.createLabel(ctx.panel, 0, ctx.y,
         "=== " .. W.safeGetText("UI_POS_IntelSummary_Trends") .. " ===", C.textBright)
     ctx.y = ctx.y + ctx.lineH
 
+    -- Count trends by direction for compact summary
+    local rising, stable, falling = 0, 0, 0
     for _, s in ipairs(summaries) do
-        local catLabel = W.safeGetText(s.labelKey)
-        local trendLabel
-        local trendColour = C.text
         if s.trendKey == "UI_POS_Market_Trend_Rising" then
-            trendLabel = W.safeGetText("UI_POS_IntelSummary_TrendRising")
-            if s.trendPct then
-                trendLabel = trendLabel .. "  +" .. string.format("%.1f%%", s.trendPct)
-            end
-            trendColour = C.success
+            rising = rising + 1
         elseif s.trendKey == "UI_POS_Market_Trend_Falling" then
-            trendLabel = W.safeGetText("UI_POS_IntelSummary_TrendFalling")
-            if s.trendPct then
-                trendLabel = trendLabel .. "  " .. string.format("%.1f%%", s.trendPct)
-            end
-            trendColour = C.warn
+            falling = falling + 1
         else
-            trendLabel = W.safeGetText("UI_POS_IntelSummary_TrendStable")
-            trendColour = C.dim
+            stable = stable + 1
         end
-
-        -- Pad category name for alignment (rough monospace alignment)
-        local padded = catLabel
-        local padLen = 18 - #catLabel
-        if padLen > 0 then
-            padded = catLabel .. string.rep(" ", padLen)
-        end
-
-        W.createLabel(ctx.panel, 8, ctx.y, padded .. trendLabel, trendColour)
-        ctx.y = ctx.y + ctx.lineH
     end
-    ctx.y = ctx.y + 4
+
+    local trendLine = W.safeGetText("UI_POS_IntelSummary_TrendRising") .. ": " .. tostring(rising)
+        .. "    " .. W.safeGetText("UI_POS_IntelSummary_TrendStable") .. ": " .. tostring(stable)
+        .. "    " .. W.safeGetText("UI_POS_IntelSummary_TrendFalling") .. ": " .. tostring(falling)
+    W.createLabel(ctx.panel, 8, ctx.y, trendLine, C.text)
+    ctx.y = ctx.y + ctx.lineH + 4
 
     -- === FIELD NOTES ===
     W.createLabel(ctx.panel, 0, ctx.y,

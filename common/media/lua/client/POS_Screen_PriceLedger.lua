@@ -27,6 +27,7 @@ require "POS_TerminalWidgets"
 require "POS_MarketRegistry"
 require "POS_MarketDatabase"
 require "POS_MarketService"
+require "PhobosLib_Pagination"
 require "POS_API"
 
 ---------------------------------------------------------------
@@ -59,15 +60,47 @@ function screen.create(contentPanel, params, _terminal)
                 W.safeGetText("UI_POS_Market_SelectCategory"), C.textBright)
             ctx.y = ctx.y + ctx.lineH + 4
 
-            for i, cat in ipairs(categories) do
-                local catId = cat.id
-                W.createButton(ctx.panel, ctx.btnX, ctx.y, ctx.btnW, ctx.btnH,
-                    "[" .. i .. "] " .. W.safeGetText(cat.labelKey), nil,
-                    function()
+            local pageSize = POS_Constants.UI_LEDGER_PAGE_SIZE
+            if #categories > pageSize then
+                local currentPage = (params and params.page) or 1
+                ctx.y = PhobosLib_Pagination.create(ctx.panel, {
+                    items = categories,
+                    pageSize = pageSize,
+                    currentPage = currentPage,
+                    x = ctx.btnX,
+                    y = ctx.y,
+                    width = ctx.btnW,
+                    colours = {
+                        text = C.text, dim = C.dim,
+                        bgDark = C.bgDark, bgHover = C.bgHover,
+                        border = C.border,
+                    },
+                    renderItem = function(parent, rx, ry, rw, cat, idx)
+                        local catId = cat.id
+                        W.createButton(parent, rx, ry, rw, ctx.btnH,
+                            "[" .. idx .. "] " .. W.safeGetText(cat.labelKey), nil,
+                            function()
+                                POS_ScreenManager.replaceCurrent(POS_Constants.SCREEN_LEDGER,
+                                    { categoryId = catId })
+                            end)
+                        return ctx.btnH + 4
+                    end,
+                    onPageChange = function(newPage)
                         POS_ScreenManager.replaceCurrent(POS_Constants.SCREEN_LEDGER,
-                            { categoryId = catId })
-                    end)
-                ctx.y = ctx.y + ctx.btnH + 4
+                            { page = newPage })
+                    end,
+                })
+            else
+                for i, cat in ipairs(categories) do
+                    local catId = cat.id
+                    W.createButton(ctx.panel, ctx.btnX, ctx.y, ctx.btnW, ctx.btnH,
+                        "[" .. i .. "] " .. W.safeGetText(cat.labelKey), nil,
+                        function()
+                            POS_ScreenManager.replaceCurrent(POS_Constants.SCREEN_LEDGER,
+                                { categoryId = catId })
+                        end)
+                    ctx.y = ctx.y + ctx.btnH + 4
+                end
             end
         end
     else

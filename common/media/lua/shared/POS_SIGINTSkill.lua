@@ -180,6 +180,35 @@ function POS_SIGINTSkill.addXP(player, baseAmount)
     return ok == true
 end
 
+--- Get XP progress toward the next SIGINT level as a percentage (0-100).
+--- Returns 100 at max level. Returns 0 if perk is unavailable.
+---@param player IsoPlayer
+---@return number percentage 0-100
+function POS_SIGINTSkill.getLevelProgress(player)
+    if not sigintPerk or not player then return 0 end
+    local currentLevel = POS_SIGINTSkill.getLevel(player)
+    if currentLevel >= POS_Constants.SIGINT_MAX_LEVEL then return 100 end
+
+    local ok, currentXP = pcall(function()
+        return player:getXp():getXP(sigintPerk)
+    end)
+    if not ok or not currentXP then return 0 end
+
+    local thresholds = POS_Constants.SIGINT_XP_THRESHOLDS
+    -- Floor = cumulative XP for current level, ceiling = cumulative for next
+    local floor = 0
+    for i = 1, currentLevel do
+        floor = floor + (thresholds[i] or 0)
+    end
+    local ceiling = floor + (thresholds[currentLevel + 1] or 1)
+
+    local range = ceiling - floor
+    if range <= 0 then return 100 end
+
+    local progress = (currentXP - floor) / range * 100
+    return math.max(0, math.min(100, math.floor(progress + 0.5)))
+end
+
 --- Get the qualitative tier name key for a given SIGINT level.
 ---@param level number 0-10
 ---@return string Translation key for the tier name

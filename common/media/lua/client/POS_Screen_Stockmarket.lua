@@ -26,6 +26,7 @@ require "POS_ScreenManager"
 require "POS_TerminalWidgets"
 require "POS_MarketService"
 require "POS_ExchangeEngine"
+require "PhobosLib_Pagination"
 require "POS_API"
 
 ---------------------------------------------------------------
@@ -84,8 +85,8 @@ function screen.create(contentPanel, _params, _terminal)
         W.createSeparator(ctx.panel, 0, ctx.y, 40, "-")
         ctx.y = ctx.y + ctx.lineH
 
-        for _, entry in ipairs(overview.indices) do
-            -- Trend arrow
+        --- Render a single index entry as a navigable button.
+        local function renderIndexEntry(parent, rx, ry, rw, entry, _idx)
             local arrow = "="
             local colour = C.text
             if entry.trendKey == "UI_POS_Market_Trend_Rising" then
@@ -96,7 +97,6 @@ function screen.create(contentPanel, _params, _terminal)
                 colour = C.error
             end
 
-            -- Change %
             local changeStr = ""
             if entry.changePct and entry.changePct ~= 0 then
                 changeStr = " (" .. string.format("%+.1f%%", entry.changePct) .. ")"
@@ -107,12 +107,40 @@ function screen.create(contentPanel, _params, _terminal)
                 .. " " .. arrow .. changeStr
 
             local catId = entry.categoryId
-            W.createButton(ctx.panel, ctx.btnX, ctx.y, ctx.btnW, ctx.btnH, line, nil,
+            W.createButton(parent, rx, ry, rw, ctx.btnH, line, nil,
                 function()
                     POS_ScreenManager.navigateTo(POS_Constants.SCREEN_COMMODITY_DETAIL,
                         { categoryId = catId })
                 end)
-            ctx.y = ctx.y + ctx.btnH + 4
+            return ctx.btnH + 4
+        end
+
+        local pageSize = POS_Constants.UI_EXCHANGE_PAGE_SIZE
+        if #overview.indices > pageSize then
+            local currentPage = (_params and _params.indexPage) or 1
+            ctx.y = PhobosLib_Pagination.create(ctx.panel, {
+                items = overview.indices,
+                pageSize = pageSize,
+                currentPage = currentPage,
+                x = ctx.btnX,
+                y = ctx.y,
+                width = ctx.btnW,
+                colours = {
+                    text = C.text, dim = C.dim,
+                    bgDark = C.bgDark, bgHover = C.bgHover,
+                    border = C.border,
+                },
+                renderItem = renderIndexEntry,
+                onPageChange = function(newPage)
+                    POS_ScreenManager.replaceCurrent(POS_Constants.SCREEN_STOCKMARKET,
+                        { indexPage = newPage })
+                end,
+            })
+        else
+            for _, entry in ipairs(overview.indices) do
+                local entryHeight = renderIndexEntry(ctx.panel, ctx.btnX, ctx.y, ctx.btnW, entry, nil)
+                ctx.y = ctx.y + entryHeight
+            end
         end
     end
 

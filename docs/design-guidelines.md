@@ -135,6 +135,31 @@ Rules:
   `PhobosLib.maxCharsForWidth()`, not hardcoded values
 - NavPanel labels are truncated to fit the 172px button width
 
+### 2.7 Overflow Prevention Rule
+
+Every screen MUST fit within ~22 visible lines at 780px minimum height.
+Dynamic content (loops, conditional sections) MUST use pagination or compact
+summaries when the item count is unbounded. Before adding content to a screen,
+count the existing lines and verify the footer (`drawFooter`) remains visible.
+
+Rules:
+- Unbounded lists (categories, indices, operations) → `PhobosLib_Pagination`
+  when count exceeds the page-size constant
+- Summary screens → compact single-line aggregates instead of per-item listings
+  (e.g. "Rising: 4  Stable: 8  Falling: 3" instead of 16 individual lines)
+- Early-exit states (empty, cooldown, error) MUST still call `drawFooter(ctx)`
+
+### 2.8 Progress Bars
+
+Use `POS_TerminalWidgets.drawProgressBar(ctx, labelKey, value, colour)` for
+any 0-100 range value (power, buffer capacity, XP progress, signal strength,
+investment maturity). Text-based rendering (`[####----] 65%`) matches the CRT
+aesthetic. Prefer progress bars over raw numeric labels for values that players
+need to glance-assess.
+
+For standalone (non-ctx) usage:
+`POS_TerminalWidgets.createProgressBar(parent, x, y, w, value, colour, bgColour)`
+
 ---
 
 ## 3. Sandbox Options Philosophy

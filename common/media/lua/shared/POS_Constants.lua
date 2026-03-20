@@ -495,6 +495,16 @@ POS_Constants.UI_MIN_SEPARATOR_CHARS    = 10
 POS_Constants.UI_BUTTON_TEXT_PADDING    = 16
 
 ---------------------------------------------------------------
+-- UI Layout — Pagination & progress bars
+---------------------------------------------------------------
+
+POS_Constants.UI_LEDGER_PAGE_SIZE      = 8
+POS_Constants.UI_EXCHANGE_PAGE_SIZE    = 8
+POS_Constants.UI_TRENDS_PAD_WIDTH      = 18
+POS_Constants.UI_PROGRESS_FILL_CHAR    = "#"
+POS_Constants.UI_PROGRESS_EMPTY_CHAR   = "-"
+
+---------------------------------------------------------------
 -- Scanner radio tiers (derived from vanilla TransmitRange)
 ---------------------------------------------------------------
 
