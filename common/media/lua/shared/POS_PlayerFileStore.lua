@@ -73,7 +73,7 @@ local function writeLine(writer, ...)
 end
 
 local function parseWatchlistLine(line)
-    local parts = splitString(line, SEP)
+    local parts = PhobosLib.split(line, SEP)
     if not parts or #parts < 2 then return nil end
     return {
         categoryId = parts[1],
@@ -84,7 +84,7 @@ local function parseWatchlistLine(line)
 end
 
 local function parseAlertLine(line)
-    local parts = splitString(line, SEP)
+    local parts = PhobosLib.split(line, SEP)
     if not parts or #parts < 5 then return nil end
     return {
         categoryId = parts[1],

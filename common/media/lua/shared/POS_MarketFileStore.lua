@@ -69,10 +69,10 @@ end
 local function deserializeItems(str)
     if not str or str == "" then return nil end
     local items = {}
-    local pairs_ = splitString(str, ITEM_SEP)
+    local pairs_ = PhobosLib.split(str, ITEM_SEP)
     if not pairs_ then return nil end
     for _, pair in ipairs(pairs_) do
-        local kv = splitString(pair, KV_SEP)
+        local kv = PhobosLib.split(pair, KV_SEP)
         if kv and #kv >= 2 then
             items[#items + 1] = {
                 fullType = kv[1],
@@ -106,7 +106,7 @@ end
 ---@param line string
 ---@return table|nil
 local function deserializeObservation(line)
-    local parts = splitString(line, SEP)
+    local parts = PhobosLib.split(line, SEP)
     if not parts or #parts < 9 then return nil end
     local obs = {
         id = parts[1],
@@ -178,7 +178,7 @@ function POS_MarketFileStore.load()
                 end
             elseif currentSection == "closes" then
                 -- Rolling closes: single pipe-delimited line of numbers
-                local nums = splitString(line, SEP)
+                local nums = PhobosLib.split(line, SEP)
                 if nums then
                     cache[currentCatId].rollingCloses = {}
                     for _, n in ipairs(nums) do

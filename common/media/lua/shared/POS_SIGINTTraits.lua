@@ -27,26 +27,6 @@ require "POS_Constants"
 POS_SIGINTTraits = {}
 
 ---------------------------------------------------------------
--- Internal helpers
----------------------------------------------------------------
-
---- Check whether a player has a specific trait.
----@param player IsoPlayer
----@param traitId string Trait constant from POS_Constants
----@return boolean
-local function hasTrait(player, traitId)
-    if not player then return false end
-    local ok, result = pcall(function()
-        local traits = player:getTraits()
-        if traits then
-            return traits:contains(traitId)
-        end
-        return false
-    end)
-    return ok and result == true
-end
-
----------------------------------------------------------------
 -- XP Modifiers
 ---------------------------------------------------------------
 
@@ -66,12 +46,12 @@ function POS_SIGINTTraits.getXPModifier(player)
     local modifier = 1.0
 
     -- Analytical Mind: +25% SIGINT XP
-    if hasTrait(player, POS_Constants.TRAIT_ANALYTICAL_MIND) then
+    if PhobosLib.hasTrait(player, POS_Constants.TRAIT_ANALYTICAL_MIND) then
         modifier = modifier + POS_Constants.TRAIT_ANALYTICAL_MIND_XP_BONUS
     end
 
     -- Disorganised Thinker: -25% SIGINT XP
-    if hasTrait(player, POS_Constants.TRAIT_DISORGANISED_THINKER) then
+    if PhobosLib.hasTrait(player, POS_Constants.TRAIT_DISORGANISED_THINKER) then
         modifier = modifier - POS_Constants.TRAIT_DISORGANISED_XP_PENALTY
     end
 
@@ -94,7 +74,7 @@ function POS_SIGINTTraits.getNoisePenalty(player)
         return 0
     end
 
-    if hasTrait(player, POS_Constants.TRAIT_DISORGANISED_THINKER) then
+    if PhobosLib.hasTrait(player, POS_Constants.TRAIT_DISORGANISED_THINKER) then
         return POS_Constants.TRAIT_DISORGANISED_NOISE_PENALTY
     end
     return 0
@@ -116,7 +96,7 @@ function POS_SIGINTTraits.getTimePenalty(player)
         return 0
     end
 
-    if hasTrait(player, POS_Constants.TRAIT_IMPATIENT) then
+    if PhobosLib.hasTrait(player, POS_Constants.TRAIT_IMPATIENT) then
         return POS_Constants.TRAIT_IMPATIENT_TIME_PENALTY
     end
     return 0
@@ -138,7 +118,7 @@ function POS_SIGINTTraits.getCrossCorrelationLevel(player)
         return nil
     end
 
-    if hasTrait(player, POS_Constants.TRAIT_SYSTEMS_THINKER) then
+    if PhobosLib.hasTrait(player, POS_Constants.TRAIT_SYSTEMS_THINKER) then
         return POS_Constants.TRAIT_SYSTEMS_THINKER_CROSSCOR
     end
     return nil
@@ -159,7 +139,7 @@ function POS_SIGINTTraits.isLevelCapped(player)
         return false
     end
 
-    return hasTrait(player, POS_Constants.TRAIT_SIGNAL_BLINDNESS)
+    return PhobosLib.hasTrait(player, POS_Constants.TRAIT_SIGNAL_BLINDNESS)
 end
 
 --- Get the SIGINT level cap for the player.
@@ -189,7 +169,7 @@ function POS_SIGINTTraits.getRadioScanBonus(player)
         return 0
     end
 
-    if hasTrait(player, POS_Constants.TRAIT_RADIO_HOBBYIST) then
+    if PhobosLib.hasTrait(player, POS_Constants.TRAIT_RADIO_HOBBYIST) then
         return POS_Constants.TRAIT_RADIO_HOBBYIST_SCAN_BONUS
     end
     return 0

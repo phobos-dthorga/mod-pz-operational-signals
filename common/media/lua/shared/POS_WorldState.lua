@@ -115,13 +115,13 @@ function POS_WorldState.loadBuildingCache()
     local entries = {}
     local line = reader:readLine()
     while line do
-        local parts = splitString(line, POS_Constants.CACHE_FILE_SEPARATOR)
+        local parts = PhobosLib.split(line, POS_Constants.CACHE_FILE_SEPARATOR)
         if parts and #parts >= 2 then
             local x = tonumber(parts[1])
             local y = tonumber(parts[2])
             local rooms = {}
             if parts[3] and parts[3] ~= "" then
-                rooms = splitString(parts[3], POS_Constants.CACHE_FILE_ROOM_SEP)
+                rooms = PhobosLib.split(parts[3], POS_Constants.CACHE_FILE_ROOM_SEP)
             end
             if x and y then
                 table.insert(entries, { x = x, y = y, rooms = rooms })
@@ -163,7 +163,7 @@ function POS_WorldState.loadMailboxCache()
     local entries = {}
     local line = reader:readLine()
     while line do
-        local parts = splitString(line, POS_Constants.CACHE_FILE_SEPARATOR)
+        local parts = PhobosLib.split(line, POS_Constants.CACHE_FILE_SEPARATOR)
         if parts and #parts >= 2 then
             local x = tonumber(parts[1])
             local y = tonumber(parts[2])
