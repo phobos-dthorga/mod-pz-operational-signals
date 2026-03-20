@@ -401,11 +401,19 @@ category. Discovery chance scales with Electrical skill.
 |--------|------|---------|-------------|
 | `EnablePassiveRecon` | boolean | true | Master toggle for the passive recon system |
 | `ReconScanInterval` | integer | 1 | Minutes between scan cycles (1-5) |
+
+> **Implementation note**: Implemented as `PassiveReconInterval` in
+> `sandbox-options.txt` with unit **seconds** (range 30-180, default 60).
+> The sandbox-options.txt definition is authoritative.
 | `ReconMinTapeDuration` | integer | 3 | Minimum days of continuous recording before upload is allowed (1-7) |
 | `ReconTapeDegradeRate` | integer | 10 | Condition loss per upload-and-erase cycle as percentage (0-50; 0 disables degradation) |
 | `ReconCamcorderRadius` | integer | 40 | Camcorder scan radius in tiles (20-60) |
 | `ReconLoggerRadius` | integer | 25 | Field Survey Logger scan radius in tiles (10-40) |
 | `ReconCamcorderNoise` | boolean | true | Whether the camcorder generates zombie-attracting noise |
+
+> **Implementation note**: Implemented as `CamcorderNoiseLevel` in
+> `sandbox-options.txt` as **integer 0-20** (default 5, percentage increase
+> to player noise). The sandbox-options.txt definition is authoritative.
 | `ReconCarryBonusStack` | boolean | true | Whether carry bonuses from multiple devices stack |
 | `ReconMaxEntriesPerCycle` | integer | 3 | Maximum new entries per scan cycle (1-10; performance safety valve) |
 | `ReconForagingEnabled` | boolean | true | Whether damaged tapes appear in urban/suburban foraging |
