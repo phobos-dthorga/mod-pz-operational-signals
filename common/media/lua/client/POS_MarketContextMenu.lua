@@ -28,17 +28,13 @@ require "POS_MarketReconAction"
 
 POS_MarketContextMenu = {}
 
-local WRITING_TOOLS = {
-    "Base.Pen", "Base.Pencil", "Base.RedPen", "Base.BluePen",
-    "Base.GreenPen", "Base.PenMultiColor", "Base.PenFancy",
-    "Base.PenSpiffo", "Base.PencilSpiffo",
-}
-
-local PAPER_TYPES = { "Base.SheetPaper2", "Base.Notebook" }
+---------------------------------------------------------------
+-- Helpers (item lists from POS_Constants)
+---------------------------------------------------------------
 
 local function hasWritingTool(player)
     local inv = player:getInventory()
-    for _, ft in ipairs(WRITING_TOOLS) do
+    for _, ft in ipairs(POS_Constants.WRITING_TOOLS) do
         if inv:getFirstTypeRecurse(ft) then return true end
     end
     return false
@@ -46,38 +42,33 @@ end
 
 local function hasPaper(player)
     local inv = player:getInventory()
-    for _, ft in ipairs(PAPER_TYPES) do
+    for _, ft in ipairs(POS_Constants.PAPER_TYPES) do
         if inv:getFirstTypeRecurse(ft) then return true end
     end
     return false
 end
 
-local function getRoomCategory(player)
-    local sq = player:getSquare()
-    if not sq then return nil, nil end
-    local building = sq:getBuilding()
-    if not building then return nil, nil end
+--- Get all commodity categories and a display location for the
+--- player's current room. Uses PhobosLib.getPlayerRoomName() for
+--- correct IRoomDef resolution (not IsoRoom:getName()).
+---@return string[] categories, string location
+local function getRoomCategoriesAndLocation(player)
+    local roomName = PhobosLib.getPlayerRoomName(player)
+    if not roomName then return {}, nil end
 
-    -- Try to get room type from the player's current room
-    local room = sq:getRoom()
-    if room then
-        local roomName = room:getName()
-        if roomName then
-            local category = POS_RoomCategoryMap.getCategory(roomName)
-            if category then
-                -- Get address for location name
-                local location = roomName
-                if PhobosLib_Address and PhobosLib_Address.resolveAddress then
-                    local addr = PhobosLib_Address.resolveAddress(sq:getX(), sq:getY())
-                    if addr and addr.street then
-                        location = PhobosLib_Address.formatAddress(addr)
-                    end
-                end
-                return category, location
-            end
+    local categories = POS_RoomCategoryMap.getCategories(roomName)
+    if #categories == 0 then return {}, nil end
+
+    -- Resolve a human-readable address if PhobosLib_Address is available
+    local location = roomName
+    local sq = player:getSquare()
+    if sq and PhobosLib_Address and PhobosLib_Address.resolveAddress then
+        local addr = PhobosLib_Address.resolveAddress(sq:getX(), sq:getY())
+        if addr and addr.street then
+            location = PhobosLib_Address.formatAddress(addr)
         end
     end
-    return nil, nil
+    return categories, location
 end
 
 --- Delegate to POS_MarketReconAction.getVisitKey for room-zone-scoped cooldown.
@@ -85,38 +76,22 @@ local function getVisitKey(sq)
     return POS_MarketReconAction.getVisitKey(sq)
 end
 
-function POS_MarketContextMenu.onFillWorldObjectContextMenu(playerNum, context, worldobjects, test)
-    if test then return end
-
-    -- Master toggle
-    if POS_Sandbox and POS_Sandbox.getEnableMarkets and not POS_Sandbox.getEnableMarkets() then
-        return
+--- Resolve the category display label via POS_MarketRegistry.
+local function getCategoryLabel(categoryId)
+    local catDef = POS_MarketRegistry and POS_MarketRegistry.getCategory(categoryId)
+    if catDef then
+        return PhobosLib.safeGetText(catDef.labelKey)
     end
+    return categoryId
+end
 
-    local player = getSpecificPlayer(playerNum)
-    if not player then return end
-
-    -- Determine state
-    local category, location = getRoomCategory(player)
-    local hasTools = hasWritingTool(player)
-    local hasPaperItem = hasPaper(player)
-
-    -- Build label
-    local baseLabel = PhobosLib.safeGetText("UI_POS_Market_GatherIntel")
-    local catLabel = ""
-    if category then
-        local catDef = POS_MarketRegistry and POS_MarketRegistry.getCategory(category)
-        if catDef then
-            catLabel = " (" .. PhobosLib.safeGetText(catDef.labelKey) .. ")"
-        end
-    end
-
-    -- Determine state and tooltip (6-state priority system)
+--- Determine the current intel-gathering state and tooltip text.
+--- Shared between single-option and sub-menu paths.
+local function resolveIntelState(player, hasCategories)
     local state = POS_Constants.INTEL_STATE_READY
     local tooltipText = ""
-    local daysLeft = 0
 
-    if not category then
+    if not hasCategories then
         state = POS_Constants.INTEL_STATE_WRONG_LOCATION
         tooltipText = PhobosLib.safeGetText("UI_POS_Market_GatherIntel_WrongLocation")
     elseif PhobosLib and PhobosLib.isDangerNearby then
@@ -130,7 +105,7 @@ function POS_MarketContextMenu.onFillWorldObjectContextMenu(playerNum, context, 
     end
 
     if state == POS_Constants.INTEL_STATE_READY then
-        if not hasTools or not hasPaperItem then
+        if not hasWritingTool(player) or not hasPaper(player) then
             state = POS_Constants.INTEL_STATE_MISSING_ITEMS
             tooltipText = PhobosLib.safeGetText("UI_POS_Market_GatherIntel_MissingItems")
         else
@@ -146,38 +121,106 @@ function POS_MarketContextMenu.onFillWorldObjectContextMenu(playerNum, context, 
 
                 if daysSince < cooldownDays then
                     state = POS_Constants.INTEL_STATE_ON_COOLDOWN
-                    daysLeft = cooldownDays - daysSince
+                    local daysLeft = cooldownDays - daysSince
                     tooltipText = PhobosLib.safeGetText("UI_POS_Market_GatherIntel_Cooldown")
                         .. " " .. tostring(math.ceil(daysLeft)) .. " day(s)."
                 else
-                    state = POS_Constants.INTEL_STATE_READY
                     tooltipText = PhobosLib.safeGetText("UI_POS_Market_GatherIntel_Ready")
                 end
             end
         end
     end
 
-    -- Add option (always visible)
-    local option = context:addOption(
-        baseLabel .. catLabel,
-        worldobjects, function()
-            if state == POS_Constants.INTEL_STATE_READY then
-                ISTimedActionQueue.add(
-                    POS_MarketReconAction:new(player, category, location)
-                )
-            end
-        end
-    )
+    return state, tooltipText
+end
 
-    -- Set unavailable for non-ready states
-    if state ~= POS_Constants.INTEL_STATE_READY then
-        option.notAvailable = true
+---------------------------------------------------------------
+-- Context menu hook
+---------------------------------------------------------------
+
+function POS_MarketContextMenu.onFillWorldObjectContextMenu(playerNum, context, worldobjects, test)
+    if test then return end
+
+    -- Master toggle
+    if POS_Sandbox and POS_Sandbox.getEnableMarkets and not POS_Sandbox.getEnableMarkets() then
+        return
     end
 
-    -- Tooltip
-    local tooltip = ISWorldObjectContextMenu.addToolTip()
-    tooltip.description = tooltipText
-    option.toolTip = tooltip
+    local player = getSpecificPlayer(playerNum)
+    if not player then return end
+
+    -- Resolve categories via PhobosLib room detection
+    local categories, location = getRoomCategoriesAndLocation(player)
+    local hasCategories = #categories > 0
+
+    -- Compute shared state (danger, items, cooldown)
+    local state, tooltipText = resolveIntelState(player, hasCategories)
+    local baseLabel = PhobosLib.safeGetText("UI_POS_Market_GatherIntel")
+
+    if #categories <= 1 then
+        -------------------------------------------------------
+        -- Single category (or no match): one flat option
+        -------------------------------------------------------
+        local catLabel = ""
+        if categories[1] then
+            catLabel = " (" .. getCategoryLabel(categories[1]) .. ")"
+        end
+
+        local selectedCategory = categories[1]
+        local option = context:addOption(
+            baseLabel .. catLabel,
+            worldobjects, function()
+                if state == POS_Constants.INTEL_STATE_READY then
+                    ISTimedActionQueue.add(
+                        POS_MarketReconAction:new(player, selectedCategory, location)
+                    )
+                end
+            end
+        )
+
+        if state ~= POS_Constants.INTEL_STATE_READY then
+            option.notAvailable = true
+        end
+
+        local tooltip = ISWorldObjectContextMenu.addToolTip()
+        tooltip.description = tooltipText
+        option.toolTip = tooltip
+    else
+        -------------------------------------------------------
+        -- Multiple categories: sub-menu per §10.1
+        -------------------------------------------------------
+        local parentOption = context:addOption(baseLabel, worldobjects)
+        local subMenu = ISContextMenu:getNew(context)
+        context:addSubMenu(parentOption, subMenu)
+
+        -- Parent tooltip for multi-category locations
+        local parentTooltip = ISWorldObjectContextMenu.addToolTip()
+        parentTooltip.description = PhobosLib.safeGetText("UI_POS_Market_GatherIntel_MultiLocation")
+        parentOption.toolTip = parentTooltip
+
+        if state ~= POS_Constants.INTEL_STATE_READY then
+            parentOption.notAvailable = true
+        end
+
+        for _, categoryId in ipairs(categories) do
+            local catLabel = getCategoryLabel(categoryId)
+            local subOption = subMenu:addOption(catLabel, worldobjects, function()
+                if state == POS_Constants.INTEL_STATE_READY then
+                    ISTimedActionQueue.add(
+                        POS_MarketReconAction:new(player, categoryId, location)
+                    )
+                end
+            end)
+
+            if state ~= POS_Constants.INTEL_STATE_READY then
+                subOption.notAvailable = true
+            end
+
+            local subTooltip = ISWorldObjectContextMenu.addToolTip()
+            subTooltip.description = tooltipText
+            subOption.toolTip = subTooltip
+        end
+    end
 end
 
 Events.OnFillWorldObjectContextMenu.Add(POS_MarketContextMenu.onFillWorldObjectContextMenu)

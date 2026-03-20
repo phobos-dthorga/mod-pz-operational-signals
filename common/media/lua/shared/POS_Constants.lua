@@ -872,6 +872,18 @@ POS_Constants.CAMERA_COMPILE_ACTION           = "compile"
 POS_Constants.CAMERA_TAPE_REVIEW_ACTION       = "tape_review"
 POS_Constants.CAMERA_BULLETIN_ACTION          = "bulletin"
 
+---------------------------------------------------------------
+-- Market Intel — Writing Tools & Paper (deduplicated)
+---------------------------------------------------------------
+
+POS_Constants.WRITING_TOOLS = {
+    "Base.Pen", "Base.Pencil", "Base.RedPen", "Base.BluePen",
+    "Base.GreenPen", "Base.PenMultiColor", "Base.PenFancy",
+    "Base.PenSpiffo", "Base.PencilSpiffo",
+}
+
+POS_Constants.PAPER_TYPES = { "Base.SheetPaper2", "Base.Notebook" }
+
 -- Camera confidence caps (percentage)
 POS_Constants.CAMERA_SURVEY_CONFIDENCE_CAP    = 90
 POS_Constants.CAMERA_REPORT_CONFIDENCE_CAP    = 95

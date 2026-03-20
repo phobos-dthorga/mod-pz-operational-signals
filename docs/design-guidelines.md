@@ -1156,3 +1156,67 @@ Operator (9-10).
 - ZScienceSkill: optional XP mirror (0.5x ratio) + 3 SIGINT specimens.
 - Dynamic Trading: high-SIGINT discount on information trades (optional).
 - See `sigint-skill-design.md` Section 8 for integration details.
+
+---
+
+## 22. Multi-Category Room Intelligence
+
+### 22.1 Concept
+
+Some PZ building room types contain multiple commodity sources. A mall has
+food courts, pharmacies, gun shops, hardware stores, and electronics vendors.
+A military base has ammunition, tools, medical supplies, and communications
+equipment. These rooms should offer intel-gathering for **all** applicable
+categories, not just the first pattern match.
+
+### 22.2 MULTI_CATEGORY Table
+
+Multi-category mappings are defined in `POS_RoomCategoryMap.lua` in the
+`MULTI_CATEGORY` table. This table takes **precedence** over the `PATTERNS`
+table when `getCategories()` is called.
+
+| Room Type | Categories |
+|-----------|-----------|
+| `mall` | food, medicine, ammunition, tools, radio |
+| `military` | ammunition, tools, medicine, radio |
+| `hospital` | medicine, food, radio |
+| `policestation` | ammunition, radio |
+| `firestation` | tools, medicine |
+| `industrial` | tools, fuel |
+
+### 22.3 Adding New Multi-Category Rooms
+
+New multi-category rooms must be added to the `MULTI_CATEGORY` table in
+`POS_RoomCategoryMap.lua`. Do **not** add duplicate `PATTERNS` entries for
+the same room type — `MULTI_CATEGORY` is the authoritative source for rooms
+with multiple commodity types.
+
+The `PATTERNS` table retains a single-category fallback entry for backward
+compatibility with `getCategory()` (singular), which returns the first match.
+
+### 22.4 Context Menu Behaviour
+
+Per the sub-menu rule (§10.1):
+
+- **1 category** → flat option: `"Gather Market Intel (Food)"`
+- **2+ categories** → sub-menu:
+  ```
+  Gather Market Intel >
+    Food
+    Medicine
+    Ammunition
+    ...
+  ```
+
+All sub-options share the same cooldown, danger, and item-availability
+state. Only the category (and resulting note content) differs.
+
+Category display labels use the existing `UI_POS_Market_Cat_*` translation
+keys from `POS_MarketRegistry`.
+
+### 22.5 Room Detection
+
+Room type detection **must** use `PhobosLib.getPlayerRoomName(player)` which
+resolves via `getRoom() → getRoomDef() → getName()`. Direct calls to
+`IsoRoom:getName()` return an instance identifier, not the room type string,
+and must **never** be used for category lookup.

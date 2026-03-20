@@ -52,23 +52,16 @@ function POS_MarketReconAction.getVisitKey(sq)
         end
     end)
 
-    local roomName = room:getName() or "unknown"
+    local roomDef = room:getRoomDef()
+    local roomName = (roomDef and roomDef:getName()) or "unknown"
     return POS_Constants.INTEL_VISIT_KEY_PREFIX
         .. tostring(bx) .. "_" .. tostring(by) .. "_" .. roomName
 end
 
-local WRITING_TOOLS = {
-    "Base.Pen", "Base.Pencil", "Base.RedPen", "Base.BluePen",
-    "Base.GreenPen", "Base.PenMultiColor", "Base.PenFancy",
-    "Base.PenSpiffo", "Base.PencilSpiffo",
-}
-
-local PAPER_TYPES = { "Base.SheetPaper2", "Base.Notebook" }
-
 --- Find a writing tool in inventory.
 local function findWritingTool(player)
     local inv = player:getInventory()
-    for _, fullType in ipairs(WRITING_TOOLS) do
+    for _, fullType in ipairs(POS_Constants.WRITING_TOOLS) do
         local item = inv:getFirstTypeRecurse(fullType)
         if item then return item end
     end
@@ -78,7 +71,7 @@ end
 --- Find paper in inventory.
 local function findPaper(player)
     local inv = player:getInventory()
-    for _, fullType in ipairs(PAPER_TYPES) do
+    for _, fullType in ipairs(POS_Constants.PAPER_TYPES) do
         local item = inv:getFirstTypeRecurse(fullType)
         if item then return item end
     end

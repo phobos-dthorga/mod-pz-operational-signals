@@ -606,5 +606,7 @@
     "UI_POS_Satellite_StatusLinked": "Terminal link: Active (%1 tiles).",
     "UI_POS_Satellite_StatusUnlinked": "Terminal link: No terminal in range.",
     "UI_POS_Satellite_StatusLastBroadcast": "Last broadcast: Day %1.",
-    "UI_POS_Satellite_StatusNoBroadcast": "Last broadcast: Never."
+    "UI_POS_Satellite_StatusNoBroadcast": "Last broadcast: Never.",
+
+    "UI_POS_Market_GatherIntel_MultiLocation": "Multiple commodity sources detected at this location."
 }

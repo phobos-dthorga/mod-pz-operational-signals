@@ -131,6 +131,28 @@ local PATTERNS = {
     { pattern = "lab",         category = "chemicals" },
     { pattern = "chem",        category = "chemicals" },
     { pattern = "drug",        category = "chemicals" },
+
+    -- General / Residential (single-category fallbacks)
+    { pattern = "bathroom",    category = "medicine" },
+    { pattern = "livingroom",  category = "radio" },
+    { pattern = "store",       category = "food" },
+    { pattern = "classroom",   category = "radio" },
+    { pattern = "security",    category = "ammunition" },
+    { pattern = "storage",     category = "tools" },
+}
+
+---------------------------------------------------------------
+-- Multi-category rooms: buildings that contain multiple
+-- commodity sources. Takes precedence over PATTERNS for
+-- getCategories(). See design-guidelines.md §22.
+---------------------------------------------------------------
+local MULTI_CATEGORY = {
+    mall          = { "food", "medicine", "ammunition", "tools", "radio" },
+    military      = { "ammunition", "tools", "medicine", "radio" },
+    hospital      = { "medicine", "food", "radio" },
+    policestation = { "ammunition", "radio" },
+    firestation   = { "tools", "medicine" },
+    industrial    = { "tools", "fuel" },
 }
 
 ---------------------------------------------------------------
@@ -149,6 +171,31 @@ function POS_RoomCategoryMap.getCategory(roomType)
         end
     end
     return nil
+end
+
+--- Get all commodity categories for a room type string.
+--- Multi-category rooms (mall, military, etc.) return multiple entries.
+--- Single-category rooms return a one-element array.
+--- @param roomType string PZ room type name (e.g. "mall", "pharmacy")
+--- @return string[] Array of category IDs (empty if no match)
+function POS_RoomCategoryMap.getCategories(roomType)
+    if not roomType then return {} end
+    local lower = string.lower(roomType)
+    -- Check multi-category table first
+    if MULTI_CATEGORY[lower] then
+        local copy = {}
+        for _, cat in ipairs(MULTI_CATEGORY[lower]) do
+            table.insert(copy, cat)
+        end
+        return copy
+    end
+    -- Fall back to single-category pattern match
+    for _, entry in ipairs(PATTERNS) do
+        if lower:find(entry.pattern) then
+            return { entry.category }
+        end
+    end
+    return {}
 end
 
 --- Get all patterns for a given category (for debugging).
