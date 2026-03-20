@@ -27,5 +27,20 @@
     "PhobosOperationalSignals.BlankFloppyDisk": "Blank Floppy Disk",
     "PhobosOperationalSignals.RecordedFloppyDisk": "Recorded Floppy Disk",
     "PhobosOperationalSignals.WornFloppyDisk": "Worn Floppy Disk",
-    "PhobosOperationalSignals.CorruptFloppyDisk": "Corrupt Floppy Disk"
+    "PhobosOperationalSignals.CorruptFloppyDisk": "Corrupt Floppy Disk",
+
+    "PhobosOperationalSignals.CompiledSiteSurvey": "Compiled Site Survey",
+    "PhobosOperationalSignals.VerifiedIntelReport": "Verified Intelligence Report",
+    "PhobosOperationalSignals.MarketBulletin": "Market Bulletin",
+
+    "PhobosOperationalSignals.SIGINTBook1": "Amateur Radio Monitoring",
+    "PhobosOperationalSignals.SIGINTBook2": "Signal Interpretation Basics",
+    "PhobosOperationalSignals.SIGINTBook3": "Cold War Intelligence Techniques",
+    "PhobosOperationalSignals.SIGINTBook4": "Field Analysis & Recon Doctrine",
+    "PhobosOperationalSignals.SIGINTBook5": "Advanced Signal Correlation",
+
+    "PhobosOperationalSignals.IntelFragmentary": "Fragmentary Signal",
+    "PhobosOperationalSignals.IntelUnverified": "Unverified Lead",
+    "PhobosOperationalSignals.IntelCorrelated": "Correlated Pattern",
+    "PhobosOperationalSignals.IntelConfirmed": "Confirmed Insight"
 }
