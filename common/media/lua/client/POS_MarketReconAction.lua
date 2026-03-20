@@ -27,6 +27,8 @@ require "POS_RoomCategoryMap"
 require "POS_Reputation"
 require "POS_NoteTooltip"
 require "POS_MarketNoteGenerator"
+require "POS_SIGINTSkill"
+require "POS_SIGINTService"
 require "TimedActions/ISBaseTimedAction"
 
 POS_MarketReconAction = ISBaseTimedAction:derive("POS_MarketReconAction")
@@ -158,6 +160,11 @@ function POS_MarketReconAction:perform()
         end
     end
 
+    -- Apply SIGINT field confidence bonus (+1 per 3 levels, max +3)
+    if POS_SIGINTService and POS_SIGINTService.getFieldConfidenceBonus then
+        confidence = confidence + POS_SIGINTService.getFieldConfidenceBonus(player)
+    end
+
     -- Create Raw Market Note
     local note = inv:AddItem(POS_Constants.ITEM_RAW_MARKET_NOTE)
     if note then
@@ -184,6 +191,12 @@ function POS_MarketReconAction:perform()
         -- Create readable document
         POS_MarketNoteGenerator.createReadableDocument(
             note, self.categoryId, self.location, confidence)
+    end
+
+    -- Award SIGINT XP for manual note-taking (tertiary source)
+    if POS_SIGINTSkill and POS_SIGINTSkill.isAvailable
+        and POS_SIGINTSkill.isAvailable() then
+        POS_SIGINTSkill.addXP(player, POS_Constants.SIGINT_XP_MANUAL_NOTE)
     end
 
     PhobosLib.debug("POS", "[POS:ReconAction]",

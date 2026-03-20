@@ -1,0 +1,115 @@
+/*  ________________________________________________________________________
+ * / Copyright (c) 2026 Phobos A. D'thorga                                \
+ * |                                                                        |
+ * |           /\_/\                                                         |
+ * |         =/ o o \=    Phobos' PZ Modding                                |
+ * |          (  V  )     All rights reserved.                              |
+ * |     /\  / \   / \                                                      |
+ * |    /  \/   '-'   \   This source code is part of the Phobos            |
+ * |   /  /  \  ^  /\  \  mod suite for Project Zomboid (Build 42).         |
+ * |  (__/    \_/ \/  \__)                                                  |
+ * |     |   | |  | |     Unauthorised copying, modification, or            |
+ * |     |___|_|  |_|     distribution of this file is prohibited.          |
+ * |                                                                        |
+ * \________________________________________________________________________/
+ */
+
+module Base
+{
+    /*  =============================================================
+        Analytical Mind — Positive trait (costs 4 points).
+        +1 SIGINT starting level, +25% SIGINT XP rate.
+        Mutually exclusive with Disorganised Thinker and
+        Signal Blindness.
+        ============================================================= */
+    character_trait_definition pos:POS_AnalyticalMind
+    {
+        IsProfessionTrait = false,
+        DisabledInMultiplayer = false,
+        CharacterTrait = pos:POS_AnalyticalMind,
+        Cost = 4,
+        UIName = Trait_POS_AnalyticalMind,
+        UIDescription = Trait_POS_AnalyticalMind_desc,
+        XPBoosts = SIGINT=1,
+        MutuallyExclusiveTraits = pos:POS_DisorganisedThinker;pos:POS_SignalBlindness,
+    }
+
+    /*  =============================================================
+        Radio Hobbyist — Positive trait (costs 2 points).
+        +1 SIGINT starting level, +20% radio scan radius.
+        Mutually exclusive with Signal Blindness.
+        ============================================================= */
+    character_trait_definition pos:POS_RadioHobbyist
+    {
+        IsProfessionTrait = false,
+        DisabledInMultiplayer = false,
+        CharacterTrait = pos:POS_RadioHobbyist,
+        Cost = 2,
+        UIName = Trait_POS_RadioHobbyist,
+        UIDescription = Trait_POS_RadioHobbyist_desc,
+        XPBoosts = SIGINT=1,
+        MutuallyExclusiveTraits = pos:POS_SignalBlindness,
+    }
+
+    /*  =============================================================
+        Systems Thinker — Positive trait (costs 3 points).
+        Cross-correlation unlocks earlier (SIGINT 4 instead of 6).
+        Mutually exclusive with Disorganised Thinker.
+        ============================================================= */
+    character_trait_definition pos:POS_SystemsThinker
+    {
+        IsProfessionTrait = false,
+        DisabledInMultiplayer = false,
+        CharacterTrait = pos:POS_SystemsThinker,
+        Cost = 3,
+        UIName = Trait_POS_SystemsThinker,
+        UIDescription = Trait_POS_SystemsThinker_desc,
+        MutuallyExclusiveTraits = pos:POS_DisorganisedThinker,
+    }
+
+    /*  =============================================================
+        Impatient — Negative trait (grants 2 points).
+        Terminal analysis takes 30% longer.
+        ============================================================= */
+    character_trait_definition pos:POS_Impatient
+    {
+        IsProfessionTrait = false,
+        DisabledInMultiplayer = false,
+        CharacterTrait = pos:POS_Impatient,
+        Cost = -2,
+        UIName = Trait_POS_Impatient,
+        UIDescription = Trait_POS_Impatient_desc,
+    }
+
+    /*  =============================================================
+        Disorganised Thinker — Negative trait (grants 3 points).
+        -25% SIGINT XP, +20% noise in analysis.
+        Mutually exclusive with Analytical Mind and Systems Thinker.
+        ============================================================= */
+    character_trait_definition pos:POS_DisorganisedThinker
+    {
+        IsProfessionTrait = false,
+        DisabledInMultiplayer = false,
+        CharacterTrait = pos:POS_DisorganisedThinker,
+        Cost = -3,
+        UIName = Trait_POS_DisorganisedThinker,
+        UIDescription = Trait_POS_DisorganisedThinker_desc,
+        MutuallyExclusiveTraits = pos:POS_AnalyticalMind;pos:POS_SystemsThinker,
+    }
+
+    /*  =============================================================
+        Signal Blindness — Negative trait (grants 4 points).
+        SIGINT capped at Level 5. Cannot progress beyond it.
+        Mutually exclusive with Analytical Mind and Radio Hobbyist.
+        ============================================================= */
+    character_trait_definition pos:POS_SignalBlindness
+    {
+        IsProfessionTrait = false,
+        DisabledInMultiplayer = false,
+        CharacterTrait = pos:POS_SignalBlindness,
+        Cost = -4,
+        UIName = Trait_POS_SignalBlindness,
+        UIDescription = Trait_POS_SignalBlindness_desc,
+        MutuallyExclusiveTraits = pos:POS_AnalyticalMind;pos:POS_RadioHobbyist,
+    }
+}

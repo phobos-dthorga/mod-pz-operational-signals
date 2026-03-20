@@ -972,6 +972,38 @@ POS_Constants.TRAIT_IMPATIENT                  = "POS_Impatient"
 POS_Constants.TRAIT_DISORGANISED_THINKER       = "POS_DisorganisedThinker"
 POS_Constants.TRAIT_SIGNAL_BLINDNESS           = "POS_SignalBlindness"
 
+-- Trait costs (positive = costs points, negative = grants points)
+POS_Constants.TRAIT_ANALYTICAL_MIND_COST       = 4
+POS_Constants.TRAIT_RADIO_HOBBYIST_COST        = 2
+POS_Constants.TRAIT_SYSTEMS_THINKER_COST       = 3
+POS_Constants.TRAIT_IMPATIENT_COST             = -2
+POS_Constants.TRAIT_DISORGANISED_THINKER_COST  = -3
+POS_Constants.TRAIT_SIGNAL_BLINDNESS_COST      = -4
+
+-- Trait effect values
+POS_Constants.TRAIT_ANALYTICAL_MIND_XP_BONUS   = 0.25   -- +25% SIGINT XP
+POS_Constants.TRAIT_RADIO_HOBBYIST_XP_BONUS    = 0.0    -- no XP bonus
+POS_Constants.TRAIT_RADIO_HOBBYIST_SCAN_BONUS  = 0.20   -- +20% radio scan radius
+POS_Constants.TRAIT_SYSTEMS_THINKER_CROSSCOR   = 4      -- cross-correlation unlocks at L4
+POS_Constants.TRAIT_IMPATIENT_TIME_PENALTY     = 0.30   -- +30% analysis time
+POS_Constants.TRAIT_DISORGANISED_XP_PENALTY    = 0.25   -- -25% SIGINT XP
+POS_Constants.TRAIT_DISORGANISED_NOISE_PENALTY = 0.20   -- +20% noise
+POS_Constants.TRAIT_SIGNAL_BLINDNESS_CAP       = 5      -- hard cap at Level 5
+
+-- Trait starting SIGINT level bonus
+POS_Constants.TRAIT_SIGINT_STARTING_BONUS      = 1      -- +1 for AnalyticalMind, RadioHobbyist
+
+-- Field confidence: +1 per this many SIGINT levels (max +3)
+POS_Constants.SIGINT_FIELD_CONFIDENCE_DIVISOR  = 3
+POS_Constants.SIGINT_FIELD_CONFIDENCE_CAP      = 3
+
+-- ModData keys
+POS_Constants.MODDATA_SIGINT_TOTAL_XP          = "POS_SIGINT_TotalXP"
+POS_Constants.MODDATA_SIGINT_CROSSCOR_COUNT    = "POS_SIGINT_CrossCorrelations"
+
+-- SIGINT XP thresholds per level (before 1.5x multiplier)
+POS_Constants.SIGINT_XP_THRESHOLDS = {75, 150, 300, 750, 1500, 3000, 4500, 6000, 7500, 9000}
+
 -- Skill book item prefix
 POS_Constants.ITEM_SIGINT_BOOK_PREFIX          = "PhobosOperationalSignals.SIGINTBook"
 
@@ -1023,6 +1055,7 @@ POS_Constants.ITEM_INTEL_CONFIRMED             = "PhobosOperationalSignals.Intel
 POS_Constants.TAG_RAW_INTEL                    = "POS_RawIntel"
 POS_Constants.TAG_INTEL_FRAGMENT               = "POS_IntelFragment"
 POS_Constants.TAG_CAMERA_INPUT                 = "POS_CameraInput"
+POS_Constants.TAG_INTELLIGENCE                 = "POS_Intelligence"
 
 -- Analysis cooldown key prefix
 POS_Constants.ANALYSIS_VISIT_KEY_PREFIX        = "POS_AnalysisVisit_"
