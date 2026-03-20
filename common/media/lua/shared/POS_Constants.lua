@@ -859,3 +859,192 @@ POS_Constants.PN_CHANNEL_LABEL_KEY = "UI_POS_Channel_POSnet"
 
 POS_Constants.SCREEN_INTEL_SUMMARY = "pos.markets.summary"
 
+---------------------------------------------------------------
+-- Camera Workstation (Tier III — Compilation)
+---------------------------------------------------------------
+
+POS_Constants.SOURCE_TIER_STUDIO              = "studio"
+POS_Constants.ITEM_COMPILED_SITE_SURVEY       = "PhobosOperationalSignals.CompiledSiteSurvey"
+POS_Constants.ITEM_VERIFIED_INTEL_REPORT      = "PhobosOperationalSignals.VerifiedIntelReport"
+POS_Constants.ITEM_MARKET_BULLETIN            = "PhobosOperationalSignals.MarketBulletin"
+POS_Constants.CAMERA_VISIT_KEY_PREFIX         = "POS_CameraVisit_"
+POS_Constants.CAMERA_COMPILE_ACTION           = "compile"
+POS_Constants.CAMERA_TAPE_REVIEW_ACTION       = "tape_review"
+POS_Constants.CAMERA_BULLETIN_ACTION          = "bulletin"
+
+-- Camera confidence caps (percentage)
+POS_Constants.CAMERA_SURVEY_CONFIDENCE_CAP    = 90
+POS_Constants.CAMERA_REPORT_CONFIDENCE_CAP    = 95
+POS_Constants.CAMERA_BULLETIN_CONFIDENCE_CAP  = 95
+
+-- Camera quality multipliers
+POS_Constants.CAMERA_SURVEY_MULTIPLIER        = 1.4
+POS_Constants.CAMERA_REPORT_MULTIPLIER        = 1.5
+POS_Constants.CAMERA_BULLETIN_MULTIPLIER      = 1.6
+
+-- Camera confidence bonuses
+POS_Constants.CAMERA_LOCATION_BONUS           = 10
+POS_Constants.CAMERA_DIVERSITY_BONUS_PER_LOC  = 3
+POS_Constants.CAMERA_DIVERSITY_BONUS_CAP      = 15
+POS_Constants.CAMERA_CATEGORY_BONUS_PER_CAT   = 3
+POS_Constants.CAMERA_CATEGORY_BONUS_CAP       = 15
+POS_Constants.CAMERA_EQUIPMENT_BONUS          = 5
+POS_Constants.CAMERA_EQUIPMENT_CONDITION_MIN  = 80
+
+-- Camera action defaults
+POS_Constants.CAMERA_COMPILE_TIME_DEFAULT     = 300
+POS_Constants.CAMERA_TAPE_REVIEW_TIME_DEFAULT = 200
+POS_Constants.CAMERA_BULLETIN_TIME_DEFAULT    = 450
+POS_Constants.CAMERA_COMPILE_COOLDOWN_DEFAULT = 6    -- hours
+POS_Constants.CAMERA_TAPE_COOLDOWN_DEFAULT    = 4    -- hours
+POS_Constants.CAMERA_BULLETIN_COOLDOWN_DEFAULT = 12  -- hours
+
+-- Camera reputation
+POS_Constants.CAMERA_BULLETIN_REP_DEFAULT     = 50   -- hundredths of rep point
+
+-- Camera workstation sprites (populated after sprite audit)
+POS_Constants.CAMERA_WORKSTATION_SPRITES      = {}
+
+-- Media building room types for location bonus
+POS_Constants.CAMERA_MEDIA_ROOM_TYPES         = {
+    "tvstudio", "broadcast", "avroom",
+}
+
+---------------------------------------------------------------
+-- SIGINT Skill (analytical throughline)
+---------------------------------------------------------------
+
+-- Perk registration
+POS_Constants.SIGINT_PERK_ID                   = "SIGINT"
+POS_Constants.SIGINT_PERK_PARENT               = "Passiv"
+POS_Constants.SIGINT_MAX_LEVEL                 = 10
+
+-- Qualitative tier thresholds
+POS_Constants.SIGINT_TIER_NOISE_DROWNER        = 0   -- L0-2
+POS_Constants.SIGINT_TIER_PATTERN_SEEKER       = 3   -- L3-5
+POS_Constants.SIGINT_TIER_ANALYST              = 6   -- L6-8
+POS_Constants.SIGINT_TIER_INTEL_OPERATOR       = 9   -- L9-10
+
+-- Feature unlock levels
+POS_Constants.SIGINT_CROSS_CORRELATION_LEVEL   = 6
+POS_Constants.SIGINT_FALSE_DATA_DETECTION_LEVEL = 8
+
+-- XP award values
+POS_Constants.SIGINT_XP_TERMINAL_ANALYSIS      = 20
+POS_Constants.SIGINT_XP_CROSS_CORRELATION      = 10
+POS_Constants.SIGINT_XP_RESOLVE_CONTRADICTION  = 8
+POS_Constants.SIGINT_XP_CAMERA_SURVEY          = 8
+POS_Constants.SIGINT_XP_CAMERA_TAPE_REVIEW     = 6
+POS_Constants.SIGINT_XP_CAMERA_BULLETIN        = 12
+POS_Constants.SIGINT_XP_SATELLITE_BROADCAST    = 10
+POS_Constants.SIGINT_XP_MANUAL_NOTE            = 3
+POS_Constants.SIGINT_XP_VHS_REVIEW             = 5
+POS_Constants.SIGINT_XP_MISSION_REPORT         = 5
+
+-- Per-level modifier tables (indexed 1-11 for levels 0-10)
+POS_Constants.SIGINT_CONFIDENCE_PER_LEVEL      = {0, 2, 4, 6, 8, 10, 13, 16, 19, 22, 25}
+POS_Constants.SIGINT_NOISE_FILTER_PER_LEVEL    = {0, 5, 10, 20, 25, 35, 45, 55, 65, 80, 90}
+POS_Constants.SIGINT_TIME_REDUCTION_PER_LEVEL  = {0, 3, 6, 10, 14, 18, 24, 28, 32, 38, 44}
+POS_Constants.SIGINT_YIELD_PER_LEVEL           = {
+    {1, 1}, {1, 1}, {1, 1},    -- L0-2: 1 output
+    {1, 2}, {1, 2}, {1, 2},    -- L3-5: 1-2 outputs
+    {2, 3}, {2, 3}, {2, 3},    -- L6-8: 2-3 outputs
+    {2, 4}, {2, 4},            -- L9-10: 2-4 outputs
+}
+
+-- Trait IDs
+POS_Constants.TRAIT_ANALYTICAL_MIND            = "POS_AnalyticalMind"
+POS_Constants.TRAIT_RADIO_HOBBYIST             = "POS_RadioHobbyist"
+POS_Constants.TRAIT_SYSTEMS_THINKER            = "POS_SystemsThinker"
+POS_Constants.TRAIT_IMPATIENT                  = "POS_Impatient"
+POS_Constants.TRAIT_DISORGANISED_THINKER       = "POS_DisorganisedThinker"
+POS_Constants.TRAIT_SIGNAL_BLINDNESS           = "POS_SignalBlindness"
+
+-- Skill book item prefix
+POS_Constants.ITEM_SIGINT_BOOK_PREFIX          = "PhobosOperationalSignals.SIGINTBook"
+
+-- ZScienceSkill mirror ratio
+POS_Constants.SIGINT_ZSCIENCE_MIRROR_RATIO     = 0.5
+
+---------------------------------------------------------------
+-- Terminal Analysis (Tier II — Processing)
+---------------------------------------------------------------
+
+POS_Constants.SCREEN_ID_ANALYSIS               = "pos.bbs.analysis"
+POS_Constants.ANALYSIS_BASE_TIME               = 180  -- seconds
+POS_Constants.ANALYSIS_MAX_INPUTS              = 5
+POS_Constants.ANALYSIS_BASE_JUNK_CHANCE        = 40   -- percentage at SIGINT 0
+POS_Constants.ANALYSIS_COOLDOWN_MINUTES        = 30
+
+-- Input diversity bonuses
+POS_Constants.ANALYSIS_SOURCE_DIVERSITY_BONUS  = 3
+POS_Constants.ANALYSIS_SOURCE_DIVERSITY_CAP    = 12
+POS_Constants.ANALYSIS_CATEGORY_DIVERSITY_BONUS = 2
+POS_Constants.ANALYSIS_CATEGORY_DIVERSITY_CAP  = 8
+
+-- Input volume XP scaling (indexed 1-5 by input count)
+POS_Constants.ANALYSIS_XP_PER_INPUT            = {15, 17, 19, 22, 25}
+
+-- Satellite enhancement
+POS_Constants.ANALYSIS_SATELLITE_CONFIDENCE    = 8
+POS_Constants.ANALYSIS_SATELLITE_TIER_UPGRADE  = 15   -- percentage chance
+POS_Constants.ANALYSIS_SATELLITE_CROSSCOR_REDUCTION = 1
+
+-- Satellite passive accumulation thresholds (game days)
+POS_Constants.ANALYSIS_SATELLITE_ACCUMULATE_T1 = 1
+POS_Constants.ANALYSIS_SATELLITE_ACCUMULATE_T2 = 3
+POS_Constants.ANALYSIS_SATELLITE_ACCUMULATE_T3 = 7
+
+-- Fragment tier IDs
+POS_Constants.FRAGMENT_TIER_FRAGMENTARY        = "fragmentary"
+POS_Constants.FRAGMENT_TIER_UNVERIFIED         = "unverified"
+POS_Constants.FRAGMENT_TIER_CORRELATED         = "correlated"
+POS_Constants.FRAGMENT_TIER_CONFIRMED          = "confirmed"
+
+-- Fragment item full types
+POS_Constants.ITEM_INTEL_FRAGMENTARY           = "PhobosOperationalSignals.IntelFragmentary"
+POS_Constants.ITEM_INTEL_UNVERIFIED            = "PhobosOperationalSignals.IntelUnverified"
+POS_Constants.ITEM_INTEL_CORRELATED            = "PhobosOperationalSignals.IntelCorrelated"
+POS_Constants.ITEM_INTEL_CONFIRMED             = "PhobosOperationalSignals.IntelConfirmed"
+
+-- Item tags
+POS_Constants.TAG_RAW_INTEL                    = "POS_RawIntel"
+POS_Constants.TAG_INTEL_FRAGMENT               = "POS_IntelFragment"
+POS_Constants.TAG_CAMERA_INPUT                 = "POS_CameraInput"
+
+-- Analysis cooldown key prefix
+POS_Constants.ANALYSIS_VISIT_KEY_PREFIX        = "POS_AnalysisVisit_"
+
+---------------------------------------------------------------
+-- Satellite Uplink (Tier IV — Broadcast)
+---------------------------------------------------------------
+
+POS_Constants.SATELLITE_VISIT_KEY_PREFIX       = "POS_SatelliteVisit_"
+POS_Constants.SATELLITE_CALIBRATED_KEY_PREFIX  = "POS_SatelliteCalibrated_"
+POS_Constants.SATELLITE_LINK_RANGE             = 50   -- tiles
+POS_Constants.SATELLITE_BROADCAST_COOLDOWN_DEFAULT = 24  -- hours
+POS_Constants.SATELLITE_CALIBRATION_TIME_DEFAULT   = 300 -- seconds
+POS_Constants.SATELLITE_DECALIBRATION_DAYS         = 7
+
+-- Broadcast reputation values (hundredths of rep point)
+POS_Constants.SATELLITE_REP_SURVEY             = 30
+POS_Constants.SATELLITE_REP_REPORT             = 50
+POS_Constants.SATELLITE_REP_BULLETIN           = 100
+
+-- Staleness multipliers (per artifact tier)
+POS_Constants.SATELLITE_STALENESS_SURVEY       = 1.5
+POS_Constants.SATELLITE_STALENESS_REPORT       = 2.0
+POS_Constants.SATELLITE_STALENESS_BULLETIN     = 2.5
+
+-- Power management
+POS_Constants.SATELLITE_FUEL_DRAIN_CALIBRATE   = 0.05
+POS_Constants.SATELLITE_FUEL_DRAIN_BROADCAST   = 0.10
+POS_Constants.SATELLITE_LOW_FUEL_THRESHOLD     = 0.20
+POS_Constants.SATELLITE_LOW_FUEL_PENALTY       = 0.25
+
+-- Satellite dish sprites (populated after sprite audit)
+POS_Constants.SATELLITE_DISH_SPRITES           = {}
+
+-- Equipment condition threshold for bonus
+POS_Constants.SATELLITE_DISH_CONDITION_BONUS_MIN = 80
+
