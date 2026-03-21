@@ -1757,3 +1757,72 @@ fw:close()
 **Implementation reference:** `POS_MarketFileStore.lua` —
 `serializeCategory` pattern with a chunked writer whose chunk size is
 read from `SandboxVars.POS.MarketSaveChunkSize`.
+
+### 27.5 SP-Safe Server Commands
+
+Singleplayer and multiplayer share the same Lua API surface, but the
+networking layer behaves differently. Careless `sendServerCommand` calls
+can crash the JVM silently during early game frames in SP, and are
+unnecessary since the SP client and server share the same process.
+
+**Rules:**
+
+1. **Never call `sendServerCommand` in singleplayer.** It can crash the
+   JVM silently during early game frames and serves no purpose when
+   client and server share the same process.
+
+2. **All server-to-client broadcasts must go through
+   `POS_BroadcastSystem.broadcastToAll()`.** In SP this routes directly
+   to `POS_RadioInterception.handleCommand()`, bypassing the network
+   layer entirely. In MP it delegates to `sendServerCommand` as normal.
+
+3. **Never duplicate the `broadcastToAll` helper locally.** Individual
+   modules must delegate to `POS_BroadcastSystem.broadcastToAll()`
+   rather than reimplementing the SP/MP routing logic.
+
+4. **Client-to-server commands that fire at `OnGameStart` must be
+   deferred to the first `EveryOneMinute` tick.** Use a one-shot boolean
+   flag to ensure the command fires exactly once, after the server-side
+   state is fully initialised.
+
+**Anti-patterns:**
+
+```lua
+-- BAD: direct sendServerCommand in a server module
+sendServerCommand(player, "POSnet", "broadcast", args)
+-- GOOD: use the central SP-safe helper
+POS_BroadcastSystem.broadcastToAll("broadcast", args)
+```
+
+```lua
+-- BAD: sendClientCommand inside OnGameStart (may fire before server is ready)
+Events.OnGameStart.Add(function()
+    sendClientCommand(getPlayer(), "POSnet", "requestPayouts", {})
+end)
+-- GOOD: defer to first EveryOneMinute tick with a one-shot flag
+local _pendingRequest = true
+Events.EveryOneMinute.Add(function()
+    if _pendingRequest then
+        _pendingRequest = false
+        sendClientCommand(getPlayer(), "POSnet", "requestPayouts", {})
+    end
+end)
+```
+
+```lua
+-- BAD: local copy of broadcastToAll in a module
+local function broadcastToAll(cmd, args)
+    if isClient() then sendServerCommand(...) else ... end
+end
+-- GOOD: delegate to the authoritative implementation
+POS_BroadcastSystem.broadcastToAll(cmd, args)
+```
+
+**Implementation references:**
+
+| File | Role |
+|------|------|
+| `POS_BroadcastSystem.lua` | Central SP-safe `broadcastToAll` implementation |
+| `POS_RadioInterception.lua` | `handleCommand()` — public entry point for SP direct routing |
+| `POS_InvestmentLog.lua` | Deferred payout request pattern (one-shot `EveryOneMinute`) |
+| `POS_EconomyTick.lua` | Phase 7 uses `broadcastToAll` unconditionally (SP + MP safe) |
