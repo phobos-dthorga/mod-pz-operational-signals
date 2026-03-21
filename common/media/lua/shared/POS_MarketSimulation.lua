@@ -84,6 +84,17 @@ local BUILTIN_EVENT_PATHS = {
     "Definitions/Events/requisition_diversion",
 }
 
+local BUILTIN_WHOLESALER_PATHS = {
+    "Definitions/Wholesalers/muldraugh_general",
+    "Definitions/Wholesalers/west_point_consolidated",
+    "Definitions/Wholesalers/riverside_supply",
+    "Definitions/Wholesalers/louisville_arms",
+    "Definitions/Wholesalers/louisville_medical",
+    "Definitions/Wholesalers/military_depot",
+    "Definitions/Wholesalers/military_field_hospital",
+    "Definitions/Wholesalers/rural_east_salvage",
+}
+
 ---------------------------------------------------------------
 -- Initialisation
 ---------------------------------------------------------------
@@ -115,10 +126,18 @@ function POS_MarketSimulation.init()
         tag      = "[POS:Event:Loader]",
     })
 
+    -- Load wholesalers
+    PhobosLib.loadDefinitions({
+        registry = POS_WholesalerService.getRegistry(),
+        paths    = BUILTIN_WHOLESALER_PATHS,
+        tag      = "[POS:Wholesaler:Loader]",
+    })
+
     PhobosLib.debug("POS", _TAG, "init() — loaded "
         .. POS_MarketAgent.getRegistry():count() .. " archetypes, "
         .. _zoneRegistry:count() .. " zones, "
-        .. _eventRegistry:count() .. " events")
+        .. _eventRegistry:count() .. " events, "
+        .. POS_WholesalerService.getRegistry():count() .. " wholesalers")
 end
 
 ---------------------------------------------------------------
