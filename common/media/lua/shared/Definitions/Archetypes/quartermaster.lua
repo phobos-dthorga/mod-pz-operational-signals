@@ -18,6 +18,7 @@ return {
     schemaVersion = 1,
     id = "quartermaster",
     name = "Settlement Quartermaster",
+    displayNameKey = "UI_POS_Agent_Quartermaster",
     description = "A methodical community supply manager maintaining stable local trade.",
     behaviour = "baseline_trader",
     tuning = {

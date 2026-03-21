@@ -36,6 +36,9 @@ return {
     -- Display name shown in the terminal UI and event log
     name = "My Custom Event",
 
+    -- Translation key for the display name (used for i18n lookup in getText())
+    displayNameKey = "UI_POS_MarketEvent_YourEvent",
+
     -- Short description of what happens when this event fires
     description = "A brief description of the market event.",
 

@@ -18,6 +18,7 @@ return {
     schemaVersion = 1,
     id = "west_point",
     name = "West Point",
+    displayNameKey = "UI_POS_Zone_WestPoint",
     description = "River town with moderate trade activity and crossroads access.",
     baseVolatility = 0.20,
     population = "medium",

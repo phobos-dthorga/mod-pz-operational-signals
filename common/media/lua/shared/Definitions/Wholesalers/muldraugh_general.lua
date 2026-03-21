@@ -18,6 +18,7 @@ return {
     schemaVersion = 1,
     id = "muldraugh_general",
     name = "Muldraugh General Supply",
+    displayNameKey = "UI_POS_Wholesaler_Name_MuldraughGeneral",
     description = "Small-town civilian wholesaler dealing in essentials and hardware.",
     regionId = "muldraugh",
     archetype = "wholesaler",

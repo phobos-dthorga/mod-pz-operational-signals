@@ -18,6 +18,7 @@ return {
     schemaVersion = 1,
     id = "military_corridor",
     name = "Military Corridor",
+    displayNameKey = "UI_POS_Zone_MilitaryCorridor",
     description = "Heavily patrolled supply route with controlled distribution.",
     baseVolatility = 0.15,
     population = "sparse",

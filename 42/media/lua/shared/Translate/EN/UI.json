@@ -761,5 +761,19 @@
 
     "UI_POS_Signal_Hard": "Hard Signal",
     "UI_POS_Signal_Soft": "Soft Signal",
-    "UI_POS_Signal_Structural": "Structural Signal"
+    "UI_POS_Signal_Structural": "Structural Signal",
+
+    "UI_POS_Stock_Abundant": "Abundant",
+    "UI_POS_Stock_Moderate": "Moderate",
+    "UI_POS_Stock_Low": "Low",
+    "UI_POS_Stock_Scarce": "Scarce",
+
+    "UI_POS_Wholesaler_Name_MuldraughGeneral": "Muldraugh General Supply",
+    "UI_POS_Wholesaler_Name_WestPointConsolidated": "West Point Consolidated",
+    "UI_POS_Wholesaler_Name_RiversideSupply": "Riverside Supply Co.",
+    "UI_POS_Wholesaler_Name_LouisvilleArms": "Louisville Arms Exchange",
+    "UI_POS_Wholesaler_Name_LouisvilleMedical": "Louisville Medical Depot",
+    "UI_POS_Wholesaler_Name_MilitaryDepot": "Military Surplus Depot",
+    "UI_POS_Wholesaler_Name_MilitaryFieldHospital": "Military Field Hospital",
+    "UI_POS_Wholesaler_Name_RuralEastSalvage": "Rural East Salvage Yard"
 }

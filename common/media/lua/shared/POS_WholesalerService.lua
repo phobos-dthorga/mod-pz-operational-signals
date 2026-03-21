@@ -25,6 +25,7 @@
 
 require "PhobosLib"
 require "POS_Constants"
+require "POS_MarketDatabase"
 
 POS_WholesalerService = POS_WholesalerService or {}
 
@@ -311,11 +312,8 @@ function POS_WholesalerService.tickWholesaler(wholesaler, currentDay)
         end
     end
 
-    -- Phase 6: Signal emission (placeholder — connects to intel pipeline)
-    -- Future: Generate observation packets for POS_MarketDatabase based on
-    -- wholesaler state, reliability, visibility, and signalClass.
-    -- Interface: POS_WholesalerService.emitSignals(wholesaler, currentDay)
-    PhobosLib.trace("POS", _TAG, "Signal emission placeholder for " .. wholesaler.id)
+    -- Phase 6: Signal emission — generate observations for POS_MarketDatabase
+    POS_WholesalerService.emitSignals(wholesaler, currentDay)
 
     -- Finalise: update state and timestamp
     local prevState = wholesaler._operationalState
@@ -326,6 +324,113 @@ function POS_WholesalerService.tickWholesaler(wholesaler, currentDay)
         PhobosLib.debug("POS", _TAG, wholesaler.id .. ": state "
             .. tostring(prevState) .. " -> " .. tostring(wholesaler._operationalState))
     end
+end
+
+
+---------------------------------------------------------------
+-- Signal Emission (Phase 3A)
+---------------------------------------------------------------
+
+--- Emit hard-signal observations into POS_MarketDatabase from a
+--- wholesaler's current state. Visibility gates emission: high-secrecy
+--- wholesalers emit fewer observations per tick. Each emitted category
+--- produces one observation record with price, stock bucket, confidence,
+--- and source/location display names resolved via registry.
+---@param wholesaler table  Wholesaler table (after Phase 5 tick)
+---@param currentDay number Current in-game day
+function POS_WholesalerService.emitSignals(wholesaler, currentDay)
+    -- Visibility gate: high-secrecy wholesalers may skip emission
+    local visibility = wholesaler.visibility or 1.0
+    if PhobosLib.randFloat(0, 1) > visibility then
+        PhobosLib.trace("POS", _TAG,
+            wholesaler.id .. " skipped emission (visibility gate)")
+        return
+    end
+
+    local state = wholesaler._operationalState
+        or POS_Constants.WHOLESALER_STATE_STABLE
+    local priceMultiplier = POS_Constants.WHOLESALER_PRICE_MULTIPLIER[state]
+        or 1.0
+    local markupBias = wholesaler.markupBias or 0
+    local reliability = wholesaler.reliability or 0.5
+    local stockLevel = wholesaler.stockLevel or 0.5
+    local catWeights = wholesaler.categoryWeights or {}
+
+    -- Resolve display names via registry
+    local sourceName = PhobosLib.getRegistryDisplayName(
+        _wholesalerRegistry, wholesaler.id, wholesaler.id)
+    local locationName = PhobosLib.getRegistryDisplayName(
+        POS_WholesalerService._getZoneRegistry(),
+        wholesaler.regionId, wholesaler.regionId)
+
+    -- Determine stock bucket and confidence from tier tables
+    local stockNorm = PhobosLib.clamp(
+        math.floor(stockLevel * 100), 0, 100)
+    local stockTier = PhobosLib.getQualityTier(
+        stockNorm, POS_Constants.STOCK_LEVEL_TIERS)
+    local stockBucket = stockTier and stockTier.name
+        or POS_Constants.STOCK_LEVEL_TIERS[4].name
+
+    local confNorm = PhobosLib.clamp(
+        math.floor(reliability * 100), 0, 100)
+    local confTier = PhobosLib.getQualityTier(
+        confNorm, POS_Constants.CONFIDENCE_TIERS)
+    local confidence = confTier and confTier.name
+        or POS_Constants.CONFIDENCE_TIERS[3].name
+
+    local quality = PhobosLib.clamp(
+        PhobosLib.round(reliability * 100, 0), 0, 100)
+
+    local count = 0
+    for catId, weight in pairs(catWeights) do
+        if weight > 0 then
+            local basePrice = POS_Constants.CATEGORY_BASE_PRICE[catId]
+            if basePrice then
+                -- Price = base × (1 + markup) × state multiplier × noise
+                local noise = 1 + PhobosLib.randFloat(
+                    -POS_Constants.SIGNAL_PRICE_NOISE,
+                    POS_Constants.SIGNAL_PRICE_NOISE)
+                local price = PhobosLib.round(
+                    basePrice * (1 + markupBias) * priceMultiplier * noise, 0)
+
+                local recordId = POS_Constants.SIGNAL_RECORD_PREFIX
+                    .. wholesaler.id .. "_" .. catId .. "_" .. currentDay
+
+                PhobosLib.safecall(POS_MarketDatabase.addRecord, {
+                    id          = recordId,
+                    categoryId  = catId,
+                    price       = price,
+                    stock       = PhobosLib.safeGetText(stockBucket),
+                    source      = sourceName,
+                    location    = locationName,
+                    confidence  = confidence,
+                    sourceTier  = POS_Constants.SOURCE_TIER_BROADCAST,
+                    quality     = quality,
+                    recordedDay = currentDay,
+                })
+                count = count + 1
+            end
+        end
+    end
+
+    if count > 0 then
+        PhobosLib.debug("POS", _TAG,
+            wholesaler.id .. " emitted " .. count .. " observations"
+            .. " (state=" .. tostring(state) .. ")")
+    end
+end
+
+--- Internal accessor for zone registry (used by emitSignals for display names).
+--- Must be set by POS_MarketSimulation during init.
+---@return table|nil  Zone registry instance
+function POS_WholesalerService._getZoneRegistry()
+    return POS_WholesalerService._zoneRegistry
+end
+
+--- Set the zone registry reference (called by POS_MarketSimulation.init).
+---@param registry table  Zone registry from MarketSimulation
+function POS_WholesalerService._setZoneRegistry(registry)
+    POS_WholesalerService._zoneRegistry = registry
 end
 
 

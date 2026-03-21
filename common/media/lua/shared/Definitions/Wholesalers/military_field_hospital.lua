@@ -18,6 +18,7 @@ return {
     schemaVersion = 1,
     id = "military_field_hospital",
     name = "Corridor Field Hospital",
+    displayNameKey = "UI_POS_Wholesaler_Name_MilitaryFieldHospital",
     description = "Mobile medical staging area supporting military operations. Limited civilian access.",
     regionId = "military_corridor",
     archetype = "wholesaler",

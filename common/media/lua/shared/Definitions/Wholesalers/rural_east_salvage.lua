@@ -18,6 +18,7 @@ return {
     schemaVersion = 1,
     id = "rural_east_salvage",
     name = "Eastern Salvage Yard",
+    displayNameKey = "UI_POS_Wholesaler_Name_RuralEastSalvage",
     description = "Scrapyard operation consolidating salvaged tools and fuel from the rural hinterland.",
     regionId = "rural_east",
     archetype = "wholesaler",

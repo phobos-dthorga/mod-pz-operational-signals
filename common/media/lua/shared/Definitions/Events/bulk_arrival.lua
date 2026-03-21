@@ -18,6 +18,7 @@ return {
     schemaVersion = 1,
     id = "bulk_arrival",
     name = "Bulk Arrival",
+    displayNameKey = "UI_POS_MarketEvent_BulkArrival",
     description = "A large shipment arrives, flooding local supply.",
     signalClass = "hard",
     pressureEffect = -0.3,

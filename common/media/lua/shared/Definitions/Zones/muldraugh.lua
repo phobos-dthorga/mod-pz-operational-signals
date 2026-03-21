@@ -18,6 +18,7 @@ return {
     schemaVersion = 1,
     id = "muldraugh",
     name = "Muldraugh",
+    displayNameKey = "UI_POS_Zone_Muldraugh",
     description = "Small rural town with limited trade infrastructure.",
     baseVolatility = 0.25,
     population = "sparse",

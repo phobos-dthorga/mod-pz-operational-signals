@@ -36,6 +36,9 @@ return {
     -- Display name shown in the terminal UI
     name = "My Custom Archetype",
 
+    -- Translation key for the display name (used for i18n lookup in getText())
+    displayNameKey = "UI_POS_Agent_YourArchetype",
+
     -- Short description of the archetype's role in the market
     description = "A brief description of what this archetype represents.",
 

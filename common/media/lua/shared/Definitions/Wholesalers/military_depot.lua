@@ -18,6 +18,7 @@ return {
     schemaVersion = 1,
     id = "military_depot",
     name = "Fort Knox Surplus Depot",
+    displayNameKey = "UI_POS_Wholesaler_Name_MilitaryDepot",
     description = "Military surplus distribution point along the corridor. Controlled release of strategic reserves.",
     regionId = "military_corridor",
     archetype = "wholesaler",

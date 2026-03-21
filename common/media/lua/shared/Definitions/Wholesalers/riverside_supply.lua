@@ -18,6 +18,7 @@ return {
     schemaVersion = 1,
     id = "riverside_supply",
     name = "Riverside Supply Co-op",
+    displayNameKey = "UI_POS_Wholesaler_Name_RiversideSupply",
     description = "Community-run supply cooperative focused on food and medical aid.",
     regionId = "riverside",
     archetype = "wholesaler",

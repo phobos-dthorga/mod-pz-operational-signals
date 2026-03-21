@@ -18,6 +18,7 @@ return {
     schemaVersion = 1,
     id = "louisville_medical",
     name = "Louisville Medical Cache",
+    displayNameKey = "UI_POS_Wholesaler_Name_LouisvilleMedical",
     description = "Pharmaceutical stockpile salvaged from urban hospital networks.",
     regionId = "louisville_edge",
     archetype = "wholesaler",

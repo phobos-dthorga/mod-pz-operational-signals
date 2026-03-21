@@ -18,6 +18,7 @@ return {
     schemaVersion = 1,
     id = "west_point_consolidated",
     name = "West Point Consolidated",
+    displayNameKey = "UI_POS_Wholesaler_Name_WestPointConsolidated",
     description = "Medium-scale civilian distributor serving the regional hub.",
     regionId = "west_point",
     archetype = "wholesaler",

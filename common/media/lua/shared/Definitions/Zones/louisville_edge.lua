@@ -18,6 +18,7 @@ return {
     schemaVersion = 1,
     id = "louisville_edge",
     name = "Louisville Outskirts",
+    displayNameKey = "UI_POS_Zone_LouisvilleEdge",
     description = "Urban fringe zone with volatile supply and high competition.",
     baseVolatility = 0.30,
     population = "dense",

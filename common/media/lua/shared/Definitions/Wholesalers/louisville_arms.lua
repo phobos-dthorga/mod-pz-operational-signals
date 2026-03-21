@@ -18,6 +18,7 @@ return {
     schemaVersion = 1,
     id = "louisville_arms",
     name = "Louisville Arms Exchange",
+    displayNameKey = "UI_POS_Wholesaler_Name_LouisvilleArms",
     description = "Black-market broker operating on the Louisville fringe. High-value, high-risk goods.",
     regionId = "louisville_edge",
     archetype = "wholesaler",

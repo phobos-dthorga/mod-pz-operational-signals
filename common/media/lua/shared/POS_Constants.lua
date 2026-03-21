@@ -1407,3 +1407,64 @@ POS_Constants.WHOLESALER_STOCK_MAX = 1.0
 
 POS_Constants.WMD_MARKET_ZONES = "POSNET.MarketZones"
 
+---------------------------------------------------------------
+-- Living Market: Signal Emission
+---------------------------------------------------------------
+
+-- State → price multiplier applied to category base price
+POS_Constants.WHOLESALER_PRICE_MULTIPLIER = {
+    [POS_Constants.WHOLESALER_STATE_STABLE]      = 1.00,
+    [POS_Constants.WHOLESALER_STATE_TIGHT]       = 1.05,
+    [POS_Constants.WHOLESALER_STATE_STRAINED]    = 1.15,
+    [POS_Constants.WHOLESALER_STATE_DUMPING]     = 0.75,
+    [POS_Constants.WHOLESALER_STATE_WITHHOLDING] = 1.25,
+    [POS_Constants.WHOLESALER_STATE_COLLAPSING]  = 1.40,
+}
+
+-- Category base prices (calibrated against Dynamic Trading mod)
+-- DT ranges: food canned 137-297, medical 45-183, ammo mags 70,
+-- fuel 127-215, tools 57-216, electronics wide, weapons wide,
+-- armor 15-360, moveables 15-70, PCP chemicals 12-500.
+-- These represent the "average street price" per category.
+POS_Constants.CATEGORY_BASE_PRICE = {
+    food          = 120,
+    medicine      = 150,
+    ammunition    = 70,
+    fuel          = 160,
+    tools         = 100,
+    radio         = 180,
+    weapons       = 250,
+    survival      = 80,
+    clothing      = 60,
+    literature    = 40,
+    miscellaneous = 50,
+    chemicals     = 45,
+    agriculture   = 20,
+    biofuel       = 120,
+    specimens     = 200,
+    biohazard     = 300,
+}
+
+-- Price noise range (±%) applied to each emitted observation
+POS_Constants.SIGNAL_PRICE_NOISE = 0.10
+
+-- Stock level tiers for PhobosLib.getQualityTier()
+-- Maps stockLevel (0–100 after ×100) to display bucket
+POS_Constants.STOCK_LEVEL_TIERS = {
+    { name = "UI_POS_Stock_Abundant", min = 70 },
+    { name = "UI_POS_Stock_Moderate", min = 40 },
+    { name = "UI_POS_Stock_Low",     min = 20 },
+    { name = "UI_POS_Stock_Scarce",  min = 0 },
+}
+
+-- Confidence tiers for PhobosLib.getQualityTier()
+-- Maps reliability (0–100 after ×100) to confidence string
+POS_Constants.CONFIDENCE_TIERS = {
+    { name = "high",   min = 70 },
+    { name = "medium", min = 40 },
+    { name = "low",    min = 0 },
+}
+
+-- Record ID prefix for Living Market observations
+POS_Constants.SIGNAL_RECORD_PREFIX = "lm_"
+

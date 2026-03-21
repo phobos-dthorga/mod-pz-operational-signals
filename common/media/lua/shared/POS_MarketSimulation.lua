@@ -126,6 +126,22 @@ local function _ensureZoneState(zoneId)
         state.pressure[catId] = 0
     end
 
+    -- Restore persisted zone state from ModData if available (Phase 5B)
+    local zonesModData = POS_WorldState.getMarketZones()
+    local persisted = zonesModData and zonesModData.entries
+        and zonesModData.entries[zoneId]
+    if persisted then
+        if persisted.volatility then
+            state.volatility = persisted.volatility
+        end
+        if persisted.pressure then
+            for catId, val in pairs(persisted.pressure) do
+                state.pressure[catId] = val
+            end
+        end
+        PhobosLib.debug("POS", _TAG, "Restored zone state for " .. zoneId)
+    end
+
     _zoneStates[zoneId] = state
     return state
 end
@@ -172,6 +188,9 @@ function POS_MarketSimulation.init()
     for _, zoneId in ipairs(POS_Constants.MARKET_ZONES) do
         _ensureZoneState(zoneId)
     end
+
+    -- Share zone registry with WholesalerService for display name resolution
+    POS_WholesalerService._setZoneRegistry(_zoneRegistry)
 
     PhobosLib.debug("POS", _TAG, "init() — loaded "
         .. POS_MarketAgent.getRegistry():count() .. " archetypes, "

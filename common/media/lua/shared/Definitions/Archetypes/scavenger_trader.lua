@@ -18,6 +18,7 @@ return {
     schemaVersion = 1,
     id = "scavenger_trader",
     name = "Backroad Scavenger",
+    displayNameKey = "UI_POS_Agent_ScavengerTrader",
     description = "A small-time regional opportunist dealing in salvaged goods.",
     behaviour = "baseline_trader",
     tuning = {

@@ -18,6 +18,7 @@ return {
     schemaVersion = 1,
     id = "theft_raid",
     name = "Theft / Raid",
+    displayNameKey = "UI_POS_MarketEvent_TheftRaid",
     description = "Bandits or looters hit a supply cache, destroying stock.",
     signalClass = "hard",
     pressureEffect = 0.4,
