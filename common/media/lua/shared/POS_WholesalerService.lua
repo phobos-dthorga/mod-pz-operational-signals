@@ -18,6 +18,8 @@
 -- POS_WholesalerService.lua
 -- Wholesaler lifecycle, supply pressure contribution, and
 -- signal generation for the Living Market simulation.
+-- Wholesaler definitions are loaded from data-only Lua files
+-- via PhobosLib registry/schema infrastructure.
 -- See docs/living-market-design.md §8 for the full schema.
 ---------------------------------------------------------------
 
@@ -27,6 +29,35 @@ require "POS_Constants"
 POS_WholesalerService = POS_WholesalerService or {}
 
 local _TAG = "[POS:WholesalerSvc]"
+
+---------------------------------------------------------------
+-- Wholesaler definition registry
+---------------------------------------------------------------
+
+local _wholesalerSchema = require "POS_WholesalerSchema"
+
+local _wholesalerRegistry = PhobosLib.createRegistry({
+    name    = "Wholesalers",
+    schema  = _wholesalerSchema,
+    idField = "id",
+    allowOverwrite = false,
+    tag     = "[POS:Wholesaler]",
+})
+
+--- Get the wholesaler definition registry for external registration.
+---@return table PhobosLib registry instance
+function POS_WholesalerService.getRegistry()
+    return _wholesalerRegistry
+end
+
+--- Create a wholesaler from a registered definition.
+---@param id string  Wholesaler definition ID
+---@return table|nil Wholesaler instance, or nil if not found
+function POS_WholesalerService.createFromRegistry(id)
+    local def = _wholesalerRegistry:get(id)
+    if not def then return nil end
+    return POS_WholesalerService.createWholesaler(def)
+end
 
 --- Translation key suffix lookup: operational state → UI key fragment.
 local STATE_UI_KEYS = {

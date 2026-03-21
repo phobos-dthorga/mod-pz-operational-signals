@@ -1386,8 +1386,12 @@ The Living Market simulation is split across three shared modules:
 | `POS_WholesalerService.lua` | Wholesaler lifecycle, operational state machine, supply pressure contribution |
 | `POS_MarketSimulation.lua` | Simulation orchestrator — agent registry, zone state, per-tick loop |
 
-Constants and archetype profiles live in `POS_Constants.lua` (§ Living Market
-sections). Sandbox accessors live in `POS_SandboxIntegration.lua`.
+Archetype profiles, zone tuning, and event definitions live in data-only Lua
+files under `Definitions/` (see §26). Schema definitions live alongside the
+modules that consume them (`POS_ArchetypeSchema.lua`, `POS_ZoneSchema.lua`,
+`POS_EventSchema.lua`, `POS_WholesalerSchema.lua`). Engine-level constants
+(archetype IDs, state enums, simulation defaults) remain in `POS_Constants.lua`.
+Sandbox accessors live in `POS_SandboxIntegration.lua`.
 
 ### 24.7 Sandbox Gate
 
@@ -1418,8 +1422,9 @@ All user-facing Living Market strings use translation keys:
 Display name accessors (`POS_MarketAgent.getDisplayName()`,
 `POS_WholesalerService.getStateDisplayName()`,
 `POS_MarketSimulation.getZoneDisplayName()`,
-`POS_MarketSimulation.getEventDisplayName()`) use `PhobosLib.safeGetText()`
-internally. Callers should use these accessors, never hard-coded strings.
+`POS_MarketSimulation.getEventDisplayName()`) read the `name` field from the
+definition registry, falling back to the raw ID. Callers should use these
+accessors, never hard-coded strings.
 
 ### 24.9 Anti-Patterns
 
@@ -1485,3 +1490,138 @@ reimplement these locally — use the PhobosLib versions:
 | `PhobosLib.round(value, decimals)` | Decimal rounding |
 | `PhobosLib.map(tbl, fn)` | Array transform |
 | `PhobosLib.filter(tbl, predicate)` | Array filter |
+
+---
+
+## 26. Data-Pack Architecture
+
+POSnet uses a **data-pack architecture** for all extensible content. Schemas,
+data, and engine logic are cleanly separated so that players and addon mods
+can add content without editing core files.
+
+### 26.1 The Pipeline
+
+Every extensible entity type follows the same four-stage pipeline:
+
+1. **Schema** — Declarative field definitions (`POS_ArchetypeSchema.lua` etc.)
+2. **Validator** — `PhobosLib.validateSchema()` checks types, ranges, enums, required fields
+3. **Registry** — `PhobosLib.createRegistry()` stores validated definitions, rejects duplicates
+4. **Loader** — `PhobosLib.loadDefinitions()` batch-loads data-only Lua files via `require`
+
+### 26.2 Data-Only Lua Files
+
+All content definitions use the **data-only Lua** format:
+
+```lua
+return {
+    schemaVersion = 1,
+    id = "scavenger_trader",
+    name = "Backroad Scavenger",
+    description = "A small-time regional opportunist.",
+    behaviour = "baseline_trader",
+    tuning = {
+        reliability = 0.55,
+        volatility  = 0.45,
+    },
+    affinities = {
+        food  = 1.0,
+        tools = 1.0,
+    },
+}
+```
+
+**Rules:**
+- Files contain ONLY a `return { ... }` table — no logic, no functions, no globals
+- All files include `schemaVersion` for forward compatibility
+- Comments are welcome (Lua supports them; JSON does not)
+- Nesting should be at most 2 levels deep (tuning, affinities — not deeper)
+- Human-readable `name` fields, not localisation token IDs
+
+### 26.3 File Layout
+
+```
+common/media/lua/shared/
+    Definitions/
+        Archetypes/
+            scavenger_trader.lua
+            quartermaster.lua
+            wholesaler.lua
+            _template.lua          -- commented reference, never loaded
+        Zones/
+            muldraugh.lua
+            west_point.lua
+            ...
+            _template.lua
+        Events/
+            bulk_arrival.lua
+            ...
+            _template.lua
+        Wholesalers/
+            _template.lua          -- no built-ins yet
+    POS_ArchetypeSchema.lua        -- schema definitions
+    POS_ZoneSchema.lua
+    POS_EventSchema.lua
+    POS_WholesalerSchema.lua
+```
+
+### 26.4 What Is Extensible vs. What Is Not
+
+| Extensible (definition files) | Not extensible (engine constants) |
+|-------------------------------|----------------------------------|
+| Agent archetype profiles & affinities | Archetype ID string constants |
+| Market zone tuning & adjacency | Wholesaler operational state enums |
+| Market event effects & probabilities | Signal class enums |
+| Wholesaler definitions | Simulation parameter defaults |
+| (Future: commodity categories) | World ModData keys |
+
+### 26.5 Addon Mod Integration
+
+Third-party mods register content via the registry API — no file scanning, no
+manifests, no directory listing:
+
+```lua
+-- In addon mod's shared Lua file (loaded after POSnet via loadModAfter)
+require "POS_MarketAgent"
+local myAgent = require "MyAddonMod/my_custom_agent"
+POS_MarketAgent.getRegistry():register(myAgent)
+```
+
+Similarly for zones, events, and wholesalers:
+```lua
+require "POS_MarketSimulation"
+POS_MarketSimulation.getZoneRegistry():register(require "MyMod/my_zone")
+POS_MarketSimulation.getEventRegistry():register(require "MyMod/my_event")
+```
+
+### 26.6 Template Files
+
+Every `Definitions/` subdirectory includes a `_template.lua` with:
+- All fields shown with comments explaining purpose and valid ranges
+- `enabled = false` so it is never active if accidentally loaded
+- Players copy and rename the template, then change values
+
+### 26.7 Error Messages
+
+Invalid definitions are **rejected, not crashed**. The validator logs clear,
+actionable messages:
+
+```
+[POS:Archetype] "road_king" rejected: tuning.volatility: must be at most 1.0 (got: 1.5)
+[POS:Zone] "my_zone" rejected: missing required field: id
+```
+
+### 26.8 Schema Versioning
+
+Every definition file includes `schemaVersion = 1`. When schemas evolve:
+- The validator warns on version mismatch but does not reject
+- Future migrations can read `schemaVersion` to apply transforms
+- This applies to all data formats (definition files, file store, event logs)
+
+### 26.9 Anti-Patterns
+
+- **Never let players inject functions** — data-only means identifiers, numbers,
+  tags, lists, flags, text, and category mappings. No `tickFunction = function(...) end`.
+- **Never require players to edit POS_Constants.lua** — that causes merge conflicts,
+  update pain, and corruption risk.
+- **Never auto-discover files** — PZ Lua has no directory listing API. Use explicit
+  `require` paths for built-ins and the registry API for addons.

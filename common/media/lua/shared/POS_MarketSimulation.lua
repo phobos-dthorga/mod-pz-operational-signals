@@ -19,6 +19,8 @@
 -- Layer 0 simulation orchestrator for the Living Market.
 -- Manages the agent registry, market zone state, and the
 -- per-tick simulation loop that drives the autonomous economy.
+-- Zone and event definitions are loaded from data-only Lua
+-- files via PhobosLib registry/schema infrastructure.
 -- See docs/living-market-design.md for the full specification.
 ---------------------------------------------------------------
 
@@ -31,37 +33,113 @@ POS_MarketSimulation = POS_MarketSimulation or {}
 
 local _TAG = "[POS:MarketSim]"
 
---- Internal agent registry, keyed by agent.id.
+---------------------------------------------------------------
+-- Internal agent registry (runtime, not schema-validated)
+---------------------------------------------------------------
+
 local _agents = {}
 
---- Translation key suffix lookups.
-local ZONE_UI_KEYS = {
-    [POS_Constants.MARKET_ZONE_MULDRAUGH]         = "Muldraugh",
-    [POS_Constants.MARKET_ZONE_WEST_POINT]        = "WestPoint",
-    [POS_Constants.MARKET_ZONE_RIVERSIDE]          = "Riverside",
-    [POS_Constants.MARKET_ZONE_LOUISVILLE_EDGE]   = "LouisvilleEdge",
-    [POS_Constants.MARKET_ZONE_MILITARY_CORRIDOR] = "MilitaryCorridor",
-    [POS_Constants.MARKET_ZONE_RURAL_EAST]        = "RuralEast",
+---------------------------------------------------------------
+-- Zone and event registries (schema-validated)
+---------------------------------------------------------------
+
+local _zoneSchema  = require "POS_ZoneSchema"
+local _eventSchema = require "POS_EventSchema"
+
+local _zoneRegistry = PhobosLib.createRegistry({
+    name    = "MarketZones",
+    schema  = _zoneSchema,
+    idField = "id",
+    allowOverwrite = false,
+    tag     = "[POS:Zone]",
+})
+
+local _eventRegistry = PhobosLib.createRegistry({
+    name    = "MarketEvents",
+    schema  = _eventSchema,
+    idField = "id",
+    allowOverwrite = false,
+    tag     = "[POS:Event]",
+})
+
+---------------------------------------------------------------
+-- Built-in definition paths
+---------------------------------------------------------------
+
+local BUILTIN_ZONE_PATHS = {
+    "Definitions/Zones/muldraugh",
+    "Definitions/Zones/west_point",
+    "Definitions/Zones/riverside",
+    "Definitions/Zones/louisville_edge",
+    "Definitions/Zones/military_corridor",
+    "Definitions/Zones/rural_east",
 }
 
-local EVENT_UI_KEYS = {
-    [POS_Constants.MARKET_EVENT_BULK_ARRIVAL]       = "BulkArrival",
-    [POS_Constants.MARKET_EVENT_CONVOY_DELAY]       = "ConvoyDelay",
-    [POS_Constants.MARKET_EVENT_THEFT_RAID]         = "TheftRaid",
-    [POS_Constants.MARKET_EVENT_CONTROLLED_RELEASE] = "ControlledRelease",
-    [POS_Constants.MARKET_EVENT_WITHHOLDING]        = "Withholding",
-    [POS_Constants.MARKET_EVENT_REQUISITION]        = "Requisition",
+local BUILTIN_EVENT_PATHS = {
+    "Definitions/Events/bulk_arrival",
+    "Definitions/Events/convoy_delay",
+    "Definitions/Events/theft_raid",
+    "Definitions/Events/controlled_release",
+    "Definitions/Events/strategic_withholding",
+    "Definitions/Events/requisition_diversion",
 }
 
+---------------------------------------------------------------
+-- Initialisation
+---------------------------------------------------------------
 
---- Initialise the simulation.
---- Stub: will bootstrap market zones into POS_WorldState and seed
---- initial agents using regional composition patterns from the design doc.
+local _initialised = false
+
+--- Initialise the simulation. Loads archetype, zone, and event
+--- definitions from data-only Lua files.
+--- Called from OnGameStart when Living Market is enabled.
+--- Safe to call multiple times (idempotent).
 function POS_MarketSimulation.init()
-    -- TODO: Bootstrap zones, seed agents, load wholesalers from WorldState
-    PhobosLib.debug("POS", _TAG, "init() stub — Living Market not yet active")
+    if _initialised then return end
+    _initialised = true
+
+    -- Load archetypes first (POS_MarketAgent owns this)
+    POS_MarketAgent.init()
+
+    -- Load zones
+    PhobosLib.loadDefinitions({
+        registry = _zoneRegistry,
+        paths    = BUILTIN_ZONE_PATHS,
+        tag      = "[POS:Zone:Loader]",
+    })
+
+    -- Load events
+    PhobosLib.loadDefinitions({
+        registry = _eventRegistry,
+        paths    = BUILTIN_EVENT_PATHS,
+        tag      = "[POS:Event:Loader]",
+    })
+
+    PhobosLib.debug("POS", _TAG, "init() — loaded "
+        .. POS_MarketAgent.getRegistry():count() .. " archetypes, "
+        .. _zoneRegistry:count() .. " zones, "
+        .. _eventRegistry:count() .. " events")
 end
 
+---------------------------------------------------------------
+-- Registry access (for addon mods)
+---------------------------------------------------------------
+
+--- Get the zone registry for external registration.
+---@return table PhobosLib registry instance
+function POS_MarketSimulation.getZoneRegistry()
+    return _zoneRegistry
+end
+
+--- Get the event registry for external registration.
+---@return table PhobosLib registry instance
+function POS_MarketSimulation.getEventRegistry()
+    return _eventRegistry
+end
+
+---------------------------------------------------------------
+-- Agent management (runtime, not schema-validated)
+---------------------------------------------------------------
 
 --- Register an agent in the simulation.
 ---@param agent table  Agent table (must have agent.id)
@@ -74,7 +152,6 @@ function POS_MarketSimulation.registerAgent(agent)
     PhobosLib.debug("POS", _TAG, "Registered agent: " .. agent.id
         .. " (" .. tostring(agent.archetype) .. ") in zone " .. tostring(agent.zoneId))
 end
-
 
 --- Get all agents belonging to a specific market zone.
 ---@param zoneId string  Market zone ID
@@ -89,22 +166,31 @@ function POS_MarketSimulation.getAgentsForZone(zoneId)
     return result
 end
 
+---------------------------------------------------------------
+-- Zone state
+---------------------------------------------------------------
 
 --- Get the current state of a market zone.
---- Stub: returns a default-initialised zone table.
+--- Stub: returns a default-initialised zone table using
+--- the zone definition's baseVolatility if available.
 ---@param zoneId string  Market zone ID
 ---@return table         Zone state { supply, demand, volatility, pressure }
 function POS_MarketSimulation.getZoneState(zoneId)
-    -- TODO: Read from POS_WorldState.getMarketZones()
+    local def = _zoneRegistry:get(zoneId)
+    local volatility = def and def.baseVolatility
+        or POS_Constants.SIMULATION_ZONE_DEFAULT_VOLATILITY
     return {
         id         = zoneId,
         supply     = {},
         demand     = {},
-        volatility = POS_Constants.SIMULATION_ZONE_DEFAULT_VOLATILITY,
+        volatility = volatility,
         pressure   = {},
     }
 end
 
+---------------------------------------------------------------
+-- Simulation tick
+---------------------------------------------------------------
 
 --- Run one full simulation tick.
 --- Stub: logs and returns. Will iterate zones, tick wholesalers
@@ -115,7 +201,6 @@ function POS_MarketSimulation.tickSimulation(currentDay)
     PhobosLib.debug("POS", _TAG, "tickSimulation stub — day " .. tostring(currentDay))
 end
 
-
 --- Get the supply pressure for a specific category in a zone.
 --- Stub: returns 0.
 ---@param zoneId     string  Market zone ID
@@ -125,22 +210,24 @@ function POS_MarketSimulation.getZonePressure(zoneId, categoryId)
     return 0
 end
 
+---------------------------------------------------------------
+-- Display name accessors (read from registry definitions)
+---------------------------------------------------------------
 
---- Get the localised display name for a market zone.
+--- Get the display name for a market zone from its definition.
 ---@param zoneId string  Market zone ID
----@return string        Localised name, or the zone ID as fallback
+---@return string        Display name, or the zone ID as fallback
 function POS_MarketSimulation.getZoneDisplayName(zoneId)
-    local suffix = ZONE_UI_KEYS[zoneId]
-    if not suffix then return zoneId end
-    return PhobosLib.safeGetText("UI_POS_Zone_" .. suffix)
+    local def = _zoneRegistry:get(zoneId)
+    if def and def.name then return def.name end
+    return zoneId
 end
 
-
---- Get the localised display name for a market event type.
+--- Get the display name for a market event from its definition.
 ---@param eventType string  Event type ID
----@return string           Localised name, or the event ID as fallback
+---@return string           Display name, or the event ID as fallback
 function POS_MarketSimulation.getEventDisplayName(eventType)
-    local suffix = EVENT_UI_KEYS[eventType]
-    if not suffix then return eventType end
-    return PhobosLib.safeGetText("UI_POS_MarketEvent_" .. suffix)
+    local def = _eventRegistry:get(eventType)
+    if def and def.name then return def.name end
+    return eventType
 end
