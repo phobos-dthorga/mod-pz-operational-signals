@@ -62,7 +62,7 @@ function screen.create(contentPanel, params, _terminal)
 
     local watchlist = POS_PlayerState.getWatchlist(player)
 
-    if #watchlist == 0 then
+    if not watchlist or #watchlist == 0 then
         W.createLabel(ctx.panel, 8, ctx.y,
             W.safeGetText("UI_POS_Market_WatchlistEmpty"), C.dim)
         ctx.y = ctx.y + ctx.lineH
