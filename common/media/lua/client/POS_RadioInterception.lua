@@ -137,7 +137,14 @@ local function onServerCommand(module, command, args)
         end
 
     elseif command == POS_Constants.CMD_MARKET_SNAPSHOT then
-        -- Server sent market snapshot — update local cache
+        -- Server sent market snapshot — update local cache.
+        -- Skip during early init (world age 0) to avoid processing
+        -- stale queued commands before the engine is fully ready.
+        local gt = getGameTime and getGameTime()
+        if gt and gt:getWorldAgeHours() <= 0 then
+            PhobosLib.debug("POS", _TAG, "[RadioInterception] Market snapshot deferred (init)")
+            return
+        end
         if args and args.data and POS_MarketDatabase then
             for catId, catData in pairs(args.data) do
                 POS_MarketDatabase.updateClientCache(catId, catData)
