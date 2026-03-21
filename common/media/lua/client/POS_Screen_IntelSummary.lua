@@ -98,31 +98,34 @@ end
 
 function screen.create(contentPanel, _params, _terminal)
     local _TAG = "[POS:IntelSummary]"
-    PhobosLib.debug("POS", _TAG, "create() START")
+    PhobosLib.debug("POS", "[POS:IntelSummary]", "create() START")
     local ok, err = PhobosLib.safecall(function()
+        PhobosLib.debug("POS", "[POS:IntelSummary]", "A: inside safecall")
         local W = POS_TerminalWidgets
         local C = W.COLOURS
+        PhobosLib.debug("POS", "[POS:IntelSummary]", "B: initLayout")
         local ctx = W.initLayout(contentPanel)
-
-        -- Header
+        PhobosLib.debug("POS", "[POS:IntelSummary]", "C: drawHeader")
         W.drawHeader(ctx, "UI_POS_IntelSummary_Title")
-
+        PhobosLib.debug("POS", "[POS:IntelSummary]", "D: getSpecificPlayer")
         local player = getSpecificPlayer(0)
-
+        PhobosLib.debug("POS", "[POS:IntelSummary]", "E: gatherCategorySummaries")
         local summOk, summaries = PhobosLib.safecall(gatherCategorySummaries)
         if not summOk then summaries = {} end
         summaries = summaries or {}
-
+        PhobosLib.debug("POS", "[POS:IntelSummary]", "F: summaries=" .. tostring(#summaries))
         local catOk, visibleCats = PhobosLib.safecall(
             POS_MarketRegistry.getVisibleCategories, {})
         local totalCategories = (catOk and visibleCats) and #visibleCats or 0
-
-        -- If no data at all, show empty state
+        PhobosLib.debug("POS", "[POS:IntelSummary]", "G: totalCategories=" .. tostring(totalCategories))
         if #summaries == 0 then
+            PhobosLib.debug("POS", "[POS:IntelSummary]", "H: no data, showing empty state")
             W.createLabel(ctx.panel, 8, ctx.y,
                 W.safeGetText("UI_POS_IntelSummary_NoData"), C.dim)
             ctx.y = ctx.y + ctx.lineH * 2
+            PhobosLib.debug("POS", "[POS:IntelSummary]", "I: drawFooter")
             W.drawFooter(ctx)
+            PhobosLib.debug("POS", "[POS:IntelSummary]", "J: returning from no-data path")
             return
         end
 
