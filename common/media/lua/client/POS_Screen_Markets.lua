@@ -142,10 +142,13 @@ end
 screen.destroy = POS_TerminalWidgets.defaultDestroy
 
 function screen.refresh(params)
+    PhobosLib.debug("POS", _TAG, "[Markets] refresh() called")
     POS_TerminalWidgets.dynamicRefresh(screen, params)
+    PhobosLib.debug("POS", _TAG, "[Markets] refresh() done")
 end
 
 screen.getContextData = function(_params)
+    PhobosLib.debug("POS", _TAG, "[Markets] getContextData() called")
     local data = {}
     local player = getSpecificPlayer(0)
     local noteCount = POS_MarketIngestion.countNotes(player)
@@ -156,12 +159,15 @@ screen.getContextData = function(_params)
     end
     if player and POS_Sandbox and POS_Sandbox.getEnableWatchlist
         and POS_Sandbox.getEnableWatchlist() then
+        PhobosLib.debug("POS", _TAG, "[Markets] checking watchlist alerts...")
         local alertCount = POS_WatchlistService.countPendingAlerts(player)
+        PhobosLib.debug("POS", _TAG, "[Markets] alertCount=" .. tostring(alertCount))
         if alertCount > 0 then
             table.insert(data, { type = "kv", key = "UI_POS_Market_AlertCount",
                 value = tostring(alertCount) })
         end
     end
+    PhobosLib.debug("POS", _TAG, "[Markets] getContextData() done")
     return data
 end
 
