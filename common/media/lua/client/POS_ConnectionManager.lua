@@ -191,7 +191,7 @@ function POS_ConnectionManager.canConnect(player, radioObj)
             local parent = dd:getParent()
             if parent then
                 local sq = parent:getSquare()
-                if sq and sq:haveElectricity() then
+                if sq and PhobosLib.hasPower(sq) then
                     hasPower = true
                 end
             end
@@ -243,8 +243,8 @@ function POS_ConnectionManager.canConnect(player, radioObj)
         end
     end
 
-    -- Desktop computer requires electricity at its location
-    if hasDesktop and playerSquare and not playerSquare:haveElectricity() then
+    -- Desktop computer requires electricity at its location (grid, generator, or custom)
+    if hasDesktop and playerSquare and not PhobosLib.hasPower(playerSquare) then
         return false, POS_Constants.ERR_NO_POWER
     end
 

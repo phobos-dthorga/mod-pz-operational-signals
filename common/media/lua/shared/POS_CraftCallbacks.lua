@@ -126,6 +126,13 @@ function POS_CraftCallbacks.onCreateImprovisedTape(items, result, player)
     POS_MediaManager.ensureInitialized(result)
 end
 
+--- Callback for converting vanilla VHS tapes to POSnet blank tapes.
+--- Initialises media modData on the resulting blank tape.
+function POS_CraftCallbacks.onCreateConvertedVHSTape(items, result, player)
+    if not result then return end
+    POS_MediaManager.ensureInitialized(result)
+end
+
 --- Callback for VHS tape review -- converts one tape entry to a market note.
 ---@param items table Input items (B42: may be table or ArrayList)
 ---@param result any The created RawMarketNote item

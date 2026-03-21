@@ -445,6 +445,8 @@
     "UI_POS_Note_FieldObservations": "Field observations gathered via direct survey.",
     "UI_POS_Note_UploadInstructions": "Upload to POSnet terminal for market database integration.",
     "UI_POS_Note_Title": "Market Intel",
+    "UI_POS_Note_FieldNotesHeader": "Field Notes",
+    "UI_POS_Note_ObservationsPrompt": "Observations",
 
     "UI_POS_DataManagement_Header": "POSnet DATA MANAGEMENT",
     "UI_POS_DataManagement_ProcessAll": "Process All Chunks",

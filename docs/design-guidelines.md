@@ -240,9 +240,13 @@ cost to terminal usage and giving the shutdown action meaningful purpose.
   handle grid vs generator detection automatically.
 - **Power failure**: Terminal auto-closes with `PhobosLib.say()` message
   when power is lost mid-session (generator empty or turned off).
-- **Connection gate**: `POS_ConnectionManager.canConnect()` checks
-  `square:haveElectricity()` at the desktop computer location. No power
-  = greyed-out context menu option with clear reason text.
+- **Connection gate**: `POS_ConnectionManager.canConnect()` checks power
+  at the desktop computer location via `PhobosLib.hasPower(square)`. No
+  power = greyed-out context menu option with clear reason text.
+- **Power detection**: All wall-power checks (radio and desktop) use
+  `PhobosLib.hasPower(square)` which covers grid power, generators, and
+  any custom power sources registered by other mods. Do NOT call
+  `square:haveElectricity()` directly.
 - **Portable computers**: Use item condition drain (separate system,
   unchanged). Not affected by generator power.
 - **Cross-mod drain detection**: Drain rate stored on square modData
@@ -269,6 +273,12 @@ All mission locations must be displayed as human-readable street addresses
 using `PhobosLib_Address.resolveAddress()`. Raw coordinates are the
 fallback if street resolution fails (e.g. modded maps without
 `streets.xml`).
+
+For **player-facing location strings** that combine street address and room
+name (e.g. "Rosewood Ave (Kitchen)"), use
+`PhobosLib.formatPlayerLocation(player, opts)` instead of manually
+assembling address + room. It handles the full format priority chain
+(street name, room name fallback, title-casing) in a single call.
 
 ### 6.2 Show on Map
 
@@ -946,9 +956,10 @@ which ensures consistent 2-decimal-place formatting (e.g., "$0.60" not "$0.6").
 
 ### 13.3 Location Display
 
-Locations should display resolved street addresses when available
-(via PhobosLib_Address). When no street data exists, raw room names
-are title-cased via `PhobosLib.titleCase()` (e.g., "grocery" -> "Grocery").
+Locations should use `PhobosLib.formatPlayerLocation(player, opts)` to
+produce combined "Street (Room)" strings. This replaces manual address
+resolution + room name assembly. When no street data exists, raw room
+names are title-cased automatically (e.g., "grocery" -> "Grocery").
 
 ### 13.4 Item Filtering
 
@@ -1492,6 +1503,8 @@ reimplement these locally — use the PhobosLib versions:
 | `PhobosLib.filter(tbl, predicate)` | Array filter |
 | `PhobosLib.lazyInit(initFn)` | Deferred one-shot initialisation (see §27) |
 | `PhobosLib.throttle(fn, intervalMinutes)` | Rate-limit an EveryOneMinute handler (see §27) |
+| `PhobosLib.formatPlayerLocation(player, opts)` | Combined "Street (Room)" location string (see §6.1) |
+| `PhobosLib.hasPower(square)` | Grid + generator + custom power check (see §5.5) |
 
 ---
 

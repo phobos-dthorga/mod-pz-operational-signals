@@ -69,6 +69,19 @@ module PhobosOperationalSignals {
         needToBeLearn false,
     }
 
+    craftRecipe ConvertVanillaVHS
+    {
+        item 1 [Base.VHS_Retail;Base.VHS_Home],
+        item keep 1 Base.Screwdriver,
+
+        result PhobosOperationalSignals.BlankVHSCTape 1,
+
+        time 180,
+        Tags = POS_TVStation;CannotBeResearched,
+        needToBeLearn false,
+        OnCreate POS_CraftCallbacks.onCreateConvertedVHSTape,
+    }
+
     craftRecipe ReviewVHSTape
     {
         item 1 PhobosOperationalSignals.RecordedReconTape,
