@@ -927,8 +927,13 @@ POS_Constants.CAMERA_BULLETIN_COOLDOWN_DEFAULT = 12  -- hours
 -- Camera reputation
 POS_Constants.CAMERA_BULLETIN_REP_DEFAULT     = 50   -- hundredths of rep point
 
--- Camera workstation sprites (populated after sprite audit)
-POS_Constants.CAMERA_WORKSTATION_SPRITES      = {}
+-- Camera workstation sprites (vanilla security camera monitors, 4 rotations)
+POS_Constants.CAMERA_WORKSTATION_SPRITES      = {
+    "appliances_com_01_44",
+    "appliances_com_01_45",
+    "appliances_com_01_46",
+    "appliances_com_01_47",
+}
 
 -- Media building room types for location bonus
 POS_Constants.CAMERA_MEDIA_ROOM_TYPES         = {
@@ -1101,8 +1106,11 @@ POS_Constants.SATELLITE_FUEL_DRAIN_BROADCAST   = 0.10
 POS_Constants.SATELLITE_LOW_FUEL_THRESHOLD     = 0.20
 POS_Constants.SATELLITE_LOW_FUEL_PENALTY       = 0.25
 
--- Satellite dish sprites (populated after sprite audit)
-POS_Constants.SATELLITE_DISH_SPRITES           = {}
+-- Satellite dish sprites (vanilla satellite dish, 2 rotations)
+POS_Constants.SATELLITE_DISH_SPRITES           = {
+    "appliances_com_01_20",
+    "appliances_com_01_21",
+}
 
 -- Equipment condition threshold for bonus
 POS_Constants.SATELLITE_DISH_CONDITION_BONUS_MIN = 80
