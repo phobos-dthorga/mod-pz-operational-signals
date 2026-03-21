@@ -1721,3 +1721,39 @@ stalls and blocks other mods.
 | `POS_DeliveryContextMenu.lua` | Deferred initial scan + throttled passive scans |
 | `POS_RadioInterception.lua` | Deferred snapshot request (first tick, not init) |
 | `POS_ReconScanner.lua` | Cached active operation to avoid O(n) per-tick scan |
+
+### 27.4 Chunked File Writes
+
+Large file-store saves (e.g. market categories, ledger history) must not
+serialise all data in a single `getFileWriter` / `close` cycle. Writing
+dozens of categories in one frame causes a visible hitch, especially on
+slower hardware or when save data grows over a long-running world.
+
+**Rules:**
+
+1. **Use `PhobosLib.createChunkedWriter` for any save that iterates more
+   than a handful of entries.** The writer spreads serialisation across
+   multiple `EveryOneMinute` ticks, keeping each frame's cost bounded.
+
+2. **Chunk size must be sandbox-configurable.** Expose the value as a
+   sandbox option (default **4**) so server operators can tune the
+   trade-off between save latency and per-tick cost.
+
+3. **Guard against overlapping writes.** Check
+   `PhobosLib.isChunkedWriteActive(writer)` before starting a new write.
+   If a previous write is still in progress, skip or defer.
+
+**Anti-pattern:**
+
+```lua
+-- BAD: blocks the main thread for the entire category list
+local fw = getFileWriter("POSnet/market_data.txt", true, false)
+for _, cat in ipairs(allCategories) do
+    serializeCategory(cat, fw)
+end
+fw:close()
+```
+
+**Implementation reference:** `POS_MarketFileStore.lua` —
+`serializeCategory` pattern with a chunked writer whose chunk size is
+read from `SandboxVars.POS.MarketSaveChunkSize`.
