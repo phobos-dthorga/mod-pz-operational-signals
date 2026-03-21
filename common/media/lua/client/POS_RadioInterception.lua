@@ -267,11 +267,16 @@ Events.OnGameStart.Add(function()
 
     -- Pre-warm the player file store cache so that watchlist/alerts
     -- screens never trigger getFileReader during a UI render frame.
-    -- File I/O during OnGameStart is safe (DRJ confirms this pattern).
-    -- File I/O during screen.create() crashes the JVM silently.
     local player = getSpecificPlayer(0)
     if player then
-        POS_PlayerFileStore.load(player)
-        PhobosLib.debug("POS", _TAG, "Player file store cache warmed")
+        PhobosLib.debug("POS", _TAG, "About to warm player file store cache...")
+        local ok, err = PhobosLib.safecall(POS_PlayerFileStore.load, player)
+        if ok then
+            PhobosLib.debug("POS", _TAG, "Player file store cache warmed")
+        else
+            PhobosLib.debug("POS", _TAG, "Player file store warm FAILED: " .. tostring(err))
+        end
+    else
+        PhobosLib.debug("POS", _TAG, "No player at OnGameStart — skipping file store warm")
     end
 end)
