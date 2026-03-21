@@ -1403,8 +1403,8 @@ if POS_Sandbox.isLivingMarketEnabled() then
 end
 ```
 
-The simulation tick is integrated into `POS_EconomyTick.lua` Phase 5.75
-(currently commented out). When enabled, it runs every
+The simulation tick is integrated into `POS_EconomyTick.lua` Phase 5.75,
+wrapped in `PhobosLib.safecall()`. When enabled, it runs every
 `POS_Sandbox.getSimulationTickInterval()` game minutes.
 
 ### 24.8 Translation Key Conventions
