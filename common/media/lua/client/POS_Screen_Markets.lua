@@ -81,8 +81,6 @@ function screen.create(contentPanel, _params, _terminal)
         ctx.y = ctx.y + ctx.btnH + 4
     end
     PhobosLib.debug("POS", _TAG, "[Markets] menu entries rendered")
-    W.drawFooter(ctx)
-    do return end -- DIAGNOSTIC: stop after menu entries, skip upload + footer
 
     -- Upload Field Notes action button
     ctx.y = ctx.y + 4

@@ -97,6 +97,7 @@ end
 ---------------------------------------------------------------
 
 function screen.create(contentPanel, _params, _terminal)
+    do return end -- DIAGNOSTIC: confirm CTD is inside IntelSummary create()
     local _TAG = "[POS:IntelSummary]"
     local ok, err = PhobosLib.safecall(function()
         local W = POS_TerminalWidgets
