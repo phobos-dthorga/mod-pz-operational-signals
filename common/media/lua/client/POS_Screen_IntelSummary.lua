@@ -97,158 +97,192 @@ end
 ---------------------------------------------------------------
 
 function screen.create(contentPanel, _params, _terminal)
-    local W = POS_TerminalWidgets
-    local C = W.COLOURS
-    local ctx = W.initLayout(contentPanel)
+    local _TAG = "[POS:IntelSummary]"
+    local ok, err = PhobosLib.safecall(function()
+        local W = POS_TerminalWidgets
+        local C = W.COLOURS
+        local ctx = W.initLayout(contentPanel)
 
-    -- Header
-    W.drawHeader(ctx, "UI_POS_IntelSummary_Title")
+        -- Header
+        W.drawHeader(ctx, "UI_POS_IntelSummary_Title")
 
-    local player = getSpecificPlayer(0)
-    local summaries = gatherCategorySummaries()
-    local totalCategories = #(POS_MarketRegistry.getVisibleCategories({}) or {})
+        local player = getSpecificPlayer(0)
 
-    -- If no data at all, show empty state
-    if #summaries == 0 then
-        W.createLabel(ctx.panel, 8, ctx.y,
-            W.safeGetText("UI_POS_IntelSummary_NoData"), C.dim)
-        ctx.y = ctx.y + ctx.lineH * 2
-        W.drawFooter(ctx)
-        return
-    end
+        local summOk, summaries = PhobosLib.safecall(gatherCategorySummaries)
+        if not summOk then summaries = {} end
+        summaries = summaries or {}
 
-    -- === MARKET COVERAGE ===
-    W.createLabel(ctx.panel, 0, ctx.y,
-        "=== " .. W.safeGetText("UI_POS_IntelSummary_Coverage") .. " ===", C.textBright)
-    ctx.y = ctx.y + ctx.lineH
+        local catOk, visibleCats = PhobosLib.safecall(
+            POS_MarketRegistry.getVisibleCategories, {})
+        local totalCategories = (catOk and visibleCats) and #visibleCats or 0
 
-    -- Coverage progress bar
-    local coveragePct = totalCategories > 0
-        and math.floor(#summaries / totalCategories * 100 + 0.5) or 0
-    W.createLabel(ctx.panel, 8, ctx.y,
-        W.safeGetText("UI_POS_IntelSummary_CategoriesTracked") .. ":  "
-        .. tostring(#summaries) .. "/" .. tostring(totalCategories), C.text)
-    ctx.y = ctx.y + ctx.lineH
-    W.createProgressBar(ctx.panel, 8, ctx.y, ctx.pw - 16, coveragePct, C.text)
-    ctx.y = ctx.y + ctx.lineH
-
-    -- Freshness summary (compact single line)
-    local fresh, stale, expired = countByFreshness(summaries)
-    local freshnessLine = W.safeGetText("UI_POS_IntelSummary_FreshCount",
-            tostring(POS_Constants.MARKET_FRESH_DAYS)) .. ": " .. tostring(fresh)
-        .. "   " .. W.safeGetText("UI_POS_IntelSummary_StaleCount",
-            tostring(POS_Constants.MARKET_FRESH_DAYS),
-            tostring(POS_Constants.MARKET_STALE_DAYS)) .. ": " .. tostring(stale)
-        .. "   " .. W.safeGetText("UI_POS_IntelSummary_ExpiredCount",
-            tostring(POS_Constants.MARKET_STALE_DAYS)) .. ": " .. tostring(expired)
-    W.createLabel(ctx.panel, 8, ctx.y, freshnessLine, C.text)
-    ctx.y = ctx.y + ctx.lineH + 4
-
-    -- === CONFIDENCE OVERVIEW ===
-    W.createLabel(ctx.panel, 0, ctx.y,
-        "=== " .. W.safeGetText("UI_POS_IntelSummary_Confidence") .. " ===", C.textBright)
-    ctx.y = ctx.y + ctx.lineH
-
-    local high, med, low = countByConfidence(summaries)
-    W.createLabel(ctx.panel, 8, ctx.y,
-        W.safeGetText("UI_POS_IntelSummary_HighConfidence") .. ":     " .. tostring(high),
-        high > 0 and C.success or C.dim)
-    ctx.y = ctx.y + ctx.lineH
-
-    W.createLabel(ctx.panel, 8, ctx.y,
-        W.safeGetText("UI_POS_IntelSummary_MedConfidence") .. ":   " .. tostring(med),
-        med > 0 and C.text or C.dim)
-    ctx.y = ctx.y + ctx.lineH
-
-    W.createLabel(ctx.panel, 8, ctx.y,
-        W.safeGetText("UI_POS_IntelSummary_LowConfidence") .. ":      " .. tostring(low),
-        low > 0 and C.warn or C.dim)
-    ctx.y = ctx.y + ctx.lineH + 4
-
-    -- === CATEGORY TRENDS (compact) ===
-    W.createLabel(ctx.panel, 0, ctx.y,
-        "=== " .. W.safeGetText("UI_POS_IntelSummary_Trends") .. " ===", C.textBright)
-    ctx.y = ctx.y + ctx.lineH
-
-    -- Count trends by direction for compact summary
-    local rising, stable, falling = 0, 0, 0
-    for _, s in ipairs(summaries) do
-        if s.trendKey == "UI_POS_Market_Trend_Rising" then
-            rising = rising + 1
-        elseif s.trendKey == "UI_POS_Market_Trend_Falling" then
-            falling = falling + 1
-        else
-            stable = stable + 1
-        end
-    end
-
-    local trendLine = W.safeGetText("UI_POS_IntelSummary_TrendRising") .. ": " .. tostring(rising)
-        .. "    " .. W.safeGetText("UI_POS_IntelSummary_TrendStable") .. ": " .. tostring(stable)
-        .. "    " .. W.safeGetText("UI_POS_IntelSummary_TrendFalling") .. ": " .. tostring(falling)
-    W.createLabel(ctx.panel, 8, ctx.y, trendLine, C.text)
-    ctx.y = ctx.y + ctx.lineH + 4
-
-    -- === FIELD NOTES ===
-    W.createLabel(ctx.panel, 0, ctx.y,
-        "=== " .. W.safeGetText("UI_POS_IntelSummary_FieldNotes") .. " ===", C.textBright)
-    ctx.y = ctx.y + ctx.lineH
-
-    local noteCount = player and POS_MarketIngestion.countNotes(player) or 0
-    W.createLabel(ctx.panel, 8, ctx.y,
-        W.safeGetText("UI_POS_IntelSummary_UnprocessedNotes") .. ":   " .. tostring(noteCount),
-        noteCount > 0 and C.text or C.dim)
-    ctx.y = ctx.y + ctx.lineH + 4
-
-    -- === RECORDER STATUS === (only if equipped)
-    local recorder = player and POS_DataRecorderService.findEquippedRecorder(player)
-    if recorder then
-        local status = POS_DataRecorderService.getStatus(recorder)
-        if status then
-            W.createLabel(ctx.panel, 0, ctx.y,
-                "=== " .. W.safeGetText("UI_POS_IntelSummary_RecorderStatus") .. " ===",
-                C.textBright)
-            ctx.y = ctx.y + ctx.lineH
-
+        -- If no data at all, show empty state
+        if #summaries == 0 then
             W.createLabel(ctx.panel, 8, ctx.y,
-                W.safeGetText("UI_POS_IntelSummary_TotalChunks") .. ":  "
-                .. tostring(status.totalRecorded or 0), C.text)
-            ctx.y = ctx.y + ctx.lineH
-
-            W.createLabel(ctx.panel, 8, ctx.y,
-                W.safeGetText("UI_POS_Recorder_Buffer") .. ": "
-                .. tostring(status.bufferCount) .. "/" .. tostring(status.bufferCapacity),
-                C.text)
-            ctx.y = ctx.y + ctx.lineH
-
-            if status.hasMedia then
-                W.createLabel(ctx.panel, 8, ctx.y,
-                    W.safeGetText("UI_POS_Recorder_Media") .. ": "
-                    .. tostring(status.mediaUsed) .. "/" .. tostring(status.mediaCap),
-                    C.text)
-                ctx.y = ctx.y + ctx.lineH
-            end
-
-            ctx.y = ctx.y + 4
+                W.safeGetText("UI_POS_IntelSummary_NoData"), C.dim)
+            ctx.y = ctx.y + ctx.lineH * 2
+            W.drawFooter(ctx)
+            return
         end
-    end
 
-    -- === WATCHLIST ===
-    if player and POS_Sandbox and POS_Sandbox.getEnableWatchlist
-        and POS_Sandbox.getEnableWatchlist() then
+        -- === MARKET COVERAGE ===
         W.createLabel(ctx.panel, 0, ctx.y,
-            "=== " .. W.safeGetText("UI_POS_IntelSummary_Watchlist") .. " ===", C.textBright)
+            "=== " .. W.safeGetText("UI_POS_IntelSummary_Coverage") .. " ===", C.textBright)
         ctx.y = ctx.y + ctx.lineH
 
-        local alertCount = POS_WatchlistService.countPendingAlerts(player)
+        local coveragePct = totalCategories > 0
+            and math.floor(#summaries / totalCategories * 100 + 0.5) or 0
         W.createLabel(ctx.panel, 8, ctx.y,
-            W.safeGetText("UI_POS_IntelSummary_ActiveAlerts") .. ":       "
-            .. tostring(alertCount),
-            alertCount > 0 and C.warn or C.dim)
-        ctx.y = ctx.y + ctx.lineH + 4
-    end
+            W.safeGetText("UI_POS_IntelSummary_CategoriesTracked") .. ":  "
+            .. tostring(#summaries) .. "/" .. tostring(totalCategories), C.text)
+        ctx.y = ctx.y + ctx.lineH
+        W.createProgressBar(ctx.panel, 8, ctx.y, ctx.pw - 16, coveragePct, C.text)
+        ctx.y = ctx.y + ctx.lineH
 
-    -- Footer
-    W.drawFooter(ctx)
+        -- Freshness summary (compact single line)
+        local fresh, stale, expired = countByFreshness(summaries)
+        local freshnessLine = W.safeGetText("UI_POS_IntelSummary_FreshCount",
+                tostring(POS_Constants.MARKET_FRESH_DAYS)) .. ": " .. tostring(fresh)
+            .. "   " .. W.safeGetText("UI_POS_IntelSummary_StaleCount",
+                tostring(POS_Constants.MARKET_FRESH_DAYS),
+                tostring(POS_Constants.MARKET_STALE_DAYS)) .. ": " .. tostring(stale)
+            .. "   " .. W.safeGetText("UI_POS_IntelSummary_ExpiredCount",
+                tostring(POS_Constants.MARKET_STALE_DAYS)) .. ": " .. tostring(expired)
+        W.createLabel(ctx.panel, 8, ctx.y, freshnessLine, C.text)
+        ctx.y = ctx.y + ctx.lineH + 4
+
+        -- === CONFIDENCE OVERVIEW ===
+        W.createLabel(ctx.panel, 0, ctx.y,
+            "=== " .. W.safeGetText("UI_POS_IntelSummary_Confidence") .. " ===", C.textBright)
+        ctx.y = ctx.y + ctx.lineH
+
+        local high, med, low = countByConfidence(summaries)
+        W.createLabel(ctx.panel, 8, ctx.y,
+            W.safeGetText("UI_POS_IntelSummary_HighConfidence") .. ":     " .. tostring(high),
+            high > 0 and C.success or C.dim)
+        ctx.y = ctx.y + ctx.lineH
+
+        W.createLabel(ctx.panel, 8, ctx.y,
+            W.safeGetText("UI_POS_IntelSummary_MedConfidence") .. ":   " .. tostring(med),
+            med > 0 and C.text or C.dim)
+        ctx.y = ctx.y + ctx.lineH
+
+        W.createLabel(ctx.panel, 8, ctx.y,
+            W.safeGetText("UI_POS_IntelSummary_LowConfidence") .. ":      " .. tostring(low),
+            low > 0 and C.warn or C.dim)
+        ctx.y = ctx.y + ctx.lineH + 4
+
+        -- === CATEGORY TRENDS (compact) ===
+        W.createLabel(ctx.panel, 0, ctx.y,
+            "=== " .. W.safeGetText("UI_POS_IntelSummary_Trends") .. " ===", C.textBright)
+        ctx.y = ctx.y + ctx.lineH
+
+        local rising, stable, falling = 0, 0, 0
+        for _, s in ipairs(summaries) do
+            if s.trendKey == "UI_POS_Market_Trend_Rising" then
+                rising = rising + 1
+            elseif s.trendKey == "UI_POS_Market_Trend_Falling" then
+                falling = falling + 1
+            else
+                stable = stable + 1
+            end
+        end
+
+        local trendLine = W.safeGetText("UI_POS_IntelSummary_TrendRising") .. ": " .. tostring(rising)
+            .. "    " .. W.safeGetText("UI_POS_IntelSummary_TrendStable") .. ": " .. tostring(stable)
+            .. "    " .. W.safeGetText("UI_POS_IntelSummary_TrendFalling") .. ": " .. tostring(falling)
+        W.createLabel(ctx.panel, 8, ctx.y, trendLine, C.text)
+        ctx.y = ctx.y + ctx.lineH + 4
+
+        -- === FIELD NOTES ===
+        W.createLabel(ctx.panel, 0, ctx.y,
+            "=== " .. W.safeGetText("UI_POS_IntelSummary_FieldNotes") .. " ===", C.textBright)
+        ctx.y = ctx.y + ctx.lineH
+
+        local noteOk, noteCount = PhobosLib.safecall(function()
+            return player and POS_MarketIngestion.countNotes(player) or 0
+        end)
+        noteCount = (noteOk and noteCount) or 0
+        W.createLabel(ctx.panel, 8, ctx.y,
+            W.safeGetText("UI_POS_IntelSummary_UnprocessedNotes") .. ":   " .. tostring(noteCount),
+            noteCount > 0 and C.text or C.dim)
+        ctx.y = ctx.y + ctx.lineH + 4
+
+        -- === RECORDER STATUS === (only if equipped)
+        local recOk, recorder = PhobosLib.safecall(function()
+            return player and POS_DataRecorderService.findEquippedRecorder(player)
+        end)
+        recorder = recOk and recorder or nil
+        if recorder then
+            local statOk, status = PhobosLib.safecall(
+                POS_DataRecorderService.getStatus, recorder)
+            status = statOk and status or nil
+            if status then
+                W.createLabel(ctx.panel, 0, ctx.y,
+                    "=== " .. W.safeGetText("UI_POS_IntelSummary_RecorderStatus") .. " ===",
+                    C.textBright)
+                ctx.y = ctx.y + ctx.lineH
+
+                W.createLabel(ctx.panel, 8, ctx.y,
+                    W.safeGetText("UI_POS_IntelSummary_TotalChunks") .. ":  "
+                    .. tostring(status.totalRecorded or 0), C.text)
+                ctx.y = ctx.y + ctx.lineH
+
+                W.createLabel(ctx.panel, 8, ctx.y,
+                    W.safeGetText("UI_POS_Recorder_Buffer") .. ": "
+                    .. tostring(status.bufferCount or 0) .. "/" .. tostring(status.bufferCapacity or 0),
+                    C.text)
+                ctx.y = ctx.y + ctx.lineH
+
+                if status.hasMedia then
+                    W.createLabel(ctx.panel, 8, ctx.y,
+                        W.safeGetText("UI_POS_Recorder_Media") .. ": "
+                        .. tostring(status.mediaUsed or 0) .. "/" .. tostring(status.mediaCap or 0),
+                        C.text)
+                    ctx.y = ctx.y + ctx.lineH
+                end
+
+                ctx.y = ctx.y + 4
+            end
+        end
+
+        -- === WATCHLIST ===
+        local watchOk, watchEnabled = PhobosLib.safecall(function()
+            return POS_Sandbox and POS_Sandbox.getEnableWatchlist
+                and POS_Sandbox.getEnableWatchlist()
+        end)
+        if watchOk and watchEnabled and player then
+            W.createLabel(ctx.panel, 0, ctx.y,
+                "=== " .. W.safeGetText("UI_POS_IntelSummary_Watchlist") .. " ===", C.textBright)
+            ctx.y = ctx.y + ctx.lineH
+
+            local alertOk, alertCount = PhobosLib.safecall(
+                POS_WatchlistService.countPendingAlerts, player)
+            alertCount = (alertOk and alertCount) or 0
+            W.createLabel(ctx.panel, 8, ctx.y,
+                W.safeGetText("UI_POS_IntelSummary_ActiveAlerts") .. ":       "
+                .. tostring(alertCount),
+                alertCount > 0 and C.warn or C.dim)
+            ctx.y = ctx.y + ctx.lineH + 4
+        end
+
+        -- Footer
+        W.drawFooter(ctx)
+    end)
+
+    if not ok then
+        print(_TAG .. " ERROR in screen.create: " .. tostring(err))
+        PhobosLib.debug("POS", _TAG, "screen.create failed: " .. tostring(err))
+        -- Show error on screen if possible
+        local W = POS_TerminalWidgets
+        if W and contentPanel then
+            pcall(function()
+                local C = W.COLOURS
+                W.createLabel(contentPanel, 8, 60,
+                    "ERROR: " .. tostring(err), C.warn or { r=1, g=0.5, b=0, a=1 })
+            end)
+        end
+    end
 end
 
 screen.destroy = POS_TerminalWidgets.defaultDestroy
@@ -258,12 +292,15 @@ function screen.refresh(params)
 end
 
 screen.getContextData = function(_params)
-    local data = {}
-    local summaries = gatherCategorySummaries()
-    table.insert(data, { type = "kv",
-        key = POS_TerminalWidgets.safeGetText("UI_POS_IntelSummary_CategoriesTracked"),
-        value = tostring(#summaries) })
-    return data
+    local ok, data = PhobosLib.safecall(function()
+        local result = {}
+        local summaries = gatherCategorySummaries()
+        table.insert(result, { type = "kv",
+            key = POS_TerminalWidgets.safeGetText("UI_POS_IntelSummary_CategoriesTracked"),
+            value = tostring(#summaries) })
+        return result
+    end)
+    return (ok and data) or {}
 end
 
 ---------------------------------------------------------------
