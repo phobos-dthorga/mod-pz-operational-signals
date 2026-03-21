@@ -1226,6 +1226,93 @@ POS_Constants.SIMULATION_THROUGHPUT_FACTOR         = 0.5
 POS_Constants.SIMULATION_ZONE_DEFAULT_VOLATILITY   = 0.20
 
 ---------------------------------------------------------------
+-- Living Market: Natural Drift Rates (per tick)
+---------------------------------------------------------------
+
+POS_Constants.SIMULATION_PRESSURE_DECAY_RATE       = 0.15
+POS_Constants.SIMULATION_DISRUPTION_DECAY_RATE     = 0.10
+POS_Constants.SIMULATION_STOCK_REPLENISH_RATE      = 0.05
+
+---------------------------------------------------------------
+-- Living Market: Demand Pull (per population tier)
+---------------------------------------------------------------
+
+POS_Constants.SIMULATION_DEMAND_PULL = {
+    sparse = 0.02,
+    medium = 0.04,
+    dense  = 0.07,
+}
+
+--- Essential categories subject to demand pull each tick.
+POS_Constants.SIMULATION_ESSENTIAL_CATEGORIES = {
+    "food", "medicine", "fuel",
+}
+
+---------------------------------------------------------------
+-- Living Market: Wholesaler State Machine Thresholds
+---------------------------------------------------------------
+
+POS_Constants.WHOLESALER_PRESSURE_TIGHT_THRESHOLD       = 0.30
+POS_Constants.WHOLESALER_PRESSURE_STRAINED_THRESHOLD    = 0.60
+POS_Constants.WHOLESALER_DISRUPTION_STRAINED_THRESHOLD  = 0.40
+POS_Constants.WHOLESALER_DISRUPTION_COLLAPSING_THRESHOLD = 0.70
+POS_Constants.WHOLESALER_STOCK_COLLAPSING_THRESHOLD     = 0.15
+POS_Constants.WHOLESALER_STOCK_WITHHOLDING_FLOOR        = 0.50
+
+---------------------------------------------------------------
+-- Living Market: Wholesaler Property Bounds
+---------------------------------------------------------------
+
+POS_Constants.WHOLESALER_STOCK_MIN      = 0.0
+POS_Constants.WHOLESALER_STOCK_MAX      = 1.0
+POS_Constants.WHOLESALER_PRESSURE_MIN   = 0.0
+POS_Constants.WHOLESALER_PRESSURE_MAX   = 1.0
+POS_Constants.WHOLESALER_DISRUPTION_MIN = 0.0
+POS_Constants.WHOLESALER_DISRUPTION_MAX = 1.0
+
+---------------------------------------------------------------
+-- Living Market: Event Effects
+---------------------------------------------------------------
+
+POS_Constants.SIMULATION_EVENT_PROBABILITY_MULT        = 1.0
+POS_Constants.EVENT_STOCK_EFFECT_BULK_ARRIVAL           = 0.20
+POS_Constants.EVENT_STOCK_EFFECT_THEFT_RAID             = -0.15
+POS_Constants.EVENT_STOCK_EFFECT_CONTROLLED_RELEASE     = 0.10
+POS_Constants.EVENT_STOCK_EFFECT_REQUISITION            = -0.10
+POS_Constants.EVENT_DISRUPTION_THEFT_RAID               = 0.25
+POS_Constants.EVENT_DISRUPTION_REQUISITION              = 0.15
+
+---------------------------------------------------------------
+-- Living Market: Downstream Influence
+---------------------------------------------------------------
+
+POS_Constants.WHOLESALER_DOWNSTREAM_DELAY_DAYS = 2
+
+---------------------------------------------------------------
+-- Living Market: Convoy Mechanics
+---------------------------------------------------------------
+
+POS_Constants.CONVOY_OVERDUE_TOLERANCE_DAYS = 1
+
+---------------------------------------------------------------
+-- Living Market: All Commodity Category IDs
+---------------------------------------------------------------
+
+POS_Constants.MARKET_CATEGORIES = {
+    "food", "medicine", "ammunition", "fuel", "tools", "radio", "weapons",
+}
+
+---------------------------------------------------------------
+-- Living Market: Agent Meter Rates (per tick)
+---------------------------------------------------------------
+
+POS_Constants.AGENT_PRESSURE_APPROACH_RATE   = 0.20
+POS_Constants.AGENT_GREED_VOLATILITY_FACTOR  = 0.10
+POS_Constants.AGENT_EXPOSURE_DECAY_RATE      = 0.08
+POS_Constants.AGENT_SURPLUS_APPROACH_RATE    = 0.15
+POS_Constants.AGENT_TRUST_DECAY_RATE         = 0.05
+
+---------------------------------------------------------------
 -- Living Market: World ModData
 ---------------------------------------------------------------
 
