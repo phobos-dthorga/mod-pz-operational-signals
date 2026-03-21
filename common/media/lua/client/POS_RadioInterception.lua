@@ -137,23 +137,26 @@ local function onServerCommand(module, command, args)
         end
 
     elseif command == POS_Constants.CMD_MARKET_SNAPSHOT then
-        -- Server sent market snapshot — update local cache.
-        -- Skip during early init (world age 0) to avoid processing
-        -- stale queued commands before the engine is fully ready.
-        local gt = getGameTime and getGameTime()
-        if gt and gt:getWorldAgeHours() <= 0 then
-            PhobosLib.debug("POS", _TAG, "[RadioInterception] Market snapshot deferred (init)")
-            return
-        end
-        if args and args.data and POS_MarketDatabase then
+        -- SP/authority: data is already in POS_MarketFileStore — skip
+        -- the client cache entirely. Only MP clients need snapshot data.
+        if POS_WorldState and POS_WorldState.isAuthority() then
+            PhobosLib.debug("POS", _TAG, "[RadioInterception] Market snapshot ignored (SP authority)")
+        elseif args and args.data and POS_MarketDatabase then
+            -- MP client: store aggregates only. Observations are too large
+            -- to process during a server command handler without risking
+            -- a JVM crash from bulk table allocation. MP clients access
+            -- observations on-demand via per-screen requests (future).
             for catId, catData in pairs(args.data) do
-                POS_MarketDatabase.updateClientCache(catId, catData)
+                POS_MarketDatabase.updateClientCache(catId, {
+                    observations  = {},
+                    rollingCloses = catData.rollingCloses or {},
+                    aggregate     = catData.aggregate or {},
+                })
             end
+            PhobosLib.debug("POS", _TAG, "[RadioInterception] Market snapshot received (aggregates + closes)")
         end
-        PhobosLib.debug("POS", _TAG, "[RadioInterception] Market snapshot received")
 
         -- Refresh watchlist snapshots now that fresh price data is available.
-        -- Skip during init (frame 0) — player may not be fully constructed yet.
         if getGameTime and getGameTime():getWorldAgeHours() > 0 then
             local snapshotPlayer = getSpecificPlayer(0)
             if snapshotPlayer and POS_WatchlistService then

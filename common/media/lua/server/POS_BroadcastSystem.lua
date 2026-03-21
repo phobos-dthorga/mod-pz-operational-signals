@@ -228,18 +228,19 @@ function POS_BroadcastSystem.onClientCommand(module, command, player, args)
         POS_MarketDatabase.addRecord(record)
 
     elseif command == POS_Constants.CMD_REQUEST_MARKET_SNAPSHOT then
-        -- Client requesting market overview for their local cache
+        -- Client requesting market overview for their local cache.
+        -- Send aggregates + rolling closes only — observations are too
+        -- large to pass through sendServerCommand safely (bulk table
+        -- allocation can crash the JVM). MP clients that need per-item
+        -- observations will request them on-demand per screen (future).
         if player then
             local snapshot = {}
             local world = POS_WorldState and POS_WorldState.getWorld()
-            -- Observations and rolling closes come from file store;
-            -- aggregates are mirrored to ModData by EconomyTick.
             for catId, catData in pairs(POS_MarketFileStore.getAllCategories()) do
                 local agg = (world and world.categories
                     and world.categories[catId]
                     and world.categories[catId].aggregate) or {}
                 snapshot[catId] = {
-                    observations = catData.observations or {},
                     rollingCloses = catData.rollingCloses or {},
                     aggregate = agg,
                 }
