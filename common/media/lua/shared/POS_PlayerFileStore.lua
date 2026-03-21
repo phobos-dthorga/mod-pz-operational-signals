@@ -52,12 +52,26 @@ end
 -- File path helper
 ---------------------------------------------------------------
 
+--- Sanitise a username — delegates to PhobosLib.sanitiseUsername.
+--- Kept as a local shorthand for readability within this module.
+local function sanitiseUsername(raw)
+    return PhobosLib.sanitiseUsername(raw, "singleplayer")
+end
+
+--- Public accessor for sanitiseUsername.
+--- Other POSnet modules (e.g. POS_InvestmentResolver) that use usernames as
+--- ModData keys or data identifiers MUST use this to stay consistent
+--- with the file store's cache keys.
+---@param raw string Raw username from player:getUsername()
+---@return string Sanitised username
+function POS_PlayerFileStore.sanitiseUsername(raw)
+    return sanitiseUsername(raw)
+end
+
 local function getFilePath(player)
     if not player then return nil end
     local username = player:getUsername()
-    if not username or username == "" then
-        username = "singleplayer"
-    end
+    username = sanitiseUsername(username)
     return POS_Constants.PLAYER_FILE_PREFIX .. username .. POS_Constants.PLAYER_FILE_EXT
 end
 
@@ -273,10 +287,7 @@ end
 function POS_PlayerFileStore.load(player)
     if not player then return createEmpty() end
 
-    local username = player:getUsername()
-    if not username or username == "" then
-        username = "singleplayer"
-    end
+    local username = sanitiseUsername(player:getUsername())
 
     -- Return cached data if already loaded this session
     if cache[username] then
@@ -311,10 +322,7 @@ end
 function POS_PlayerFileStore.save(player)
     if not player then return end
 
-    local username = player:getUsername()
-    if not username or username == "" then
-        username = "singleplayer"
-    end
+    local username = sanitiseUsername(player:getUsername())
 
     local data = cache[username]
     if not data then return end

@@ -32,6 +32,7 @@
 
 require "PhobosLib"
 require "POS_Constants"
+require "POS_PlayerFileStore"
 
 POS_InvestmentResolver = {}
 
@@ -142,7 +143,7 @@ function POS_InvestmentResolver.resolveMatured()
             if players then
                 for j = 0, players:size() - 1 do
                     local p = players:get(j)
-                    if p and p:getUsername() == entry.username then
+                    if p and POS_PlayerFileStore.sanitiseUsername(p:getUsername()) == entry.username then
                         sendServerCommand(p, POS_Constants.CMD_MODULE, POS_Constants.CMD_INVESTMENT_RESOLVED, {
                             investmentId = entry.investmentId,
                             status = status,
@@ -185,8 +186,7 @@ end
 ---@param player IsoPlayer
 function POS_InvestmentResolver.deliverPendingPayouts(player)
     if not player then return end
-    local username = player:getUsername()
-    if not username then return end
+    local username = POS_PlayerFileStore.sanitiseUsername(player:getUsername())
 
     local key = PAYOUT_KEY_PREFIX .. username
     local gmd = ModData.getOrCreate(key)
@@ -215,8 +215,7 @@ end
 ---@param args table { investmentId, principalAmount, returnAmount, maturityDay, actualRisk }
 function POS_InvestmentResolver.onPlayerInvested(player, args)
     if not player or not args then return end
-    local username = player:getUsername()
-    if not username then return end
+    local username = POS_PlayerFileStore.sanitiseUsername(player:getUsername())
 
     POS_InvestmentResolver.registerInvestment(
         username,
