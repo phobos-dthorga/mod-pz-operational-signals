@@ -44,26 +44,21 @@ screen.shouldShow = function(_player, _ctx)
 end
 
 function screen.create(contentPanel, _params, _terminal)
-    PhobosLib.debug("POS", _TAG, "[Markets] create() START")
     local W = POS_TerminalWidgets
     local C = W.COLOURS
     local ctx = W.initLayout(contentPanel)
 
     -- Header
     W.drawHeader(ctx, "UI_POS_Markets_Title")
-    PhobosLib.debug("POS", _TAG, "[Markets] header drawn")
 
     -- Sub-menu options (built dynamically from registry)
     local terminal = POS_TerminalUI and POS_TerminalUI.instance
     local band = terminal and terminal.band or "operations"
     local menuCtx = { band = band, terminal = terminal }
     local player = getSpecificPlayer(0)
-    PhobosLib.debug("POS", _TAG, "[Markets] building menu entries...")
     local entries = POS_MenuBuilder.buildMenu({"pos.markets"}, player, menuCtx)
-    PhobosLib.debug("POS", _TAG, "[Markets] got " .. tostring(#entries) .. " menu entries")
 
     for i, entry in ipairs(entries) do
-        PhobosLib.debug("POS", _TAG, "[Markets] entry " .. i .. ": " .. tostring(entry.def and entry.def.id))
         local label = "[" .. i .. "] " .. W.safeGetText(entry.def.titleKey)
 
         if entry.enabled then
@@ -80,16 +75,13 @@ function screen.create(contentPanel, _params, _terminal)
 
         ctx.y = ctx.y + ctx.btnH + 4
     end
-    PhobosLib.debug("POS", _TAG, "[Markets] menu entries rendered")
 
     -- Upload Field Notes action button
     ctx.y = ctx.y + 4
     W.createSeparator(ctx.panel, 0, ctx.y, 40, "-")
     ctx.y = ctx.y + ctx.lineH + 4
 
-    PhobosLib.debug("POS", _TAG, "[Markets] counting notes...")
     local noteCount = POS_MarketIngestion.countNotes(player)
-    PhobosLib.debug("POS", _TAG, "[Markets] noteCount=" .. tostring(noteCount))
     if noteCount > 0 then
         local uploadLabel = W.safeGetText("UI_POS_Market_UploadNotes")
             .. " (" .. noteCount .. ")"
@@ -142,13 +134,10 @@ end
 screen.destroy = POS_TerminalWidgets.defaultDestroy
 
 function screen.refresh(params)
-    PhobosLib.debug("POS", _TAG, "[Markets] refresh() called")
     POS_TerminalWidgets.dynamicRefresh(screen, params)
-    PhobosLib.debug("POS", _TAG, "[Markets] refresh() done")
 end
 
 screen.getContextData = function(_params)
-    PhobosLib.debug("POS", _TAG, "[Markets] getContextData() called")
     local data = {}
     local player = getSpecificPlayer(0)
     local noteCount = POS_MarketIngestion.countNotes(player)
@@ -159,15 +148,12 @@ screen.getContextData = function(_params)
     end
     if player and POS_Sandbox and POS_Sandbox.getEnableWatchlist
         and POS_Sandbox.getEnableWatchlist() then
-        PhobosLib.debug("POS", _TAG, "[Markets] checking watchlist alerts...")
         local alertCount = POS_WatchlistService.countPendingAlerts(player)
-        PhobosLib.debug("POS", _TAG, "[Markets] alertCount=" .. tostring(alertCount))
         if alertCount > 0 then
             table.insert(data, { type = "kv", key = "UI_POS_Market_AlertCount",
                 value = tostring(alertCount) })
         end
     end
-    PhobosLib.debug("POS", _TAG, "[Markets] getContextData() done")
     return data
 end
 
