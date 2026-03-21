@@ -145,10 +145,13 @@ local function onServerCommand(module, command, args)
         end
         PhobosLib.debug("POS", _TAG, "[RadioInterception] Market snapshot received")
 
-        -- Refresh watchlist snapshots now that fresh price data is available
-        local snapshotPlayer = getSpecificPlayer(0)
-        if snapshotPlayer and POS_WatchlistService then
-            PhobosLib.safecall(POS_WatchlistService.refresh, snapshotPlayer)
+        -- Refresh watchlist snapshots now that fresh price data is available.
+        -- Skip during init (frame 0) — player may not be fully constructed yet.
+        if getGameTime and getGameTime():getWorldAgeHours() > 0 then
+            local snapshotPlayer = getSpecificPlayer(0)
+            if snapshotPlayer and POS_WatchlistService then
+                PhobosLib.safecall(POS_WatchlistService.refresh, snapshotPlayer)
+            end
         end
 
     elseif command == POS_Constants.CMD_ECONOMY_TICK_COMPLETE then
