@@ -247,21 +247,7 @@ local function onDeferredPayoutRequest()
     end
 end
 
-local function warmPlayerFileStore()
-    -- Pre-warm the player file store cache so that watchlist/alerts
-    -- screens never trigger getFileReader during a UI render frame
-    -- (§27.1 deferred init — file I/O crashes the JVM during OnGameStart
-    -- and during render frames; EveryOneMinute is the first safe tick)
-    local player = getSpecificPlayer(0)
-    if player and POS_PlayerFileStore then
-        POS_PlayerFileStore.load(player)
-        PhobosLib.debug("POS", _TAG, "Player file store cache warmed")
-    end
-    Events.EveryOneMinute.Remove(warmPlayerFileStore)
-end
-
 Events.OnGameStart.Add(function()
     POS_InvestmentLog.init()
     Events.EveryOneMinute.Add(onDeferredPayoutRequest)
-    Events.EveryOneMinute.Add(warmPlayerFileStore)
 end)
