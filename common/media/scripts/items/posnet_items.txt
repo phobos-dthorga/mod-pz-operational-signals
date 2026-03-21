@@ -5,7 +5,7 @@ module PhobosOperationalSignals {
         DisplayName = Portable Computer,
         ItemType = base:normal,
         Weight = 10.0,
-        Icon = Item_POS_PortableComputer,
+        Icon = POS_PortableComputer,
         Tooltip = Tooltip_POS_PortableComputer,
         ConditionMax = 100,
         Tags = Electronic,
@@ -16,7 +16,7 @@ module PhobosOperationalSignals {
         DisplayName = Recon Photograph,
         ItemType = base:normal,
         Weight = 0.05,
-        Icon = Item_POS_ReconPhotograph,
+        Icon = POS_ReconPhotograph,
         Tooltip = Tooltip_POS_ReconPhotograph,
     }
 
@@ -42,7 +42,7 @@ module PhobosOperationalSignals {
         CanBeWrite = true,
         PageToWrite = 1,
         Weight = 0.05,
-        Icon = Item_POS_RawMarketNote,
+        Icon = POS_RawMarketNote,
         Tooltip = Tooltip_POS_RawMarketNote,
         Tags = POS_RawIntel,
         StaticModel = SheetOfPaper,
@@ -68,7 +68,7 @@ module PhobosOperationalSignals {
         DisplayName = Recon Camcorder,
         ItemType = base:normal,
         Weight = 1.5,
-        Icon = Item_POS_ReconCamcorder,
+        Icon = POS_ReconCamcorder,
         Tooltip = Tooltip_POS_ReconCamcorder,
         ConditionMax = 100,
         Tags = Electronic,
@@ -79,7 +79,7 @@ module PhobosOperationalSignals {
         DisplayName = Field Survey Logger,
         ItemType = base:normal,
         Weight = 0.8,
-        Icon = Item_POS_FieldSurveyLogger,
+        Icon = POS_FieldSurveyLogger,
         Tooltip = Tooltip_POS_FieldSurveyLogger,
         ConditionMax = 100,
         Tags = Electronic,
@@ -90,7 +90,7 @@ module PhobosOperationalSignals {
         DisplayName = Data Calculator,
         ItemType = base:normal,
         Weight = 0.3,
-        Icon = Item_POS_DataCalculator,
+        Icon = POS_DataCalculator,
         Tooltip = Tooltip_POS_DataCalculator,
         ConditionMax = 50,
         Tags = Electronic,
@@ -101,7 +101,7 @@ module PhobosOperationalSignals {
         DisplayName = Blank VHS-C Tape,
         ItemType = base:normal,
         Weight = 0.1,
-        Icon = Item_POS_BlankVHSCTape,
+        Icon = POS_BlankVHSCTape,
         Tooltip = Tooltip_POS_BlankVHSCTape,
     }
 
@@ -110,7 +110,7 @@ module PhobosOperationalSignals {
         DisplayName = Recorded Recon Tape,
         ItemType = base:normal,
         Weight = 0.1,
-        Icon = Item_POS_RecordedReconTape,
+        Icon = POS_RecordedReconTape,
         Tooltip = Tooltip_POS_RecordedReconTape,
     }
 
@@ -119,7 +119,7 @@ module PhobosOperationalSignals {
         DisplayName = Worn VHS Tape,
         ItemType = base:normal,
         Weight = 0.1,
-        Icon = Item_POS_WornVHSTape,
+        Icon = POS_WornVHSTape,
         Tooltip = Tooltip_POS_WornVHSTape,
     }
 
@@ -128,7 +128,7 @@ module PhobosOperationalSignals {
         DisplayName = Damaged VHS Tape,
         ItemType = base:normal,
         Weight = 0.1,
-        Icon = Item_POS_DamagedVHSTape,
+        Icon = POS_DamagedVHSTape,
         Tooltip = Tooltip_POS_DamagedVHSTape,
     }
 
@@ -137,7 +137,7 @@ module PhobosOperationalSignals {
         DisplayName = Magnetic Tape Scrap,
         ItemType = base:normal,
         Weight = 0.05,
-        Icon = Item_POS_MagneticTapeScrap,
+        Icon = POS_MagneticTapeScrap,
         Tooltip = Tooltip_POS_MagneticTapeScrap,
     }
 
@@ -146,7 +146,7 @@ module PhobosOperationalSignals {
         DisplayName = Refurbished VHS-C Tape,
         ItemType = base:normal,
         Weight = 0.1,
-        Icon = Item_POS_RefurbishedVHSCTape,
+        Icon = POS_RefurbishedVHSCTape,
         Tooltip = Tooltip_POS_RefurbishedVHSCTape,
     }
 
@@ -155,7 +155,7 @@ module PhobosOperationalSignals {
         DisplayName = Spliced Recon Tape,
         ItemType = base:normal,
         Weight = 0.1,
-        Icon = Item_POS_SplicedReconTape,
+        Icon = POS_SplicedReconTape,
         Tooltip = Tooltip_POS_SplicedReconTape,
     }
 
@@ -164,7 +164,7 @@ module PhobosOperationalSignals {
         DisplayName = Improvised Recon Tape,
         ItemType = base:normal,
         Weight = 0.1,
-        Icon = Item_POS_ImprovisedReconTape,
+        Icon = POS_ImprovisedReconTape,
         Tooltip = Tooltip_POS_ImprovisedReconTape,
     }
 
@@ -173,7 +173,7 @@ module PhobosOperationalSignals {
         DisplayName = Data-Recorder,
         ItemType = base:normal,
         Weight = 1.2,
-        Icon = Item_POS_DataRecorder,
+        Icon = POS_DataRecorder,
         Tooltip = Tooltip_POS_DataRecorder,
         ConditionMax = 100,
         Tags = Electronic,
@@ -184,7 +184,7 @@ module PhobosOperationalSignals {
         DisplayName = Microcassette,
         ItemType = base:normal,
         Weight = 0.05,
-        Icon = Item_POS_Microcassette,
+        Icon = POS_Microcassette,
         Tooltip = Tooltip_POS_Microcassette,
     }
 
@@ -193,7 +193,7 @@ module PhobosOperationalSignals {
         DisplayName = Recorded Microcassette,
         ItemType = base:normal,
         Weight = 0.05,
-        Icon = Item_POS_RecordedMicrocassette,
+        Icon = POS_RecordedMicrocassette,
         Tooltip = Tooltip_POS_RecordedMicrocassette,
     }
 
@@ -202,7 +202,7 @@ module PhobosOperationalSignals {
         DisplayName = Rewound Microcassette,
         ItemType = base:normal,
         Weight = 0.05,
-        Icon = Item_POS_RewoundMicrocassette,
+        Icon = POS_RewoundMicrocassette,
         Tooltip = Tooltip_POS_RewoundMicrocassette,
     }
 
@@ -211,7 +211,7 @@ module PhobosOperationalSignals {
         DisplayName = Spent Microcassette,
         ItemType = base:normal,
         Weight = 0.05,
-        Icon = Item_POS_SpentMicrocassette,
+        Icon = POS_SpentMicrocassette,
         Tooltip = Tooltip_POS_SpentMicrocassette,
     }
 
@@ -220,7 +220,7 @@ module PhobosOperationalSignals {
         DisplayName = Blank Floppy Disk,
         ItemType = base:normal,
         Weight = 0.05,
-        Icon = Item_POS_BlankFloppyDisk,
+        Icon = POS_BlankFloppyDisk,
         Tooltip = Tooltip_POS_BlankFloppyDisk,
     }
 
@@ -229,7 +229,7 @@ module PhobosOperationalSignals {
         DisplayName = Recorded Floppy Disk,
         ItemType = base:normal,
         Weight = 0.05,
-        Icon = Item_POS_RecordedFloppyDisk,
+        Icon = POS_RecordedFloppyDisk,
         Tooltip = Tooltip_POS_RecordedFloppyDisk,
     }
 
@@ -238,7 +238,7 @@ module PhobosOperationalSignals {
         DisplayName = Worn Floppy Disk,
         ItemType = base:normal,
         Weight = 0.05,
-        Icon = Item_POS_WornFloppyDisk,
+        Icon = POS_WornFloppyDisk,
         Tooltip = Tooltip_POS_WornFloppyDisk,
     }
 
@@ -247,7 +247,7 @@ module PhobosOperationalSignals {
         DisplayName = Corrupt Floppy Disk,
         ItemType = base:normal,
         Weight = 0.05,
-        Icon = Item_POS_CorruptFloppyDisk,
+        Icon = POS_CorruptFloppyDisk,
         Tooltip = Tooltip_POS_CorruptFloppyDisk,
     }
 
@@ -261,7 +261,7 @@ module PhobosOperationalSignals {
         CanBeWrite = true,
         PageToWrite = 1,
         Weight = 0.1,
-        Icon = Item_POS_CompiledSiteSurvey,
+        Icon = POS_CompiledSiteSurvey,
         Tags = POS_Intelligence,
         StaticModel = SheetOfPaper,
         WorldStaticModel = SheetOfPaper,
@@ -275,7 +275,7 @@ module PhobosOperationalSignals {
         CanBeWrite = true,
         PageToWrite = 1,
         Weight = 0.1,
-        Icon = Item_POS_VerifiedIntelReport,
+        Icon = POS_VerifiedIntelReport,
         Tags = POS_Intelligence,
         StaticModel = SheetOfPaper,
         WorldStaticModel = SheetOfPaper,
@@ -289,7 +289,7 @@ module PhobosOperationalSignals {
         CanBeWrite = true,
         PageToWrite = 1,
         Weight = 0.15,
-        Icon = Item_POS_MarketBulletin,
+        Icon = POS_MarketBulletin,
         Tags = POS_Intelligence,
         StaticModel = SheetOfPaper,
         WorldStaticModel = SheetOfPaper,
@@ -302,7 +302,7 @@ module PhobosOperationalSignals {
         DisplayName = Amateur Radio Monitoring,
         ItemType = base:literature,
         Weight = 0.5,
-        Icon = Item_POS_SIGINTBook1,
+        Icon = POS_SIGINTBook1,
         Tags = POS_SkillBook,
         SkillTrained = SIGINT,
         LvlSkillTrained = 1,
@@ -315,7 +315,7 @@ module PhobosOperationalSignals {
         DisplayName = Signal Interpretation Basics,
         ItemType = base:literature,
         Weight = 0.5,
-        Icon = Item_POS_SIGINTBook2,
+        Icon = POS_SIGINTBook2,
         Tags = POS_SkillBook,
         SkillTrained = SIGINT,
         LvlSkillTrained = 3,
@@ -328,7 +328,7 @@ module PhobosOperationalSignals {
         DisplayName = Cold War Intelligence Techniques,
         ItemType = base:literature,
         Weight = 0.5,
-        Icon = Item_POS_SIGINTBook3,
+        Icon = POS_SIGINTBook3,
         Tags = POS_SkillBook,
         SkillTrained = SIGINT,
         LvlSkillTrained = 5,
@@ -341,7 +341,7 @@ module PhobosOperationalSignals {
         DisplayName = Field Analysis & Recon Doctrine,
         ItemType = base:literature,
         Weight = 0.5,
-        Icon = Item_POS_SIGINTBook4,
+        Icon = POS_SIGINTBook4,
         Tags = POS_SkillBook,
         SkillTrained = SIGINT,
         LvlSkillTrained = 7,
@@ -354,7 +354,7 @@ module PhobosOperationalSignals {
         DisplayName = Advanced Signal Correlation,
         ItemType = base:literature,
         Weight = 0.5,
-        Icon = Item_POS_SIGINTBook5,
+        Icon = POS_SIGINTBook5,
         Tags = POS_SkillBook,
         SkillTrained = SIGINT,
         LvlSkillTrained = 9,
@@ -369,7 +369,7 @@ module PhobosOperationalSignals {
         DisplayName = Fragmentary Signal,
         ItemType = base:normal,
         Weight = 0.05,
-        Icon = Item_POS_IntelFragmentary,
+        Icon = POS_IntelFragmentary,
         Tooltip = Tooltip_POS_IntelFragment,
         Tags = POS_IntelFragment;POS_RawIntel,
     }
@@ -379,7 +379,7 @@ module PhobosOperationalSignals {
         DisplayName = Unverified Lead,
         ItemType = base:normal,
         Weight = 0.05,
-        Icon = Item_POS_IntelUnverified,
+        Icon = POS_IntelUnverified,
         Tooltip = Tooltip_POS_IntelFragment,
         Tags = POS_IntelFragment;POS_RawIntel,
     }
@@ -389,7 +389,7 @@ module PhobosOperationalSignals {
         DisplayName = Correlated Pattern,
         ItemType = base:normal,
         Weight = 0.05,
-        Icon = Item_POS_IntelCorrelated,
+        Icon = POS_IntelCorrelated,
         Tooltip = Tooltip_POS_IntelFragment,
         Tags = POS_IntelFragment;POS_CameraInput,
     }
@@ -399,7 +399,7 @@ module PhobosOperationalSignals {
         DisplayName = Confirmed Insight,
         ItemType = base:normal,
         Weight = 0.05,
-        Icon = Item_POS_IntelConfirmed,
+        Icon = POS_IntelConfirmed,
         Tooltip = Tooltip_POS_IntelFragment,
         Tags = POS_IntelFragment;POS_CameraInput,
     }
