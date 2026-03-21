@@ -655,6 +655,8 @@ POS_Constants.WRITING_DAMAGE_VARIANCE_OFFSET = 2
 POS_Constants.MODDATA_OPERATIONS    = "POS_Operations"
 POS_Constants.MODDATA_OPPORTUNITIES = "POS_Opportunities"
 POS_Constants.MODDATA_INVESTMENTS   = "POS_Investments"
+POS_Constants.MODDATA_WATCHLIST     = "POS_Watchlist"
+POS_Constants.MODDATA_ALERTS        = "POS_Alerts"
 
 ---------------------------------------------------------------
 -- Operations display

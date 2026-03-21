@@ -18,14 +18,12 @@
 -- POS_PlayerState.lua
 -- Player-bound state accessor for POSnet.
 --
--- Scalar state (rep, cash, intel access, UI prefs) remains in
--- player modData. Growth-prone arrays (watchlist, alerts,
--- orders, holdings) are delegated to POS_PlayerFileStore
--- which persists them to Zomboid/Lua/POSNET/ flat files.
+-- All player data lives in player modData (engine-managed,
+-- auto-persisted on save). No custom file I/O.
 ---------------------------------------------------------------
 
+require "PhobosLib"
 require "POS_Constants"
-require "POS_PlayerFileStore"
 
 POS_PlayerState = {}
 
@@ -54,7 +52,7 @@ end
 ---------------------------------------------------------------
 
 --- Get or create the POSnet player state table (scalar fields).
---- For watchlist/alerts/orders/holdings, use the dedicated getters.
+--- For watchlist/alerts, use the dedicated getters.
 --- @param player IsoPlayer
 --- @return table The POSNET player state sub-table
 function POS_PlayerState.get(player)
@@ -91,30 +89,34 @@ function POS_PlayerState.modifyCash(player, amount)
 end
 
 ---------------------------------------------------------------
--- Alerts (delegated to file store)
+-- Alerts (player modData)
 ---------------------------------------------------------------
 
 --- Add an alert to the player's alert queue (capped).
 function POS_PlayerState.addAlert(player, alert)
-    local alerts = POS_PlayerFileStore.getAlerts(player)
+    local alerts = PhobosLib.getPlayerModDataTable(player, POS_Constants.MODDATA_ALERTS)
+    if not alerts then return end
     local maxAlerts = POS_Sandbox and POS_Sandbox.getMaxPlayerAlerts
         and POS_Sandbox.getMaxPlayerAlerts() or POS_Constants.MAX_PLAYER_ALERTS
     PhobosLib.pushRolling(alerts, alert, maxAlerts)
-    POS_PlayerFileStore.save(player)
 end
 
 --- Get player alerts.
+--- @param player IsoPlayer
+--- @return table Array of alert entries
 function POS_PlayerState.getAlerts(player)
-    return POS_PlayerFileStore.getAlerts(player)
+    return PhobosLib.getPlayerModDataTable(player, POS_Constants.MODDATA_ALERTS) or {}
 end
 
 ---------------------------------------------------------------
--- Watchlist (delegated to file store)
+-- Watchlist (player modData)
 ---------------------------------------------------------------
 
 --- Get player watchlist.
+--- @param player IsoPlayer
+--- @return table Array of watchlist entries
 function POS_PlayerState.getWatchlist(player)
-    return POS_PlayerFileStore.getWatchlist(player)
+    return PhobosLib.getPlayerModDataTable(player, POS_Constants.MODDATA_WATCHLIST) or {}
 end
 
 --- Check if a category is on the player's watchlist.
@@ -122,7 +124,7 @@ end
 --- @param categoryId string
 --- @return boolean
 function POS_PlayerState.isWatching(player, categoryId)
-    local wl = POS_PlayerFileStore.getWatchlist(player)
+    local wl = POS_PlayerState.getWatchlist(player)
     for _, entry in ipairs(wl) do
         if entry.categoryId == categoryId then return true end
     end
@@ -135,7 +137,8 @@ end
 --- @return boolean true if added, false if already watching or at max
 function POS_PlayerState.addToWatchlist(player, categoryId)
     if POS_PlayerState.isWatching(player, categoryId) then return false end
-    local wl = POS_PlayerFileStore.getWatchlist(player)
+    local wl = PhobosLib.getPlayerModDataTable(player, POS_Constants.MODDATA_WATCHLIST)
+    if not wl then return false end
     local maxEntries = POS_Constants.WATCHLIST_MAX_ENTRIES
     if #wl >= maxEntries then return false end
     local gt = getGameTime and getGameTime()
@@ -146,7 +149,6 @@ function POS_PlayerState.addToWatchlist(player, categoryId)
         lastSnapshotAvg = nil,
         lastSnapshotDay = 0,
     })
-    POS_PlayerFileStore.save(player)
     return true
 end
 
@@ -155,11 +157,11 @@ end
 --- @param categoryId string
 --- @return boolean true if removed
 function POS_PlayerState.removeFromWatchlist(player, categoryId)
-    local wl = POS_PlayerFileStore.getWatchlist(player)
+    local wl = PhobosLib.getPlayerModDataTable(player, POS_Constants.MODDATA_WATCHLIST)
+    if not wl then return false end
     for i, entry in ipairs(wl) do
         if entry.categoryId == categoryId then
             table.remove(wl, i)
-            POS_PlayerFileStore.save(player)
             return true
         end
     end

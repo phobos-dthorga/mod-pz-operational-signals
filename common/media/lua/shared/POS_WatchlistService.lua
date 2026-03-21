@@ -107,14 +107,12 @@ function POS_WatchlistService.fireNotifications(player, alerts)
 end
 
 --- Convenience: check and fire in one call.
---- Always flushes snapshot updates to the player file store so that
---- in-memory mutations survive game saves and unexpected exits.
+--- Refresh watchlist alerts. Snapshot mutations persist automatically
+--- via player modData (engine-managed, no manual save needed).
 --- @param player IsoPlayer
 function POS_WatchlistService.refresh(player)
     local alerts = POS_WatchlistService.checkForAlerts(player)
     POS_WatchlistService.fireNotifications(player, alerts)
-    -- Flush snapshot mutations even when no alerts fired
-    POS_PlayerFileStore.save(player)
 end
 
 --- Count pending alerts for a player (used by Markets hub badge).

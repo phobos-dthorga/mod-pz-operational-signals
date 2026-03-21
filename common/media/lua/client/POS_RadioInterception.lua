@@ -28,7 +28,6 @@ require "POS_Constants"
 require "POS_MarketDatabase"
 require "POS_WorldState"
 require "POS_WatchlistService"
-require "POS_PlayerFileStore"
 
 POS_RadioInterception = {}
 
@@ -225,20 +224,10 @@ function POS_RadioInterception.isChannelRegistered()
     return channelRegistered
 end
 
---- Flush player file store on game save so snapshot data survives exits.
-local function onSaveGame()
-    local player = getSpecificPlayer(0)
-    if player and POS_PlayerFileStore then
-        POS_PlayerFileStore.save(player)
-        PhobosLib.debug("POS", _TAG, "Player file store flushed on save")
-    end
-end
-
 --- Initialise radio interception hooks.
 function POS_RadioInterception.init()
     POS_RadioInterception.registerChannels()
     Events.OnServerCommand.Add(onServerCommand)
-    Events.OnPostSave.Add(onSaveGame)
 
     -- Initial market snapshot request deferred to first EveryOneMinute tick.
     -- Requesting at frame 0 triggers synchronous data exchange during init
@@ -264,19 +253,4 @@ end
 Events.OnGameStart.Add(function()
     POS_RadioInterception.init()
     Events.EveryOneMinute.Add(onDeferredSnapshotRequest)
-
-    -- Pre-warm the player file store cache so that watchlist/alerts
-    -- screens never trigger getFileReader during a UI render frame.
-    local player = getSpecificPlayer(0)
-    if player then
-        PhobosLib.debug("POS", _TAG, "About to warm player file store cache...")
-        local ok, err = PhobosLib.safecall(POS_PlayerFileStore.load, player)
-        if ok then
-            PhobosLib.debug("POS", _TAG, "Player file store cache warmed")
-        else
-            PhobosLib.debug("POS", _TAG, "Player file store warm FAILED: " .. tostring(err))
-        end
-    else
-        PhobosLib.debug("POS", _TAG, "No player at OnGameStart — skipping file store warm")
-    end
 end)
