@@ -67,10 +67,10 @@ local function refreshSidePanels()
     local terminal = POS_TerminalUI and POS_TerminalUI.instance
     if not terminal then return end
     if terminal.navPanel and terminal.navPanel:isVisible() and POS_NavPanel then
-        pcall(POS_NavPanel.render, terminal.navPanel, terminal)
+        PhobosLib.safecall(POS_NavPanel.render, terminal.navPanel, terminal)
     end
     if terminal.contextPanel and terminal.contextPanel:isVisible() and POS_ContextPanel then
-        pcall(POS_ContextPanel.render, terminal.contextPanel, terminal)
+        PhobosLib.safecall(POS_ContextPanel.render, terminal.contextPanel, terminal)
     end
 end
 
@@ -92,8 +92,8 @@ end
 local function destroyCurrentScreen()
     local screen = POS_ScreenManager.screens[POS_ScreenManager.currentScreen]
     if not screen then return end
-    if screen.destroy then pcall(screen.destroy) end
-    if screen.onExit then pcall(screen.onExit) end
+    if screen.destroy then PhobosLib.safecall(screen.destroy) end
+    if screen.onExit then PhobosLib.safecall(screen.onExit) end
 end
 
 --- Create a screen's widgets in the content panel and call onEnter hook.
@@ -104,8 +104,8 @@ local function createWidgetScreen(screenId, params)
     if not screen or not screen.create then return end
     local terminal = POS_TerminalUI and POS_TerminalUI.instance
     if not terminal or not terminal.contentPanel then return end
-    pcall(screen.create, terminal.contentPanel, params, terminal)
-    if screen.onEnter then pcall(screen.onEnter) end
+    PhobosLib.safecall(screen.create, terminal.contentPanel, params, terminal)
+    if screen.onEnter then PhobosLib.safecall(screen.onEnter) end
 end
 
 ---------------------------------------------------------------
@@ -153,7 +153,7 @@ function POS_ScreenManager.navigateTo(screenId, params)
         end
         -- Check canOpen guard
         if def.canOpen then
-            local pcallOk, canOpen, reason = pcall(def.canOpen, getPlayer(), ctx)
+            local pcallOk, canOpen, reason = PhobosLib.safecall(def.canOpen, getPlayer(), ctx)
             if pcallOk and canOpen == false then
                 PhobosLib.debug("POS", _TAG,
                     "navigateTo blocked by canOpen: " .. tostring(reason))
@@ -257,7 +257,7 @@ function POS_ScreenManager.refreshIfNeeded(_terminal)
 
     local screen = POS_ScreenManager.screens[POS_ScreenManager.currentScreen]
     if screen and screen.refresh then
-        pcall(screen.refresh, POS_ScreenManager.currentParams)
+        PhobosLib.safecall(screen.refresh, POS_ScreenManager.currentParams)
     end
     POS_ScreenManager.dirty = false
 

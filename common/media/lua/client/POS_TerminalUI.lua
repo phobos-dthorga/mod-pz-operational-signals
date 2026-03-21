@@ -484,7 +484,7 @@ function POS_TerminalUI:close()
     -- Destroy current screen widgets before closing
     local screen = POS_ScreenManager.screens[POS_ScreenManager.currentScreen]
     if screen and screen.destroy then
-        pcall(screen.destroy)
+        PhobosLib.safecall(screen.destroy)
     end
     ISCollapsableWindow.close(self)
     POS_TerminalUI.instance = nil

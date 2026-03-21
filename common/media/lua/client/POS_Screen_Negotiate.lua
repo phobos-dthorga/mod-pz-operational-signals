@@ -49,13 +49,13 @@ function screen.create(contentPanel, params, _terminal)
 
     local opId = params and params.operationId
     if not opId then
-        W.createLabel(ctx.panel, 0, ctx.y, "ERROR: No operation specified.", C.error)
+        W.createLabel(ctx.panel, 0, ctx.y, W.safeGetText("UI_POS_Error_NoOperation"), C.error)
         return
     end
 
     local op = POS_OperationLog.get(opId)
     if not op then
-        W.createLabel(ctx.panel, 0, ctx.y, "ERROR: Operation not found.", C.error)
+        W.createLabel(ctx.panel, 0, ctx.y, W.safeGetText("UI_POS_Error_OperationNotFound"), C.error)
         return
     end
 

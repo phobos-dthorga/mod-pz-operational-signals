@@ -115,7 +115,7 @@ function screen.create(contentPanel, _params, terminal)
             if entry.reason then
                 disabledLabel = disabledLabel .. "  (" .. W.safeGetText(entry.reason) .. ")"
             else
-                disabledLabel = disabledLabel .. "  (coming soon)"
+                disabledLabel = disabledLabel .. "  " .. W.safeGetText("UI_POS_ComingSoon")
             end
             W.createDisabledButton(ctx.panel, ctx.btnX, ctx.y, ctx.btnW, ctx.btnH, disabledLabel)
         end

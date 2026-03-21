@@ -54,6 +54,14 @@ function screen.create(contentPanel, params, _terminal)
     end
 
     local summary = POS_MarketService.getCommoditySummary(categoryId)
+    if not summary then
+        W.drawHeader(ctx, "UI_POS_Market_CommodityDetail")
+        W.createLabel(ctx.panel, 8, ctx.y,
+            W.safeGetText("UI_POS_Market_NoData"), C.dim)
+        ctx.y = ctx.y + ctx.lineH
+        W.drawFooter(ctx)
+        return
+    end
 
     -- Header
     W.drawHeader(ctx, summary.labelKey)

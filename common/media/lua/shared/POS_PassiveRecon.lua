@@ -72,7 +72,7 @@ local function getRadioTier(item)
             local parent = dd.getParent and dd:getParent()
             if parent then
                 local sq = parent.getSquare and parent:getSquare()
-                if sq and sq:haveElectricity() then hasPower = true end
+                if sq and PhobosLib.hasPower(sq) then hasPower = true end
             end
         end)
     end

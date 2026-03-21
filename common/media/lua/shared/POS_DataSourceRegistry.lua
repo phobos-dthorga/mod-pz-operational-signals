@@ -79,7 +79,7 @@ function POS_DataSourceRegistry.getAvailableSources(player)
     if not player then return {} end
     local result = {}
     for _, src in pairs(sources) do
-        local ok, canRec = pcall(src.canRecord, player, nil)
+        local ok, canRec = PhobosLib.safecall(src.canRecord, player, nil)
         if ok and canRec then
             result[#result + 1] = src
         end
@@ -93,7 +93,7 @@ function POS_DataSourceRegistry.getSourcesForRecorder(player, recorder)
     if not player or not recorder then return {} end
     local result = {}
     for _, src in pairs(sources) do
-        local ok, canRec = pcall(src.canRecord, player, recorder)
+        local ok, canRec = PhobosLib.safecall(src.canRecord, player, recorder)
         if ok and canRec then
             result[#result + 1] = src
         end

@@ -54,7 +54,7 @@ function POS_MenuBuilder.buildMenu(menuPath, player, ctx)
 
         -- Then check canOpen
         if enabled and def.canOpen then
-            local pcallOk, canOpenResult, canOpenReason = pcall(def.canOpen, player, ctx or {})
+            local pcallOk, canOpenResult, canOpenReason = PhobosLib.safecall(def.canOpen, player, ctx or {})
             if pcallOk then
                 if canOpenResult == false then
                     enabled = false

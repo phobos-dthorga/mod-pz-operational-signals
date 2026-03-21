@@ -3,6 +3,7 @@
 
     "UI_POS_OperationLog": "Operation Log",
     "UI_POS_ActiveOperations": "Active Operations",
+    "UI_POS_ComingSoon": "(coming soon)",
     "UI_POS_CompletedOperations": "Completed Operations",
     "UI_POS_ExpiredOperations": "Expired Operations",
     "UI_POS_NoActiveOps": "No active operations. Tune to POSnet frequency to receive broadcasts.",
@@ -110,6 +111,7 @@
     "UI_POS_Delivery_DistanceWalked": "Distance travelled",
     "UI_POS_Delivery_Reward": "Reward",
     "UI_POS_Delivery_Accept": "Accept Delivery",
+    "UI_POS_Delivery_StatusLabel": "Status",
     "UI_POS_Delivery_Status_AwaitingPickup": "Awaiting pickup",
     "UI_POS_Delivery_Status_InTransit": "In transit",
     "UI_POS_Delivery_Status_Delivered": "Delivered",
@@ -256,7 +258,9 @@
     "UI_POS_Error_ExtensionFailed": "A terminal extension failed to load.",
     "UI_POS_Error_ScreenBlocked": "Access denied: %1",
     "UI_POS_Error_NoPower": "No electricity available. Connect a generator or restore grid power.",
+    "UI_POS_Error_NoOperation": "No operation specified.",
     "UI_POS_Error_NoRecorder": "Requires Data Recorder",
+    "UI_POS_Error_OperationNotFound": "Operation not found.",
     "UI_POS_PowerLost": "POWER FAILURE — Terminal shutting down...",
     "UI_POS_Breadcrumb_Separator": " > ",
     "UI_POS_Menu_Locked": "[LOCKED] %1",
@@ -267,6 +271,7 @@
 
     "UI_POS_Markets_Title": "MARKETS",
     "UI_POS_Exchange_Title": "EXCHANGE",
+    "UI_POS_Market_Categories": "Categories",
     "UI_POS_Market_Cat_Fuel": "Fuel",
     "UI_POS_Market_Cat_Medicine": "Medicine",
     "UI_POS_Market_Cat_Food": "Food",

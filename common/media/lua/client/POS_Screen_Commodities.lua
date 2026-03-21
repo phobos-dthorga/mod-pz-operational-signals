@@ -99,6 +99,16 @@ function screen.create(contentPanel, _params, _terminal)
     W.drawFooter(ctx)
 end
 
+screen.getContextData = function(_params)
+    local data = {}
+    local categories = POS_MarketRegistry.getVisibleCategories({})
+    if #categories > 0 then
+        table.insert(data, { type = "kv", key = "UI_POS_Market_Categories",
+            value = tostring(#categories) })
+    end
+    return data
+end
+
 screen.destroy = POS_TerminalWidgets.defaultDestroy
 
 function screen.refresh(params)
