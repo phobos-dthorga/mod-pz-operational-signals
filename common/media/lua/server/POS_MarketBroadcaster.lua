@@ -31,19 +31,10 @@ POS_MarketBroadcaster = {}
 
 local _TAG = "[POS:MarketBcast]"
 
---- Broadcast a server command to all connected players (SP + MP safe).
+--- Delegate to the central SP-safe broadcast helper.
 local function broadcastToAll(module, command, args)
-    if isServer and isServer() then
-        local players = getOnlinePlayers and getOnlinePlayers()
-        if players then
-            for i = 0, players:size() - 1 do
-                local p = players:get(i)
-                if p then sendServerCommand(p, module, command, args) end
-            end
-        end
-    else
-        local player = getSpecificPlayer(0)
-        if player then sendServerCommand(player, module, command, args) end
+    if POS_BroadcastSystem and POS_BroadcastSystem.broadcastToAll then
+        POS_BroadcastSystem.broadcastToAll(module, command, args)
     end
 end
 

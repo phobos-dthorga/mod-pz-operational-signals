@@ -203,6 +203,14 @@ local function onServerCommand(module, command, args)
     end
 end
 
+--- Public entry point for server-side code to invoke client command
+--- handlers directly in SP (bypassing sendServerCommand).
+--- @param command string Command name (without module prefix)
+--- @param args table|nil Command arguments
+function POS_RadioInterception.handleCommand(command, args)
+    onServerCommand(POS_Constants.CMD_MODULE, command, args)
+end
+
 --- Request a new operation from the server (future use).
 function POS_RadioInterception.requestOperation()
     local player = getSpecificPlayer(0)

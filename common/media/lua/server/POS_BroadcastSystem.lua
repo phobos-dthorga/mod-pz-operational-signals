@@ -41,7 +41,8 @@ POS_BroadcastSystem = {}
 local _TAG = "[POS:Broadcast]"
 
 --- Broadcast a server command to all connected players.
---- In SP, sends to getSpecificPlayer(0). In MP, iterates getOnlinePlayers().
+--- In SP, invokes the client handler directly (sendServerCommand crashes
+--- the JVM during early frames in SP). In MP, iterates getOnlinePlayers().
 --- @param module string Command module
 --- @param command string Command name
 --- @param args table Command arguments
@@ -58,10 +59,10 @@ function POS_BroadcastSystem.broadcastToAll(module, command, args)
             end
         end
     else
-        -- Single-player: send to local player
-        local player = getSpecificPlayer(0)
-        if player then
-            sendServerCommand(player, module, command, args)
+        -- Single-player: invoke client handler directly to avoid
+        -- sendServerCommand which can crash the JVM during init.
+        if POS_RadioInterception and POS_RadioInterception.handleCommand then
+            POS_RadioInterception.handleCommand(command, args)
         end
     end
 end

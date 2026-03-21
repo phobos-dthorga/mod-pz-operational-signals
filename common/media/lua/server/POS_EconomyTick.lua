@@ -124,22 +124,17 @@ function POS_EconomyTick.processDayTick()
     if POS_MarketFileStore and POS_MarketFileStore.startChunkedSave then
         POS_MarketFileStore.startChunkedSave()
     elseif POS_MarketFileStore and POS_MarketFileStore.save then
-        POS_MarketFileStore.save()  -- fallback: single-frame save
+        POS_MarketFileStore.save()
     end
 
-    -- Phase 7: Notify clients
+    -- Phase 7: Notify clients via SP-safe broadcastToAll.
+    -- In SP, broadcastToAll invokes the client handler directly
+    -- instead of sendServerCommand (which crashes the JVM during init).
     if POS_BroadcastSystem and POS_BroadcastSystem.broadcastToAll then
         POS_BroadcastSystem.broadcastToAll(
             POS_Constants.CMD_MODULE,
             POS_Constants.CMD_ECONOMY_TICK_COMPLETE,
             { day = currentDay })
-    else
-        -- Fallback: send to local player (SP)
-        local player = getSpecificPlayer(0)
-        if player then
-            sendServerCommand(player, POS_Constants.CMD_MODULE,
-                POS_Constants.CMD_ECONOMY_TICK_COMPLETE, { day = currentDay })
-        end
     end
 
     PhobosLib.debug("POS", _TAG, "[EconomyTick] Day " .. tostring(currentDay) .. " complete")

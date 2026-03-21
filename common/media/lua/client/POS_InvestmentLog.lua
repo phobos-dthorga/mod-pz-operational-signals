@@ -231,14 +231,23 @@ end
 
 function POS_InvestmentLog.init()
     POS_InvestmentService.init()
-
-    -- Request any pending payouts from server (offline resolution)
-    local player = getSpecificPlayer(0)
-    if player then
-        sendClientCommand(player, POS_Constants.CMD_MODULE, POS_Constants.CMD_REQUEST_PAYOUTS, {})
-    end
-
     PhobosLib.debug("POS", _TAG, "Investment log initialised")
 end
 
-Events.OnGameStart.Add(POS_InvestmentLog.init)
+--- Deferred payout request — sendClientCommand during init can crash
+--- the JVM in SP. Runs once on first EveryOneMinute tick.
+local payoutRequested = false
+local function onDeferredPayoutRequest()
+    if payoutRequested then return end
+    payoutRequested = true
+    local player = getSpecificPlayer(0)
+    if player then
+        sendClientCommand(player, POS_Constants.CMD_MODULE, POS_Constants.CMD_REQUEST_PAYOUTS, {})
+        PhobosLib.debug("POS", _TAG, "Deferred payout request sent")
+    end
+end
+
+Events.OnGameStart.Add(function()
+    POS_InvestmentLog.init()
+    Events.EveryOneMinute.Add(onDeferredPayoutRequest)
+end)
