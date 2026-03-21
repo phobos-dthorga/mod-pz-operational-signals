@@ -24,6 +24,8 @@ require "POS_Constants"
 
 POS_MediaManager = {}
 
+local _TAG = "[POS:MediaMgr]"
+
 -- Media definitions: keyed by item fullType
 local MEDIA_DEFS = {
     -- VHS-C family
@@ -374,6 +376,6 @@ function POS_MediaManager.migrateVHSKeys(item)
     -- Mark as migrated
     md[POS_Constants.MD_MEDIA_MIGRATED] = true
 
-    PhobosLib.debug("POS", "MediaManager", "migrated VHS keys for " .. tostring(md[POS_Constants.MD_MEDIA_ID]))
+    PhobosLib.debug("POS", _TAG, "migrated VHS keys for " .. tostring(md[POS_Constants.MD_MEDIA_ID]))
     return true
 end

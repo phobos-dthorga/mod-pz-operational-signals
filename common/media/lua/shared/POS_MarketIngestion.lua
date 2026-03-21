@@ -28,6 +28,8 @@ require "POS_MarketDatabase"
 
 POS_MarketIngestion = {}
 
+local _TAG = "[POS:Ingestion]"
+
 --- Ingest a raw market note item into the database.
 --- On server/SP: adds the record directly via POS_MarketDatabase.
 --- On MP client: sends the record to the server via sendClientCommand.
@@ -98,7 +100,7 @@ function POS_MarketIngestion.compileReport(categoryId, player)
     if getGameTime then currentDay = getGameTime():getNightsSurvived() end
     md[POS_Constants.MD_REPORT_COMPILED] = currentDay
 
-    PhobosLib.debug("POS", "[POS:Ingestion]",
+    PhobosLib.debug("POS", _TAG,
         "Compiled market report for category: " .. categoryId)
     return report
 end

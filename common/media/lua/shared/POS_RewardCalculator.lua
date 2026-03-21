@@ -27,6 +27,8 @@ require "PhobosLib"
 
 POS_RewardCalculator = POS_RewardCalculator or {}
 
+local _TAG = "[POS:Reward]"
+
 --- Cancellation penalty multiplier step per tier above I.
 local TIER_MULTIPLIER_STEP = 0.5
 
@@ -83,7 +85,7 @@ function POS_RewardCalculator.payReward(player, baseReward, baseReputation)
         newRep = POS_Reputation.add(player, baseReputation)
     end
 
-    PhobosLib.debug("POS", "[Reward] Paid $" .. actualReward
+    PhobosLib.debug("POS", _TAG, "[Reward] Paid $" .. actualReward
         .. " (base $" .. (baseReward or 0) .. ")"
         .. (baseReputation and baseReputation ~= 0
             and (", rep +" .. baseReputation) or ""))
@@ -156,7 +158,7 @@ function POS_RewardCalculator.applyCancellationPenalty(player, operation)
 
     local newRep = POS_Reputation.add(player, -penalty)
 
-    PhobosLib.debug("POS", "[Reward] Cancel penalty: -" .. penalty
+    PhobosLib.debug("POS", _TAG, "[Reward] Cancel penalty: -" .. penalty
         .. " rep (tier=" .. (operation.tier or 1)
         .. ") → " .. newRep)
 

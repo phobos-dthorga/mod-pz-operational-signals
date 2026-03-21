@@ -26,6 +26,8 @@ require "POS_Constants"
 
 POS_TutorialService = {}
 
+local _TAG = "[POS:Tutorial]"
+
 ---------------------------------------------------------------
 -- Milestone definitions
 ---------------------------------------------------------------
@@ -86,7 +88,7 @@ function POS_TutorialService.init()
     -- Legacy migration: if old recorder tutorial flag exists, auto-award
     POS_TutorialService.migrateLegacy()
 
-    PhobosLib.debug("POS", "[Tutorial]", "Initialised with "
+    PhobosLib.debug("POS", _TAG, "Initialised with "
         .. #MILESTONES .. " milestones")
 end
 
@@ -163,7 +165,7 @@ function POS_TutorialService.onMilestoneAwarded(player, modId, milestoneId)
         end
     end
 
-    PhobosLib.debug("POS", "[Tutorial]",
+    PhobosLib.debug("POS", _TAG,
         "Milestone awarded: " .. milestoneId)
 end
 

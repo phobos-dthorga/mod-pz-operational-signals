@@ -33,6 +33,8 @@ require "POS_Constants"
 
 POS_MailboxScanner = POS_MailboxScanner or {}
 
+local _TAG = "[POS:Mailbox]"
+
 --- Sprite names for mailbox/postbox objects.
 POS_MailboxScanner.MAILBOX_SPRITES = {
     -- Residential mailboxes
@@ -100,7 +102,7 @@ function POS_MailboxScanner.addToCache(x, y)
 
     table.insert(cache, { x = x, y = y })
 
-    PhobosLib.debug("POS", "[MailboxScanner] Discovered mailbox at "
+    PhobosLib.debug("POS", _TAG, "[MailboxScanner] Discovered mailbox at "
         .. math.floor(x) .. ", " .. math.floor(y)
         .. " (total: " .. #cache .. ")")
 
@@ -152,7 +154,7 @@ function POS_MailboxScanner.initialScan()
             for _, entry in ipairs(cached) do
                 POS_MailboxScanner.addToCache(entry.x, entry.y)
             end
-            PhobosLib.debug("POS", "[MailboxScanner] Loaded " .. tostring(#cached) .. " mailboxes from external cache")
+            PhobosLib.debug("POS", _TAG, "[MailboxScanner] Loaded " .. tostring(#cached) .. " mailboxes from external cache")
         end
     end
 
@@ -179,7 +181,7 @@ function POS_MailboxScanner.initialScan()
         POS_WorldState.saveMailboxCache()
     end
 
-    PhobosLib.debug("POS", "[MailboxScanner] Initial scan complete: "
+    PhobosLib.debug("POS", _TAG, "[MailboxScanner] Initial scan complete: "
         .. added .. " new mailboxes from " .. #found .. " found")
 end
 
@@ -195,7 +197,7 @@ function POS_MailboxScanner.selectDeliveryPair()
     local cache = POS_MailboxScanner.getCache()
 
     if #cache < 2 then
-        PhobosLib.debug("POS",
+        PhobosLib.debug("POS", _TAG,
             "[MailboxScanner] Not enough discovered mailboxes ("
             .. #cache .. "), need at least 2")
         return nil
@@ -255,7 +257,7 @@ function POS_MailboxScanner.selectDeliveryPair()
     end
 
     if bestPair then
-        PhobosLib.debug("POS",
+        PhobosLib.debug("POS", _TAG,
             "[MailboxScanner] Fallback pair: "
             .. math.floor(bestPair.straightLine) .. " tiles (target: "
             .. math.floor(minStraight) .. "-" .. math.floor(maxStraight) .. ")")

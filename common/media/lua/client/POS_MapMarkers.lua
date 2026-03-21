@@ -25,6 +25,8 @@ require "PhobosLib"
 
 POS_MapMarkers = POS_MapMarkers or {}
 
+local _TAG = "[POS:MapMarkers]"
+
 --- Tier colour definitions (r, g, b, a).
 local TIER_COLOURS = {
     { r = 0.20, g = 0.90, b = 0.20, a = 1.0 },   -- Tier I: green
@@ -60,7 +62,7 @@ function POS_MapMarkers.placeMarker(operation)
         markerId, x, y, colour.r, colour.g, colour.b, colour.a)
 
     if placed then
-        PhobosLib.debug("POS", "[MapMarkers] Placed marker '"
+        PhobosLib.debug("POS", _TAG, "[MapMarkers] Placed marker '"
             .. markerId .. "' at " .. math.floor(x) .. ", " .. math.floor(y))
     end
 
@@ -76,7 +78,7 @@ function POS_MapMarkers.removeMarker(operationId)
     local removed = PhobosLib.removeWorldMapMarker(markerId)
 
     if removed then
-        PhobosLib.debug("POS", "[MapMarkers] Removed marker '" .. markerId .. "'")
+        PhobosLib.debug("POS", _TAG, "[MapMarkers] Removed marker '" .. markerId .. "'")
     end
 
     return removed

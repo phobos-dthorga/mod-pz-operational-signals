@@ -29,6 +29,8 @@ require "POS_MailboxScanner"
 require "POS_PathTracker"
 require "POS_TerminalWidgets"
 
+local _TAG = "[POS:DeliveryCtx]"
+
 --- Coordinate tolerance for matching player position to mailbox (tiles).
 local COORD_TOLERANCE = 3
 
@@ -81,7 +83,7 @@ local function onCollectPackage(worldObjects, player, operation)
     -- Notify player
     player:Say(POS_TerminalWidgets.safeGetText("UI_POS_Delivery_Status_InTransit"))
 
-    PhobosLib.debug("POS", "[Delivery] Collected package for " .. operation.id)
+    PhobosLib.debug("POS", _TAG, "[Delivery] Collected package for " .. operation.id)
 
     -- Mark screen dirty for terminal updates
     if POS_ScreenManager then POS_ScreenManager.markDirty() end
@@ -133,7 +135,7 @@ local function onDeliverPackage(worldObjects, player, operation)
         POS_TutorialService.tryAward(player, POS_Constants.TUTORIAL_FIRST_DELIVERY)
     end
 
-    PhobosLib.debug("POS", "[Delivery] Delivered " .. operation.id
+    PhobosLib.debug("POS", _TAG, "[Delivery] Delivered " .. operation.id
         .. " — actual distance: " .. math.floor(actualDistance)
         .. " tiles, reward: $" .. finalReward)
 

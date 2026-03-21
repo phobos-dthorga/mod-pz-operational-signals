@@ -27,6 +27,8 @@ require "POS_Constants"
 
 POS_TraderIntegration = {}
 
+local _TAG = "[POS:TraderInt]"
+
 --- Register Market Broker archetype with Dynamic Trading.
 --- Called at OnGameStart after mods are detected.
 local function registerMarketBroker()
@@ -35,7 +37,7 @@ local function registerMarketBroker()
 
     -- Guard: only register if DT API is available
     if not DynamicTrading or not DynamicTrading.registerArchetype then
-        PhobosLib.debug("POS", "[POS:TraderInt]",
+        PhobosLib.debug("POS", _TAG,
             "DynamicTrading mod detected but API not available")
         return
     end
@@ -59,7 +61,7 @@ local function registerMarketBroker()
         },
     })
 
-    PhobosLib.debug("POS", "[POS:TraderInt]",
+    PhobosLib.debug("POS", _TAG,
         "Market Broker archetype registered with Dynamic Trading")
 end
 

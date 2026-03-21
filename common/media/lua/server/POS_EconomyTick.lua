@@ -32,6 +32,8 @@ require "POS_EventLog"
 
 POS_EconomyTick = {}
 
+local _TAG = "[POS:EconTick]"
+
 ---------------------------------------------------------------
 -- Day tick processor
 ---------------------------------------------------------------
@@ -51,12 +53,12 @@ function POS_EconomyTick.processDayTick()
         return
     end
 
-    PhobosLib.debug("POS", "[EconomyTick] Processing day " .. tostring(currentDay))
+    PhobosLib.debug("POS", _TAG, "[EconomyTick] Processing day " .. tostring(currentDay))
 
     -- Phase 1: Purge expired observations
     local purged = POS_MarketDatabase.purgeExpired()
     if purged > 0 then
-        PhobosLib.debug("POS", "[EconomyTick] Purged " .. tostring(purged) .. " expired observations")
+        PhobosLib.debug("POS", _TAG, "[EconomyTick] Purged " .. tostring(purged) .. " expired observations")
     end
 
     -- Phase 2: Aggregate category summaries (from file store)
@@ -127,7 +129,7 @@ function POS_EconomyTick.processDayTick()
         end
     end
 
-    PhobosLib.debug("POS", "[EconomyTick] Day " .. tostring(currentDay) .. " complete")
+    PhobosLib.debug("POS", _TAG, "[EconomyTick] Day " .. tostring(currentDay) .. " complete")
 end
 
 ---------------------------------------------------------------

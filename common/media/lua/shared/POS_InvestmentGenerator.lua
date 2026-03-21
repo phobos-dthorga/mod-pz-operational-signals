@@ -33,6 +33,8 @@ require "PhobosLib"
 
 POS_InvestmentGenerator = {}
 
+local _TAG = "[POS:InvGen]"
+
 --- Investment description template keys (translation keys).
 --- Each maps to a short flavour blurb shown in the BBS post.
 local DESCRIPTION_KEYS = {
@@ -192,7 +194,7 @@ function POS_InvestmentGenerator.generate()
         status = POS_Constants.OPP_STATUS_OPEN,
     }
 
-    PhobosLib.debug("POS", "[InvGen] Generated opportunity: " .. opportunity.id
+    PhobosLib.debug("POS", _TAG, "[InvGen] Generated opportunity: " .. opportunity.id
         .. " (poster=" .. npc.displayName
         .. ", payback=" .. paybackDays .. "d"
         .. ", risk=" .. string.format("%.1f%%", risk.actualRisk * 100)

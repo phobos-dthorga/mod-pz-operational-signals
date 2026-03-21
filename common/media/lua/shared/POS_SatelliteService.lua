@@ -28,6 +28,8 @@ require "POS_SIGINTService"
 
 POS_SatelliteService = {}
 
+local _TAG = "[POS:Satellite]"
+
 ---------------------------------------------------------------
 -- Satellite Dish Detection
 ---------------------------------------------------------------
@@ -349,7 +351,7 @@ function POS_SatelliteService.calibrate(player, sq)
         end)
     end
 
-    PhobosLib.debug("POS", "[POS:Satellite]", "Dish calibrated")
+    PhobosLib.debug("POS", _TAG, "Dish calibrated")
     return true
 end
 
@@ -410,7 +412,7 @@ function POS_SatelliteService.broadcast(player, artifact, sq)
     -- Record cooldown
     POS_SatelliteService.recordCooldown(player)
 
-    PhobosLib.debug("POS", "[POS:Satellite]",
+    PhobosLib.debug("POS", _TAG,
         "Broadcast transmitted (strength: "
         .. string.format("%.2f", results.strength) .. ")")
 
@@ -445,5 +447,5 @@ function POS_SatelliteService.checkDecalibration()
     -- and check if their buildings have lost power for > DECALIBRATION_DAYS.
     -- Full implementation deferred to when the satellite sprites are known
     -- and we can test with actual world objects.
-    PhobosLib.debug("POS", "[POS:Satellite]", "Decalibration check (stub)")
+    PhobosLib.debug("POS", _TAG, "Decalibration check (stub)")
 end

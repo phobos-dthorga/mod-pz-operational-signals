@@ -32,6 +32,8 @@ require "POS_MenuBuilder"
 
 ---------------------------------------------------------------
 
+local _TAG = "[POS:Markets]"
+
 local screen = {}
 screen.id = POS_Constants.SCREEN_MARKETS
 screen.menuPath = {"pos.main"}
@@ -96,7 +98,7 @@ function screen.create(contentPanel, _params, _terminal)
                         if inv then inv:Remove(noteItem) end
                     end
                 end
-                PhobosLib.debug("POS", "[POS:Markets]",
+                PhobosLib.debug("POS", _TAG,
                     "Uploaded " .. ingested .. " field notes")
 
                 if ingested > 0 then

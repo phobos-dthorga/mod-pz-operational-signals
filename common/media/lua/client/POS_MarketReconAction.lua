@@ -33,6 +33,8 @@ require "TimedActions/ISBaseTimedAction"
 
 POS_MarketReconAction = ISBaseTimedAction:derive("POS_MarketReconAction")
 
+local _TAG = "[POS:ReconAction]"
+
 --- Build a visit key scoped to the entire room zone (building + room name).
 --- Shared between context menu (cooldown check) and action (cooldown recording).
 ---@param sq IsoGridSquare
@@ -211,7 +213,7 @@ function POS_MarketReconAction:perform()
         POS_TutorialService.tryAward(player, POS_Constants.TUTORIAL_FIRST_MARKET_NOTE)
     end
 
-    PhobosLib.debug("POS", "[POS:ReconAction]",
+    PhobosLib.debug("POS", _TAG,
         "Market note created for category: " .. self.categoryId)
 
     ISBaseTimedAction.perform(self)

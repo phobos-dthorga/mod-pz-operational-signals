@@ -33,6 +33,8 @@ require "POS_MediaManager"
 
 POS_PassiveRecon = {}
 
+local _TAG = "[POS:PassRecon]"
+
 ---------------------------------------------------------------
 -- Radio tier detection (dynamic — works with any radio item)
 ---------------------------------------------------------------
@@ -205,7 +207,7 @@ local function performDeviceScan(player, deviceDef, device, recorder)
     end
 
     if recorded > 0 then
-        PhobosLib.debug("POS", "PassiveRecon", deviceDef.id .. " recorded " .. tostring(recorded) .. " chunks via recorder")
+        PhobosLib.debug("POS", _TAG, deviceDef.id .. " recorded " .. tostring(recorded) .. " chunks via recorder")
     end
 end
 
@@ -243,7 +245,7 @@ local function performRadioScan(player, radioItem, tier, recorder)
     end
 
     if recorded > 0 then
-        PhobosLib.debug("POS", "PassiveRecon", "radio tier " .. tostring(tier) .. " recorded " .. tostring(recorded) .. " chunks via recorder")
+        PhobosLib.debug("POS", _TAG, "radio tier " .. tostring(tier) .. " recorded " .. tostring(recorded) .. " chunks via recorder")
     end
 end
 
@@ -294,7 +296,7 @@ function POS_PassiveRecon.onEveryOneMinute()
             and POS_Sandbox.getDangerCheckRadius()
             or POS_Constants.DANGER_CHECK_RADIUS
         if PhobosLib.isDangerNearby(player, radius) then
-            PhobosLib.debug("POS", "PassiveRecon", "scanning paused — danger nearby")
+            PhobosLib.debug("POS", _TAG, "scanning paused — danger nearby")
             return
         end
     end

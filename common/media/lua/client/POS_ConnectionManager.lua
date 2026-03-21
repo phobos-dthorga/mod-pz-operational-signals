@@ -34,6 +34,8 @@ require "POS_Constants"
 
 POS_ConnectionManager = {}
 
+local _TAG = "[POS:ConnMgr]"
+
 --- Desktop computer sprite names (base + 3 rotations).
 local DESKTOP_SPRITES = {
     ["appliances_com_01_72"] = true,
@@ -255,7 +257,7 @@ end
 function POS_ConnectionManager.connect(player, radioObj)
     local canDo, reason, _extra, band = POS_ConnectionManager.canConnect(player, radioObj)
     if not canDo then
-        PhobosLib.debug("POS", "Connection failed: " .. (reason or "unknown"))
+        PhobosLib.debug("POS", _TAG, "Connection failed: " .. (reason or "unknown"))
         return
     end
 
@@ -303,7 +305,7 @@ function POS_ConnectionManager.connect(player, radioObj)
         POS_TutorialService.tryAward(player, POS_Constants.TUTORIAL_FIRST_CONNECTION)
     end
 
-    PhobosLib.debug("POS", "Connected to POSnet via " .. radioName
+    PhobosLib.debug("POS", _TAG, "Connected to POSnet via " .. radioName
         .. " [" .. (band or "?") .. "] (signal: "
         .. string.format("%.0f%%", signalStrength * 100) .. ")")
 end

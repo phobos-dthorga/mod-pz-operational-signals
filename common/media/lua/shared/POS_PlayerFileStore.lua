@@ -29,6 +29,8 @@ require "POS_Constants"
 
 POS_PlayerFileStore = {}
 
+local _TAG = "[POS:PlayerFile]"
+
 local SEP = POS_Constants.PLAYER_FILE_SEPARATOR
 
 ---------------------------------------------------------------
@@ -139,7 +141,7 @@ local function loadFromFile(player)
     end
     reader:close()
 
-    PhobosLib.debug("POS", "[PlayerFileStore]",
+    PhobosLib.debug("POS", _TAG,
         "Loaded player file: " .. tostring(#data.watchlist) .. " watchlist, "
         .. tostring(#data.alerts) .. " alerts")
 
@@ -156,7 +158,7 @@ local function saveToFile(player, data)
 
     local writer = getFileWriter(path, true, false)
     if not writer then
-        PhobosLib.debug("POS", "[PlayerFileStore]",
+        PhobosLib.debug("POS", _TAG,
             "Failed to open player file for writing: " .. path)
         return false
     end
@@ -191,7 +193,7 @@ local function saveToFile(player, data)
 
     writer:close()
 
-    PhobosLib.debug("POS", "[PlayerFileStore]",
+    PhobosLib.debug("POS", _TAG,
         "Saved player file: " .. tostring(#data.watchlist) .. " watchlist, "
         .. tostring(#data.alerts) .. " alerts")
 
@@ -215,7 +217,7 @@ local function migrateFromModData(player, data)
         for _, entry in ipairs(ps.watchlist) do
             table.insert(data.watchlist, entry)
         end
-        PhobosLib.debug("POS", "[PlayerFileStore]",
+        PhobosLib.debug("POS", _TAG,
             "Migrated " .. tostring(#ps.watchlist) .. " watchlist entries from modData")
         ps.watchlist = nil
         migrated = true
@@ -226,7 +228,7 @@ local function migrateFromModData(player, data)
         for _, entry in ipairs(ps.alerts) do
             table.insert(data.alerts, entry)
         end
-        PhobosLib.debug("POS", "[PlayerFileStore]",
+        PhobosLib.debug("POS", _TAG,
             "Migrated " .. tostring(#ps.alerts) .. " alerts from modData")
         ps.alerts = nil
         migrated = true
@@ -253,7 +255,7 @@ local function migrateFromModData(player, data)
     ps.fileStoreMigrated = true
 
     if migrated then
-        PhobosLib.debug("POS", "[PlayerFileStore]",
+        PhobosLib.debug("POS", _TAG,
             "Migration complete — legacy arrays cleared from modData")
     end
 
@@ -351,5 +353,5 @@ end
 --- Clear the session cache (e.g. on disconnect).
 function POS_PlayerFileStore.clearCache()
     cache = {}
-    PhobosLib.debug("POS", "[PlayerFileStore]", "Session cache cleared")
+    PhobosLib.debug("POS", _TAG, "Session cache cleared")
 end

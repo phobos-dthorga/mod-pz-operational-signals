@@ -29,6 +29,8 @@ require "POS_Constants"
 
 POS_AZASIntegration = {}
 
+local _TAG = "[POS:AZAS]"
+
 ---------------------------------------------------------------
 -- Station registration (runs at require-time)
 ---------------------------------------------------------------
@@ -49,7 +51,7 @@ AZAS_STATIONS[POS_Constants.AZAS_TAC_KEY] = {
     frequency_request = POS_Constants.AZAS_DEFAULT_TAC_FREQ,
 }
 
-PhobosLib.debug("POS", "[AZAS] Registered POSnet_Operations (amateur, req 130.0 kHz)"
+PhobosLib.debug("POS", _TAG, "[AZAS] Registered POSnet_Operations (amateur, req 130.0 kHz)"
     .. " and POSnet_Tactical (military, req 155.0 kHz)")
 
 ---------------------------------------------------------------

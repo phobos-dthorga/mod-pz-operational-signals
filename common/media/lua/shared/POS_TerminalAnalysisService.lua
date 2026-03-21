@@ -29,6 +29,8 @@ require "POS_SIGINTService"
 
 POS_TerminalAnalysisService = {}
 
+local _TAG = "[POS:Analysis]"
+
 ---------------------------------------------------------------
 -- Fragment tier distribution weights per SIGINT level
 -- Each entry: { fragmentary, unverified, correlated, confirmed }
@@ -446,7 +448,7 @@ function POS_TerminalAnalysisService.processIntelligence(player, inputs)
         end
     end
 
-    PhobosLib.debug("POS", "[POS:Analysis]",
+    PhobosLib.debug("POS", _TAG,
         "Processed " .. inputCount .. " inputs → "
         .. #results.fragments .. " fragments (SIGINT L" .. level .. ")")
 

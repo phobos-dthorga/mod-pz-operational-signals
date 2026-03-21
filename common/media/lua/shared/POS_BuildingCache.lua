@@ -28,6 +28,8 @@ require "POS_Constants"
 
 POS_BuildingCache = POS_BuildingCache or {}
 
+local _TAG = "[POS:BuildCache]"
+
 --- Minimum distance between cached buildings to avoid duplicates (tiles).
 local DEDUP_RADIUS = 10
 
@@ -87,7 +89,7 @@ function POS_BuildingCache.addToCache(x, y, rooms)
 
     table.insert(cache, { x = x, y = y, rooms = rooms })
 
-    PhobosLib.debug("POS", "[BuildingCache] Discovered building at "
+    PhobosLib.debug("POS", _TAG, "[BuildingCache] Discovered building at "
         .. math.floor(x) .. ", " .. math.floor(y)
         .. " (" .. table.concat(rooms, ", ") .. ")"
         .. " — total: " .. #cache)
@@ -180,7 +182,7 @@ function POS_BuildingCache.initialScan()
             for _, entry in ipairs(cached) do
                 POS_BuildingCache.addToCache(entry.x, entry.y, entry.rooms or {})
             end
-            PhobosLib.debug("POS", "[BuildingCache] Loaded " .. tostring(#cached) .. " buildings from external cache")
+            PhobosLib.debug("POS", _TAG, "[BuildingCache] Loaded " .. tostring(#cached) .. " buildings from external cache")
         end
     end
 
@@ -207,7 +209,7 @@ function POS_BuildingCache.initialScan()
         POS_WorldState.saveBuildingCache()
     end
 
-    PhobosLib.debug("POS", "[BuildingCache] Initial scan complete: "
+    PhobosLib.debug("POS", _TAG, "[BuildingCache] Initial scan complete: "
         .. added .. " new buildings from " .. #buildings .. " found")
 end
 

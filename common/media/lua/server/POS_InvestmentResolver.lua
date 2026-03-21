@@ -35,6 +35,8 @@ require "POS_Constants"
 
 POS_InvestmentResolver = {}
 
+local _TAG = "[POS:InvResolver]"
+
 local PENDING_KEY = "POS_PendingResolutions"
 
 --- Precision for ZombRand-based probability rolls.
@@ -94,7 +96,7 @@ function POS_InvestmentResolver.registerInvestment(username, investmentId,
         status = "pending",
     })
 
-    PhobosLib.debug("POS", "[InvResolver] Registered investment: " .. investmentId
+    PhobosLib.debug("POS", _TAG, "[InvResolver] Registered investment: " .. investmentId
         .. " for " .. username .. " (maturity day " .. maturityDay .. ")")
 end
 
@@ -122,13 +124,13 @@ function POS_InvestmentResolver.resolveMatured()
 
             if roll < entry.actualRisk then
                 status = POS_Constants.INV_STATUS_DEFAULTED
-                PhobosLib.debug("POS", "[InvResolver] DEFAULTED: " .. entry.investmentId
+                PhobosLib.debug("POS", _TAG, "[InvResolver] DEFAULTED: " .. entry.investmentId
                     .. " (roll=" .. string.format("%.3f", roll)
                     .. " < risk=" .. string.format("%.3f", entry.actualRisk) .. ")")
             else
                 status = POS_Constants.INV_STATUS_MATURED
                 returnAmount = entry.returnAmount
-                PhobosLib.debug("POS", "[InvResolver] MATURED: " .. entry.investmentId
+                PhobosLib.debug("POS", _TAG, "[InvResolver] MATURED: " .. entry.investmentId
                     .. " (roll=" .. string.format("%.3f", roll)
                     .. " >= risk=" .. string.format("%.3f", entry.actualRisk)
                     .. ", payout=$" .. returnAmount .. ")")
@@ -160,7 +162,7 @@ function POS_InvestmentResolver.resolveMatured()
                     status = status,
                     returnAmount = returnAmount,
                 })
-                PhobosLib.debug("POS", "[InvResolver] Player " .. entry.username
+                PhobosLib.debug("POS", _TAG, "[InvResolver] Player " .. entry.username
                     .. " offline — queued payout for " .. entry.investmentId)
             end
 
@@ -196,7 +198,7 @@ function POS_InvestmentResolver.deliverPendingPayouts(player)
             status = payout.status,
             returnAmount = payout.returnAmount,
         })
-        PhobosLib.debug("POS", "[InvResolver] Delivered pending payout to "
+        PhobosLib.debug("POS", _TAG, "[InvResolver] Delivered pending payout to "
             .. username .. ": " .. payout.investmentId)
     end
 

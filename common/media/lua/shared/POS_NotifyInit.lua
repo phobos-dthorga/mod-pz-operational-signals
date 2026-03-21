@@ -23,9 +23,11 @@
 require "PhobosLib"
 require "POS_Constants"
 
+local _TAG = "[POS:NotifyInit]"
+
 local function onGameStart()
     if not PhobosNotifications or not PhobosNotifications.registerChannel then
-        PhobosLib.debug("POS", "[NotifyInit]",
+        PhobosLib.debug("POS", _TAG,
             "PhobosNotifications not available — skipping channel registration")
         return
     end
@@ -36,7 +38,7 @@ local function onGameStart()
         defaultEnabled = true,
     })
 
-    PhobosLib.debug("POS", "[NotifyInit]",
+    PhobosLib.debug("POS", _TAG,
         "Registered PN channel: " .. POS_Constants.PN_CHANNEL_ID)
 end
 

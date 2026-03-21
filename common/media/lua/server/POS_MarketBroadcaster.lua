@@ -29,6 +29,8 @@ require "POS_MarketDatabase"
 
 POS_MarketBroadcaster = {}
 
+local _TAG = "[POS:MarketBcast]"
+
 --- Broadcast a server command to all connected players (SP + MP safe).
 local function broadcastToAll(module, command, args)
     if isServer and isServer() then
@@ -172,7 +174,7 @@ function POS_MarketBroadcaster.broadcast()
 
     local packet = POS_MarketBroadcaster.generatePacket()
     if not packet then
-        PhobosLib.debug("POS", "[POS:MarketBcast]", "Failed to generate market packet")
+        PhobosLib.debug("POS", _TAG, "Failed to generate market packet")
         return false
     end
 
@@ -199,7 +201,7 @@ function POS_MarketBroadcaster.broadcast()
         marketData = packet,
     })
 
-    PhobosLib.debug("POS", "[POS:MarketBcast]",
+    PhobosLib.debug("POS", _TAG,
         "Market broadcast sent: " .. packet.categoryId
         .. " @ $" .. packet.price)
 
@@ -226,13 +228,13 @@ end
 function POS_MarketBroadcaster.start()
     broadcasterActive = true
     lastMarketBroadcastTime = getTimestampMs()
-    PhobosLib.debug("POS", "[POS:MarketBcast]", "Market broadcaster started")
+    PhobosLib.debug("POS", _TAG, "Market broadcaster started")
 end
 
 --- Stop the market broadcaster.
 function POS_MarketBroadcaster.stop()
     broadcasterActive = false
-    PhobosLib.debug("POS", "[POS:MarketBcast]", "Market broadcaster stopped")
+    PhobosLib.debug("POS", _TAG, "Market broadcaster stopped")
 end
 
 --- Whether the broadcaster is currently active.

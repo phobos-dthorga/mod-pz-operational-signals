@@ -34,6 +34,8 @@ require "PhobosLib"
 
 POS_Reputation = POS_Reputation or {}
 
+local _TAG = "[POS:Reputation]"
+
 --- Reputation mod key for PhobosLib storage.
 local MOD_KEY = "POS"
 
@@ -81,7 +83,7 @@ function POS_Reputation.add(player, baseDelta)
         player, MOD_KEY, scaledDelta, 0, cap)
 
     if scaledDelta ~= 0 then
-        PhobosLib.debug("POS", "[Reputation] "
+        PhobosLib.debug("POS", _TAG, "[Reputation] "
             .. (scaledDelta > 0 and "+" or "") .. scaledDelta
             .. " (base " .. baseDelta .. " × " .. multiplier .. "%)"
             .. " → " .. newVal)

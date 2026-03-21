@@ -30,6 +30,8 @@ require "POS_API"
 
 ---------------------------------------------------------------
 
+local _TAG = "[POS:BBS]"
+
 local screen = {}
 screen.id = POS_Constants.SCREEN_BBS_LIST
 screen.menuPath = {"pos.bbs"}
@@ -65,7 +67,7 @@ function screen.create(contentPanel, _params, _terminal)
         if opp and POS_InvestmentLog then
             POS_InvestmentLog.addOpportunity(opp)
             table.insert(opportunities, opp)
-            PhobosLib.debug("POS", "[BBS] On-demand investment generated: " .. (opp.id or "?"))
+            PhobosLib.debug("POS", _TAG, "[BBS] On-demand investment generated: " .. (opp.id or "?"))
         end
     end
 

@@ -32,6 +32,8 @@ require "PhobosLib"
 
 POS_CompletionDetector = {}
 
+local _TAG = "[POS:CompDet]"
+
 --- Registry of objective type checkers.
 --- Each checker: function(player, objective) → boolean
 local checkers = {}
@@ -76,7 +78,7 @@ function POS_CompletionDetector.checkOperation(player, operation)
         if not obj.completed then
             if POS_CompletionDetector.checkObjective(player, obj) then
                 obj.completed = true
-                PhobosLib.debug("POS", "Objective completed: " .. (obj.description or "?"))
+                PhobosLib.debug("POS", _TAG, "Objective completed: " .. (obj.description or "?"))
             else
                 allComplete = false
             end

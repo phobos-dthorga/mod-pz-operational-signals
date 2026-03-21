@@ -29,6 +29,8 @@ require "POS_MediaManager"
 
 POS_CraftCallbacks = POS_CraftCallbacks or {}
 
+local _TAG = "[POS:CraftCB]"
+
 --- Writing implement full type names for damage targeting.
 local WRITING_IMPLEMENTS = {
     ["Base.Pen"] = true,
@@ -67,7 +69,7 @@ function POS_CraftCallbacks.onCreateFieldReport(items, result, player)
         if md then
             md[POS_Constants.MD_OPERATION_ID] = operationId
         end
-        PhobosLib.debug("POS", "[CraftCallback] Field report created for operation: " .. operationId)
+        PhobosLib.debug("POS", _TAG, "[CraftCallback] Field report created for operation: " .. operationId)
     end
 
     -- Damage writing implement
@@ -90,7 +92,7 @@ function POS_CraftCallbacks.onCreateFieldReport(items, result, player)
                         damageAmt + POS_Constants.WRITING_DAMAGE_VARIANCE_OFFSET,
                         chancePct)
                     if damaged then
-                        PhobosLib.debug("POS", "[CraftCallback] Writing implement damaged: " .. fullType)
+                        PhobosLib.debug("POS", _TAG, "[CraftCallback] Writing implement damaged: " .. fullType)
                     end
                 end
             end
@@ -209,14 +211,14 @@ function POS_CraftCallbacks.onCreateVHSReviewNote(items, result, player)
                         damageAmt + POS_Constants.WRITING_DAMAGE_VARIANCE_OFFSET,
                         chancePct)
                     if damaged then
-                        PhobosLib.debug("POS", "[CraftCallback] Writing implement damaged: " .. fullType)
+                        PhobosLib.debug("POS", _TAG, "[CraftCallback] Writing implement damaged: " .. fullType)
                     end
                 end
             end
         end)
     end
 
-    PhobosLib.debug("POS", "CraftCallback", "VHS review note created: " .. categoryId)
+    PhobosLib.debug("POS", _TAG, "VHS review note created: " .. categoryId)
 end
 
 --- Callback for Rewind Microcassette recipe (at microscope).
@@ -231,13 +233,13 @@ function POS_CraftCallbacks.onCreateRewindMicrocassette(items, result, player)
         -- Rewound tapes have reduced confidence
         md[POS_Constants.MD_MEDIA_CONF_MOD] = POS_Constants.MICROCASSETTE_REWOUND_CONFIDENCE_MOD
     end
-    PhobosLib.debug("POS", "CraftCallback", "microcassette rewound")
+    PhobosLib.debug("POS", _TAG, "microcassette rewound")
 end
 
 --- Callback for Recycle Microcassette recipe (at microscope).
 function POS_CraftCallbacks.onCreateRecycleMicrocassette(items, result, player)
     -- Result is MagneticTapeScrap — no special modData needed
-    PhobosLib.debug("POS", "CraftCallback", "microcassette recycled to scrap")
+    PhobosLib.debug("POS", _TAG, "microcassette recycled to scrap")
 end
 
 --- Callback for Review Microcassette recipe (portable — no station required).
@@ -315,7 +317,7 @@ function POS_CraftCallbacks.onCreateReviewMicrocassette(items, result, player)
         end)
     end
 
-    PhobosLib.debug("POS", "CraftCallback", "microcassette review note created: " .. categoryId)
+    PhobosLib.debug("POS", _TAG, "microcassette review note created: " .. categoryId)
 end
 
 --- Callback for Review Floppy Disk recipe (at terminal station).
@@ -395,13 +397,13 @@ function POS_CraftCallbacks.onCreateReviewFloppyDisk(items, result, player)
         end)
     end
 
-    PhobosLib.debug("POS", "CraftCallback", "floppy disk review note created: " .. categoryId)
+    PhobosLib.debug("POS", _TAG, "floppy disk review note created: " .. categoryId)
 end
 
 --- Callback for Salvage Corrupt Floppy Disk recipe (at terminal station).
 function POS_CraftCallbacks.onCreateSalvageCorruptFloppy(items, result, player)
     -- Result is ElectronicsScrap — no special modData needed
-    PhobosLib.debug("POS", "CraftCallback", "corrupt floppy salvaged for electronics scrap")
+    PhobosLib.debug("POS", _TAG, "corrupt floppy salvaged for electronics scrap")
 end
 
 --- Callback for Repair Data-Recorder recipe.
@@ -410,5 +412,5 @@ function POS_CraftCallbacks.onCreateRepairDataRecorder(items, result, player)
     -- Restore condition to full
     result:setCondition(result:getConditionMax())
     POS_DataRecorderService.ensureInitialized(result)
-    PhobosLib.debug("POS", "CraftCallback", "data recorder repaired to full condition")
+    PhobosLib.debug("POS", _TAG, "data recorder repaired to full condition")
 end

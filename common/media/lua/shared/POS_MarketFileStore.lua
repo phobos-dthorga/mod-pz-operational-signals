@@ -29,6 +29,8 @@ require "POS_Constants"
 
 POS_MarketFileStore = {}
 
+local _TAG = "[POS:MktFile]"
+
 ---------------------------------------------------------------
 -- Session cache and dirty flag
 ---------------------------------------------------------------
@@ -136,7 +138,7 @@ end
 function POS_MarketFileStore.load()
     local reader = getFileReader(POS_Constants.MARKET_DATA_FILE, false)
     if not reader then
-        PhobosLib.debug("POS", "[MarketFileStore]",
+        PhobosLib.debug("POS", _TAG,
             "No market data file found — starting with empty cache")
         return
     end
@@ -195,7 +197,7 @@ function POS_MarketFileStore.load()
     end
     reader:close()
 
-    PhobosLib.debug("POS", "[MarketFileStore]",
+    PhobosLib.debug("POS", _TAG,
         "Loaded market data: " .. tostring(loadedCats)
         .. " categories, " .. tostring(loadedObs) .. " observations")
 end
@@ -205,7 +207,7 @@ end
 function POS_MarketFileStore.save()
     local writer = getFileWriter(POS_Constants.MARKET_DATA_FILE, false, false)
     if not writer then
-        PhobosLib.debug("POS", "[MarketFileStore]",
+        PhobosLib.debug("POS", _TAG,
             "Failed to open market data file for writing")
         return
     end
@@ -243,7 +245,7 @@ function POS_MarketFileStore.save()
     writer:close()
     dirty = false
 
-    PhobosLib.debug("POS", "[MarketFileStore]",
+    PhobosLib.debug("POS", _TAG,
         "Saved market data: " .. tostring(totalCats)
         .. " categories, " .. tostring(totalObs) .. " observations")
 end
@@ -284,5 +286,5 @@ end
 function POS_MarketFileStore.clearCache()
     cache = {}
     dirty = false
-    PhobosLib.debug("POS", "[MarketFileStore]", "Session cache cleared")
+    PhobosLib.debug("POS", _TAG, "Session cache cleared")
 end

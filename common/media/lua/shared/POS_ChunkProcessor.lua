@@ -27,6 +27,8 @@ require "POS_MediaManager"
 
 POS_ChunkProcessor = {}
 
+local _TAG = "[POS:ChunkProc]"
+
 --- Calculate the full confidence chain for a chunk.
 --- finalConfidence = baseDeviceConfidence + mediaFidelityMod + recorderConditionMod
 ---                   + carryBonusMod + signalQualityMod
@@ -96,7 +98,7 @@ function POS_ChunkProcessor.processAll(player, recorder)
         )
     end
 
-    PhobosLib.debug("POS", "ChunkProcessor", "processed " .. processed .. " chunks")
+    PhobosLib.debug("POS", _TAG, "processed " .. processed .. " chunks")
     return processed
 end
 
@@ -140,7 +142,7 @@ function POS_ChunkProcessor._generateArtifact(player, confidence, source)
     local paper = PhobosLib.findItemByFullType(inv, "Base.SheetPaper2")
         or PhobosLib.findItemByFullType(inv, "Base.Notebook")
     if not paper then
-        PhobosLib.debug("POS", "ChunkProcessor", "no paper available — artifact skipped")
+        PhobosLib.debug("POS", _TAG, "no paper available — artifact skipped")
         return false
     end
 
@@ -150,7 +152,7 @@ function POS_ChunkProcessor._generateArtifact(player, confidence, source)
         or PhobosLib.findItemByFullType(inv, "Base.BluePen")
         or PhobosLib.findItemByFullType(inv, "Base.RedPen")
     if not pen then
-        PhobosLib.debug("POS", "ChunkProcessor", "no writing implement — artifact skipped")
+        PhobosLib.debug("POS", _TAG, "no writing implement — artifact skipped")
         return false
     end
 
@@ -189,6 +191,6 @@ function POS_ChunkProcessor.processType(player, recorder, chunkType)
     -- For now, processAll handles all chunk types uniformly.
     -- Type-specific processing will be implemented when the event log
     -- stores chunk type metadata that can be queried at processing time.
-    PhobosLib.debug("POS", "ChunkProcessor", "processType not yet type-selective — delegating to processAll")
+    PhobosLib.debug("POS", _TAG, "processType not yet type-selective — delegating to processAll")
     return POS_ChunkProcessor.processAll(player, recorder)
 end

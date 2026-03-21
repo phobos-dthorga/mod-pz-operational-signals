@@ -25,6 +25,8 @@ require "POS_Constants"
 
 POS_MarketRegistry = POS_MarketRegistry or {}
 
+local _TAG = "[POS:MarketReg]"
+
 local categories = {}
 local subCategories = {}
 local dataProviders = {}
@@ -37,7 +39,7 @@ function POS_MarketRegistry.registerCategory(def)
     assert(type(def.labelKey) == "string", "registerCategory: 'labelKey' is required")
 
     if categories[def.id] then
-        PhobosLib.debug("POS", "[POS:MarketReg]", "Duplicate category: " .. def.id)
+        PhobosLib.debug("POS", _TAG, "Duplicate category: " .. def.id)
         return
     end
 
@@ -52,7 +54,7 @@ function POS_MarketRegistry.registerCategory(def)
         isEssential = def.isEssential or false,
     }
 
-    PhobosLib.debug("POS", "[POS:MarketReg]", "Registered category: " .. def.id)
+    PhobosLib.debug("POS", _TAG, "Registered category: " .. def.id)
 end
 
 --- Register a sub-category within a parent commodity category.
@@ -75,7 +77,7 @@ function POS_MarketRegistry.registerSubCategory(def)
         namePatterns = def.namePatterns,
     }
 
-    PhobosLib.debug("POS", "[POS:MarketReg]",
+    PhobosLib.debug("POS", _TAG,
         "Registered sub-category '" .. def.id .. "' under '" .. def.parentCategory .. "'")
 end
 
@@ -143,7 +145,7 @@ function POS_MarketRegistry.registerDataProvider(categoryId, provider)
     end
     dataProviders[categoryId][provider.id] = provider
 
-    PhobosLib.debug("POS", "[POS:MarketReg]",
+    PhobosLib.debug("POS", _TAG,
         "Registered data provider '" .. provider.id .. "' for category '" .. categoryId .. "'")
 end
 

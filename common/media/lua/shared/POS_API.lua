@@ -28,6 +28,8 @@ require "POS_Registry"
 
 POS_API = POS_API or {}
 
+local _TAG = "[POS:API]"
+
 --- Current API version. Extensions declare compatibility with this.
 POS_API.VERSION = POS_Constants.API_VERSION
 
@@ -78,7 +80,7 @@ function POS_API.registerScreen(def)
         end
     end
 
-    PhobosLib.debug("POS", "API", "Registered screen: " .. def.id)
+    PhobosLib.debug("POS", _TAG, "Registered screen: " .. def.id)
 end
 
 --- Safe registration wrapper for third-party extensions.
@@ -86,7 +88,7 @@ end
 function POS_API.tryRegisterScreen(def)
     local ok, err = pcall(POS_API.registerScreen, def)
     if not ok then
-        PhobosLib.debug("POS", "API", "Screen registration failed: " .. tostring(err))
+        PhobosLib.debug("POS", _TAG, "Screen registration failed: " .. tostring(err))
     end
     return ok, err
 end
@@ -106,7 +108,7 @@ function POS_API.registerCategory(def)
     def.sortOrder = def.sortOrder or 1000
     POS_Registry.addCategory(def)
 
-    PhobosLib.debug("POS", "API", "Registered category: " .. def.id)
+    PhobosLib.debug("POS", _TAG, "Registered category: " .. def.id)
 end
 
 --- Check if a screen's `requires` declaration is met.

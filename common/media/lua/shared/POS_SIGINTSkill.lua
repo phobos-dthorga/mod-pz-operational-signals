@@ -25,6 +25,8 @@ require "POS_Constants"
 
 POS_SIGINTSkill = {}
 
+local _TAG = "[POS:SIGINT]"
+
 --- Cached PerkFactory.Perk enum reference (set on registration).
 ---@type PerkFactory.Perk|nil
 local sigintPerk = nil
@@ -46,14 +48,14 @@ function POS_SIGINTSkill.register()
     -- Sandbox gate
     if POS_Sandbox and POS_Sandbox.getEnableSIGINTSkill
         and not POS_Sandbox.getEnableSIGINTSkill() then
-        PhobosLib.debug("POS", "[POS:SIGINT]",
+        PhobosLib.debug("POS", _TAG,
             "SIGINT skill disabled by sandbox option")
         return
     end
 
     -- Guard: ensure PerkFactory is available
     if not PerkFactory or not PerkFactory.Perks then
-        PhobosLib.debug("POS", "[POS:SIGINT]",
+        PhobosLib.debug("POS", _TAG,
             "PerkFactory not available — SIGINT registration skipped")
         return
     end
@@ -79,13 +81,13 @@ function POS_SIGINTSkill.register()
         )
 
         sigintPerk = perk
-        PhobosLib.debug("POS", "[POS:SIGINT]",
+        PhobosLib.debug("POS", _TAG,
             "SIGINT perk registered successfully (parent: "
             .. POS_Constants.SIGINT_PERK_PARENT .. ")")
     end)
 
     if not ok then
-        PhobosLib.debug("POS", "[POS:SIGINT]",
+        PhobosLib.debug("POS", _TAG,
             "SIGINT perk registration failed: " .. tostring(err))
     end
 end

@@ -35,6 +35,8 @@ require "PhobosLib_Pagination"
 require "PhobosLib_Address"
 require "POS_API"
 
+local _TAG = "[POS:Deliveries]"
+
 local C = POS_TerminalWidgets.COLOURS
 
 local function formatLocation(x, y)
@@ -101,7 +103,7 @@ local function getAvailableDeliveries()
             if delivery then
                 POS_OperationLog.addOperation(delivery)
                 table.insert(results, delivery)
-                PhobosLib.debug("POS",
+                PhobosLib.debug("POS", _TAG,
                     "[Deliveries] Generated on-demand delivery: " .. delivery.id)
             end
         end

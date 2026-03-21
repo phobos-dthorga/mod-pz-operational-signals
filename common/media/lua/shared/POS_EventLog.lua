@@ -25,6 +25,8 @@ require "POS_Constants"
 
 POS_EventLog = {}
 
+local _TAG = "[POS:EventLog]"
+
 local LOG_DIR      = POS_Constants.EVENT_LOG_DIR          -- "POSNET/events/"
 local SNAPSHOT_DIR = POS_Constants.EVENT_SNAPSHOT_DIR      -- "POSNET/snapshots/"
 local FIELD_SEP    = POS_Constants.EVENT_LOG_SEPARATOR     -- "|"
@@ -58,7 +60,7 @@ function POS_EventLog.append(system, eventType, entityId, regionId, actorId, qty
 
     local writer = getFileWriter(path, true, false)
     if not writer then
-        PhobosLib.debug("POS", "[EventLog] Failed to open writer: " .. tostring(path))
+        PhobosLib.debug("POS", _TAG, "[EventLog] Failed to open writer: " .. tostring(path))
         return false
     end
 
@@ -92,7 +94,7 @@ function POS_EventLog.writeSnapshot(snapshotType, headerLine, dataLines)
     local path = "POSNET_snapshot_" .. snapshotType .. ".txt"
     local writer = getFileWriter(path, false, false)  -- overwrite
     if not writer then
-        PhobosLib.debug("POS", "[EventLog] Failed to open snapshot writer: " .. tostring(path))
+        PhobosLib.debug("POS", _TAG, "[EventLog] Failed to open snapshot writer: " .. tostring(path))
         return false
     end
 

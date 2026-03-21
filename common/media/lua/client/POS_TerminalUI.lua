@@ -375,7 +375,7 @@ function POS_TerminalUI:prerender()
                     PhobosLib.say(player,
                         PhobosLib.safeGetText(POS_Constants.MSG_POWER_LOST))
                 end
-                PhobosLib.debug("POS", "[POS:TerminalUI]",
+                PhobosLib.debug("POS", _TAG,
                     "Desktop power lost — closing terminal")
                 POS_TerminalUI.closeTerminal()
                 return
@@ -649,7 +649,7 @@ function POS_TerminalUI.open(radioName, frequency, portablePC, signalStrength, b
                     local md = sq:getModData()
                     local existingRate = md[POS_Constants.MD_POWER_DRAIN_RATE] or 0
                     if existingRate > 0 and existingRate >= drainRate then
-                        PhobosLib.debug("POS", "[POS:TerminalUI]",
+                        PhobosLib.debug("POS", _TAG,
                             "Existing power drain at " .. existingRate
                             .. "%%/min — skipping POSnet drain")
                     else

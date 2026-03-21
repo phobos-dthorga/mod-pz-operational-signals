@@ -26,6 +26,8 @@ require "POS_MediaManager"
 
 POS_DataRecorderService = {}
 
+local _TAG = "[POS:DataRec]"
+
 --- Find an equipped Data-Recorder on the player (belt slot or inventory).
 function POS_DataRecorderService.findEquippedRecorder(player)
     if not player then return nil end
@@ -186,7 +188,7 @@ function POS_DataRecorderService.appendChunk(recorder, chunk)
                 POS_TutorialService.tryAward(chunk.player, POS_Constants.TUTORIAL_FIRST_DATA_RECORDER)
             end
 
-            PhobosLib.debug("POS", "DataRecorderService", "chunk written to media (" .. mediaUsed + 1 .. "/" .. mediaCap .. ")")
+            PhobosLib.debug("POS", _TAG, "chunk written to media (" .. mediaUsed + 1 .. "/" .. mediaCap .. ")")
             return true
         end
     end
@@ -212,11 +214,11 @@ function POS_DataRecorderService.appendChunk(recorder, chunk)
             )
         end
 
-        PhobosLib.debug("POS", "DataRecorderService", "chunk written to buffer (" .. (bufCount + 1) .. "/" .. bufCap .. ")")
+        PhobosLib.debug("POS", _TAG, "chunk written to buffer (" .. (bufCount + 1) .. "/" .. bufCap .. ")")
         return true
     end
 
-    PhobosLib.debug("POS", "DataRecorderService", "all storage full — chunk lost")
+    PhobosLib.debug("POS", _TAG, "all storage full — chunk lost")
     return false
 end
 
@@ -234,7 +236,7 @@ function POS_DataRecorderService.insertMedia(recorder, mediaItem)
 
     -- Cannot insert if media already present
     if md[POS_Constants.MD_RECORDER_MEDIA_ID] then
-        PhobosLib.debug("POS", "DataRecorderService", "cannot insert — media already present")
+        PhobosLib.debug("POS", _TAG, "cannot insert — media already present")
         return false
     end
 
@@ -260,7 +262,7 @@ function POS_DataRecorderService.insertMedia(recorder, mediaItem)
         )
     end
 
-    PhobosLib.debug("POS", "DataRecorderService", "media inserted: " .. mediaItem:getFullType())
+    PhobosLib.debug("POS", _TAG, "media inserted: " .. mediaItem:getFullType())
     return true
 end
 
@@ -292,7 +294,7 @@ function POS_DataRecorderService.ejectMedia(recorder)
     md[POS_Constants.MD_RECORDER_MEDIA_USED] = nil
     md[POS_Constants.MD_RECORDER_MEDIA_CAP] = nil
 
-    PhobosLib.debug("POS", "DataRecorderService", "media ejected: " .. tostring(mediaId))
+    PhobosLib.debug("POS", _TAG, "media ejected: " .. tostring(mediaId))
     return mediaId
 end
 
@@ -318,7 +320,7 @@ function POS_DataRecorderService.flushBufferToMedia(recorder)
     md[POS_Constants.MD_RECORDER_BUFFER_COUNT] = bufCount - toFlush
     md[POS_Constants.MD_RECORDER_MEDIA_USED] = mediaUsed + toFlush
 
-    PhobosLib.debug("POS", "DataRecorderService", "flushed " .. toFlush .. " buffer entries to media")
+    PhobosLib.debug("POS", _TAG, "flushed " .. toFlush .. " buffer entries to media")
     return toFlush
 end
 
@@ -339,7 +341,7 @@ function POS_DataRecorderService.drainPower(recorder, hours)
     recorder:setCondition(newCond)
 
     if newCond <= 0 then
-        PhobosLib.debug("POS", "DataRecorderService", "recorder battery depleted")
+        PhobosLib.debug("POS", _TAG, "recorder battery depleted")
     end
 end
 

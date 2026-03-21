@@ -29,6 +29,8 @@ require "POS_TerminalWidgets"
 
 POS_ReconScanner = POS_ReconScanner or {}
 
+local _TAG = "[POS:ReconScan]"
+
 --- Scan interval in ticks (~3 seconds at 30 FPS).
 local SCAN_INTERVAL = 90
 
@@ -143,7 +145,7 @@ local function onTick()
     -- Notify player
     player:Say(POS_TerminalWidgets.safeGetText("UI_POS_Ops_PhotoCaptured"))
 
-    PhobosLib.debug("POS", "[ReconScanner] Photograph captured for " .. recon.id)
+    PhobosLib.debug("POS", _TAG, "[ReconScanner] Photograph captured for " .. recon.id)
 
     -- Mark screen dirty
     if POS_ScreenManager then POS_ScreenManager.markDirty() end

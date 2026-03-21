@@ -30,6 +30,8 @@ require "POS_MarketRegistry"
 
 POS_CrossModMarkets = {}
 
+local _TAG = "[POS:CrossMod]"
+
 --- Register cross-mod commodity categories.
 --- Called at OnGameStart so mod detection is reliable.
 local function registerCrossModCategories()
@@ -53,7 +55,7 @@ local function registerCrossModCategories()
             labelKey = "UI_POS_Market_Cat_Biofuel",
             sortOrder = 90,
         })
-        PhobosLib.debug("POS", "[POS:CrossMod]",
+        PhobosLib.debug("POS", _TAG,
             "PCP detected — registered chemicals/agriculture/biofuel categories")
     end
 
@@ -69,7 +71,7 @@ local function registerCrossModCategories()
             labelKey = "UI_POS_Market_Cat_Biohazard",
             sortOrder = 110,
         })
-        PhobosLib.debug("POS", "[POS:CrossMod]",
+        PhobosLib.debug("POS", _TAG,
             "PIP detected — registered specimens/biohazard categories")
     end
 end

@@ -33,6 +33,8 @@ require "POS_Registry"
 -- re-executes this file, we must not wipe already-registered screens.
 POS_ScreenManager = POS_ScreenManager or {}
 
+local _TAG = "[POS:ScreenMgr]"
+
 --- Registry of screen definitions keyed by screen ID.
 --- { id, create(contentPanel, params, terminal), destroy(), refresh(params) }
 POS_ScreenManager.screens = POS_ScreenManager.screens or {}
@@ -118,7 +120,7 @@ function POS_ScreenManager.registerScreen(definition)
         return
     end
     POS_ScreenManager.screens[definition.id] = definition
-    PhobosLib.debug("POS", "[POS:ScreenMgr]",
+    PhobosLib.debug("POS", _TAG,
         "registered screen: " .. definition.id)
 end
 
@@ -131,7 +133,7 @@ end
 ---@param params table|nil Optional parameters for the target screen
 function POS_ScreenManager.navigateTo(screenId, params)
     if not POS_ScreenManager.screens[screenId] then
-        PhobosLib.debug("POS", "[POS:ScreenMgr]",
+        PhobosLib.debug("POS", _TAG,
             "navigateTo: unknown screen '" .. tostring(screenId) .. "'")
         return false, POS_Constants.ERR_UNKNOWN_SCREEN
     end
@@ -144,7 +146,7 @@ function POS_ScreenManager.navigateTo(screenId, params)
         if def.requires and POS_API and POS_API.checkRequires then
             local ok, reason = POS_API.checkRequires(def.requires, ctx)
             if not ok then
-                PhobosLib.debug("POS", "[POS:ScreenMgr]",
+                PhobosLib.debug("POS", _TAG,
                     "navigateTo blocked by requires: " .. tostring(reason))
                 return false, reason
             end
@@ -153,7 +155,7 @@ function POS_ScreenManager.navigateTo(screenId, params)
         if def.canOpen then
             local pcallOk, canOpen, reason = pcall(def.canOpen, getPlayer(), ctx)
             if pcallOk and canOpen == false then
-                PhobosLib.debug("POS", "[POS:ScreenMgr]",
+                PhobosLib.debug("POS", _TAG,
                     "navigateTo blocked by canOpen: " .. tostring(reason))
                 return false, reason
             end
@@ -178,7 +180,7 @@ function POS_ScreenManager.navigateTo(screenId, params)
     -- Create new screen widgets
     createWidgetScreen(screenId, params)
 
-    PhobosLib.debug("POS", "[POS:ScreenMgr]",
+    PhobosLib.debug("POS", _TAG,
         "navigated to: " .. screenId .. " (stack depth: "
         .. tostring(#POS_ScreenManager.navigationStack) .. ")")
 
@@ -201,7 +203,7 @@ function POS_ScreenManager.goBack()
     -- Create previous screen widgets
     createWidgetScreen(prev.screenId, prev.params)
 
-    PhobosLib.debug("POS", "[POS:ScreenMgr]",
+    PhobosLib.debug("POS", _TAG,
         "navigated back to: " .. prev.screenId)
 
     refreshSidePanels()
@@ -225,7 +227,7 @@ function POS_ScreenManager.replaceCurrent(screenId, params)
 
     createWidgetScreen(screenId, params)
 
-    PhobosLib.debug("POS", "[POS:ScreenMgr]",
+    PhobosLib.debug("POS", _TAG,
         "replaced current with: " .. screenId)
 
     refreshSidePanels()

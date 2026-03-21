@@ -25,6 +25,8 @@ require "POS_Constants"
 
 POS_DataSourceRegistry = {}
 
+local _TAG = "[POS:DataSrcReg]"
+
 local sources = {}
 
 --- Register a data source that can feed chunks to the Data-Recorder.
@@ -38,11 +40,11 @@ local sources = {}
 --- }
 function POS_DataSourceRegistry.register(def)
     if not def or not def.id then
-        PhobosLib.debug("POS", "DataSourceRegistry", "register: missing id")
+        PhobosLib.debug("POS", _TAG, "register: missing id")
         return false
     end
     if sources[def.id] then
-        PhobosLib.debug("POS", "DataSourceRegistry", "register: duplicate id '" .. def.id .. "'")
+        PhobosLib.debug("POS", _TAG, "register: duplicate id '" .. def.id .. "'")
         return false
     end
     sources[def.id] = {
@@ -53,7 +55,7 @@ function POS_DataSourceRegistry.register(def)
         getSignalQuality = def.getSignalQuality or function() return 0 end,
         generateChunk  = def.generateChunk or function() return nil end,
     }
-    PhobosLib.debug("POS", "DataSourceRegistry", "registered source: " .. def.id)
+    PhobosLib.debug("POS", _TAG, "registered source: " .. def.id)
     return true
 end
 

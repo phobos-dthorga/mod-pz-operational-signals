@@ -27,6 +27,8 @@ require "POS_Constants"
 
 POS_ZScienceIntegration = {}
 
+local _TAG = "[POS:ZScience]"
+
 ---------------------------------------------------------------
 -- Detection
 ---------------------------------------------------------------
@@ -106,7 +108,7 @@ function POS_ZScienceIntegration.rollSpecimen(player, sigintLevel)
                     inv:AddItem(spec.item)
                 end)
                 if ok then
-                    PhobosLib.debug("POS", "[ZScience]",
+                    PhobosLib.debug("POS", _TAG,
                         "Specimen produced: " .. spec.item)
                     return true
                 end
@@ -124,7 +126,7 @@ end
 --- Register XP mirror on game start (one-time setup).
 function POS_ZScienceIntegration.init()
     if not POS_ZScienceIntegration.isAvailable() then
-        PhobosLib.debug("POS", "[ZScience]", "ZScienceSkill not active — skipping integration")
+        PhobosLib.debug("POS", _TAG, "ZScienceSkill not active — skipping integration")
         return
     end
 
@@ -134,7 +136,7 @@ function POS_ZScienceIntegration.init()
             "Science",
             POS_Constants.SIGINT_ZSCIENCE_MIRROR_RATIO
         )
-        PhobosLib.debug("POS", "[ZScience]",
+        PhobosLib.debug("POS", _TAG,
             "XP mirror registered (ratio: " ..
             tostring(POS_Constants.SIGINT_ZSCIENCE_MIRROR_RATIO) .. ")")
     end
