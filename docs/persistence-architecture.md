@@ -8,7 +8,6 @@ POSnet uses a three-layer persistence model. Each layer has a distinct scope, au
 |-------|-------|----------|-----------|
 | 1. World ModData | Shared economy state | PZ world save (engine-managed) | Server-only writes |
 | 2. Player ModData | Per-character scalar state (rep, cash, prefs) | PZ player save (engine-managed) | Server validates, client reads |
-| 2b. Player File Store | Per-character growth-prone arrays (watchlist, alerts, orders, holdings) | `<Zomboid>/Lua/POSNET/player_<username>.dat` | Client writes, flush-on-mutate |
 | 3. Event Logs | Historical append-only records | `<Zomboid>/Lua/POSNET/` on disk | Server-only writes, disposable |
 
 ---
@@ -59,7 +58,6 @@ Tiny character-bound scalar state. Kept deliberately small to avoid save bloat a
 | `intelAccess` | table (category IDs) | Categories player has gathered intel on |
 | `uiPrefs` | table | Terminal colour theme, font size, panel toggles |
 | `lastMarketSyncDay` | integer | Last game day the player received a market snapshot |
-| `fileStoreMigrated` | boolean | Guard flag — true once arrays migrated to Layer 2b |
 
 ### Storage Location
 
@@ -67,31 +65,16 @@ Inside the player character save, managed by the engine via `player:getModData()
 
 ---
 
-## Layer 2b: Player File Store
+## Layer 2b: Player File Store (DEPRECATED)
 
-Per-player flat file for growth-prone arrays. Externalised from modData to prevent save bloat in long-running games. Managed by `POS_PlayerFileStore.lua`.
+Previous versions stored growth-prone arrays (watchlist, alerts, orders, holdings)
+in per-player `.dat` files via `POS_PlayerFileStore.lua`. This system has been
+removed because `getFileReader` causes silent JVM crashes in multiple PZ lifecycle
+contexts (OnGameStart, render frames, event ticks).
 
-### Schema
-
-| Section | Fields | Purpose |
-|---------|--------|---------|
-| `[WATCHLIST]` | `categoryId\|addedDay\|lastSnapshotAvg\|lastSnapshotDay` | Watched commodity categories with price snapshots |
-| `[ALERTS]` | `categoryId\|changePercent\|oldAvg\|newAvg\|day\|acknowledged` | Price alerts, capped at `MAX_PLAYER_ALERTS` |
-| `[ORDERS]` | *(future)* | Active buy/sell orders |
-| `[HOLDINGS]` | *(future)* | Current investment/portfolio positions |
-
-### Storage Location
-
-```
-<Zomboid user folder>/Lua/POSNET/player_<username>.dat
-```
-
-### Behaviour
-
-- **Lazy load**: Data is read from file on first access per session, then cached in memory.
-- **Flush on mutate**: Every add/remove/update writes the full file immediately (same pattern as building/mailbox cache writes).
-- **Migration**: On first load, if no `.dat` file exists, legacy arrays are copied from player modData (Layer 2) and the modData arrays are cleared. A `fileStoreMigrated` flag prevents re-migration.
-- **Disposable**: If deleted, watchlist and alert history are lost but the system continues to function (player can re-add watches).
+All per-player data now uses player modData exclusively via
+`PhobosLib.getPlayerModDataTable()` — see design-guidelines.md §27.6.
+Old `.dat` files in `Zomboid/Lua/POSNET/` are safely ignored.
 
 ---
 

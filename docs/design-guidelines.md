@@ -839,8 +839,8 @@ with 4-5 sub-categories per parent, paginated if needed.
 Player modData is limited to per-player **scalar** state only:
 - Reputation, cash balance, intel access bands, UI preferences, cooldowns.
 - Growth-prone arrays (watchlist, alerts, orders, holdings) are stored in
-  per-player flat files via `POS_PlayerFileStore` (see `persistence-architecture.md`
-  Layer 2b). VHS tape entries are in the event log; only a summary is in item modData.
+  player modData via `PhobosLib.getPlayerModDataTable()` (see §27.6).
+  VHS tape entries are in the event log; only a summary is in item modData.
 
 ### 11.3 Authority Model
 
@@ -1677,7 +1677,7 @@ standard determines whether the system feels **moddable or hostile**.
 Every definition file includes `schemaVersion = 1`. When schemas evolve:
 - The validator warns on version mismatch but does not reject
 - Future migrations can read `schemaVersion` to apply transforms
-- This applies to all data formats (definition files, file store, event logs)
+- This applies to all data formats (definition files, event logs, world ModData)
 
 ### 26.9 Two-Tier Extensibility
 
@@ -1890,8 +1890,8 @@ engine-managed, auto-persisted on save, and safe to access at any time.
 -- GOOD: engine-managed, safe at any time
 local wl = PhobosLib.getPlayerModDataTable(player, POS_Constants.MODDATA_WATCHLIST) or {}
 
--- BAD: crashes JVM silently
-local wl = POS_PlayerFileStore.getWatchlist(player)
+-- BAD: getFileReader crashes the JVM silently in render frames and OnGameStart
+local reader = getFileReader("POSNET/player_" .. username .. ".dat", false)
 ```
 
 **When file I/O IS acceptable:** World-level data (market observations,
