@@ -222,14 +222,28 @@ function POS_RadioInterception.init()
     Events.OnServerCommand.Add(onServerCommand)
     Events.OnPostSave.Add(onSaveGame)
 
-    -- Request initial market snapshot from server (MP clients only)
-    local player = getSpecificPlayer(0)
-    if player and POS_WorldState and not POS_WorldState.isAuthority() then
-        sendClientCommand(player, POS_Constants.CMD_MODULE,
-            POS_Constants.CMD_REQUEST_MARKET_SNAPSHOT, {})
-    end
+    -- Initial market snapshot request deferred to first EveryOneMinute tick.
+    -- Requesting at frame 0 triggers synchronous data exchange during init
+    -- when the engine is already under heavy load from ~200 mods booting.
 
     PhobosLib.debug("POS", _TAG, "Radio interception initialised")
 end
 
-Events.OnGameStart.Add(POS_RadioInterception.init)
+--- Deferred initial market snapshot request (MP clients only).
+--- Runs once on the first EveryOneMinute tick after game start.
+local snapshotRequested = false
+local function onDeferredSnapshotRequest()
+    if snapshotRequested then return end
+    snapshotRequested = true
+    local player = getSpecificPlayer(0)
+    if player and POS_WorldState and not POS_WorldState.isAuthority() then
+        sendClientCommand(player, POS_Constants.CMD_MODULE,
+            POS_Constants.CMD_REQUEST_MARKET_SNAPSHOT, {})
+        PhobosLib.debug("POS", _TAG, "Deferred market snapshot requested")
+    end
+end
+
+Events.OnGameStart.Add(function()
+    POS_RadioInterception.init()
+    Events.EveryOneMinute.Add(onDeferredSnapshotRequest)
+end)
