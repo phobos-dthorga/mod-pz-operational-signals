@@ -26,6 +26,9 @@
 require "PhobosLib"
 require "POS_Constants"
 require "POS_MarketDatabase"
+require "POS_WorldState"
+require "POS_WatchlistService"
+require "POS_PlayerFileStore"
 
 POS_RadioInterception = {}
 
@@ -142,6 +145,12 @@ local function onServerCommand(module, command, args)
         end
         PhobosLib.debug("POS", _TAG, "[RadioInterception] Market snapshot received")
 
+        -- Refresh watchlist snapshots now that fresh price data is available
+        local snapshotPlayer = getSpecificPlayer(0)
+        if snapshotPlayer and POS_WatchlistService then
+            PhobosLib.safecall(POS_WatchlistService.refresh, snapshotPlayer)
+        end
+
     elseif command == POS_Constants.CMD_ECONOMY_TICK_COMPLETE then
         -- Economy day tick completed — request fresh snapshot
         if POS_MarketDatabase then
@@ -153,6 +162,15 @@ local function onServerCommand(module, command, args)
             sendClientCommand(player, POS_Constants.CMD_MODULE,
                 POS_Constants.CMD_REQUEST_MARKET_SNAPSHOT, {})
         end
+
+        -- SP shortcut: server and client share the same data, so refresh
+        -- the watchlist immediately without waiting for a snapshot response.
+        if POS_WorldState and POS_WorldState.isAuthority() then
+            if player and POS_WatchlistService then
+                PhobosLib.safecall(POS_WatchlistService.refresh, player)
+            end
+        end
+
         PhobosLib.debug("POS", _TAG, "[RadioInterception] Economy tick day="
             .. tostring(args and args.day or "?"))
 
@@ -186,10 +204,20 @@ function POS_RadioInterception.isChannelRegistered()
     return channelRegistered
 end
 
+--- Flush player file store on game save so snapshot data survives exits.
+local function onSaveGame()
+    local player = getSpecificPlayer(0)
+    if player and POS_PlayerFileStore then
+        POS_PlayerFileStore.save(player)
+        PhobosLib.debug("POS", _TAG, "Player file store flushed on save")
+    end
+end
+
 --- Initialise radio interception hooks.
 function POS_RadioInterception.init()
     POS_RadioInterception.registerChannels()
     Events.OnServerCommand.Add(onServerCommand)
+    Events.OnPostSave.Add(onSaveGame)
 
     -- Request initial market snapshot from server (MP clients only)
     local player = getSpecificPlayer(0)
