@@ -153,7 +153,7 @@ module PhobosOperationalSignals {
         category PhobosFieldOps,
         Tags = POS_TerminalStation;CannotBeResearched,
         needToBeLearn false,
-        SkillRequired Electrical=2,
+        SkillRequired = Electrical:2,
         OnCreate POS_CraftCallbacks.onCreateSalvageCorruptFloppy,
     }
 
@@ -168,7 +168,7 @@ module PhobosOperationalSignals {
         time 300,
         category PhobosFieldOps,
         needToBeLearn false,
-        SkillRequired Electrical=3,
+        SkillRequired = Electrical:3,
         OnCreate POS_CraftCallbacks.onCreateRepairDataRecorder,
     }
 
