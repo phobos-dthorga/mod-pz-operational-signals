@@ -627,6 +627,8 @@
     "UI_POS_Satellite_Calibrate": "Calibrate Dish",
     "UI_POS_Satellite_CheckStatus": "Check Signal Status",
     "UI_POS_Satellite_NoPower": "Dish requires electricity.",
+    "UI_POS_Satellite_NoTerminalLink": "No terminal detected within range.",
+    "UI_POS_Satellite_InsufficientFuel": "Insufficient fuel for operation.",
     "UI_POS_Satellite_LowFuel": "Generator fuel low — broadcast strength reduced.",
     "UI_POS_Satellite_MissingReport": "Requires a compiled intelligence artifact.",
     "UI_POS_Satellite_OnCooldown": "Recently broadcast. Available in %1 hour(s).",

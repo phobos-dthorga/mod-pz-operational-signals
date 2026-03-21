@@ -110,6 +110,12 @@ function POS_SatelliteContextMenu.onFillWorldObjectContextMenu(playerNum, contex
     elseif not status.hasPower then
         broadcastState = "no_power"
         broadcastTip = PhobosLib.safeGetText("UI_POS_Satellite_NoPower")
+    elseif not status.hasLink then
+        broadcastState = "no_link"
+        broadcastTip = PhobosLib.safeGetText("UI_POS_Satellite_NoTerminalLink")
+    elseif status.fuelLow then
+        broadcastState = "low_fuel"
+        broadcastTip = PhobosLib.safeGetText("UI_POS_Satellite_InsufficientFuel")
     elseif not status.calibrated then
         broadcastState = "not_calibrated"
         broadcastTip = PhobosLib.safeGetText("UI_POS_Satellite_NotCalibrated")
@@ -156,6 +162,12 @@ function POS_SatelliteContextMenu.onFillWorldObjectContextMenu(playerNum, contex
     elseif not status.hasPower then
         calibrateState = "no_power"
         calibrateTip = PhobosLib.safeGetText("UI_POS_Satellite_NoPower")
+    elseif not status.hasLink then
+        calibrateState = "no_link"
+        calibrateTip = PhobosLib.safeGetText("UI_POS_Satellite_NoTerminalLink")
+    elseif status.fuelLow then
+        calibrateState = "low_fuel"
+        calibrateTip = PhobosLib.safeGetText("UI_POS_Satellite_InsufficientFuel")
     else
         -- Check danger
         if PhobosLib and PhobosLib.isDangerNearby then
