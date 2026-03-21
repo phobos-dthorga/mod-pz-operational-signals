@@ -1490,6 +1490,8 @@ reimplement these locally — use the PhobosLib versions:
 | `PhobosLib.round(value, decimals)` | Decimal rounding |
 | `PhobosLib.map(tbl, fn)` | Array transform |
 | `PhobosLib.filter(tbl, predicate)` | Array filter |
+| `PhobosLib.lazyInit(initFn)` | Deferred one-shot initialisation (see §27) |
+| `PhobosLib.throttle(fn, intervalMinutes)` | Rate-limit an EveryOneMinute handler (see §27) |
 
 ---
 
@@ -1667,3 +1669,55 @@ When a schema does evolve, the `schemaVersion` field enables safe migration
 - **Never skip validation** — every code path that loads external data must
   pass through schema validation. "Trust but verify" is not acceptable;
   **verify unconditionally**.
+
+---
+
+## 27. Init-Time Performance
+
+POSnet modules must not do expensive work during the bootstrap phase
+(OnGameStart / frame 0). The PZ engine processes OnGameStart callbacks
+synchronously on the main thread — heavy work here causes visible load-screen
+stalls and blocks other mods.
+
+### 27.1 Rules
+
+1. **Never run expensive spatial scans at OnGameStart.** Functions like
+   `findNearbyBuildings`, `findWorldObjectsBySprite`, and any radius-based
+   world queries must be deferred to the **first EveryOneMinute tick** or to
+   first user interaction (e.g. terminal open).
+
+2. **Use `PhobosLib.lazyInit(initFn)` for heavy catalogue work.** Modules
+   that iterate large datasets (e.g. all game items via `ScriptManager`) but
+   are only accessed on user interaction (terminal open, mission generation)
+   must wrap their initialisation in `lazyInit`. The init function runs once
+   on first access, not at load time.
+
+3. **Use `PhobosLib.throttle(fn, intervalMinutes)` for spatial tick
+   handlers.** Any EveryOneMinute handler that performs world scans must be
+   throttled. The default throttle interval is **5 game-minutes** unless
+   gameplay requires tighter cadence.
+
+4. **Defer file I/O writes to first EveryOneMinute tick.** Only reads are
+   needed during the bootstrap phase. Writes (ModData persistence, file-store
+   flushes) must wait until the world is fully loaded.
+
+5. **Defer server command requests to first EveryOneMinute tick.**
+   `sendClientCommand` calls at frame 0 trigger synchronous processing during
+   init and can stall both client and server. Issue them on the first tick
+   instead.
+
+### 27.2 Anti-Patterns
+
+- Iterating all game items via `ScriptManager:getAllItems()` at OnGameStart
+- Running 250-tile radius spatial scans at frame 0
+- Requesting market snapshots from the server during `init()`
+- Running `findWorldObjectsBySprite` every 1 game-minute when every 5 suffices
+
+### 27.3 Implementation Reference
+
+| Module | Technique |
+|--------|-----------|
+| `POS_ItemPool.lua` | Lazy-init via `PhobosLib.lazyInit()` — item catalogue built on first access |
+| `POS_DeliveryContextMenu.lua` | Deferred initial scan + throttled passive scans |
+| `POS_RadioInterception.lua` | Deferred snapshot request (first tick, not init) |
+| `POS_ReconScanner.lua` | Cached active operation to avoid O(n) per-tick scan |
