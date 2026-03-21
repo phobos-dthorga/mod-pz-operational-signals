@@ -1,8 +1,9 @@
 # POSnet Living Market — Autonomous Economic Simulation Design
 
-> **Status**: Design notes (not yet implemented).
+> **Status**: Scaffolded (stubs, constants, schemas, definitions committed;
+> simulation logic not yet active). Gated behind `POS.EnableLivingMarket`.
 > **Prerequisite reading**: `market-exchange-design.md` (current 3-layer architecture),
-> `design-guidelines.md` Sections 12–13.
+> `design-guidelines.md` Sections 12–13, 24 (Living Market), 26 (Data-Pack Architecture).
 
 This document describes the design for **Layer 0: World Economy** — an
 autonomous economic simulation that runs independently of the player,
@@ -14,6 +15,7 @@ For related systems, see:
 - `camera-workstation-design.md` — Intelligence compilation
 - `satellite-uplink-design.md` — Market propagation
 - `sigint-skill-design.md` — SIGINT skill and intel quality
+- `design-guidelines.md` §26 — Data-pack architecture (schemas, registries, definitions)
 
 ---
 
@@ -53,6 +55,9 @@ Layer C: Presentation             (terminal UI displays actionable intel)
 
 ## 2. Market Zones (Geographically Fractured Economy)
 
+> **Implementation**: Zone definitions are data-only Lua files in
+> `Definitions/Zones/`, validated by `POS_ZoneSchema.lua`.
+
 The market is **not global**. Each zone tracks localised supply and demand.
 
 ### Zone Schema
@@ -87,6 +92,11 @@ requiring full freight simulation.
 ---
 
 ## 3. Market Agent Architecture
+
+> **Implementation**: Archetype profiles are defined as data-only Lua files in
+> `Definitions/Archetypes/`, validated by `POS_ArchetypeSchema.lua`, and
+> registered through `POS_MarketAgent.getRegistry()`. See `design-guidelines.md`
+> §26 for the full data-pack architecture.
 
 Market agents are **invisible economic personalities** that generate
 observations, stock posture, rumours, and price drift — without simulating
@@ -536,6 +546,9 @@ Server-side tick runs every 10–30 in-game minutes (sandbox-configurable).
 
 ## 11. Event System
 
+> **Implementation**: Event definitions are data-only Lua files in
+> `Definitions/Events/`, validated by `POS_EventSchema.lua`.
+
 Events plug into the simulation tick and make the market feel alive.
 
 ### Starting Event Set (6 Events)
@@ -676,6 +689,14 @@ naturally:
 ---
 
 ## 17. Implementation Phasing
+
+### Phase 0 — Scaffolding ✅
+
+Data-pack architecture implemented: 4 schema files, 15 definition files,
+4 templates, 3 stub modules (`POS_MarketAgent`, `POS_WholesalerService`,
+`POS_MarketSimulation`), sandbox gate, translation keys, economy tick hook
+(commented out). All gated behind `POS.EnableLivingMarket`. PhobosLib
+provides `PhobosLib_Schema`, `PhobosLib_Registry`, and `PhobosLib_DataLoader`.
 
 ### Phase 1 — Foundation (3 Archetypes)
 

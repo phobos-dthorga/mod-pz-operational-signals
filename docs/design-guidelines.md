@@ -1520,8 +1520,8 @@ return {
     description = "A small-time regional opportunist.",
     behaviour = "baseline_trader",
     tuning = {
-        reliability = 0.55,
-        volatility  = 0.45,
+        reliability = 0.55,  -- 0.0 to 1.0
+        volatility  = 0.45,  -- 0.0 to 1.0
     },
     affinities = {
         food  = 1.0,
@@ -1533,9 +1533,14 @@ return {
 **Rules:**
 - Files contain ONLY a `return { ... }` table — no logic, no functions, no globals
 - All files include `schemaVersion` for forward compatibility
-- Comments are welcome (Lua supports them; JSON does not)
-- Nesting should be at most 2 levels deep (tuning, affinities — not deeper)
-- Human-readable `name` fields, not localisation token IDs
+- Comments are welcome and encouraged (Lua supports them; JSON does not) —
+  inline range hints (e.g. `-- 0.0 to 1.0`) make files self-documenting
+- Nesting must not exceed **2 levels** deep (e.g. `tuning.reliability`,
+  `affinities.food`). Deeper nesting (3+) quickly becomes hostile to non-coders
+- Human-readable `name` fields, not localisation token IDs — the engine
+  generates i18n fallbacks internally when needed
+- **Behaviour references are always string identifiers** (e.g. `"baseline_trader"`),
+  never function pointers or callback names
 
 ### 26.3 File Layout
 
@@ -1600,15 +1605,23 @@ Every `Definitions/` subdirectory includes a `_template.lua` with:
 - `enabled = false` so it is never active if accidentally loaded
 - Players copy and rename the template, then change values
 
+Players learn by copying and editing — templates are the primary onboarding
+surface. Ship ready-made examples alongside templates where practical.
+
 ### 26.7 Error Messages
 
 Invalid definitions are **rejected, not crashed**. The validator logs clear,
-actionable messages:
+actionable messages that tell the player exactly what to fix:
 
 ```
 [POS:Archetype] "road_king" rejected: tuning.volatility: must be at most 1.0 (got: 1.5)
 [POS:Zone] "my_zone" rejected: missing required field: id
 ```
+
+Never surface raw Lua errors to the player (e.g. `attempt to index nil value`).
+Every validation failure must state: the entity type, the entity ID, the field
+name, the rule that was violated, and the actual value when relevant. This
+standard determines whether the system feels **moddable or hostile**.
 
 ### 26.8 Schema Versioning
 
@@ -1617,7 +1630,31 @@ Every definition file includes `schemaVersion = 1`. When schemas evolve:
 - Future migrations can read `schemaVersion` to apply transforms
 - This applies to all data formats (definition files, file store, event logs)
 
-### 26.9 Anti-Patterns
+### 26.9 Two-Tier Extensibility
+
+The data-pack system supports two tiers of content creators:
+
+| Tier | Audience | What they do | Skills required |
+|------|----------|-------------|-----------------|
+| **Simple** | Players | Copy a `_template.lua`, change numeric values and string IDs | Text editor, no coding |
+| **Advanced** | Addon modders | Ship definition packs as separate PZ mods, register via `getRegistry():register()` | Basic Lua, PZ mod structure |
+
+Simple-tier users stay in the shallow water (editing values in flat tables).
+Advanced-tier users can add entirely new content packs, new behaviour
+drivers, and new categories. Both tiers interact only with data and the
+registry API — neither touches engine logic.
+
+### 26.10 Schema Compactness
+
+Schemas should start compact. A definition with 10–15 strong, expressive
+fields is far better than one with 80 knobs. Add fields only when the engine
+actually reads them. Unused schema fields create false promises and
+maintenance burden.
+
+When a schema does evolve, the `schemaVersion` field enables safe migration
+(see §26.8).
+
+### 26.11 Anti-Patterns
 
 - **Never let players inject functions** — data-only means identifiers, numbers,
   tags, lists, flags, text, and category mappings. No `tickFunction = function(...) end`.
@@ -1625,3 +1662,8 @@ Every definition file includes `schemaVersion = 1`. When schemas evolve:
   update pain, and corruption risk.
 - **Never auto-discover files** — PZ Lua has no directory listing API. Use explicit
   `require` paths for built-ins and the registry API for addons.
+- **Never over-nest** — if a data structure reaches 3+ levels deep, flatten it.
+  Deep nesting turns content files into puzzles.
+- **Never skip validation** — every code path that loads external data must
+  pass through schema validation. "Trust but verify" is not acceptable;
+  **verify unconditionally**.
