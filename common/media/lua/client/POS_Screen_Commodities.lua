@@ -70,14 +70,19 @@ function screen.create(contentPanel, _params, _terminal)
             },
             renderItem = function(parent, rx, ry, rw, cat, _idx)
                 local summary = POS_MarketDatabase.getSummary(cat.id)
-                local freshnessKey = POS_MarketService.getFreshnessKey(summary.freshestDay)
-                local freshness = W.safeGetText(freshnessKey)
-                local sources = summary.sourceCount or 0
-
-                local label = W.safeGetText(cat.labelKey)
-                    .. " — " .. sources .. " "
-                    .. W.safeGetText("UI_POS_Market_Sources")
-                    .. " [" .. freshness .. "]"
+                local label
+                if summary then
+                    local freshnessKey = POS_MarketService.getFreshnessKey(summary.freshestDay)
+                    local freshness = W.safeGetText(freshnessKey)
+                    local sources = summary.sourceCount or 0
+                    label = W.safeGetText(cat.labelKey)
+                        .. " — " .. sources .. " "
+                        .. W.safeGetText("UI_POS_Market_Sources")
+                        .. " [" .. freshness .. "]"
+                else
+                    label = W.safeGetText(cat.labelKey)
+                        .. " — " .. W.safeGetText("UI_POS_Market_NoData")
+                end
 
                 local catId = cat.id
                 W.createButton(parent, rx, ry, rw, ctx.btnH, label, nil,
