@@ -32,6 +32,8 @@ require "POS_API"
 
 local C = POS_TerminalWidgets.COLOURS
 
+local _TAG = "[POS:BBSPost]"
+
 ---------------------------------------------------------------
 -- Tier generation
 ---------------------------------------------------------------
@@ -100,7 +102,7 @@ local function performInvestment(oppId, amount, returnAmount)
 
     -- Verify player can still afford it
     if not PhobosLib.canAfford(player, amount) then
-        PhobosLib.debug("POS", "[BBSPost] Player can no longer afford $" .. amount)
+        PhobosLib.debug("POS", _TAG, "[BBSPost] Player can no longer afford $" .. amount)
         POS_ScreenManager.markDirty()
         return
     end
@@ -109,7 +111,7 @@ local function performInvestment(oppId, amount, returnAmount)
     local maxActive = POS_Sandbox.getMaxActiveInvestments()
     local activeCount = POS_InvestmentLog.countActiveInvestments()
     if activeCount >= maxActive then
-        PhobosLib.debug("POS", "[BBSPost] Max active investments reached")
+        PhobosLib.debug("POS", _TAG, "[BBSPost] Max active investments reached")
         POS_ScreenManager.markDirty()
         return
     end
@@ -117,7 +119,7 @@ local function performInvestment(oppId, amount, returnAmount)
     -- Remove money from player
     local removed = PhobosLib.removeMoney(player, amount)
     if not removed then
-        PhobosLib.debug("POS", "[BBSPost] Failed to remove $" .. amount)
+        PhobosLib.debug("POS", _TAG, "[BBSPost] Failed to remove $" .. amount)
         POS_ScreenManager.markDirty()
         return
     end
@@ -145,7 +147,7 @@ local function performInvestment(oppId, amount, returnAmount)
         actualRisk = opp.actualRisk,
     })
 
-    PhobosLib.debug("POS", "[BBSPost] Invested $" .. amount
+    PhobosLib.debug("POS", _TAG, "[BBSPost] Invested $" .. amount
         .. " in " .. opp.id .. " (return $" .. returnAmount
         .. " in " .. (opp.paybackDays or "?") .. " days)")
 

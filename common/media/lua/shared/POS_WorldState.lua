@@ -27,6 +27,8 @@ require "POS_MarketFileStore"
 
 POS_WorldState = {}
 
+local _TAG = "[POS:WorldState]"
+
 ---------------------------------------------------------------
 -- Container accessors (all return persistent tables)
 ---------------------------------------------------------------
@@ -90,7 +92,7 @@ function POS_WorldState.saveBuildingCache()
 
     local writer = getFileWriter(POS_Constants.CACHE_FILE_BUILDINGS, false, false)
     if not writer then
-        PhobosLib.debug("POS", "[WorldState] Failed to open building cache for writing")
+        PhobosLib.debug("POS", _TAG, "[WorldState] Failed to open building cache for writing")
         return
     end
 
@@ -103,7 +105,7 @@ function POS_WorldState.saveBuildingCache()
             .. tostring(entry.y) .. POS_Constants.CACHE_FILE_SEPARATOR .. rooms)
     end
     writer:close()
-    PhobosLib.debug("POS", "[WorldState] Building cache saved: " .. tostring(#buildings.entries) .. " entries")
+    PhobosLib.debug("POS", _TAG, "[WorldState] Building cache saved: " .. tostring(#buildings.entries) .. " entries")
 end
 
 --- Load the building discovery cache from an external flat file.
@@ -130,7 +132,7 @@ function POS_WorldState.loadBuildingCache()
         line = reader:readLine()
     end
     reader:close()
-    PhobosLib.debug("POS", "[WorldState] Building cache loaded: " .. tostring(#entries) .. " entries")
+    PhobosLib.debug("POS", _TAG, "[WorldState] Building cache loaded: " .. tostring(#entries) .. " entries")
     return entries
 end
 
@@ -142,7 +144,7 @@ function POS_WorldState.saveMailboxCache()
 
     local writer = getFileWriter(POS_Constants.CACHE_FILE_MAILBOXES, false, false)
     if not writer then
-        PhobosLib.debug("POS", "[WorldState] Failed to open mailbox cache for writing")
+        PhobosLib.debug("POS", _TAG, "[WorldState] Failed to open mailbox cache for writing")
         return
     end
 
@@ -151,7 +153,7 @@ function POS_WorldState.saveMailboxCache()
             .. tostring(entry.y))
     end
     writer:close()
-    PhobosLib.debug("POS", "[WorldState] Mailbox cache saved: " .. tostring(#mailboxes.entries) .. " entries")
+    PhobosLib.debug("POS", _TAG, "[WorldState] Mailbox cache saved: " .. tostring(#mailboxes.entries) .. " entries")
 end
 
 --- Load the mailbox discovery cache from an external flat file.
@@ -174,7 +176,7 @@ function POS_WorldState.loadMailboxCache()
         line = reader:readLine()
     end
     reader:close()
-    PhobosLib.debug("POS", "[WorldState] Mailbox cache loaded: " .. tostring(#entries) .. " entries")
+    PhobosLib.debug("POS", _TAG, "[WorldState] Mailbox cache loaded: " .. tostring(#entries) .. " entries")
     return entries
 end
 
@@ -190,7 +192,7 @@ function POS_WorldState.migrateModDataCaches()
         POS_WorldState.saveBuildingCache()
         -- Clear from ModData after successful write
         buildings.entries = {}
-        PhobosLib.debug("POS", "[WorldState] Migrated " .. tostring(count) .. " building entries to external file")
+        PhobosLib.debug("POS", _TAG, "[WorldState] Migrated " .. tostring(count) .. " building entries to external file")
     end
 
     local mailboxes = POS_WorldState.getMailboxes()
@@ -198,7 +200,7 @@ function POS_WorldState.migrateModDataCaches()
         local count = #mailboxes.entries
         POS_WorldState.saveMailboxCache()
         mailboxes.entries = {}
-        PhobosLib.debug("POS", "[WorldState] Migrated " .. tostring(count) .. " mailbox entries to external file")
+        PhobosLib.debug("POS", _TAG, "[WorldState] Migrated " .. tostring(count) .. " mailbox entries to external file")
     end
 
     meta.cachesMigrated = true
@@ -255,7 +257,7 @@ function POS_WorldState.bootstrap()
             -- Migrate market intel records
             local oldIntel = playerMd[POS_Constants.MD_MARKET_INTEL]
             if oldIntel and type(oldIntel) == "table" then
-                PhobosLib.debug("POS", "[WorldState] Migrating "
+                PhobosLib.debug("POS", _TAG, "[WorldState] Migrating "
                     .. tostring(#oldIntel) .. " intel records from player to world")
                 if POS_MarketDatabase and POS_MarketDatabase.addRecord then
                     for _, record in ipairs(oldIntel) do
@@ -299,7 +301,7 @@ function POS_WorldState.bootstrap()
     -- One-time migration of market observations/closes from ModData to file store
     POS_WorldState.migrateMarketDataToFile()
 
-    PhobosLib.debug("POS", "[WorldState] Bootstrap complete, schema v"
+    PhobosLib.debug("POS", _TAG, "[WorldState] Bootstrap complete, schema v"
         .. tostring(meta.schemaVersion) .. ", seed=" .. tostring(meta.worldSeed))
 end
 
@@ -347,7 +349,7 @@ function POS_WorldState.migrateMarketDataToFile()
 
     if migratedObs > 0 then
         POS_MarketFileStore.save()
-        PhobosLib.debug("POS", "[WorldState] Migrated market data to file store: "
+        PhobosLib.debug("POS", _TAG, "[WorldState] Migrated market data to file store: "
             .. tostring(migratedCats) .. " categories, "
             .. tostring(migratedObs) .. " observations")
     end

@@ -27,6 +27,8 @@ require "POS_Constants"
 
 POS_InvestmentService = {}
 
+local _TAG = "[POS:InvService]"
+
 ---------------------------------------------------------------
 -- Opportunity lifecycle
 ---------------------------------------------------------------
@@ -119,5 +121,5 @@ end
 --- Initialise the investment service tick handler.
 function POS_InvestmentService.init()
     Events.EveryOneMinute.Add(POS_InvestmentService.onEveryOneMinute)
-    PhobosLib.debug("POS", "Investment service initialised")
+    PhobosLib.debug("POS", _TAG, "Investment service initialised")
 end

@@ -31,6 +31,8 @@ require "POS_RewardCalculator"
 
 POS_ReconGenerator = POS_ReconGenerator or {}
 
+local _TAG = "[POS:ReconGen]"
+
 --- Maximum attempts to find a target type with a cached building.
 local MAX_TARGET_ATTEMPTS = 10
 
@@ -263,7 +265,7 @@ function POS_ReconGenerator.generate(player)
                 expiryDay = currentDay + expiryDays,
             }
 
-            PhobosLib.debug("POS", "[ReconGen] Generated: "
+            PhobosLib.debug("POS", _TAG, "[ReconGen] Generated: "
                 .. target.id .. " at "
                 .. math.floor(building.x) .. ", " .. math.floor(building.y)
                 .. " (tier " .. target.tier .. ", $" .. scaledReward .. ")")
@@ -272,6 +274,6 @@ function POS_ReconGenerator.generate(player)
         end
     end
 
-    PhobosLib.debug("POS", "[ReconGen] No matching buildings in cache")
+    PhobosLib.debug("POS", _TAG, "[ReconGen] No matching buildings in cache")
     return nil
 end

@@ -27,6 +27,8 @@ require "PhobosLib"
 
 POS_MissionGenerator = {}
 
+local _TAG = "[POS:MissionGen]"
+
 --- Generate a new operation from available templates.
 --- @param player IsoPlayer The player receiving the operation
 --- @return table|nil Operation data table, or nil if generation failed
@@ -40,7 +42,7 @@ function POS_MissionGenerator.generate(player)
     end
 
     if #candidates == 0 then
-        PhobosLib.debug("POS", "No mission templates registered — cannot generate.")
+        PhobosLib.debug("POS", _TAG, "No mission templates registered — cannot generate.")
         return nil
     end
 
@@ -75,7 +77,7 @@ function POS_MissionGenerator.generate(player)
         end
     end
 
-    PhobosLib.debug("POS", "Generated operation: " .. operation.id
+    PhobosLib.debug("POS", _TAG, "Generated operation: " .. operation.id
         .. " [" .. (operation.category or "?") .. "]")
 
     return operation

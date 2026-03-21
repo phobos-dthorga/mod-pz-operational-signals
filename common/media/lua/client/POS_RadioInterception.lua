@@ -29,6 +29,8 @@ require "POS_MarketDatabase"
 
 POS_RadioInterception = {}
 
+local _TAG = "[POS:RadioInt]"
+
 --- Whether the POSnet channel has been registered.
 local channelRegistered = false
 
@@ -39,7 +41,7 @@ function POS_RadioInterception.registerChannels()
 
     local mgr = getRadioScriptManager and getRadioScriptManager()
     if not mgr then
-        PhobosLib.debug("POS", "RadioScriptManager not available — skipping channel registration")
+        PhobosLib.debug("POS", _TAG, "RadioScriptManager not available — skipping channel registration")
         return
     end
 
@@ -49,7 +51,7 @@ function POS_RadioInterception.registerChannels()
     local opsCh = mgr:AddChannel("POSnet Operations", opsFreq)
     if opsCh then
         opsCh:SetCategory("Military")
-        PhobosLib.debug("POS", "POSnet Operations channel at " .. tostring(opsFreq) .. " Hz")
+        PhobosLib.debug("POS", _TAG, "POSnet Operations channel at " .. tostring(opsFreq) .. " Hz")
     end
 
     -- Register tactical channel (military band)
@@ -58,7 +60,7 @@ function POS_RadioInterception.registerChannels()
     local tacCh = mgr:AddChannel("POSnet Tactical", tacFreq)
     if tacCh then
         tacCh:SetCategory("Military")
-        PhobosLib.debug("POS", "POSnet Tactical channel at " .. tostring(tacFreq) .. " Hz")
+        PhobosLib.debug("POS", _TAG, "POSnet Tactical channel at " .. tostring(tacFreq) .. " Hz")
     end
 
     channelRegistered = true
@@ -73,12 +75,12 @@ function POS_RadioInterception.onTransmissionReceived(transmission)
     local player = getSpecificPlayer(0)
     if not player then return end
 
-    PhobosLib.debug("POS", "Transmission received")
+    PhobosLib.debug("POS", _TAG, "Transmission received")
 
     if transmission.operationData and POS_OperationLog then
         local added = POS_OperationLog.addOperation(transmission.operationData)
         if added then
-            PhobosLib.debug("POS", "Operation added: " .. (transmission.operationData.id or "?"))
+            PhobosLib.debug("POS", _TAG, "Operation added: " .. (transmission.operationData.id or "?"))
         end
     end
 end
@@ -96,7 +98,7 @@ local function onServerCommand(module, command, args)
         if POS_InvestmentLog then
             local added = POS_InvestmentLog.addOpportunity(args.investmentData)
             if added then
-                PhobosLib.debug("POS", "Investment opportunity received: "
+                PhobosLib.debug("POS", _TAG, "Investment opportunity received: "
                     .. (args.investmentData.id or "?"))
             end
         end
@@ -109,23 +111,23 @@ local function onServerCommand(module, command, args)
                 local player = getSpecificPlayer(0)
                 if player then
                     PhobosLib.addMoney(player, args.returnAmount)
-                    PhobosLib.debug("POS", "Investment matured — $"
+                    PhobosLib.debug("POS", _TAG, "Investment matured — $"
                         .. args.returnAmount .. " added to inventory")
                 end
             elseif record and args.status == POS_Constants.INV_STATUS_DEFAULTED then
-                PhobosLib.debug("POS", "Investment defaulted — $"
+                PhobosLib.debug("POS", _TAG, "Investment defaulted — $"
                     .. (record.principalAmount or 0) .. " lost")
             end
         end
     elseif command == POS_Constants.CMD_INVESTMENT_ACK and args then
-        PhobosLib.debug("POS", "Server acknowledged investment: "
+        PhobosLib.debug("POS", _TAG, "Server acknowledged investment: "
             .. (args.investmentId or "?"))
     elseif command == POS_Constants.CMD_MARKET_BROADCAST and args and args.marketData then
         -- Auto-ingest broadcast market data into the database
         if POS_MarketDatabase then
             local added = POS_MarketDatabase.addRecord(args.marketData)
             if added then
-                PhobosLib.debug("POS", "Market broadcast ingested: "
+                PhobosLib.debug("POS", _TAG, "Market broadcast ingested: "
                     .. (args.marketData.categoryId or "?")
                     .. " @ $" .. (args.marketData.price or "?"))
             end
@@ -138,7 +140,7 @@ local function onServerCommand(module, command, args)
                 POS_MarketDatabase.updateClientCache(catId, catData)
             end
         end
-        PhobosLib.debug("POS", "[RadioInterception] Market snapshot received")
+        PhobosLib.debug("POS", _TAG, "[RadioInterception] Market snapshot received")
 
     elseif command == POS_Constants.CMD_ECONOMY_TICK_COMPLETE then
         -- Economy day tick completed — request fresh snapshot
@@ -151,7 +153,7 @@ local function onServerCommand(module, command, args)
             sendClientCommand(player, POS_Constants.CMD_MODULE,
                 POS_Constants.CMD_REQUEST_MARKET_SNAPSHOT, {})
         end
-        PhobosLib.debug("POS", "[RadioInterception] Economy tick day="
+        PhobosLib.debug("POS", _TAG, "[RadioInterception] Economy tick day="
             .. tostring(args and args.day or "?"))
 
     elseif command == POS_Constants.CMD_BUILDING_CACHE_SYNC then
@@ -196,7 +198,7 @@ function POS_RadioInterception.init()
             POS_Constants.CMD_REQUEST_MARKET_SNAPSHOT, {})
     end
 
-    PhobosLib.debug("POS", "Radio interception initialised")
+    PhobosLib.debug("POS", _TAG, "Radio interception initialised")
 end
 
 Events.OnGameStart.Add(POS_RadioInterception.init)

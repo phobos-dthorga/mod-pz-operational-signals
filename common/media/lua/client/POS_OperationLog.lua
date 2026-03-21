@@ -32,6 +32,8 @@ require "POS_OperationService"
 
 POS_OperationLog = {}
 
+local _TAG = "[POS:OpLog]"
+
 --- Get the operations array from player modData, creating if needed.
 --- @param player IsoPlayer
 --- @return table Array of operation tables
@@ -67,20 +69,20 @@ function POS_OperationLog.addOperation(operation)
     end
 
     if activeCount >= maxActive then
-        PhobosLib.debug("POS", "Max active operations reached (" .. maxActive .. ") — rejecting new operation")
+        PhobosLib.debug("POS", _TAG, "Max active operations reached (" .. maxActive .. ") — rejecting new operation")
         return false
     end
 
     -- Check for duplicate
     for i = 1, #ops do
         if ops[i].id == operation.id then
-            PhobosLib.debug("POS", "Duplicate operation ID: " .. operation.id)
+            PhobosLib.debug("POS", _TAG, "Duplicate operation ID: " .. operation.id)
             return false
         end
     end
 
     table.insert(ops, operation)
-    PhobosLib.debug("POS", "Operation added to log: " .. operation.id)
+    PhobosLib.debug("POS", _TAG, "Operation added to log: " .. operation.id)
     return true
 end
 
@@ -163,7 +165,7 @@ end
 --- Initialise the operation service tick handler.
 function POS_OperationLog.init()
     POS_OperationService.init()
-    PhobosLib.debug("POS", "Operation log initialised")
+    PhobosLib.debug("POS", _TAG, "Operation log initialised")
 end
 
 Events.OnGameStart.Add(POS_OperationLog.init)

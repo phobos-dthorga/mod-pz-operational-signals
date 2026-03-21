@@ -34,6 +34,8 @@ require "POS_InvestmentService"
 
 POS_InvestmentLog = {}
 
+local _TAG = "[POS:InvLog]"
+
 ---------------------------------------------------------------
 -- ModData accessors
 ---------------------------------------------------------------
@@ -79,7 +81,7 @@ function POS_InvestmentLog.addOpportunity(opportunity)
 
     table.insert(opps, opportunity)
     POS_ScreenManager.markDirty()
-    PhobosLib.debug("POS", "[InvLog] Opportunity added: " .. opportunity.id)
+    PhobosLib.debug("POS", _TAG, "[InvLog] Opportunity added: " .. opportunity.id)
     return true
 end
 
@@ -162,7 +164,7 @@ function POS_InvestmentLog.recordInvestment(opportunityId, principalAmount,
 
     table.insert(investments, record)
     POS_ScreenManager.markDirty()
-    PhobosLib.debug("POS", "[InvLog] Investment recorded: " .. opportunityId
+    PhobosLib.debug("POS", _TAG, "[InvLog] Investment recorded: " .. opportunityId
         .. " ($" .. principalAmount .. " → $" .. returnAmount .. ")")
 end
 
@@ -211,7 +213,7 @@ function POS_InvestmentLog.resolveInvestment(investmentId, status)
            and all[i].status == POS_Constants.INV_STATUS_ACTIVE then
             POS_InvestmentService.resolveInvestment(all[i], status)
             POS_ScreenManager.markDirty()
-            PhobosLib.debug("POS", "[InvLog] Investment resolved: " .. investmentId
+            PhobosLib.debug("POS", _TAG, "[InvLog] Investment resolved: " .. investmentId
                 .. " → " .. status)
             return all[i]
         end
@@ -236,7 +238,7 @@ function POS_InvestmentLog.init()
         sendClientCommand(player, POS_Constants.CMD_MODULE, POS_Constants.CMD_REQUEST_PAYOUTS, {})
     end
 
-    PhobosLib.debug("POS", "Investment log initialised")
+    PhobosLib.debug("POS", _TAG, "Investment log initialised")
 end
 
 Events.OnGameStart.Add(POS_InvestmentLog.init)

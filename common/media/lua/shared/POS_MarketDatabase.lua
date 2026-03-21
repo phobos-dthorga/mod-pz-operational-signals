@@ -27,6 +27,8 @@ require "POS_MarketFileStore"
 
 POS_MarketDatabase = {}
 
+local _TAG = "[POS:MarketDB]"
+
 ---------------------------------------------------------------
 -- Internal helpers
 ---------------------------------------------------------------
@@ -77,7 +79,7 @@ end
 function POS_MarketDatabase.addRecord(record)
     -- Server-only: clients must submit via sendClientCommand
     if not POS_WorldState or not POS_WorldState.isAuthority() then
-        PhobosLib.debug("POS", "[MarketDB] addRecord rejected — not authority")
+        PhobosLib.debug("POS", _TAG, "[MarketDB] addRecord rejected — not authority")
         return false
     end
 
@@ -135,7 +137,7 @@ function POS_MarketDatabase.addRecord(record)
             record.sourceTier or POS_Constants.SOURCE_TIER_FIELD)
     end
 
-    PhobosLib.debug("POS", "[MarketDB] Added intel record: "
+    PhobosLib.debug("POS", _TAG, "[MarketDB] Added intel record: "
         .. tostring(record.id) .. " (cat: " .. tostring(record.categoryId) .. ")")
 
     return true
@@ -423,7 +425,7 @@ function POS_MarketDatabase.purgeExpired(maxDays)
 
     if total > 0 then
         POS_MarketFileStore.markDirty()
-        PhobosLib.debug("POS", "[MarketDB] Purged " .. total .. " expired observations")
+        PhobosLib.debug("POS", _TAG, "[MarketDB] Purged " .. total .. " expired observations")
     end
 
     return total

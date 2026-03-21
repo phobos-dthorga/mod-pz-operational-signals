@@ -33,6 +33,8 @@ require "POS_TerminalWidgets"
 
 POS_TerminalUI = ISCollapsableWindow:derive("POS_TerminalUI")
 
+local _TAG = "[POS:TerminalUI]"
+
 --- Singleton instance reference.
 POS_TerminalUI.instance = nil
 
@@ -354,7 +356,7 @@ function POS_TerminalUI:prerender()
                 if cond and cond > 0 then
                     self.portableComputer:setCondition(cond - 1)
                 else
-                    PhobosLib.debug("POS", "Portable computer battery depleted")
+                    PhobosLib.debug("POS", _TAG, "Portable computer battery depleted")
                     POS_TerminalUI.closeTerminal()
                     return
                 end

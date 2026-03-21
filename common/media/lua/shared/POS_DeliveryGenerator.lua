@@ -29,6 +29,8 @@ require "POS_MailboxScanner"
 
 POS_DeliveryGenerator = POS_DeliveryGenerator or {}
 
+local _TAG = "[POS:DeliveryGen]"
+
 --- Reward bounds.
 local MIN_REWARD = 1000
 local MAX_REWARD = 2500
@@ -66,7 +68,7 @@ function POS_DeliveryGenerator.generate(player)
     local pair = POS_MailboxScanner.selectDeliveryPair()
 
     if not pair then
-        PhobosLib.debug("POS", "[DeliveryGen] No valid mailbox pair found")
+        PhobosLib.debug("POS", _TAG, "[DeliveryGen] No valid mailbox pair found")
         return nil
     end
 
@@ -105,7 +107,7 @@ function POS_DeliveryGenerator.generate(player)
             and POS_Sandbox.getDeliveryExpiryDays() or DELIVERY_EXPIRY_DAYS),
     }
 
-    PhobosLib.debug("POS", "[DeliveryGen] Generated delivery: "
+    PhobosLib.debug("POS", _TAG, "[DeliveryGen] Generated delivery: "
         .. math.floor(pair.straightLine) .. " tiles straight-line, "
         .. math.floor(estimatedRoad) .. " tiles estimated road, "
         .. "$" .. estimatedReward .. " est. reward")

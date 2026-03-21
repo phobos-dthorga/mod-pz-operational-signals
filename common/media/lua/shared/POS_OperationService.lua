@@ -27,6 +27,8 @@ require "POS_Constants"
 
 POS_OperationService = {}
 
+local _TAG = "[POS:OpService]"
+
 ---------------------------------------------------------------
 -- Generation + Registration
 ---------------------------------------------------------------
@@ -112,7 +114,7 @@ function POS_OperationService.completeOperation(operation, player)
         POS_TutorialService.tryAward(player, POS_Constants.TUTORIAL_FIRST_OP_COMPLETED)
     end
 
-    PhobosLib.debug("POS", "Operation completed: " .. (operation.id or "?"))
+    PhobosLib.debug("POS", _TAG, "Operation completed: " .. (operation.id or "?"))
 end
 
 --- Remove the matching field report from the player's inventory.
@@ -183,7 +185,7 @@ function POS_OperationService.cancelOperation(operation, player)
         end)
     end
 
-    PhobosLib.debug("POS", "Operation cancelled: " .. (operation.id or "?"))
+    PhobosLib.debug("POS", _TAG, "Operation cancelled: " .. (operation.id or "?"))
     return true
 end
 
@@ -207,7 +209,7 @@ function POS_OperationService.expireOperation(operation)
         end
     end
 
-    PhobosLib.debug("POS", "Operation expired: " .. (operation.id or "?"))
+    PhobosLib.debug("POS", _TAG, "Operation expired: " .. (operation.id or "?"))
 end
 
 --- Check all active operations for expiry and expire those past deadline.
@@ -267,5 +269,5 @@ end
 --- Initialise the operation service tick handler.
 function POS_OperationService.init()
     Events.EveryOneMinute.Add(POS_OperationService.onEveryOneMinute)
-    PhobosLib.debug("POS", "Operation service initialised")
+    PhobosLib.debug("POS", _TAG, "Operation service initialised")
 end

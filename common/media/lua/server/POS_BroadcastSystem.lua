@@ -38,6 +38,8 @@ require "POS_MarketBroadcaster"
 
 POS_BroadcastSystem = {}
 
+local _TAG = "[POS:Broadcast]"
+
 --- Broadcast a server command to all connected players.
 --- In SP, sends to getSpecificPlayer(0). In MP, iterates getOnlinePlayers().
 --- @param module string Command module
@@ -79,7 +81,7 @@ local FIRST_INVESTMENT_DELAY_MINS = 5
 --- Start the broadcast system.
 function POS_BroadcastSystem.start()
     if not POS_Sandbox.isBroadcastEnabled() then
-        PhobosLib.debug("POS", "Broadcasts disabled in sandbox — system not started")
+        PhobosLib.debug("POS", _TAG, "Broadcasts disabled in sandbox — system not started")
         return
     end
 
@@ -91,14 +93,14 @@ function POS_BroadcastSystem.start()
     local invIntervalMs = POS_Sandbox.getInvestmentBroadcastMins() * 60 * 1000
     local firstInvDelayMs = FIRST_INVESTMENT_DELAY_MINS * 60 * 1000
     lastInvestmentBroadcastTime = now - invIntervalMs + firstInvDelayMs
-    PhobosLib.debug("POS", "Broadcast system started (interval: "
+    PhobosLib.debug("POS", _TAG, "Broadcast system started (interval: "
         .. POS_Sandbox.getBroadcastIntervalMinutes() .. " min)")
 end
 
 --- Stop the broadcast system.
 function POS_BroadcastSystem.stop()
     systemActive = false
-    PhobosLib.debug("POS", "Broadcast system stopped")
+    PhobosLib.debug("POS", _TAG, "Broadcast system stopped")
 end
 
 --- Generate and broadcast a new operation to all connected clients.
@@ -114,7 +116,7 @@ function POS_BroadcastSystem.broadcast()
 
     local operation = POS_MissionGenerator.generate(player)
     if not operation then
-        PhobosLib.debug("POS", "Mission generation failed — no broadcast sent")
+        PhobosLib.debug("POS", _TAG, "Mission generation failed — no broadcast sent")
         return false
     end
 
@@ -123,7 +125,7 @@ function POS_BroadcastSystem.broadcast()
         operationData = operation,
     })
 
-    PhobosLib.debug("POS", "Broadcast sent: " .. operation.id
+    PhobosLib.debug("POS", _TAG, "Broadcast sent: " .. operation.id
         .. " [" .. (operation.category or "?") .. "]")
 
     return true
@@ -137,7 +139,7 @@ function POS_BroadcastSystem.broadcastInvestment()
 
     local opportunity = POS_InvestmentGenerator.generate()
     if not opportunity then
-        PhobosLib.debug("POS", "Investment generation failed — no broadcast sent")
+        PhobosLib.debug("POS", _TAG, "Investment generation failed — no broadcast sent")
         return false
     end
 
@@ -146,7 +148,7 @@ function POS_BroadcastSystem.broadcastInvestment()
         investmentData = opportunity,
     })
 
-    PhobosLib.debug("POS", "Investment broadcast sent: " .. opportunity.id
+    PhobosLib.debug("POS", _TAG, "Investment broadcast sent: " .. opportunity.id
         .. " (poster=" .. (opportunity.posterName or "?") .. ")")
 
     return true
@@ -198,7 +200,7 @@ function POS_BroadcastSystem.onClientCommand(module, command, player, args)
 
         -- Validate required fields
         if type(record.categoryId) ~= "string" or record.categoryId == "" then
-            PhobosLib.debug("POS", "[Validation] Rejected observation: invalid categoryId from "
+            PhobosLib.debug("POS", _TAG, "[Validation] Rejected observation: invalid categoryId from "
                 .. (player:getUsername() or "?"))
             return
         end
@@ -206,7 +208,7 @@ function POS_BroadcastSystem.onClientCommand(module, command, player, args)
         -- Validate category exists in registry
         if POS_MarketRegistry and POS_MarketRegistry.getCategory then
             if not POS_MarketRegistry.getCategory(record.categoryId) then
-                PhobosLib.debug("POS", "[Validation] Rejected observation: unknown category '"
+                PhobosLib.debug("POS", _TAG, "[Validation] Rejected observation: unknown category '"
                     .. tostring(record.categoryId) .. "' from " .. (player:getUsername() or "?"))
                 return
             end
@@ -214,7 +216,7 @@ function POS_BroadcastSystem.onClientCommand(module, command, player, args)
 
         -- Validate price range (reject obviously invalid)
         if record.price and (type(record.price) ~= "number" or record.price < 0 or record.price > 10000) then
-            PhobosLib.debug("POS", "[Validation] Rejected observation: invalid price "
+            PhobosLib.debug("POS", _TAG, "[Validation] Rejected observation: invalid price "
                 .. tostring(record.price) .. " from " .. (player:getUsername() or "?"))
             return
         end
@@ -248,7 +250,7 @@ function POS_BroadcastSystem.onClientCommand(module, command, player, args)
 
     elseif command == POS_Constants.CMD_REQUEST_OPERATION then
         -- Future: allow players to request a new operation on demand
-        PhobosLib.debug("POS", "Operation request from " .. (player:getUsername() or "?"))
+        PhobosLib.debug("POS", _TAG, "Operation request from " .. (player:getUsername() or "?"))
     elseif command == POS_Constants.CMD_PLAYER_INVESTED and args then
         if POS_InvestmentResolver then
             POS_InvestmentResolver.onPlayerInvested(player, args)
@@ -265,7 +267,7 @@ function POS_BroadcastSystem.onClientCommand(module, command, player, args)
                 local meta = POS_WorldState.getMeta()
                 meta.lastProcessedDay = -1  -- Force reprocessing
                 POS_EconomyTick.processDayTick()
-                PhobosLib.debug("POS", "[Admin] Force tick executed by " .. (player:getUsername() or "?"))
+                PhobosLib.debug("POS", _TAG, "[Admin] Force tick executed by " .. (player:getUsername() or "?"))
             end
         end
 
@@ -286,7 +288,7 @@ function POS_BroadcastSystem.onClientCommand(module, command, player, args)
             end
             sendServerCommand(player, POS_Constants.CMD_MODULE,
                 POS_Constants.CMD_ADMIN_DUMP_STATE, { summary = summary })
-            PhobosLib.debug("POS", "[Admin] State dump sent to " .. (player:getUsername() or "?"))
+            PhobosLib.debug("POS", _TAG, "[Admin] State dump sent to " .. (player:getUsername() or "?"))
         end
     end
 end
@@ -302,7 +304,7 @@ function POS_BroadcastSystem.init()
 
     Events.EveryOneMinute.Add(POS_BroadcastSystem.onEveryOneMinute)
     Events.OnClientCommand.Add(POS_BroadcastSystem.onClientCommand)
-    PhobosLib.debug("POS", "Broadcast system initialised")
+    PhobosLib.debug("POS", _TAG, "Broadcast system initialised")
 end
 
 Events.OnGameStart.Add(POS_BroadcastSystem.init)
