@@ -69,12 +69,44 @@ local STATE_UI_KEYS = {
     [POS_Constants.WHOLESALER_STATE_COLLAPSING]  = "Collapsing",
 }
 
+---------------------------------------------------------------
+-- Event stock/disruption effect mapping (event ID → effect table)
+---------------------------------------------------------------
+
+local EVENT_EFFECTS = {
+    [POS_Constants.MARKET_EVENT_BULK_ARRIVAL] = {
+        stock      = POS_Constants.EVENT_STOCK_EFFECT_BULK_ARRIVAL,
+        disruption = 0,
+    },
+    [POS_Constants.MARKET_EVENT_CONVOY_DELAY] = {
+        stock      = 0,
+        disruption = 0,
+    },
+    [POS_Constants.MARKET_EVENT_THEFT_RAID] = {
+        stock      = POS_Constants.EVENT_STOCK_EFFECT_THEFT_RAID,
+        disruption = POS_Constants.EVENT_DISRUPTION_THEFT_RAID,
+    },
+    [POS_Constants.MARKET_EVENT_CONTROLLED_RELEASE] = {
+        stock      = POS_Constants.EVENT_STOCK_EFFECT_CONTROLLED_RELEASE,
+        disruption = 0,
+    },
+    [POS_Constants.MARKET_EVENT_WITHHOLDING] = {
+        stock      = 0,
+        disruption = 0,
+    },
+    [POS_Constants.MARKET_EVENT_REQUISITION] = {
+        stock      = POS_Constants.EVENT_STOCK_EFFECT_REQUISITION,
+        disruption = POS_Constants.EVENT_DISRUPTION_REQUISITION,
+    },
+}
+
 
 --- Create a new wholesaler from a definition table.
 --- Missing fields are filled with sensible defaults.
 ---@param def table  Wholesaler definition (id, name, regionId, archetype required)
 ---@return table     Fully-initialised wholesaler table
 function POS_WholesalerService.createWholesaler(def)
+    local baseStock = def.stockLevel or 0.75
     return {
         id              = def.id,
         name            = def.name or def.id,
@@ -83,7 +115,7 @@ function POS_WholesalerService.createWholesaler(def)
         faction         = def.faction,
         active          = def.active ~= false,
         categoryWeights = def.categoryWeights or {},
-        stockLevel      = def.stockLevel      or 0.75,
+        stockLevel      = baseStock,
         throughput      = def.throughput       or 0.60,
         resilience      = def.resilience       or 0.70,
         visibility      = def.visibility       or 0.35,
@@ -98,59 +130,324 @@ function POS_WholesalerService.createWholesaler(def)
             etaDay        = nil,
             cargoStrength = 0.0,
         },
-        pressure        = 0.0,
-        disruption      = 0.0,
-        lastUpdateDay   = 0,
+        pressure           = 0.0,
+        disruption         = 0.0,
+        lastUpdateDay      = 0,
+        _baselineStock     = baseStock,
+        _lastContributions = {},
+        _operationalState  = POS_Constants.WHOLESALER_STATE_STABLE,
     }
 end
 
 
+---------------------------------------------------------------
+-- 4A. Operational state machine (6 states, first-match wins)
+---------------------------------------------------------------
+
 --- Resolve the operational state of a wholesaler based on its
 --- current pressure, disruption, and stock levels.
---- Stub: always returns STABLE. Will implement the full
---- six-state machine when the simulation is activated.
+--- See design-guidelines.md §24.4 for the six-state model.
 ---@param wholesaler table  Wholesaler table
 ---@return string           One of POS_Constants.WHOLESALER_STATE_* values
 function POS_WholesalerService.resolveOperationalState(wholesaler)
-    -- TODO: Implement state machine based on pressure/disruption/stockLevel
-    PhobosLib.debug("POS", _TAG, "resolveOperationalState stub for " .. tostring(wholesaler.id))
+    local pressure   = wholesaler.pressure
+    local disruption = wholesaler.disruption
+    local stock      = wholesaler.stockLevel
+
+    -- 1. COLLAPSING: high disruption + depleted stock
+    if disruption >= POS_Constants.WHOLESALER_DISRUPTION_COLLAPSING_THRESHOLD
+            and stock <= POS_Constants.WHOLESALER_STOCK_COLLAPSING_THRESHOLD then
+        return POS_Constants.WHOLESALER_STATE_COLLAPSING
+    end
+
+    -- 2. DUMPING: very high stock (above dump threshold)
+    if stock >= wholesaler.dumpThreshold then
+        return POS_Constants.WHOLESALER_STATE_DUMPING
+    end
+
+    -- 3. WITHHOLDING: high pressure but holding stock
+    if pressure >= POS_Constants.WHOLESALER_PRESSURE_STRAINED_THRESHOLD
+            and stock >= POS_Constants.WHOLESALER_STOCK_WITHHOLDING_FLOOR then
+        return POS_Constants.WHOLESALER_STATE_WITHHOLDING
+    end
+
+    -- 4. STRAINED: high pressure or moderate disruption
+    if pressure >= POS_Constants.WHOLESALER_PRESSURE_STRAINED_THRESHOLD
+            or disruption >= POS_Constants.WHOLESALER_DISRUPTION_STRAINED_THRESHOLD then
+        return POS_Constants.WHOLESALER_STATE_STRAINED
+    end
+
+    -- 5. TIGHT: moderate pressure
+    if pressure >= POS_Constants.WHOLESALER_PRESSURE_TIGHT_THRESHOLD then
+        return POS_Constants.WHOLESALER_STATE_TIGHT
+    end
+
+    -- 6. STABLE: default
     return POS_Constants.WHOLESALER_STATE_STABLE
 end
 
 
+---------------------------------------------------------------
+-- 4B. Supply pressure contribution
+---------------------------------------------------------------
+
 --- Compute a wholesaler's supply pressure contribution for a category.
---- Formula: influence * categoryWeight * (disruption + pressure - stockLevel - throughput * THROUGHPUT_FACTOR)
---- Stub: returns 0. Will be implemented with the simulation tick.
+--- Formula: influence × categoryWeight × (disruption + pressure − stockLevel − throughput × THROUGHPUT_FACTOR)
+--- See living-market-design.md §9.
 ---@param wholesaler table   Wholesaler table
 ---@param categoryId string  Category key
 ---@return number            Pressure contribution (can be negative)
 function POS_WholesalerService.computePressureContribution(wholesaler, categoryId)
-    -- TODO: Implement pressure formula
-    PhobosLib.debug("POS", _TAG, "computePressureContribution stub for "
-        .. tostring(wholesaler.id) .. " / " .. tostring(categoryId))
-    return 0
+    local catWeight = wholesaler.categoryWeights and wholesaler.categoryWeights[categoryId] or 0
+    if catWeight <= 0 then return 0 end
+
+    local raw = wholesaler.influence
+        * catWeight
+        * (wholesaler.disruption + wholesaler.pressure
+           - wholesaler.stockLevel
+           - wholesaler.throughput * POS_Constants.SIMULATION_THROUGHPUT_FACTOR)
+
+    return PhobosLib.clamp(raw,
+        POS_Constants.SIMULATION_PRESSURE_CLAMP_MIN,
+        POS_Constants.SIMULATION_PRESSURE_CLAMP_MAX)
 end
 
 
+---------------------------------------------------------------
+-- 4C. Wholesaler tick lifecycle (6 phases)
+---------------------------------------------------------------
+
 --- Run one simulation tick for a single wholesaler.
---- Stub: logs and returns. Will implement the five-phase lifecycle:
---- natural drift, demand pull, event roll, market influence, signal emission.
+--- 6-phase lifecycle: natural drift, demand pull, convoy resolution,
+--- event roll, market influence, signal emission.
+--- See living-market-design.md §10 for the full specification.
 ---@param wholesaler table   Wholesaler table
 ---@param currentDay number  Current in-game day
 function POS_WholesalerService.tickWholesaler(wholesaler, currentDay)
-    -- TODO: Implement wholesaler tick lifecycle
-    PhobosLib.debug("POS", _TAG, "tickWholesaler stub for " .. tostring(wholesaler.id)
-        .. " on day " .. tostring(currentDay))
+    if wholesaler.lastUpdateDay >= currentDay then return end
+
+    -- Lazy require to avoid circular dependency at file load time
+    local POS_MarketSimulation = POS_MarketSimulation
+
+    -- Phase 1: Natural drift — pressure/disruption decay, stock replenishes
+    wholesaler.pressure = PhobosLib.approach(
+        wholesaler.pressure, 0,
+        POS_Constants.SIMULATION_PRESSURE_DECAY_RATE)
+    wholesaler.disruption = PhobosLib.approach(
+        wholesaler.disruption, 0,
+        POS_Constants.SIMULATION_DISRUPTION_DECAY_RATE)
+
+    -- Convoy delay blocks stock replenishment (Phase 3 check ahead of drift)
+    local convoyBlocking = false
+    local convoy = wholesaler.convoyState
+    if convoy and convoy.inTransit and convoy.etaDay then
+        if currentDay > convoy.etaDay + POS_Constants.CONVOY_OVERDUE_TOLERANCE_DAYS then
+            convoyBlocking = true
+        end
+    end
+
+    if not convoyBlocking then
+        wholesaler.stockLevel = PhobosLib.approach(
+            wholesaler.stockLevel, wholesaler._baselineStock,
+            POS_Constants.SIMULATION_STOCK_REPLENISH_RATE)
+    end
+
+    -- Phase 2: Demand pull — essential categories erode stock
+    local zoneDef = POS_MarketSimulation
+        and POS_MarketSimulation.getZoneRegistry()
+        and POS_MarketSimulation.getZoneRegistry():get(wholesaler.regionId)
+    local popTier = zoneDef and zoneDef.population or "medium"
+    local demandMult = POS_Constants.SIMULATION_DEMAND_PULL[popTier]
+        or POS_Constants.SIMULATION_DEMAND_PULL.medium
+
+    for _, catId in ipairs(POS_Constants.SIMULATION_ESSENTIAL_CATEGORIES) do
+        local catWeight = wholesaler.categoryWeights[catId] or 0
+        if catWeight > 0 then
+            wholesaler.stockLevel = wholesaler.stockLevel - (demandMult * catWeight)
+        end
+    end
+
+    wholesaler.stockLevel = PhobosLib.clamp(
+        wholesaler.stockLevel,
+        POS_Constants.WHOLESALER_STOCK_MIN,
+        POS_Constants.WHOLESALER_STOCK_MAX)
+
+    -- Phase 3: Convoy resolution
+    if convoy and convoy.inTransit and convoy.etaDay then
+        if currentDay >= convoy.etaDay and not convoyBlocking then
+            -- Convoy arrives: boost stock
+            wholesaler.stockLevel = PhobosLib.clamp(
+                wholesaler.stockLevel + convoy.cargoStrength,
+                POS_Constants.WHOLESALER_STOCK_MIN,
+                POS_Constants.WHOLESALER_STOCK_MAX)
+            convoy.inTransit = false
+            convoy.etaDay = nil
+            convoy.cargoStrength = 0.0
+            PhobosLib.debug("POS", _TAG, wholesaler.id .. ": convoy arrived, stock boosted")
+        end
+    end
+
+    -- Phase 4: Event roll — iterate events, check probability
+    if POS_MarketSimulation and POS_MarketSimulation.getEventRegistry then
+        local allEvents = POS_MarketSimulation.getEventRegistry():getAll()
+        for _, eventDef in ipairs(allEvents) do
+            if eventDef.enabled ~= false then
+                local roll = PhobosLib.randFloat(0, 1)
+                local threshold = eventDef.probability
+                    * POS_Constants.SIMULATION_EVENT_PROBABILITY_MULT
+                if roll < threshold then
+                    POS_WholesalerService._applyEvent(wholesaler, eventDef)
+                end
+            end
+        end
+    end
+
+    -- Phase 5: Market influence — compute per-category contributions
+    wholesaler._lastContributions = {}
+    for _, catId in ipairs(POS_Constants.MARKET_CATEGORIES) do
+        local contrib = POS_WholesalerService.computePressureContribution(wholesaler, catId)
+        if contrib ~= 0 then
+            wholesaler._lastContributions[catId] = contrib
+        end
+    end
+
+    -- Phase 6: Signal emission (placeholder — connects to intel pipeline)
+    -- Future: Generate observation packets for POS_MarketDatabase based on
+    -- wholesaler state, reliability, visibility, and signalClass.
+    -- Interface: POS_WholesalerService.emitSignals(wholesaler, currentDay)
+    PhobosLib.trace("POS", _TAG, "Signal emission placeholder for " .. wholesaler.id)
+
+    -- Finalise: update state and timestamp
+    local prevState = wholesaler._operationalState
+    wholesaler._operationalState = POS_WholesalerService.resolveOperationalState(wholesaler)
+    wholesaler.lastUpdateDay = currentDay
+
+    if wholesaler._operationalState ~= prevState then
+        PhobosLib.debug("POS", _TAG, wholesaler.id .. ": state "
+            .. tostring(prevState) .. " -> " .. tostring(wholesaler._operationalState))
+    end
 end
 
 
---- Get modifier hints for downstream agent behaviour.
---- Stub: returns empty table.
----@param wholesaler     table   Wholesaler table
+--- Apply a market event's effects to a wholesaler.
+--- Modifies pressure and stock based on the event definition and
+--- whether the wholesaler carries affected categories.
+---@param wholesaler table  Wholesaler table
+---@param eventDef   table  Event definition from registry
+function POS_WholesalerService._applyEvent(wholesaler, eventDef)
+    -- Check if wholesaler carries any affected categories
+    local affected = eventDef.affectedCategories or POS_Constants.MARKET_CATEGORIES
+    local hasOverlap = false
+    for _, catId in ipairs(affected) do
+        if (wholesaler.categoryWeights[catId] or 0) > 0 then
+            hasOverlap = true
+            break
+        end
+    end
+    if not hasOverlap then return end
+
+    -- Apply pressure effect from definition
+    wholesaler.pressure = PhobosLib.clamp(
+        wholesaler.pressure + (eventDef.pressureEffect or 0),
+        POS_Constants.WHOLESALER_PRESSURE_MIN,
+        POS_Constants.WHOLESALER_PRESSURE_MAX)
+
+    -- Apply stock and disruption effects from constant mapping
+    local effects = EVENT_EFFECTS[eventDef.id]
+    if effects then
+        if effects.stock ~= 0 then
+            wholesaler.stockLevel = PhobosLib.clamp(
+                wholesaler.stockLevel + effects.stock,
+                POS_Constants.WHOLESALER_STOCK_MIN,
+                POS_Constants.WHOLESALER_STOCK_MAX)
+        end
+        if effects.disruption ~= 0 then
+            wholesaler.disruption = PhobosLib.clamp(
+                wholesaler.disruption + effects.disruption,
+                POS_Constants.WHOLESALER_DISRUPTION_MIN,
+                POS_Constants.WHOLESALER_DISRUPTION_MAX)
+        end
+    end
+
+    PhobosLib.debug("POS", _TAG, wholesaler.id .. ": event "
+        .. tostring(eventDef.id) .. " triggered (pressure="
+        .. string.format("%.2f", wholesaler.pressure)
+        .. ", stock=" .. string.format("%.2f", wholesaler.stockLevel) .. ")")
+end
+
+
+---------------------------------------------------------------
+-- 4D. Downstream influence modifiers
+---------------------------------------------------------------
+
+--- Downstream influence profiles: [state][archetype] → modifier table.
+--- These describe how a wholesaler's operational state affects
+--- downstream agents of various archetypes.
+local DOWNSTREAM_PROFILES = {
+    [POS_Constants.WHOLESALER_STATE_STABLE] = {
+        [POS_Constants.AGENT_ARCHETYPE_SCAVENGER]     = { stockBias = 0.10, priceBias = 0.00, opportunity = 0.00 },
+        [POS_Constants.AGENT_ARCHETYPE_QUARTERMASTER]  = { stockBias = 0.05, priceBias = -0.05, opportunity = 0.00 },
+        [POS_Constants.AGENT_ARCHETYPE_SMUGGLER]       = { stockBias = 0.00, priceBias = 0.00, opportunity = 0.10 },
+        [POS_Constants.AGENT_ARCHETYPE_SPECULATOR]     = { stockBias = 0.00, priceBias = 0.00, opportunity = 0.00 },
+    },
+    [POS_Constants.WHOLESALER_STATE_TIGHT] = {
+        [POS_Constants.AGENT_ARCHETYPE_SCAVENGER]     = { stockBias = 0.00, priceBias = 0.05, opportunity = 0.10 },
+        [POS_Constants.AGENT_ARCHETYPE_QUARTERMASTER]  = { stockBias = -0.05, priceBias = 0.05, opportunity = 0.00 },
+        [POS_Constants.AGENT_ARCHETYPE_SMUGGLER]       = { stockBias = 0.00, priceBias = 0.05, opportunity = 0.20 },
+        [POS_Constants.AGENT_ARCHETYPE_SPECULATOR]     = { stockBias = 0.00, priceBias = 0.10, opportunity = 0.15 },
+    },
+    [POS_Constants.WHOLESALER_STATE_STRAINED] = {
+        [POS_Constants.AGENT_ARCHETYPE_SCAVENGER]     = { stockBias = -0.10, priceBias = 0.10, opportunity = 0.20 },
+        [POS_Constants.AGENT_ARCHETYPE_QUARTERMASTER]  = { stockBias = -0.10, priceBias = 0.10, opportunity = 0.05 },
+        [POS_Constants.AGENT_ARCHETYPE_SMUGGLER]       = { stockBias = -0.05, priceBias = 0.10, opportunity = 0.40 },
+        [POS_Constants.AGENT_ARCHETYPE_SPECULATOR]     = { stockBias = -0.05, priceBias = 0.15, opportunity = 0.30 },
+    },
+    [POS_Constants.WHOLESALER_STATE_DUMPING] = {
+        [POS_Constants.AGENT_ARCHETYPE_SCAVENGER]     = { stockBias = 0.15, priceBias = -0.10, opportunity = 0.05 },
+        [POS_Constants.AGENT_ARCHETYPE_QUARTERMASTER]  = { stockBias = 0.10, priceBias = -0.10, opportunity = 0.00 },
+        [POS_Constants.AGENT_ARCHETYPE_SMUGGLER]       = { stockBias = 0.10, priceBias = -0.05, opportunity = 0.15 },
+        [POS_Constants.AGENT_ARCHETYPE_SPECULATOR]     = { stockBias = 0.10, priceBias = -0.15, opportunity = 0.10 },
+    },
+    [POS_Constants.WHOLESALER_STATE_WITHHOLDING] = {
+        [POS_Constants.AGENT_ARCHETYPE_SCAVENGER]     = { stockBias = -0.10, priceBias = 0.10, opportunity = 0.20 },
+        [POS_Constants.AGENT_ARCHETYPE_QUARTERMASTER]  = { stockBias = -0.10, priceBias = 0.10, opportunity = 0.05 },
+        [POS_Constants.AGENT_ARCHETYPE_SMUGGLER]       = { stockBias = -0.05, priceBias = 0.10, opportunity = 0.70 },
+        [POS_Constants.AGENT_ARCHETYPE_SPECULATOR]     = { stockBias = -0.05, priceBias = 0.15, opportunity = 0.40 },
+    },
+    [POS_Constants.WHOLESALER_STATE_COLLAPSING] = {
+        [POS_Constants.AGENT_ARCHETYPE_SCAVENGER]     = { stockBias = -0.20, priceBias = 0.15, opportunity = 0.30 },
+        [POS_Constants.AGENT_ARCHETYPE_QUARTERMASTER]  = { stockBias = -0.15, priceBias = 0.15, opportunity = 0.10 },
+        [POS_Constants.AGENT_ARCHETYPE_SMUGGLER]       = { stockBias = -0.10, priceBias = 0.15, opportunity = 0.60 },
+        [POS_Constants.AGENT_ARCHETYPE_SPECULATOR]     = { stockBias = -0.10, priceBias = 0.20, opportunity = 0.50 },
+    },
+}
+
+--- Get modifier hints for downstream agent behaviour based on the
+--- wholesaler's current operational state and the target archetype.
+--- See living-market-design.md §8 (Downstream Influence).
+---@param wholesaler      table   Wholesaler table
 ---@param targetArchetype string  Archetype of the downstream agent
----@return table                  Modifier hints (empty for now)
+---@return table                  { stockBias, priceBias, opportunity, strainDelay }
 function POS_WholesalerService.getDownstreamInfluence(wholesaler, targetArchetype)
-    return {}
+    local state = wholesaler._operationalState or POS_Constants.WHOLESALER_STATE_STABLE
+    local stateProfiles = DOWNSTREAM_PROFILES[state]
+    if not stateProfiles then
+        return { stockBias = 0, priceBias = 0, opportunity = 0,
+            strainDelay = POS_Constants.WHOLESALER_DOWNSTREAM_DELAY_DAYS }
+    end
+
+    local profile = stateProfiles[targetArchetype]
+    if not profile then
+        return { stockBias = 0, priceBias = 0, opportunity = 0,
+            strainDelay = POS_Constants.WHOLESALER_DOWNSTREAM_DELAY_DAYS }
+    end
+
+    return {
+        stockBias   = profile.stockBias or 0,
+        priceBias   = profile.priceBias or 0,
+        opportunity = profile.opportunity or 0,
+        strainDelay = POS_Constants.WHOLESALER_DOWNSTREAM_DELAY_DAYS,
+    }
 end
 
 
