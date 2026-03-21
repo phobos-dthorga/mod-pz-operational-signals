@@ -29,6 +29,7 @@ require "POS_MarketDatabase"
 require "POS_MarketFileStore"
 require "POS_BasisPoints"
 require "POS_EventLog"
+require "POS_MarketSimulation"
 
 POS_EconomyTick = {}
 
@@ -106,13 +107,13 @@ function POS_EconomyTick.processDayTick()
         POS_SatelliteService.checkDecalibration()
     end
 
-    -- Phase 5.75: Living Market simulation tick (scaffolded, not yet active)
-    -- if POS_Sandbox and POS_Sandbox.isLivingMarketEnabled
-    --         and POS_Sandbox.isLivingMarketEnabled() then
-    --     if POS_MarketSimulation and POS_MarketSimulation.tickSimulation then
-    --         POS_MarketSimulation.tickSimulation(currentDay)
-    --     end
-    -- end
+    -- Phase 5.75: Living Market simulation tick
+    if POS_Sandbox and POS_Sandbox.isLivingMarketEnabled
+            and POS_Sandbox.isLivingMarketEnabled() then
+        if POS_MarketSimulation and POS_MarketSimulation.tickSimulation then
+            PhobosLib.safecall(POS_MarketSimulation.tickSimulation, currentDay)
+        end
+    end
 
     -- Phase 6: Mark day processed
     meta.lastProcessedDay = currentDay
