@@ -71,11 +71,12 @@ function POS_WorldState.getWorldDay()
 end
 
 function POS_WorldState.isAuthority()
-    -- Returns true in SP (server+client) and on dedicated/listen server
-    -- Returns false on MP clients
-    if isServer then return isServer() end
-    if isClient then return not isClient() end
-    return true  -- SP fallback
+    -- Returns true in SP (server+client) and on dedicated/listen server.
+    -- Returns false on MP clients only.
+    -- NOTE: in SP, both isServer() and isClient() return false.
+    -- A pure MP client has isClient() == true.
+    if isClient and isClient() then return false end
+    return true
 end
 
 function POS_WorldState.getWorldSeed()
