@@ -118,6 +118,18 @@ function screen.create(contentPanel, _params, _terminal)
             POS_MarketRegistry.getVisibleCategories, {})
         local totalCategories = (catOk and visibleCats) and #visibleCats or 0
         PhobosLib.debug("POS", "[POS:IntelSummary]", "G: totalCategories=" .. tostring(totalCategories))
+        -- Dump first summary for diagnosis
+        if #summaries > 0 then
+            local s1 = summaries[1]
+            PhobosLib.debug("POS", "[POS:IntelSummary]", "G2: first summary cat=" .. tostring(s1.categoryId)
+                .. " avg=" .. tostring(s1.avgPrice)
+                .. " low=" .. tostring(s1.lowPrice)
+                .. " high=" .. tostring(s1.highPrice)
+                .. " fresh=" .. tostring(s1.freshnessKey)
+                .. " conf=" .. tostring(s1.confidenceKey)
+                .. " trend=" .. tostring(s1.trendKey)
+                .. " trendPct=" .. tostring(s1.trendPct))
+        end
         if #summaries == 0 then
             PhobosLib.debug("POS", "[POS:IntelSummary]", "H: no data, showing empty state")
             W.createLabel(ctx.panel, 8, ctx.y,
