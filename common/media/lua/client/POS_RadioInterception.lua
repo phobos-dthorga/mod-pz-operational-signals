@@ -264,4 +264,14 @@ end
 Events.OnGameStart.Add(function()
     POS_RadioInterception.init()
     Events.EveryOneMinute.Add(onDeferredSnapshotRequest)
+
+    -- Pre-warm the player file store cache so that watchlist/alerts
+    -- screens never trigger getFileReader during a UI render frame.
+    -- File I/O during OnGameStart is safe (DRJ confirms this pattern).
+    -- File I/O during screen.create() crashes the JVM silently.
+    local player = getSpecificPlayer(0)
+    if player then
+        POS_PlayerFileStore.load(player)
+        PhobosLib.debug("POS", _TAG, "Player file store cache warmed")
+    end
 end)
