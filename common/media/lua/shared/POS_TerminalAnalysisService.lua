@@ -109,7 +109,7 @@ function POS_TerminalAnalysisService.getCooldownKey(player)
     if not building then return nil end
 
     local bx, by = 0, 0
-    pcall(function()
+    PhobosLib.safecall(function()
         local def = building:getDef()
         if def then
             bx = def:getX()

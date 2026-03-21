@@ -84,14 +84,14 @@ end
 local function hasCamera(player)
     local inv = player:getInventory()
     if not inv then return false end
-    local ok, result = pcall(function()
+    local ok, result = PhobosLib.safecall(function()
         return inv:containsTagRecurse("camera")
     end)
     if ok and result then return true end
     -- Fallback: check by type
     local cameraTypes = { "Base.Camera", "Base.CameraDisposable", "Base.CameraExpensive" }
     for _, cType in ipairs(cameraTypes) do
-        local ok2, found = pcall(function()
+        local ok2, found = PhobosLib.safecall(function()
             return inv:containsTypeRecurse(cType)
         end)
         if ok2 and found then return true end

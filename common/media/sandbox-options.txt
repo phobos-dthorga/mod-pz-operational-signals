@@ -1311,3 +1311,21 @@ option POS.EnableTutorialHints
     page = POS_Sandbox,
     translation = POS_EnableTutorialHints,
 }
+
+option POS.EnableLivingMarket
+{
+    type = boolean,
+    default = false,
+    page = POS_Sandbox,
+    translation = POS_EnableLivingMarket,
+}
+
+option POS.SimulationTickInterval
+{
+    type = integer,
+    default = 20,
+    min = 5,
+    max = 120,
+    page = POS_Sandbox,
+    translation = POS_SimulationTickInterval,
+}

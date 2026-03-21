@@ -1376,7 +1376,52 @@ pipelines.
   localised supply, demand, and pressure per category.
 - Wholesaler influence may spill over into adjacent zones.
 
-### 24.6 Anti-Patterns
+### 24.6 Module Files
+
+The Living Market simulation is split across three shared modules:
+
+| Module | Purpose |
+|--------|---------|
+| `POS_MarketAgent.lua` | Agent factory, archetype profile accessors, category affinity lookups |
+| `POS_WholesalerService.lua` | Wholesaler lifecycle, operational state machine, supply pressure contribution |
+| `POS_MarketSimulation.lua` | Simulation orchestrator — agent registry, zone state, per-tick loop |
+
+Constants and archetype profiles live in `POS_Constants.lua` (§ Living Market
+sections). Sandbox accessors live in `POS_SandboxIntegration.lua`.
+
+### 24.7 Sandbox Gate
+
+All Living Market code MUST be gated behind the experimental sandbox option:
+
+```lua
+if POS_Sandbox.isLivingMarketEnabled() then
+    -- simulation code here
+end
+```
+
+The simulation tick is integrated into `POS_EconomyTick.lua` Phase 5.75
+(currently commented out). When enabled, it runs every
+`POS_Sandbox.getSimulationTickInterval()` game minutes.
+
+### 24.8 Translation Key Conventions
+
+All user-facing Living Market strings use translation keys:
+
+| Domain | Key pattern | Example |
+|--------|-------------|---------|
+| Agent archetypes | `UI_POS_Agent_<Suffix>` | `UI_POS_Agent_ScavengerTrader` |
+| Market zones | `UI_POS_Zone_<Suffix>` | `UI_POS_Zone_WestPoint` |
+| Wholesaler states | `UI_POS_Wholesaler_State_<Suffix>` | `UI_POS_Wholesaler_State_Stable` |
+| Market events | `UI_POS_MarketEvent_<Suffix>` | `UI_POS_MarketEvent_BulkArrival` |
+| Signal classes | `UI_POS_Signal_<Suffix>` | `UI_POS_Signal_Hard` |
+
+Display name accessors (`POS_MarketAgent.getDisplayName()`,
+`POS_WholesalerService.getStateDisplayName()`,
+`POS_MarketSimulation.getZoneDisplayName()`,
+`POS_MarketSimulation.getEventDisplayName()`) use `PhobosLib.safeGetText()`
+internally. Callers should use these accessors, never hard-coded strings.
+
+### 24.9 Anti-Patterns
 
 - No exact inventories — abstract only.
 - No routefinding convoys — abstract transit state.
@@ -1426,3 +1471,17 @@ local ok, result = PhobosLib.safeMethodCall(obj, "riskyMethod", arg)
 - **Development**: Always ON — surfaces hidden errors with full stack traces.
 - **Bug reports**: Ask players to enable it and reproduce the crash for better diagnostics.
 - **Normal play**: OFF (default) — defensive pcalls protect against edge-case crashes.
+
+### 25.5 Math & Table Utilities
+
+PhobosLib provides generic utilities for simulation formulas. Do NOT
+reimplement these locally — use the PhobosLib versions:
+
+| Function | Purpose |
+|----------|---------|
+| `PhobosLib.clamp(value, min, max)` | Bound a value to [min, max] |
+| `PhobosLib.lerp(a, b, t)` | Linear interpolation |
+| `PhobosLib.randFloat(min, max)` | ZombRand-based random float |
+| `PhobosLib.round(value, decimals)` | Decimal rounding |
+| `PhobosLib.map(tbl, fn)` | Array transform |
+| `PhobosLib.filter(tbl, predicate)` | Array filter |

@@ -48,7 +48,7 @@ function POS_MarketReconAction.getVisitKey(sq)
 
     -- Building def coordinates give a stable per-building identity
     local bx, by = 0, 0
-    pcall(function()
+    PhobosLib.safecall(function()
         local def = building:getDef()
         if def then
             bx = def:getX()

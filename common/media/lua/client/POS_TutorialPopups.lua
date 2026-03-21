@@ -104,7 +104,7 @@ PhobosLib.registerNoticePopup("POS", "tutorial_first_connection", {
         if modData then
             modData[POS_Constants.TUTORIAL_POPUP_SHOWN_PREFIX
                 .. POS_Constants.TUTORIAL_FIRST_CONNECTION] = true
-            pcall(function() player:transmitModData() end)
+            PhobosLib.safecall(function() player:transmitModData() end)
         end
     end,
 })
@@ -133,7 +133,7 @@ PhobosLib.registerNoticePopup("POS", "tutorial_first_op_completed", {
         if modData then
             modData[POS_Constants.TUTORIAL_POPUP_SHOWN_PREFIX
                 .. POS_Constants.TUTORIAL_FIRST_OP_COMPLETED] = true
-            pcall(function() player:transmitModData() end)
+            PhobosLib.safecall(function() player:transmitModData() end)
         end
     end,
 })
@@ -162,7 +162,7 @@ PhobosLib.registerNoticePopup("POS", "tutorial_sigint_l3", {
         if modData then
             modData[POS_Constants.TUTORIAL_POPUP_SHOWN_PREFIX
                 .. POS_Constants.TUTORIAL_SIGINT_L3] = true
-            pcall(function() player:transmitModData() end)
+            PhobosLib.safecall(function() player:transmitModData() end)
         end
     end,
 })
@@ -191,7 +191,7 @@ PhobosLib.registerNoticePopup("POS", "tutorial_first_camera", {
         if modData then
             modData[POS_Constants.TUTORIAL_POPUP_SHOWN_PREFIX
                 .. POS_Constants.TUTORIAL_FIRST_CAMERA] = true
-            pcall(function() player:transmitModData() end)
+            PhobosLib.safecall(function() player:transmitModData() end)
         end
     end,
 })
@@ -220,7 +220,7 @@ PhobosLib.registerNoticePopup("POS", "tutorial_first_satellite", {
         if modData then
             modData[POS_Constants.TUTORIAL_POPUP_SHOWN_PREFIX
                 .. POS_Constants.TUTORIAL_FIRST_SATELLITE] = true
-            pcall(function() player:transmitModData() end)
+            PhobosLib.safecall(function() player:transmitModData() end)
         end
     end,
 })

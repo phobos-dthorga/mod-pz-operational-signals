@@ -1147,3 +1147,156 @@ POS_Constants.TUTORIAL_SIGINT_THRESHOLD_L9      = 9
 -- Legacy modData key (backward compat migration)
 POS_Constants.MD_RECORDER_TUTORIAL_SHOWN_LEGACY = "MD_RECORDER_TUTORIAL_SHOWN"
 
+
+---------------------------------------------------------------
+-- Living Market: Agent Archetypes
+---------------------------------------------------------------
+
+POS_Constants.AGENT_ARCHETYPE_SCAVENGER            = "scavenger_trader"
+POS_Constants.AGENT_ARCHETYPE_QUARTERMASTER        = "quartermaster"
+POS_Constants.AGENT_ARCHETYPE_WHOLESALER           = "wholesaler"
+POS_Constants.AGENT_ARCHETYPE_SMUGGLER             = "smuggler"
+POS_Constants.AGENT_ARCHETYPE_MILITARY_LOGISTICIAN = "military_logistician"
+POS_Constants.AGENT_ARCHETYPE_SPECULATOR           = "speculator"
+POS_Constants.AGENT_ARCHETYPE_SPECIALIST_CRAFTER   = "specialist_crafter"
+
+--- Phase 1 archetype profiles (keyed by archetype ID).
+--- Each profile contains: reliability, volatility, stockBias, priceBias,
+--- refreshDays, influence, secrecy, rumorRate, riskTolerance.
+POS_Constants.AGENT_ARCHETYPE_PROFILES = {
+    [POS_Constants.AGENT_ARCHETYPE_SCAVENGER] = {
+        reliability   = 0.55,
+        volatility    = 0.45,
+        stockBias     = "low",
+        priceBias     = 0.10,
+        refreshDays   = 1,
+        influence     = 1,
+        secrecy       = 0.25,
+        rumorRate     = 0.20,
+        riskTolerance = 0.80,
+    },
+    [POS_Constants.AGENT_ARCHETYPE_QUARTERMASTER] = {
+        reliability   = 0.85,
+        volatility    = 0.15,
+        stockBias     = "medium",
+        priceBias     = 0.00,
+        refreshDays   = 2,
+        influence     = 3,
+        secrecy       = 0.10,
+        rumorRate     = 0.05,
+        riskTolerance = 0.25,
+    },
+    [POS_Constants.AGENT_ARCHETYPE_WHOLESALER] = {
+        reliability   = 0.80,
+        volatility    = 0.20,
+        stockBias     = "high",
+        priceBias     = -0.05,
+        refreshDays   = 3,
+        influence     = 5,
+        secrecy       = 0.15,
+        rumorRate     = 0.08,
+        riskTolerance = 0.40,
+    },
+    -- Phase 2+ archetypes (smuggler, military_logistician, speculator, specialist_crafter)
+    -- will be added here when their behaviour is implemented.
+}
+
+--- Category affinity weights per Phase 1 archetype.
+--- Higher weight = stronger preference for that category.
+POS_Constants.AGENT_CATEGORY_AFFINITIES = {
+    [POS_Constants.AGENT_ARCHETYPE_SCAVENGER] = {
+        food       = 1.0,
+        medicine   = 0.4,
+        ammunition = 0.2,
+        fuel       = 0.8,
+        tools      = 1.0,
+        radio      = 0.1,
+        weapons    = 0.3,
+    },
+    [POS_Constants.AGENT_ARCHETYPE_QUARTERMASTER] = {
+        food       = 1.0,
+        medicine   = 0.7,
+        ammunition = 0.2,
+        fuel       = 0.5,
+        tools      = 0.6,
+        radio      = 0.1,
+        weapons    = 0.1,
+    },
+    [POS_Constants.AGENT_ARCHETYPE_WHOLESALER] = {
+        food       = 1.0,
+        medicine   = 0.6,
+        ammunition = 0.3,
+        fuel       = 0.4,
+        tools      = 0.4,
+        radio      = 0.1,
+        weapons    = 0.1,
+    },
+}
+
+---------------------------------------------------------------
+-- Living Market: Wholesaler Operational States
+---------------------------------------------------------------
+
+POS_Constants.WHOLESALER_STATE_STABLE      = "stable"
+POS_Constants.WHOLESALER_STATE_TIGHT       = "tight"
+POS_Constants.WHOLESALER_STATE_STRAINED    = "strained"
+POS_Constants.WHOLESALER_STATE_DUMPING     = "dumping"
+POS_Constants.WHOLESALER_STATE_WITHHOLDING = "withholding"
+POS_Constants.WHOLESALER_STATE_COLLAPSING  = "collapsing"
+
+---------------------------------------------------------------
+-- Living Market: Market Zones
+---------------------------------------------------------------
+
+POS_Constants.MARKET_ZONE_MULDRAUGH          = "muldraugh"
+POS_Constants.MARKET_ZONE_WEST_POINT         = "west_point"
+POS_Constants.MARKET_ZONE_RIVERSIDE          = "riverside"
+POS_Constants.MARKET_ZONE_LOUISVILLE_EDGE    = "louisville_edge"
+POS_Constants.MARKET_ZONE_MILITARY_CORRIDOR  = "military_corridor"
+POS_Constants.MARKET_ZONE_RURAL_EAST         = "rural_east"
+
+--- Ordered array of all market zone IDs (Phase 1 set).
+POS_Constants.MARKET_ZONES = {
+    POS_Constants.MARKET_ZONE_MULDRAUGH,
+    POS_Constants.MARKET_ZONE_WEST_POINT,
+    POS_Constants.MARKET_ZONE_RIVERSIDE,
+    POS_Constants.MARKET_ZONE_LOUISVILLE_EDGE,
+    POS_Constants.MARKET_ZONE_MILITARY_CORRIDOR,
+    POS_Constants.MARKET_ZONE_RURAL_EAST,
+}
+
+---------------------------------------------------------------
+-- Living Market: Event Types
+---------------------------------------------------------------
+
+POS_Constants.MARKET_EVENT_BULK_ARRIVAL       = "bulk_arrival"
+POS_Constants.MARKET_EVENT_CONVOY_DELAY       = "convoy_delay"
+POS_Constants.MARKET_EVENT_THEFT_RAID         = "theft_raid"
+POS_Constants.MARKET_EVENT_CONTROLLED_RELEASE = "controlled_release"
+POS_Constants.MARKET_EVENT_WITHHOLDING        = "strategic_withholding"
+POS_Constants.MARKET_EVENT_REQUISITION        = "requisition_diversion"
+
+---------------------------------------------------------------
+-- Living Market: Signal Classes
+---------------------------------------------------------------
+
+POS_Constants.SIGNAL_CLASS_HARD       = "hard"
+POS_Constants.SIGNAL_CLASS_SOFT       = "soft"
+POS_Constants.SIGNAL_CLASS_STRUCTURAL = "structural"
+
+---------------------------------------------------------------
+-- Living Market: Simulation Defaults
+---------------------------------------------------------------
+
+POS_Constants.SIMULATION_TICK_INTERVAL_DEFAULT    = 20
+POS_Constants.SIMULATION_PRESSURE_CLAMP_MIN       = -2.0
+POS_Constants.SIMULATION_PRESSURE_CLAMP_MAX       = 2.0
+POS_Constants.SIMULATION_THROUGHPUT_FACTOR         = 0.5
+POS_Constants.SIMULATION_ZONE_DEFAULT_VOLATILITY   = 0.20
+
+---------------------------------------------------------------
+-- Living Market: World ModData
+---------------------------------------------------------------
+
+POS_Constants.WMD_MARKET_ZONES = "POSNET.MarketZones"
+

@@ -331,5 +331,10 @@
     "Sandbox_POS_SatelliteDecalibrationDays_tooltip": "Days without power before a calibrated dish requires recalibration. <BR> <BR> <INDENT:20> 0 = dishes never decalibrate once set up. <BR> Range: 0-30. Default: 7",
 
     "Sandbox_POS_EnableTutorialHints": "Enable Tutorial Hints",
-    "Sandbox_POS_EnableTutorialHints_tooltip": "When enabled, progressive tutorial toasts and popups guide the player through POSnet features as they reach each milestone. <BR> <BR> <INDENT:20> Disable for experienced players. <BR> Default: ON"
+    "Sandbox_POS_EnableTutorialHints_tooltip": "When enabled, progressive tutorial toasts and popups guide the player through POSnet features as they reach each milestone. <BR> <BR> <INDENT:20> Disable for experienced players. <BR> Default: ON",
+
+    "Sandbox_POS_EnableLivingMarket": "LIVING MARKET (EXPERIMENTAL):",
+    "Sandbox_POS_EnableLivingMarket_tooltip": "Enable the autonomous Living Market economy simulation. When active, market agents generate observations, wholesalers influence regional supply and prices, and economic events occur independently of player actions. <BR> <BR> <INDENT:20> This is an experimental feature under active development. <BR> Default: OFF",
+    "Sandbox_POS_SimulationTickInterval": "Simulation Tick Interval (minutes):",
+    "Sandbox_POS_SimulationTickInterval_tooltip": "In-game minutes between Living Market simulation ticks. Lower values produce a more responsive economy but increase server load. <BR> <BR> <INDENT:20> Only effective when Living Market is enabled. <BR> Range: 5-120. Default: 20"
 }

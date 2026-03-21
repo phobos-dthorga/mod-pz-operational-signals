@@ -276,7 +276,7 @@ function screen.create(contentPanel, _params, _terminal)
         -- Show error on screen if possible
         local W = POS_TerminalWidgets
         if W and contentPanel then
-            pcall(function()
+            PhobosLib.safecall(function()
                 local C = W.COLOURS
                 W.createLabel(contentPanel, 8, 60,
                     "ERROR: " .. tostring(err), C.warn or { r=1, g=0.5, b=0, a=1 })

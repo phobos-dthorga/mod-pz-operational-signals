@@ -165,14 +165,14 @@ local function onFillWorldObjectContextMenu(playerIndex, context, worldObjects)
         for _, worldObj in ipairs(objects) do
             if worldObj and worldObj.getSprite then
                 local spriteName = nil
-                pcall(function()
+                PhobosLib.safecall(function()
                     local sprite = worldObj:getSprite()
                     if sprite and sprite.getName then
                         spriteName = sprite:getName()
                     end
                 end)
                 if spriteName and POS_MailboxScanner.isMailboxSprite(spriteName) then
-                    pcall(function()
+                    PhobosLib.safecall(function()
                         mailboxX = worldObj:getX()
                         mailboxY = worldObj:getY()
                     end)

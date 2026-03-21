@@ -42,7 +42,7 @@ function POS_SatelliteService.isSatelliteDish(worldObj)
     local sprites = POS_Constants.SATELLITE_DISH_SPRITES
     if not sprites or #sprites == 0 then return false end
 
-    local ok, spriteName = pcall(function()
+    local ok, spriteName = PhobosLib.safecall(function()
         local sprite = worldObj:getSprite()
         return sprite and sprite:getName()
     end)
@@ -67,7 +67,7 @@ local function getBuildingKey(sq)
     if not building then return nil end
 
     local bx, by = 0, 0
-    pcall(function()
+    PhobosLib.safecall(function()
         local def = building:getDef()
         if def then
             bx = def:getX()
@@ -98,7 +98,7 @@ function POS_SatelliteService.isCalibrated(sq)
     if not key then return false end
 
     -- Calibration stored in world modData (shared between players)
-    local ok, val = pcall(function()
+    local ok, val = PhobosLib.safecall(function()
         return ModData.getOrCreate("POS_Satellite")[key]
     end)
     return ok and val == true
@@ -111,7 +111,7 @@ function POS_SatelliteService.setCalibrated(sq, calibrated)
     local key = POS_SatelliteService.getCalibrationKey(sq)
     if not key then return end
 
-    pcall(function()
+    PhobosLib.safecall(function()
         ModData.getOrCreate("POS_Satellite")[key] = calibrated
     end)
 end
@@ -190,7 +190,7 @@ function POS_SatelliteService.drainFuel(sq, amount)
     if PhobosLib.findNearbyGenerator then
         local gen = PhobosLib.findNearbyGenerator(sq, 10)
         if gen then
-            local ok = pcall(function()
+            local ok = PhobosLib.safecall(function()
                 local fuel = gen:getFuel()
                 gen:setFuel(math.max(0, fuel - amount))
             end)
@@ -212,7 +212,7 @@ function POS_SatelliteService.isFuelLow(sq)
     if PhobosLib.findNearbyGenerator then
         local gen = PhobosLib.findNearbyGenerator(sq, 10)
         if gen then
-            local ok, fuel = pcall(function() return gen:getFuel() end)
+            local ok, fuel = PhobosLib.safecall(function() return gen:getFuel() end)
             if ok and fuel then
                 return fuel < POS_Constants.SATELLITE_LOW_FUEL_THRESHOLD, fuel
             end
@@ -345,7 +345,7 @@ function POS_SatelliteService.calibrate(player, sq)
     -- Record last power timestamp (for decalibration tracking)
     local calKey = POS_SatelliteService.getCalibrationKey(sq)
     if calKey then
-        pcall(function()
+        PhobosLib.safecall(function()
             local satData = ModData.getOrCreate("POS_Satellite")
             satData[calKey .. "_lastPower"] = getGameTime():getWorldAgeHours()
         end)
@@ -440,7 +440,7 @@ end
 --- Check all known calibrated dishes and decalibrate if power lost.
 --- Called periodically (e.g., from POS_EconomyTick).
 function POS_SatelliteService.checkDecalibration()
-    local ok, satData = pcall(function() return ModData.getOrCreate("POS_Satellite") end)
+    local ok, satData = PhobosLib.safecall(function() return ModData.getOrCreate("POS_Satellite") end)
     if not ok or not satData then return end
 
     -- This would iterate world modData entries to find calibrated dishes

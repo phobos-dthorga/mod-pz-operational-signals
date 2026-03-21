@@ -23,10 +23,10 @@
 -- sandbox-controllable.
 --
 -- Risk formulas:
---   baseRisk = lerp(MinBaseRisk, MaxBaseRisk, t) where t is payback normalised
---   actualRisk = clamp(baseRisk * (1 + randFloat(-RandomRiskPct, +RandomRiskPct)), 0.01, 0.95)
---   displayedRisk = clamp(actualRisk * (1 + randFloat(-ObfuscationPct, +ObfuscationPct)), 0.01, 0.99)
---   returnMultiplier = lerp(MinReturn, MaxReturn, t) + randFloat(-0.1, 0.1)
+--   baseRisk = PhobosLib.lerp(MinBaseRisk, MaxBaseRisk, t) where t is payback normalised
+--   actualRisk = PhobosLib.clamp(baseRisk * (1 + PhobosLib.randFloat(-RandomRiskPct, +RandomRiskPct)), 0.01, 0.95)
+--   displayedRisk = PhobosLib.clamp(actualRisk * (1 + PhobosLib.randFloat(-ObfuscationPct, +ObfuscationPct)), 0.01, 0.99)
+--   returnMultiplier = PhobosLib.lerp(MinReturn, MaxReturn, t) + PhobosLib.randFloat(-0.1, 0.1)
 ---------------------------------------------------------------
 
 require "PhobosLib"
@@ -60,34 +60,14 @@ local PRINCIPAL_BRACKETS = {
 }
 
 ---------------------------------------------------------------
--- Utility
+-- Defaults (overridden by sandbox when available)
 ---------------------------------------------------------------
-
---- Clamp a value between min and max.
-local function clamp(value, minVal, maxVal)
-    if value < minVal then return minVal end
-    if value > maxVal then return maxVal end
-    return value
-end
-
---- Linear interpolation between a and b by factor t (0–1).
-local function lerp(a, b, t)
-    return a + (b - a) * t
-end
 
 --- Variance range applied to the return multiplier.
 local RETURN_VARIANCE = 0.1
 
 --- Minimum floor for the return multiplier (always at least 10% profit).
 local MIN_RETURN_MULTIPLIER = 1.1
-
---- Generate a random float between min and max using ZombRand.
---- ZombRand(n) returns integer [0, n). We use a large range for precision.
-local function randFloat(minVal, maxVal)
-    local precision = 10000
-    local raw = ZombRand(precision) / precision  -- [0, 1)
-    return minVal + raw * (maxVal - minVal)
-end
 
 ---------------------------------------------------------------
 -- Risk calculation
@@ -110,27 +90,27 @@ function POS_InvestmentGenerator.calculateRisk(paybackDays)
     local range = maxPayback - minPayback
     local t = 0.5
     if range > 0 then
-        t = clamp((paybackDays - minPayback) / range, 0, 1)
+        t = PhobosLib.clamp((paybackDays - minPayback) / range, 0, 1)
     end
 
     -- Base risk: linear interpolation by payback period
-    local baseRisk = lerp(minBaseRisk, maxBaseRisk, t)
+    local baseRisk = PhobosLib.lerp(minBaseRisk, maxBaseRisk, t)
 
     -- Actual risk: multiplicative random variance
-    local randomFactor = 1.0 + randFloat(-randomRiskPct, randomRiskPct)
-    local actualRisk = clamp(baseRisk * randomFactor, 0.01, 0.95)
+    local randomFactor = 1.0 + PhobosLib.randFloat(-randomRiskPct, randomRiskPct)
+    local actualRisk = PhobosLib.clamp(baseRisk * randomFactor, 0.01, 0.95)
 
     -- Displayed risk: obfuscated value shown to the player
-    local obfuscationFactor = 1.0 + randFloat(-obfuscationPct, obfuscationPct)
-    local displayedRisk = clamp(actualRisk * obfuscationFactor, 0.01, 0.99)
+    local obfuscationFactor = 1.0 + PhobosLib.randFloat(-obfuscationPct, obfuscationPct)
+    local displayedRisk = PhobosLib.clamp(actualRisk * obfuscationFactor, 0.01, 0.99)
 
     -- Return multiplier: higher risk → higher reward
-    local baseReturn = lerp(minReturn, maxReturn, t)
+    local baseReturn = PhobosLib.lerp(minReturn, maxReturn, t)
     local variance = POS_Sandbox and POS_Sandbox.getInvestmentReturnVariance
         and POS_Sandbox.getInvestmentReturnVariance() or RETURN_VARIANCE
     local minRet = POS_Sandbox and POS_Sandbox.getInvestmentMinReturnPct
         and POS_Sandbox.getInvestmentMinReturnPct() or MIN_RETURN_MULTIPLIER
-    local returnMultiplier = baseReturn + randFloat(-variance, variance)
+    local returnMultiplier = baseReturn + PhobosLib.randFloat(-variance, variance)
     returnMultiplier = math.max(minRet, returnMultiplier)
 
     return {

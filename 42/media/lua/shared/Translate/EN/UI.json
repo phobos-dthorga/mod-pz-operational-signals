@@ -697,5 +697,38 @@
     "UI_POS_Analysis_EmptyGuidance_Line2": "  - Market notes from observation posts",
     "UI_POS_Analysis_EmptyGuidance_Line3": "  - Data recorder captures from radio signals",
     "UI_POS_Analysis_EmptyGuidance_Line4": "  - Camera footage from surveillance points",
-    "UI_POS_Analysis_SIGINTProgress": "SIGINT Progress"
+    "UI_POS_Analysis_SIGINTProgress": "SIGINT Progress",
+
+    "UI_POS_Agent_ScavengerTrader": "Scavenger Trader",
+    "UI_POS_Agent_Quartermaster": "Settlement Quartermaster",
+    "UI_POS_Agent_Wholesaler": "Wholesaler",
+    "UI_POS_Agent_Smuggler": "Smuggler",
+    "UI_POS_Agent_MilitaryLogistician": "Military Logistician",
+    "UI_POS_Agent_Speculator": "Crisis Speculator",
+    "UI_POS_Agent_SpecialistCrafter": "Specialist Crafter",
+
+    "UI_POS_Zone_Muldraugh": "Muldraugh",
+    "UI_POS_Zone_WestPoint": "West Point",
+    "UI_POS_Zone_Riverside": "Riverside",
+    "UI_POS_Zone_LouisvilleEdge": "Louisville Outskirts",
+    "UI_POS_Zone_MilitaryCorridor": "Military Corridor",
+    "UI_POS_Zone_RuralEast": "Rural East",
+
+    "UI_POS_Wholesaler_State_Stable": "Stable",
+    "UI_POS_Wholesaler_State_Tight": "Tight",
+    "UI_POS_Wholesaler_State_Strained": "Strained",
+    "UI_POS_Wholesaler_State_Dumping": "Dumping",
+    "UI_POS_Wholesaler_State_Withholding": "Withholding",
+    "UI_POS_Wholesaler_State_Collapsing": "Collapsing",
+
+    "UI_POS_MarketEvent_BulkArrival": "Bulk Arrival",
+    "UI_POS_MarketEvent_ConvoyDelay": "Convoy Delay",
+    "UI_POS_MarketEvent_TheftRaid": "Theft / Raid",
+    "UI_POS_MarketEvent_ControlledRelease": "Controlled Release",
+    "UI_POS_MarketEvent_Withholding": "Strategic Withholding",
+    "UI_POS_MarketEvent_Requisition": "Requisition / Diversion",
+
+    "UI_POS_Signal_Hard": "Hard Signal",
+    "UI_POS_Signal_Soft": "Soft Signal",
+    "UI_POS_Signal_Structural": "Structural Signal"
 }

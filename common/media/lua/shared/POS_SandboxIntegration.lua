@@ -712,3 +712,16 @@ end
 function POS_Sandbox.getEnableTutorialHints()
     return PhobosLib.getSandboxVar("POS", "EnableTutorialHints", true)
 end
+
+---------------------------------------------------------------
+-- Living Market (experimental)
+---------------------------------------------------------------
+
+function POS_Sandbox.isLivingMarketEnabled()
+    return PhobosLib.getSandboxVar("POS", "EnableLivingMarket", false) == true
+end
+
+function POS_Sandbox.getSimulationTickInterval()
+    return PhobosLib.getSandboxVar("POS", "SimulationTickInterval",
+        POS_Constants.SIMULATION_TICK_INTERVAL_DEFAULT)
+end

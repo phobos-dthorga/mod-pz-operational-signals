@@ -114,7 +114,7 @@ end
 ---@return number
 function POS_SIGINTSkill.getLevel(player)
     if not sigintPerk or not player then return 0 end
-    local ok, level = pcall(function()
+    local ok, level = PhobosLib.safecall(function()
         return PhobosLib.getPerkLevel(player, sigintPerk)
     end)
     if ok and level then
@@ -191,7 +191,7 @@ function POS_SIGINTSkill.getLevelProgress(player)
     local currentLevel = POS_SIGINTSkill.getLevel(player)
     if currentLevel >= POS_Constants.SIGINT_MAX_LEVEL then return 100 end
 
-    local ok, currentXP = pcall(function()
+    local ok, currentXP = PhobosLib.safecall(function()
         return player:getXp():getXP(sigintPerk)
     end)
     if not ok or not currentXP then return 0 end

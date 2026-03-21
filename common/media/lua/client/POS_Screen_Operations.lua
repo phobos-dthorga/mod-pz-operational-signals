@@ -217,7 +217,7 @@ function screen.create(contentPanel, _params, _terminal)
             if player2 then
                 local inv = player2:getInventory()
                 if inv then
-                    pcall(function()
+                    PhobosLib.safecall(function()
                         local items = inv:getItemsFromFullType(POS_Constants.ITEM_FIELD_REPORT)
                         if items then
                             for i = 0, items:size() - 1 do

@@ -45,6 +45,10 @@ function POS_WorldState.getWholesalers()
     return ModData.getOrCreate(POS_Constants.WMD_WHOLESALERS)
 end
 
+function POS_WorldState.getMarketZones()
+    return ModData.getOrCreate(POS_Constants.WMD_MARKET_ZONES)
+end
+
 function POS_WorldState.getMeta()
     return ModData.getOrCreate(POS_Constants.WMD_META)
 end
@@ -240,6 +244,10 @@ function POS_WorldState.bootstrap()
     -- Ensure wholesalers container
     local wholesalers = POS_WorldState.getWholesalers()
     wholesalers.entries = wholesalers.entries or {}
+
+    -- Ensure market zones container
+    local zones = POS_WorldState.getMarketZones()
+    zones.entries = zones.entries or {}
 
     -- Ensure building/mailbox containers
     local buildings = POS_WorldState.getBuildings()

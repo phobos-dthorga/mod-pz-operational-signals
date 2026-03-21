@@ -125,7 +125,7 @@ function POS_OperationService.consumeFieldReport(player, operationId)
     if not player or not operationId then return end
     local inv = player:getInventory()
     if not inv then return end
-    pcall(function()
+    PhobosLib.safecall(function()
         local items = inv:getItemsFromFullType(POS_Constants.ITEM_FIELD_REPORT)
         if not items then return end
         for i = 0, items:size() - 1 do
@@ -169,7 +169,7 @@ function POS_OperationService.cancelOperation(operation, player)
     local obj = operation.objectives and operation.objectives[1]
     if obj and obj.type == POS_Constants.OBJECTIVE_TYPE_DELIVERY
        and obj.pickedUp and player then
-        pcall(function()
+        PhobosLib.safecall(function()
             local inv = player:getInventory()
             if not inv then return end
             local items = inv:getItemsFromFullType(POS_Constants.ITEM_POSNET_PACKAGE)

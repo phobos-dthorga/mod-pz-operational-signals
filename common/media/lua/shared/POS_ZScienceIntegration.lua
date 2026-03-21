@@ -71,7 +71,7 @@ function POS_ZScienceIntegration.mirrorXP(player, sigintXP)
     end
 
     -- Manual fallback: directly add ZScience XP
-    pcall(function()
+    PhobosLib.safecall(function()
         if PhobosLib.addXP then
             PhobosLib.addXP(player, "Science", mirrorAmount)
         end
@@ -104,7 +104,7 @@ function POS_ZScienceIntegration.rollSpecimen(player, sigintLevel)
     for _, spec in ipairs(SIGINT_SPECIMENS) do
         if sigintLevel >= spec.level then
             if ZombRand(100) < spec.chance then
-                local ok = pcall(function()
+                local ok = PhobosLib.safecall(function()
                     inv:AddItem(spec.item)
                 end)
                 if ok then

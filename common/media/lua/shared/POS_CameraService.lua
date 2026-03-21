@@ -41,7 +41,7 @@ function POS_CameraService.isCameraWorkstation(worldObj)
     local sprites = POS_Constants.CAMERA_WORKSTATION_SPRITES
     if not sprites or #sprites == 0 then return false end
 
-    local ok, spriteName = pcall(function()
+    local ok, spriteName = PhobosLib.safecall(function()
         local sprite = worldObj:getSprite()
         return sprite and sprite:getName()
     end)
@@ -138,7 +138,7 @@ function POS_CameraService.getCooldownKey(player, actionType)
     if not building then return nil end
 
     local bx, by = 0, 0
-    pcall(function()
+    PhobosLib.safecall(function()
         local def = building:getDef()
         if def then
             bx = def:getX()
@@ -265,7 +265,7 @@ function POS_CameraService.calculateConfidence(player, inputs, actionType)
     -- Camera input bonus (from Intel Fragments tagged POS_CameraInput)
     local cameraInputCount = 0
     for _, item in ipairs(inputs) do
-        local ok, hasTag = pcall(function()
+        local ok, hasTag = PhobosLib.safecall(function()
             return item:hasTag(POS_Constants.TAG_CAMERA_INPUT)
         end)
         if ok and hasTag then

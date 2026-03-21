@@ -49,26 +49,26 @@ local TIER_CONFIDENCE = {
 --- Determine the scanner tier of a radio item (1-4) or nil if not usable.
 local function getRadioTier(item)
     if not item then return nil end
-    local ok, dd = pcall(function()
+    local ok, dd = PhobosLib.safecall(function()
         return item.getDeviceData and item:getDeviceData()
     end)
     if not ok or not dd then return nil end
 
     -- Must be turned on
     local isOn = false
-    pcall(function() isOn = dd:getIsTurnedOn() end)
+    PhobosLib.safecall(function() isOn = dd:getIsTurnedOn() end)
     if not isOn then return nil end
 
     -- Check power: battery OR grid
     local hasPower = false
-    pcall(function()
+    PhobosLib.safecall(function()
         if dd.getIsBatteryPowered and dd:getIsBatteryPowered() then
             local power = dd.getPower and dd:getPower() or 0
             if power > 0 then hasPower = true end
         end
     end)
     if not hasPower then
-        pcall(function()
+        PhobosLib.safecall(function()
             local parent = dd.getParent and dd:getParent()
             if parent then
                 local sq = parent.getSquare and parent:getSquare()
@@ -80,7 +80,7 @@ local function getRadioTier(item)
 
     -- Get transmit range for tier classification
     local range = 0
-    pcall(function() range = dd.getTransmitRange and dd:getTransmitRange() or 0 end)
+    PhobosLib.safecall(function() range = dd.getTransmitRange and dd:getTransmitRange() or 0 end)
 
     if range == 0 then return 1 end  -- Receive-only FM
     if range <= POS_Constants.RADIO_TIER_THRESHOLD_BASIC then return 2 end
@@ -91,7 +91,7 @@ end
 --- Calculate the scan radius for a radio based on its TransmitRange.
 local function getRadioScanRadius(radioItem)
     local range = 0
-    pcall(function()
+    PhobosLib.safecall(function()
         local dd = radioItem:getDeviceData()
         range = dd:getTransmitRange() or 0
     end)

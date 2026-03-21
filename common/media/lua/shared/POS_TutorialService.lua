@@ -80,7 +80,7 @@ function POS_TutorialService.init()
     end
 
     -- Listen for awarded milestones
-    pcall(function()
+    PhobosLib.safecall(function()
         LuaEventManager.AddEvent("PhobosLib_MilestoneAwarded")
     end)
     Events.PhobosLib_MilestoneAwarded.Add(POS_TutorialService.onMilestoneAwarded)
@@ -159,7 +159,7 @@ function POS_TutorialService.onMilestoneAwarded(player, modId, milestoneId)
         local modData = player:getModData()
         if modData then
             modData[POS_Constants.TUTORIAL_POPUP_READY_PREFIX .. milestoneId] = true
-            pcall(function()
+            PhobosLib.safecall(function()
                 player:transmitModData()
             end)
         end
@@ -202,8 +202,8 @@ end
 
 --- Migrate old one-shot tutorial flags to the milestone system.
 function POS_TutorialService.migrateLegacy()
-    local player = pcall(getSpecificPlayer, 0) and getSpecificPlayer(0) or nil
-    if not player then return end
+    local ok, player = PhobosLib.safecall(getSpecificPlayer, 0)
+    if not ok or not player then return end
 
     local modData = player:getModData()
     if not modData then return end

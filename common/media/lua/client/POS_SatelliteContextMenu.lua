@@ -53,7 +53,7 @@ end
 local function getDishSquare(worldobjects)
     for _, obj in ipairs(worldobjects) do
         if POS_SatelliteService.isSatelliteDish(obj) then
-            local ok, sq = pcall(function() return obj:getSquare() end)
+            local ok, sq = PhobosLib.safecall(function() return obj:getSquare() end)
             if ok and sq then return sq end
         end
     end
