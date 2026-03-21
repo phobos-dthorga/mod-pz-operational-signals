@@ -548,6 +548,7 @@ POS_Constants.MARKET_FILE_OBS_HEADER      = "[OBS]"
 POS_Constants.MARKET_FILE_CLOSES_HEADER   = "[CLOSES]"
 POS_Constants.MARKET_FILE_ITEM_SEP        = ";"
 POS_Constants.MARKET_FILE_ITEM_KV_SEP     = ":"
+POS_Constants.MARKET_FILE_CHUNK_SIZE      = 4
 
 ---------------------------------------------------------------
 -- Per-player file storage (Zomboid/Lua/POSNET/)

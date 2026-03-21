@@ -725,3 +725,8 @@ function POS_Sandbox.getSimulationTickInterval()
     return PhobosLib.getSandboxVar("POS", "SimulationTickInterval",
         POS_Constants.SIMULATION_TICK_INTERVAL_DEFAULT)
 end
+
+function POS_Sandbox.getMarketFileChunkSize()
+    return PhobosLib.getSandboxVar("POS", "MarketFileChunkSize",
+        POS_Constants.MARKET_FILE_CHUNK_SIZE)
+end

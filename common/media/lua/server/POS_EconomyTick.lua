@@ -118,9 +118,13 @@ function POS_EconomyTick.processDayTick()
     -- Phase 6: Mark day processed
     meta.lastProcessedDay = currentDay
 
-    -- Phase 6.5: Persist market data to external file
-    if POS_MarketFileStore and POS_MarketFileStore.save then
-        POS_MarketFileStore.save()
+    -- Phase 6.5: Begin chunked persist of market data to external file.
+    -- The write is spread across subsequent EveryOneMinute ticks via
+    -- POS_MarketFileStore.tickChunkedSave() (called from onEveryOneMinute).
+    if POS_MarketFileStore and POS_MarketFileStore.startChunkedSave then
+        POS_MarketFileStore.startChunkedSave()
+    elseif POS_MarketFileStore and POS_MarketFileStore.save then
+        POS_MarketFileStore.save()  -- fallback: single-frame save
     end
 
     -- Phase 7: Notify clients
@@ -265,6 +269,12 @@ end
 
 function POS_EconomyTick.onEveryOneMinute()
     POS_EconomyTick.processDayTick()
+
+    -- Drain chunked file store writes (started by Phase 6.5 above)
+    if POS_MarketFileStore and POS_MarketFileStore.isChunkedSaveInProgress
+            and POS_MarketFileStore.isChunkedSaveInProgress() then
+        POS_MarketFileStore.tickChunkedSave()
+    end
 end
 
 Events.EveryOneMinute.Add(POS_EconomyTick.onEveryOneMinute)

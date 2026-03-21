@@ -1329,3 +1329,13 @@ option POS.SimulationTickInterval
     page = POS_Sandbox,
     translation = POS_SimulationTickInterval,
 }
+
+option POS.MarketFileChunkSize
+{
+    type = integer,
+    default = 4,
+    min = 1,
+    max = 20,
+    page = POS_Sandbox,
+    translation = POS_MarketFileChunkSize,
+}
