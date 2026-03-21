@@ -36,13 +36,8 @@ POS_ConnectionManager = {}
 
 local _TAG = "[POS:ConnMgr]"
 
---- Desktop computer sprite names (base + 3 rotations).
-local DESKTOP_SPRITES = {
-    ["appliances_com_01_72"] = true,
-    ["appliances_com_01_73"] = true,
-    ["appliances_com_01_74"] = true,
-    ["appliances_com_01_75"] = true,
-}
+--- Desktop computer sprite lookup (delegated to POS_Constants).
+local DESKTOP_SPRITES = POS_Constants.DESKTOP_COMPUTER_SPRITES
 
 --- Search radius for nearby desktop computers (tiles).
 local DESKTOP_SEARCH_RADIUS = 3

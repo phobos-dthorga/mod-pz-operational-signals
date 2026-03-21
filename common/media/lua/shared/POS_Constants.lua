@@ -1108,6 +1108,14 @@ POS_Constants.SATELLITE_FUEL_DRAIN_BROADCAST   = 0.10
 POS_Constants.SATELLITE_LOW_FUEL_THRESHOLD     = 0.20
 POS_Constants.SATELLITE_LOW_FUEL_PENALTY       = 0.25
 
+-- Desktop computer sprites (vanilla, 4 rotations)
+POS_Constants.DESKTOP_COMPUTER_SPRITES = {
+    ["appliances_com_01_72"] = true,
+    ["appliances_com_01_73"] = true,
+    ["appliances_com_01_74"] = true,
+    ["appliances_com_01_75"] = true,
+}
+
 -- Satellite dish sprites (vanilla satellite dish, 2 rotations)
 POS_Constants.SATELLITE_DISH_SPRITES           = {
     "appliances_com_01_20",

@@ -226,20 +226,33 @@ end
 ---------------------------------------------------------------
 
 --- Check if a terminal is within link range of the satellite.
+--- Scans for desktop computers (by sprite) within SATELLITE_LINK_RANGE tiles.
 ---@param sq IsoGridSquare Satellite dish square
 ---@return boolean
 function POS_SatelliteService.hasTerminalLink(sq)
     if not sq then return false end
 
-    -- Look for a computer within SATELLITE_LINK_RANGE tiles
-    -- This is a simplified check — full check would use building scanning
-    if PhobosLib.findNearbyObjectByKeywords then
-        local computer = PhobosLib.findNearbyObjectByKeywords(
-            sq, POS_Constants.SATELLITE_LINK_RANGE,
-            { "computer", "desktop" })
-        return computer ~= nil
-    end
-    return false
+    local desktopSprites = POS_Constants.DESKTOP_COMPUTER_SPRITES
+    if not desktopSprites then return false end
+
+    return PhobosLib.scanNearbySquares(sq, POS_Constants.SATELLITE_LINK_RANGE,
+        function(scanSq)
+            local objs = scanSq:getObjects()
+            if not objs then return false end
+            for i = 0, objs:size() - 1 do
+                local obj = objs:get(i)
+                if obj then
+                    local ok, spriteName = PhobosLib.safecall(function()
+                        local sprite = obj:getSprite()
+                        return sprite and sprite:getName()
+                    end)
+                    if ok and spriteName and desktopSprites[spriteName] then
+                        return true
+                    end
+                end
+            end
+            return false
+        end) or false
 end
 
 ---------------------------------------------------------------
