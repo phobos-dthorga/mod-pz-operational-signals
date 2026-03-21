@@ -44,6 +44,7 @@ screen.shouldShow = function(_player, _ctx)
 end
 
 function screen.create(contentPanel, _params, _terminal)
+    do return end -- DIAGNOSTIC: skip all rendering to confirm CTD is in create()
     PhobosLib.debug("POS", _TAG, "[Markets] create() START")
     local W = POS_TerminalWidgets
     local C = W.COLOURS
