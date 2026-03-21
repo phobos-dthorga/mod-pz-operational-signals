@@ -1873,3 +1873,35 @@ POS_BroadcastSystem.broadcastToAll(cmd, args)
 | `POS_RadioInterception.lua` | `handleCommand()` — public entry point for SP direct routing |
 | `POS_InvestmentLog.lua` | Deferred payout request pattern (one-shot `EveryOneMinute`) |
 | `POS_EconomyTick.lua` | Phase 7 uses `broadcastToAll` unconditionally (SP + MP safe) |
+
+### 27.6 Per-Player Data Storage
+
+Per-player data (watchlist, alerts, orders, holdings) MUST use player modData
+via `PhobosLib.getPlayerModDataTable(player, key)`, NOT custom file I/O via
+`getFileReader`/`getFileWriter`.
+
+**Why:** `getFileReader` causes silent JVM crashes in multiple PZ lifecycle
+contexts (OnGameStart, render frames, event ticks). Player modData is
+engine-managed, auto-persisted on save, and safe to access at any time.
+
+**Pattern:**
+
+```lua
+-- GOOD: engine-managed, safe at any time
+local wl = PhobosLib.getPlayerModDataTable(player, POS_Constants.MODDATA_WATCHLIST) or {}
+
+-- BAD: crashes JVM silently
+local wl = POS_PlayerFileStore.getWatchlist(player)
+```
+
+**When file I/O IS acceptable:** World-level data (market observations,
+building caches) that is NOT tied to a specific player and is accessed from
+server-side tick handlers (not render frames). These use
+`getFileReader`/`getFileWriter` during `EveryOneMinute` or `OnSave` events.
+
+**Implementation references:**
+
+| File | Role |
+|------|------|
+| `POS_PlayerState.lua` | Per-player modData access (canonical pattern) |
+| `POS_MarketFileStore.lua` | World-level file I/O (acceptable use of getFileReader/getFileWriter) |
