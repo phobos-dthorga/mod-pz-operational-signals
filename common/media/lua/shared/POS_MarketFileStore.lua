@@ -160,7 +160,7 @@ function POS_MarketFileStore.load()
                 currentCatId = catId
                 currentSection = nil
                 if not cache[catId] then
-                    cache[catId] = { observations = {}, rollingCloses = {} }
+                    cache[catId] = { observations = {}, rollingCloses = {}, aggregate = {} }
                 end
                 loadedCats = loadedCats + 1
             end
@@ -260,7 +260,7 @@ end
 ---@return table
 function POS_MarketFileStore.getCategory(catId)
     if not cache[catId] then
-        cache[catId] = { observations = {}, rollingCloses = {} }
+        cache[catId] = { observations = {}, rollingCloses = {}, aggregate = {} }
     end
     return cache[catId]
 end
