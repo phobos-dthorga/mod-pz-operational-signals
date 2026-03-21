@@ -64,17 +64,19 @@ end
 local function getBuildingKey(sq)
     if not sq then return nil end
     local building = sq:getBuilding()
-    if not building then return nil end
-
-    local bx, by = 0, 0
-    PhobosLib.safecall(function()
-        local def = building:getDef()
-        if def then
-            bx = def:getX()
-            by = def:getY()
-        end
-    end)
-    return tostring(bx) .. "_" .. tostring(by)
+    if building then
+        local bx, by = 0, 0
+        PhobosLib.safecall(function()
+            local def = building:getDef()
+            if def then
+                bx = def:getX()
+                by = def:getY()
+            end
+        end)
+        return "bld_" .. tostring(bx) .. "_" .. tostring(by)
+    end
+    -- Fallback for outdoor dishes: use square coordinates
+    return "sq_" .. tostring(sq:getX()) .. "_" .. tostring(sq:getY())
 end
 
 ---------------------------------------------------------------
