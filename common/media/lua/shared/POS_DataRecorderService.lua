@@ -218,6 +218,49 @@ function POS_DataRecorderService.appendChunk(recorder, chunk)
         return true
     end
 
+    -- Auto-feed: if enabled and player available, try to swap media
+    if chunk.player and POS_DataRecorderService.isAutoFeedEnabled(recorder) then
+        local feedResult = POS_DataRecorderService.tryAutoFeedMedia(recorder, chunk.player)
+        if feedResult.success then
+            -- Notify player of auto-feed
+            if feedResult.ejectedName then
+                PhobosLib.notifyOrSay(chunk.player, {
+                    message = PhobosLib.safeGetText("UI_POS_Recorder_AutoFeedEjected", feedResult.ejectedName),
+                    icon    = POS_Constants.ITEM_DATA_RECORDER,
+                    colour  = "info",
+                    channel = POS_Constants.PN_CHANNEL_ID,
+                })
+            end
+            PhobosLib.notifyOrSay(chunk.player, {
+                message = PhobosLib.safeGetText("UI_POS_Recorder_AutoFeedInserted", feedResult.insertedName),
+                icon    = POS_Constants.ITEM_DATA_RECORDER,
+                colour  = "success",
+                channel = POS_Constants.PN_CHANNEL_ID,
+            })
+
+            -- Retry write to freshly inserted media
+            local retryMd = PhobosLib.getModData(recorder)
+            if retryMd and retryMd[POS_Constants.MD_RECORDER_MEDIA_ID] then
+                local mediaUsed = tonumber(retryMd[POS_Constants.MD_RECORDER_MEDIA_USED]) or 0
+                local mediaCap = tonumber(retryMd[POS_Constants.MD_RECORDER_MEDIA_CAP]) or 0
+                if mediaUsed < mediaCap then
+                    retryMd[POS_Constants.MD_RECORDER_MEDIA_USED] = mediaUsed + 1
+                    retryMd[POS_Constants.MD_RECORDER_TOTAL_RECORDED] = (tonumber(retryMd[POS_Constants.MD_RECORDER_TOTAL_RECORDED]) or 0) + 1
+                    PhobosLib.debug("POS", _TAG, "auto-feed retry: chunk written to new media")
+                    return true
+                end
+            end
+        else
+            -- Auto-feed failed (no media found) — notify once
+            PhobosLib.notifyOrSay(chunk.player, {
+                message = PhobosLib.safeGetText("UI_POS_Recorder_AutoFeedNoMedia"),
+                icon    = POS_Constants.ITEM_DATA_RECORDER,
+                colour  = "warning",
+                channel = POS_Constants.PN_CHANNEL_ID,
+            })
+        end
+    end
+
     PhobosLib.debug("POS", _TAG, "all storage full — chunk lost")
     return false
 end
@@ -344,6 +387,85 @@ function POS_DataRecorderService.drainPower(recorder, hours)
         PhobosLib.debug("POS", _TAG, "recorder battery depleted")
     end
 end
+
+---------------------------------------------------------------
+-- Auto-feed
+---------------------------------------------------------------
+
+--- Check if auto-feed is enabled on this recorder.
+function POS_DataRecorderService.isAutoFeedEnabled(recorder)
+    if not recorder then return false end
+    local md = PhobosLib.getModData(recorder)
+    return md and md[POS_Constants.MD_RECORDER_AUTO_FEED] == true
+end
+
+--- Toggle auto-feed mode. Returns new state (boolean).
+function POS_DataRecorderService.setAutoFeed(recorder, enabled)
+    if not recorder then return false end
+    local md = PhobosLib.getModData(recorder)
+    if not md then return false end
+    md[POS_Constants.MD_RECORDER_AUTO_FEED] = enabled == true
+    PhobosLib.debug("POS", _TAG, "auto-feed " .. (enabled and "enabled" or "disabled"))
+    return md[POS_Constants.MD_RECORDER_AUTO_FEED]
+end
+
+--- Deep search for the first usable, non-full media across all
+--- equipped containers. Search order follows USABLE_MEDIA_SEARCH_ORDER
+--- (floppy > microcassette > VHS, best quality first).
+--- @param player IsoGameCharacter
+--- @return InventoryItem|nil
+function POS_DataRecorderService.findUsableMediaDeep(player)
+    if not player then return nil end
+    local inv = player:getInventory()
+    if not inv then return nil end
+
+    for _, ft in ipairs(POS_Constants.USABLE_MEDIA_SEARCH_ORDER) do
+        local media = PhobosLib.findItemByFullTypeRecurse(inv, ft)
+        if media and POS_MediaManager.isUsableMedia(media)
+            and not POS_MediaManager.isFull(media) then
+            return media
+        end
+    end
+    return nil
+end
+
+--- Attempt auto-feed: eject spent media, deep-search for next,
+--- insert if found.
+--- @param recorder InventoryItem
+--- @param player IsoGameCharacter
+--- @return table {success=bool, ejectedName=string|nil, insertedName=string|nil}
+function POS_DataRecorderService.tryAutoFeedMedia(recorder, player)
+    local result = { success = false, ejectedName = nil, insertedName = nil }
+    if not recorder or not player then return result end
+    if not POS_DataRecorderService.isAutoFeedEnabled(recorder) then return result end
+
+    -- Eject current media if present
+    if POS_DataRecorderService.hasMedia(recorder) then
+        local md = PhobosLib.getModData(recorder)
+        result.ejectedName = md and md[POS_Constants.MD_RECORDER_MEDIA_TYPE] or nil
+        POS_DataRecorderService.ejectMedia(recorder)
+        PhobosLib.debug("POS", _TAG, "auto-feed: ejected " .. tostring(result.ejectedName))
+    end
+
+    -- Deep search for replacement
+    local newMedia = POS_DataRecorderService.findUsableMediaDeep(player)
+    if newMedia then
+        POS_DataRecorderService.insertMedia(recorder, newMedia)
+        result.insertedName = newMedia:getDisplayName()
+        result.success = true
+        PhobosLib.debug("POS", _TAG, "auto-feed: inserted " .. result.insertedName)
+    else
+        -- No replacement found — disable auto-feed to prevent spam
+        POS_DataRecorderService.setAutoFeed(recorder, false)
+        PhobosLib.debug("POS", _TAG, "auto-feed: no media found, disabled")
+    end
+
+    return result
+end
+
+---------------------------------------------------------------
+-- Condition
+---------------------------------------------------------------
 
 --- Get recorder condition-based BPS modifier.
 --- Full condition = 0 modifier; lower condition = negative modifier.

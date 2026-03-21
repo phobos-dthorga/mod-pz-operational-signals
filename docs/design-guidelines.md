@@ -747,17 +747,71 @@ When multiple context-menu actions exist on a single inventory object, they
 context menu. This applies to all POSnet items — existing and new.
 
 Examples:
-- **Data-Recorder** → "Data-Recorder" sub-menu containing: Insert Media,
-  Eject Media, View Status
+- **Data-Recorder** → "Data-Recorder" sub-menu containing: Media Management
+  (nested), View Recorder Status
 - **Source devices** (camcorder, logger, radio) → "POSnet" sub-menu
   containing: Record Using Data-Recorder
 - Any future item with 2+ POSnet context actions must follow this pattern
+
+Full Data-Recorder hierarchy:
+
+```
+Data-Recorder (L1)
+  ├── Media Management (L2)
+  │    ├── Insert Media > (L3, family-grouped)
+  │    ├── Eject Media
+  │    ├── Auto-Feed [ON/OFF]
+  │    ├── Flush Buffer → Media
+  │    └── View Media Status
+  └── View Recorder Status
+```
+
+The Media Management sub-menu groups all media-related operations at L2,
+with Insert Media expanding to an L3 family-grouped list of compatible media
+items. This keeps the top-level Data-Recorder sub-menu clean (two entries)
+while providing full media control one level deeper.
 
 ### 10.2 Nested Sub-Menus
 
 When a sub-menu action itself has multiple choices (e.g., "Insert Media"
 with multiple compatible media items), use a nested sub-menu. Maximum
 nesting depth: 2 levels (top → sub-menu → nested sub-menu).
+
+### 10.3 Auto-Feed & Deep Inventory Search
+
+Auto-feed is a per-recorder toggle stored in recorder modData under the key
+`POS_Constants.MD_RECORDER_AUTO_FEED`. It controls whether the recorder
+automatically ejects spent media and searches for a replacement when the
+current media fills up.
+
+**Behaviour when auto-feed is enabled:**
+
+1. When `appendChunk()` detects the current media is full, it auto-ejects
+   the spent media and performs a deep inventory search for a replacement.
+2. The deep search uses `PhobosLib.findItemByFullTypeRecurse()` and iterates
+   over `USABLE_MEDIA_SEARCH_ORDER` (the ordered list of compatible media
+   full-types, cheapest first).
+3. If a replacement is found, it is inserted automatically.
+4. If **no** replacement is found, auto-feed auto-disables itself and sends
+   a PhobosNotifications (PN) warning to the player.
+
+**Behaviour when toggling auto-feed ON with no media loaded:**
+
+- An immediate deep search is performed. If compatible media is found, it is
+  inserted into the recorder in the same action. If none is found, the toggle
+  reverts to OFF and the player is warned.
+
+**Notification rule:** All outcomes (insert, eject, auto-disable, toggle
+state changes) notify via `PhobosLib.notifyOrSay()`.
+
+**Anti-pattern — shallow search only:**
+Do **not** use `getItemsFromFullType()` on the main inventory alone. Players
+routinely carry media inside bags and containers. Always use
+`PhobosLib.findItemByFullTypeRecurse()` to search the full inventory tree.
+
+**Implementation reference:**
+`POS_DataRecorderService.findUsableMediaDeep()`,
+`POS_DataRecorderService.tryAutoFeedMedia()`.
 
 ---
 

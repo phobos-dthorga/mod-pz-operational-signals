@@ -786,6 +786,38 @@ POS_Constants.MD_RECORDER_LAST_REGION    = "POS_RecorderLastRegion"
 POS_Constants.MD_RECORDER_POWERED        = "POS_RecorderPowered"
 POS_Constants.MD_RECORDER_SOURCE_ID      = "POS_RecorderSourceId"
 POS_Constants.MD_RECORDER_TUTORIAL_SHOWN = "POS_RecorderTutorialShown"
+POS_Constants.MD_RECORDER_AUTO_FEED      = "POS_RecorderAutoFeed"
+
+---------------------------------------------------------------
+-- Media search order (shared between context menu, auto-feed,
+-- and MediaManager.findUsableMedia). Priority: floppy (digital)
+-- > microcassette (high) > VHS (best quality first).
+---------------------------------------------------------------
+
+POS_Constants.USABLE_MEDIA_SEARCH_ORDER = {
+    POS_Constants.ITEM_BLANK_FLOPPY_DISK,
+    POS_Constants.ITEM_RECORDED_FLOPPY_DISK,
+    POS_Constants.ITEM_WORN_FLOPPY_DISK,
+    POS_Constants.ITEM_MICROCASSETTE,
+    POS_Constants.ITEM_RECORDED_MICROCASSETTE,
+    POS_Constants.ITEM_REWOUND_MICROCASSETTE,
+    POS_Constants.ITEM_BLANK_VHS_TAPE,
+    POS_Constants.ITEM_REFURBISHED_TAPE,
+    POS_Constants.ITEM_SPLICED_TAPE,
+    POS_Constants.ITEM_IMPROVISED_TAPE,
+}
+
+POS_Constants.MEDIA_FAMILY_DISPLAY_ORDER = {
+    POS_Constants.MEDIA_FAMILY_FLOPPY,
+    POS_Constants.MEDIA_FAMILY_MICROCASSETTE,
+    POS_Constants.MEDIA_FAMILY_VHS,
+}
+
+POS_Constants.MEDIA_FAMILY_LABEL_KEYS = {
+    [POS_Constants.MEDIA_FAMILY_FLOPPY]       = "UI_POS_ContextMenu_FamilyFloppy",
+    [POS_Constants.MEDIA_FAMILY_MICROCASSETTE] = "UI_POS_ContextMenu_FamilyMicrocassette",
+    [POS_Constants.MEDIA_FAMILY_VHS]          = "UI_POS_ContextMenu_FamilyVHS",
+}
 
 ---------------------------------------------------------------
 -- Unified media modData keys (replaces POS_Tape* keys)
