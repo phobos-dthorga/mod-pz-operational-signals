@@ -53,7 +53,7 @@ local PORTABLE_COMPUTER_TYPE = POS_Constants.ITEM_PORTABLE_COMPUTER
 --- @return boolean
 local function isDesktopComputer(obj)
     if not obj then return false end
-    local ok, spriteName = pcall(function()
+    local ok, spriteName = PhobosLib.safecall(function()
         local sprite = obj:getSprite()
         if sprite and sprite.getName then
             return sprite:getName()
@@ -97,7 +97,7 @@ function POS_ConnectionManager.hasPortableComputer(player)
     if not player then return false end
     local inv = player:getInventory()
     if not inv then return false end
-    return inv:containsTypeEval(PORTABLE_COMPUTER_TYPE)
+    return inv:containsType(PORTABLE_COMPUTER_TYPE)
 end
 
 --- Find the player's portable computer item (for battery drain tracking).
@@ -107,7 +107,7 @@ function POS_ConnectionManager.findPortableComputer(player)
     if not player then return nil end
     local inv = player:getInventory()
     if not inv then return nil end
-    return inv:getFirstTypeEval(PORTABLE_COMPUTER_TYPE)
+    return inv:getFirstType(PORTABLE_COMPUTER_TYPE)
 end
 
 --- Check if a world object is a radio (IsoWaveSignal).
@@ -124,7 +124,7 @@ end
 function POS_ConnectionManager.isInventoryRadio(item)
     if not item then return false end
     if not item.getDeviceData then return false end
-    local ok, result = pcall(function()
+    local ok, result = PhobosLib.safecall(function()
         return item:getDeviceData() ~= nil
     end)
     return ok and result == true
@@ -136,7 +136,7 @@ end
 function POS_ConnectionManager.getDeviceData(radioObj)
     if not radioObj then return nil end
     if not radioObj.getDeviceData then return nil end
-    local ok, dd = pcall(function()
+    local ok, dd = PhobosLib.safecall(function()
         return radioObj:getDeviceData()
     end)
     if ok and dd then return dd end
@@ -169,14 +169,14 @@ function POS_ConnectionManager.canConnect(player, radioObj)
     end
 
     -- Check radio is turned on
-    local ok, isOn = pcall(function() return dd:getIsTurnedOn() end)
+    local ok, isOn = PhobosLib.safecall(function() return dd:getIsTurnedOn() end)
     if not ok or not isOn then
         return false, "UI_POS_RadioOff"
     end
 
     -- Check power (battery or electricity)
     local hasPower = false
-    pcall(function()
+    PhobosLib.safecall(function()
         if dd:getIsBatteryPowered() then
             local power = dd:getPower()
             if power and power > 0 then
@@ -185,7 +185,7 @@ function POS_ConnectionManager.canConnect(player, radioObj)
         end
     end)
     if not hasPower then
-        pcall(function()
+        PhobosLib.safecall(function()
             local parent = dd:getParent()
             if parent then
                 local sq = parent:getSquare()
@@ -202,7 +202,7 @@ function POS_ConnectionManager.canConnect(player, radioObj)
     -- Check frequency matches a POSnet band
     -- PZ B42 DeviceData uses getChannel() not getFrequency()
     local tunedFreq = nil
-    pcall(function()
+    PhobosLib.safecall(function()
         if dd.getChannel then
             tunedFreq = dd:getChannel()
         elseif dd.getFrequency then
@@ -261,7 +261,7 @@ function POS_ConnectionManager.connect(player, radioObj)
 
     -- Get radio name for display
     local radioName = "Radio"
-    pcall(function()
+    PhobosLib.safecall(function()
         local dd = radioObj:getDeviceData()
         if dd then
             local parent = dd:getParent()
@@ -270,7 +270,7 @@ function POS_ConnectionManager.connect(player, radioObj)
             end
         end
     end)
-    pcall(function()
+    PhobosLib.safecall(function()
         if radioObj.getName then
             local n = radioObj:getName()
             if n and n ~= "" then radioName = n end
