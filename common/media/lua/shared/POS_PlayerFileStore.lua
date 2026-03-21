@@ -290,9 +290,7 @@ function POS_PlayerFileStore.load(player)
     local username = sanitiseUsername(player:getUsername())
 
     -- Return cached data if already loaded this session
-    if cache[username] then
-        return cache[username]
-    end
+    if cache[username] then return cache[username] end
 
     -- Try loading from file
     local data = loadFromFile(player)
@@ -300,8 +298,7 @@ function POS_PlayerFileStore.load(player)
     if not data then
         -- No file exists yet — check for legacy modData to migrate
         data = createEmpty()
-        local didMigrate = migrateFromModData(player, data)
-        if didMigrate then
+        if migrateFromModData(player, data) then
             saveToFile(player, data)
         end
     else
