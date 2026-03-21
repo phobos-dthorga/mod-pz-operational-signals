@@ -1,5 +1,18 @@
 [h1]Changelog[/h1]
 
+[h2]v0.13.0 — Living Market Scaffolding & Defensive pcall Migration[/h2]
+[list]
+[*] Living Market Layer 0 scaffolding — autonomous economy framework with agent archetypes, wholesaler system, market zones, and supply pressure modeling (gated by sandbox option, not yet active)
+[*] 3 new shared modules: POS_MarketAgent, POS_WholesalerService, POS_MarketSimulation
+[*] Comprehensive Living Market constants — 7 agent archetypes, 6 market zones, 6 market event types, 6 wholesaler operational states
+[*] ~37 POSnet defensive pcalls migrated to PhobosLib.safecall for Strict Mode compatibility
+[*] Fixed logic error in POS_TutorialService.migrateLegacy() (line 205)
+[*] Replaced local math utilities with PhobosLib equivalents (clamp, lerp, randFloat)
+[*] Updated design guidelines with Living Market module references and Strict Mode pcall patterns
+[*] PhobosLib 1.48.0 dependency (new math/table utilities)
+[*] Full translation infrastructure for Living Market entities (agents, zones, events, states, signals)
+[/list]
+
 [h2]v0.10.0 — Danger Detection, Cache Externalization & Polish (Preview)[/h2]
 [list]
 [*] Danger detection gate — intel gathering and passive recon blocked when threats nearby (zombies, fire, combat)
