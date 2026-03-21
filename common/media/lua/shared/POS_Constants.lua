@@ -1314,6 +1314,44 @@ POS_Constants.AGENT_SURPLUS_APPROACH_RATE    = 0.15
 POS_Constants.AGENT_TRUST_DECAY_RATE         = 0.05
 
 ---------------------------------------------------------------
+-- Living Market: Simulation Tuning
+---------------------------------------------------------------
+
+POS_Constants.SIMULATION_PRESSURE_DECAY_RATE       = 0.12
+POS_Constants.SIMULATION_DISRUPTION_DECAY_RATE     = 0.08
+POS_Constants.SIMULATION_STOCK_REPLENISH_RATE      = 0.10
+POS_Constants.SIMULATION_EVENT_PROBABILITY_MULT    = 1.0
+
+POS_Constants.SIMULATION_DEMAND_PULL = {
+    low    = 0.02,
+    medium = 0.05,
+    high   = 0.10,
+    dense  = 0.15,
+}
+
+POS_Constants.SIMULATION_ESSENTIAL_CATEGORIES = {
+    "food", "medicine", "fuel",
+}
+
+---------------------------------------------------------------
+-- Living Market: Event Effects
+---------------------------------------------------------------
+
+POS_Constants.EVENT_STOCK_EFFECT_BULK_ARRIVAL       =  0.25
+POS_Constants.EVENT_STOCK_EFFECT_THEFT_RAID         = -0.20
+POS_Constants.EVENT_STOCK_EFFECT_CONTROLLED_RELEASE =  0.15
+POS_Constants.EVENT_STOCK_EFFECT_REQUISITION        = -0.30
+POS_Constants.EVENT_DISRUPTION_THEFT_RAID           =  0.15
+POS_Constants.EVENT_DISRUPTION_REQUISITION          =  0.25
+
+---------------------------------------------------------------
+-- Living Market: Wholesaler Stock Bounds
+---------------------------------------------------------------
+
+POS_Constants.WHOLESALER_STOCK_MIN = 0.0
+POS_Constants.WHOLESALER_STOCK_MAX = 1.0
+
+---------------------------------------------------------------
 -- Living Market: World ModData
 ---------------------------------------------------------------
 
