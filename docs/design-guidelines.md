@@ -591,6 +591,7 @@ Third-party POSnet terminal screens **must**:
   `onExit`) are wrapped in `pcall`
 - **Lazy construction** — screens are only constructed when navigated to
 - **Version handshake** — `POS_Constants.API_VERSION` for future compat checks
+- **Strict mode** — see §25 for pcall classification and safecall migration rules
 
 ---
 
@@ -1384,3 +1385,44 @@ pipelines.
 - Smugglers must be risky, not clownish.
 - Speculators must be rare — too many makes the economy silly.
 - Old keys are preserved (not deleted) for backward compatibility.
+
+---
+
+## 25. Error Handling & Strict Mode
+
+### 25.1 pcall Classification
+
+All pcall usage falls into exactly two categories:
+
+| Type | Purpose | Strict mode | Example |
+|------|---------|-------------|---------|
+| **NECESSARY** | API probing — checking if a method exists across PZ builds | Always wrapped | `pcall(getDebug)`, `PhobosLib.probeMethod()` |
+| **DEFENSIVE** | Protecting against edge cases in gameplay logic | Bypassed in strict mode | Inventory iteration, trait lookup, modData access |
+
+### 25.2 Rules
+
+1. **New defensive pcalls** MUST use `PhobosLib.safecall(fn, ...)` — never raw `pcall()`.
+2. **New defensive method calls** MUST use `PhobosLib.safeMethodCall(obj, method, ...)`.
+3. **API probing** (testing if a method exists, trying multiple method signatures) keeps raw `pcall()`.
+4. **`PhobosLib.pcallMethod`** is reserved for API probing only. Do not use it for defensive wrapping.
+5. Strict mode is enabled via sandbox option `PhobosLib.EnableStrictMode`. Default OFF.
+6. Before OnGameStart, strict mode is always OFF — boot-phase code is always safe.
+
+### 25.3 Migration Pattern
+
+```lua
+-- BEFORE (hides bugs):
+local ok, result = pcall(function() return obj:riskyMethod(arg) end)
+
+-- AFTER (strict-mode-aware):
+local ok, result = PhobosLib.safecall(function() return obj:riskyMethod(arg) end)
+
+-- Or for method calls:
+local ok, result = PhobosLib.safeMethodCall(obj, "riskyMethod", arg)
+```
+
+### 25.4 When to Use Strict Mode
+
+- **Development**: Always ON — surfaces hidden errors with full stack traces.
+- **Bug reports**: Ask players to enable it and reproduce the crash for better diagnostics.
+- **Normal play**: OFF (default) — defensive pcalls protect against edge-case crashes.
