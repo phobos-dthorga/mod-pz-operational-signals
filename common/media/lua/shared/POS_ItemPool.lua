@@ -372,6 +372,15 @@ local function indexItem(record)
 end
 
 ---------------------------------------------------------------
+-- Lazy bootstrap — deferred to first access instead of OnGameStart.
+-- Iterating all base items (~2000+) is the most expensive single
+-- operation in POSnet's init; deferring it moves the cost from
+-- frame 0 to first market terminal open or mission generation.
+---------------------------------------------------------------
+
+local ensureInit  -- forward declaration; assigned after init() below
+
+---------------------------------------------------------------
 -- Public API
 ---------------------------------------------------------------
 
@@ -589,11 +598,4 @@ function POS_ItemPool.getCategoryForItem(fullType)
     return record and record.commodityCategory or nil
 end
 
----------------------------------------------------------------
--- Lazy bootstrap — deferred to first access instead of OnGameStart.
--- Iterating all base items (~2000+) is the most expensive single
--- operation in POSnet's init; deferring it moves the cost from
--- frame 0 to first market terminal open or mission generation.
----------------------------------------------------------------
-
-local ensureInit = PhobosLib.lazyInit(POS_ItemPool.init)
+ensureInit = PhobosLib.lazyInit(POS_ItemPool.init)
