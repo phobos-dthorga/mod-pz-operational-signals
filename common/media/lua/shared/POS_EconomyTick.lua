@@ -45,28 +45,19 @@ function POS_EconomyTick.processDayTick()
     local meta = POS_WorldState.getMeta()
     local currentDay = POS_WorldState.getWorldDay()
 
-    -- Compute fractional world time (day + hour/24)
+    -- Use monotonic world-age hours (integer, always increases)
+    -- Pattern proven by DynamicTrading — immune to float precision issues
     local gt = getGameTime and getGameTime()
-    local hourOfDay = gt and gt:getTimeOfDay() or 0
-    local worldTime = currentDay + (hourOfDay / 24)
+    if not gt then return end
+    local currentHour = math.floor(gt:getWorldAgeHours())
 
-    -- Check interval (default 24h = once per day)
+    -- Check interval (default 24h, sandbox-configurable)
     local intervalHours = POS_Sandbox and POS_Sandbox.getEconomyTickIntervalHours
         and POS_Sandbox.getEconomyTickIntervalHours()
         or POS_Constants.ECONOMY_TICK_INTERVAL_HOURS_DEFAULT
-    local intervalFraction = intervalHours / 24
-    local lastTick = meta.lastProcessedTick or 0
+    local lastTickHour = meta.lastProcessedHour or 0
 
-    -- Sanity: reset if lastTick is in the future (corruption/time-travel)
-    if lastTick > worldTime then
-        PhobosLib.debug("POS", _TAG, "[EconomyTick] Resetting future lastProcessedTick="
-            .. tostring(lastTick) .. " (worldTime=" .. tostring(worldTime) .. ")")
-        lastTick = 0
-        meta.lastProcessedTick = 0
-    end
-
-    local delta = worldTime - lastTick
-    if delta < intervalFraction then return end
+    if (currentHour - lastTickHour) < intervalHours then return end
 
     -- Check sandbox toggle
     if POS_Sandbox and POS_Sandbox.getEconomyTickEnabled
@@ -137,7 +128,7 @@ function POS_EconomyTick.processDayTick()
 
     -- Phase 6: Mark tick processed
     meta.lastProcessedDay = currentDay
-    meta.lastProcessedTick = worldTime
+    meta.lastProcessedHour = currentHour
 
     -- Phase 6.5: Begin chunked persist of market data to external file.
     -- The write is spread across subsequent EveryOneMinute ticks via
