@@ -27,6 +27,7 @@ require "POS_ScreenManager"
 require "POS_TerminalWidgets"
 require "POS_MarketService"
 require "POS_MarketRegistry"
+require "POS_ItemPool"
 require "PhobosLib_Pagination"
 require "POS_API"
 
@@ -121,7 +122,10 @@ function screen.create(contentPanel, params, _terminal)
 
     if #items == 0 then
         W.createLabel(ctx.panel, 8, ctx.y,
-            W.safeGetText("UI_POS_Market_NoItems"), C.dim)
+            W.safeGetText("UI_POS_Market_NoItemsYet"), C.dim)
+        ctx.y = ctx.y + ctx.lineH
+        W.createLabel(ctx.panel, 8, ctx.y,
+            W.safeGetText("UI_POS_Market_NoItemsHint"), C.dim)
         ctx.y = ctx.y + ctx.lineH
     else
         local currentPage = (params and params.itemPage) or 1
@@ -171,6 +175,18 @@ function screen.create(contentPanel, params, _terminal)
                       itemPage = newPage })
             end,
         })
+
+        -- Discovery counter
+        local totalPoolItems = POS_ItemPool.getItemsForCategory(categoryId)
+        local poolCount = totalPoolItems and #totalPoolItems or 0
+        if poolCount > 0 then
+            ctx.y = ctx.y + 4
+            W.createLabel(ctx.panel, 8, ctx.y,
+                tostring(#items) .. " of ~" .. tostring(poolCount)
+                .. " " .. W.safeGetText("UI_POS_Market_ItemsDiscovered"),
+                C.dim)
+            ctx.y = ctx.y + ctx.lineH
+        end
     end
 
     -- Footer
