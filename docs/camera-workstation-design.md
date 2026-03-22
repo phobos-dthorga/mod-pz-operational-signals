@@ -129,8 +129,7 @@ The existing POSnet pipeline has a sophistication ceiling:
 ### 3.1 The Four-Tier Intelligence Hierarchy
 
 The Camera Workstation sits at **Tier III** of POSnet's complete intelligence
-hierarchy. For the full four-tier system, see `satellite-uplink-design.md`
-Section 3.
+hierarchy. For the full four-tier table, see `design-guidelines.md` §20.
 
 | Tier | Node | Artifact | Confidence Range | Market Value |
 |------|------|----------|------------------|--------------|

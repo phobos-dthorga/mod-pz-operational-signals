@@ -111,16 +111,13 @@ The existing POSnet pipeline has an influence ceiling:
 
 ## 3. The Complete Intelligence Hierarchy
 
-With the satellite uplink, POSnet's information system forms a complete
-four-tier hierarchy with distinct artifact types, locations, and strategic
-value at each level:
+For the canonical four-tier table, see `design-guidelines.md` §20.
 
-| Tier | Node | Location | Artifact | Influence |
-|------|------|----------|----------|-----------|
-| I | Field Capture | Anywhere | Raw Market Notes, recorded media | Personal use |
-| II | Terminal Analysis | Radio + computer | Intel Fragments | Local understanding |
-| III | Camera Workstation | TV stations | Compiled reports, bulletins | Terminal-grade intelligence |
-| IV | Satellite Uplink | Rooftops, military, rural | Broadcast packages | Regional/world influence |
+With the satellite uplink, POSnet's intelligence system forms a complete
+four-tier hierarchy. Each tier is **independently useful** but produces
+progressively more impactful results when combined. A player with only a
+radio and notebook operates at Tier I. A player with a satellite dish
+operating at full capacity operates at Tier IV — shaping the world economy.
 
 ```
     FIELD ──► TERMINAL ──► CAMERA ──► SATELLITE
@@ -128,10 +125,7 @@ value at each level:
     local     local        local          REGIONAL
 ```
 
-Each tier is **independently useful** but produces progressively more impactful
-results when combined. A player with only a radio and notebook operates at
-Tier I. A player with a satellite dish operating at full capacity operates at
-Tier IV — shaping the world economy.
+The Satellite Uplink sits at **Tier IV**, the apex broadcast node.
 
 ---
 
@@ -765,3 +759,68 @@ The Satellite Uplink implementation is successful when:
    existing POSnet systems
 6. Late-game players who maintain satellite infrastructure have a meaningful
    endgame activity loop
+
+---
+
+## 24. Passive Collection Mode
+
+> **Status:** Design only — not yet implemented.
+> **Prerequisite:** Satellite wiring connection (§5.6).
+
+### 24.1 Overview
+
+When a satellite dish is physically wired to a terminal, the player can enable
+**Passive Collection Mode** — a persistent background process that gathers raw
+signal data from the satellite uplink. This transforms the satellite from a
+one-shot broadcast tool into an always-on intelligence appliance.
+
+### 24.2 Three Operating States
+
+| State | Power Draw | Behaviour |
+|---|---|---|
+| **Idle** | Standby (negligible) | Satellite linked, not collecting. All manual functions available. |
+| **Passive Collection** | Heavy continuous | Generates raw intermediate data over time. Less efficient short-term, more efficient over very long durations. Requires powered + satellite link intact + collection mode enabled. |
+| **Deep Sweep** | Extremely high | Temporary boosted late-game mode. Higher chance of rare/high-value intercepts. Increased wear and interruption risk. |
+
+### 24.3 Core Design Principle
+
+Passive collection must feel like **feeding a hungry machine**:
+- Generator fuel burn is visible and painful
+- Priority conflicts with refrigeration, lighting, industry
+- Power stability matters — outages cause partial data loss
+- Aspirational: a reward for advanced base infrastructure, not a default habit
+
+### 24.4 Data Pipeline
+
+```
+Satellite → Passive Collection → Raw Data Backlog → Analysis/Processing → Useful Intel
+```
+
+Passive mode generates **intermediate resources** (not finished intelligence):
+raw signal logs, recorded traffic fragments, market chatter snippets, unidentified
+transmissions. The player then processes these — preserving player agency.
+
+### 24.5 Failure Behaviours
+
+If power cuts out during passive collection:
+- No data gain for the outage period
+- Small backlog corruption chance
+- Partial data retained; terminal logs the outage
+- Restart delay before reacquiring stable lock
+
+Not brutal punishment — just enough to make stable infrastructure matter.
+
+### 24.6 Output Quality Factors
+
+- Satellite dish placement (rooftop = better)
+- Terminal tier and operator SIGINT skill
+- Power stability and band access (AZAS frequency coverage)
+- Collection duration (longer ≠ automatically perfect)
+- Weather / atmospheric interference
+
+### 24.7 Future Expansion Hooks
+
+- Wire degradation and environmental break chance
+- Signal quality bonuses for elevation and shielded cable upgrades
+- Lightning/storm disruption events
+- Amplifiers, boosters, junction boxes

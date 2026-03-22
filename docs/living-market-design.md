@@ -758,3 +758,65 @@ tracking, warehouse recon, broker contact establishment.
 >
 > That is what makes them feel like POSnet agents rather than generic
 > market NPCs — and it is fertile ground for the broader SIGINT vision.
+
+---
+
+## 20. Implementation Status
+
+**All phases complete as of v0.17.0.** The Living Market Layer 0 is fully
+implemented, including the trading system (Phase 8) and ambient market
+intelligence (`POS_AmbientIntel.lua`).
+
+### 20.1 Module Dependency Graph
+
+```
+POS_Constants
+    ├── POS_ArchetypeSchema ──── POS_MarketAgent
+    ├── POS_ZoneSchema    ──┐
+    ├── POS_EventSchema   ──┼── POS_MarketSimulation ──── POS_EconomyTick (Phase 5.75)
+    └── POS_WholesalerSchema ─── POS_WholesalerService ──┘
+                                        ↑
+                                 POS_MarketSimulation
+                                        ↑
+                                  POS_WorldState
+                                  (getWholesalers, getMarketZones, getRumours)
+
+Active connections:
+    POS_MarketSimulation ──→ POS_MarketIngestion ──→ POS_MarketDatabase
+    POS_MarketSimulation ──→ POS_PriceEngine
+    POS_MarketSimulation ──→ POS_MarketNoteGenerator
+    POS_TradeService ──→ POS_WorldState (wholesaler stock)
+    POS_TradeService ──→ POS_PriceEngine (buy prices)
+    POS_TradeService ──→ POS_ItemPool (category items, base prices)
+    POS_TradeService ──→ POS_WholesalerService (state resolution)
+    POS_TradeService ──→ PhobosLib (inventory, money, notifications)
+    POS_MarketReconAction ──→ POS_MarketSimulation.getZonePressure()
+    POS_MarketAgent ──→ POS_MarketIngestion (agent observations)
+    POS_WholesalerService ──→ POS_MarketAgent (downstream influence)
+```
+
+### 20.2 Key Engine Modules
+
+| Module | Description |
+|---|---|
+| `POS_MarketSimulation.lua` | Orchestrator: init, tick, zone state, agent registry, wholesaler spawning |
+| `POS_WholesalerService.lua` | Wholesaler factory, 6-phase tick lifecycle, state machine, pressure formula |
+| `POS_MarketAgent.lua` | Agent factory, archetype registry, observation generation |
+| `POS_TradeService.lua` | Trading business logic: query, validate, execute buy/sell |
+| `POS_AmbientIntel.lua` | Passive market observations on EveryOneMinute tick |
+| `POS_WorldState.lua` | ModData accessors for wholesalers, zones, rumours |
+| `POS_EconomyTick.lua` | Phase 5.75 server tick hook |
+
+Definition files live under `common/media/lua/shared/Definitions/` in four
+subdirectories: `Archetypes/` (7), `Zones/` (6), `Events/` (6),
+`Wholesalers/` (8). Each has a `_template.lua` reference file.
+
+### 20.3 Known Gaps & Future Work
+
+- **Integration testing**: End-to-end testing of the full pipeline across all
+  phases is still required.
+- **Balance tuning**: Simulation parameters (tick rates, pressure clamps, XP
+  multipliers, noise ranges) will require adjustment based on real gameplay data.
+- **Satellite passive collection**: Background passive-collection mode (idle /
+  passive / deep sweep) not yet implemented. See `satellite-uplink-design.md`
+  §24.

@@ -230,7 +230,35 @@ Effects:
 - Terminal displays signal strength with colour-coded quality indicator
 - Gated by `EnableSignalStrength` sandbox toggle
 
-See `docs/radio-power-table.md` for the full power reference table.
+#### 5.3.1 Radio Power Reference
+
+| Radio | Full Type | TransmitRange | Signal % (ref=10,000) |
+|---|---|---|---|
+| WalkieTalkie 1 | Base.WalkieTalkie1 | 750 | 0.6% |
+| WalkieTalkie (makeshift) | Base.WalkieTalkieMakeShift | 1,000 | 1.0% |
+| WalkieTalkie 2 | Base.WalkieTalkie2 | 2,000 | 4.0% |
+| WalkieTalkie 3 | Base.WalkieTalkie3 | 4,000 | 16.0% |
+| Ham Radio (makeshift) | Base.HamRadioMakeShift | 6,000 | 36.0% |
+| Ham Radio 1 | Base.HamRadio1 | 7,500 | 56.3% |
+| WalkieTalkie 4 | Base.WalkieTalkie4 | 8,000 | 64.0% |
+| WalkieTalkie 5 (military) | Base.WalkieTalkie5 | 16,000 | 100% |
+| Ham Radio 2 (military) | Base.HamRadio2 | 20,000 | 100% |
+| Man-Pack Radio | Base.ManPackRadio | 20,000 | 100% |
+
+Commercial receivers (RadioBlack, RadioRed, RadioMakeShift, CDplayer) have
+TransmitRange = 0 and cannot connect to POSnet.
+
+#### 5.3.2 Signal Quality Thresholds
+
+| Range | Quality | Reward Multiplier |
+|---|---|---|
+| 80–100% | EXCELLENT | 90–100% |
+| 50–79% | GOOD | 75–89% |
+| 25–49% | WEAK | 62–74% |
+| 15–24% | CRITICAL | 57–62% |
+| 0–14% | Cannot connect | N/A |
+
+Reward scaling formula: `rewardMultiplier = 0.5 + 0.5 * signalStrength`
 
 ### 5.5 Terminal Power Consumption
 
