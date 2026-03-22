@@ -464,10 +464,13 @@ function POS_MarketSimulation.tickSimulation(currentDay)
     end
 
     -- Aggregate zone pressure from wholesaler contributions
+    local ok_mr, POS_MarketRegistry = PhobosLib.safecall(require, "POS_MarketRegistry")
+    local visibleCategories = (ok_mr and POS_MarketRegistry)
+        and POS_MarketRegistry.getVisibleCategories({}) or {}
     for _, zoneId in ipairs(POS_Constants.MARKET_ZONES) do
         local zoneState = _ensureZoneState(zoneId)
-        for _, catId in ipairs(POS_Constants.MARKET_CATEGORIES) do
-            zoneState.pressure[catId] = POS_MarketSimulation.getZonePressure(zoneId, catId)
+        for _, cat in ipairs(visibleCategories) do
+            zoneState.pressure[cat.id] = POS_MarketSimulation.getZonePressure(zoneId, cat.id)
         end
     end
 
