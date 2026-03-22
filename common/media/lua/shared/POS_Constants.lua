@@ -297,8 +297,8 @@ POS_Constants.DANGER_CHECK_RADIUS = 15
 -- External cache file paths (flat, Zomboid/Lua/ directory)
 ---------------------------------------------------------------
 
-POS_Constants.CACHE_FILE_BUILDINGS  = "POSNET_buildings.dat"
-POS_Constants.CACHE_FILE_MAILBOXES  = "POSNET_mailboxes.dat"
+POS_Constants.CACHE_FILE_BUILDINGS  = "POSNET/buildings.dat"
+POS_Constants.CACHE_FILE_MAILBOXES  = "POSNET/mailboxes.dat"
 POS_Constants.CACHE_FILE_SEPARATOR  = "|"
 POS_Constants.CACHE_FILE_ROOM_SEP   = ","
 

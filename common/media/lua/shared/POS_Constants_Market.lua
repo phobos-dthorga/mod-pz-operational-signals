@@ -197,7 +197,7 @@ POS_Constants.EXCHANGE_TREND_LOOKBACK_DAYS = 7
 -- Market data file store (observations + rolling closes)
 ---------------------------------------------------------------
 
-POS_Constants.MARKET_DATA_FILE            = "POSNET_market_data.dat"
+POS_Constants.MARKET_DATA_FILE            = "POSNET/market_data.dat"
 POS_Constants.MARKET_FILE_SECTION_PREFIX  = "[CATEGORY:"
 POS_Constants.MARKET_FILE_SECTION_SUFFIX  = "]"
 POS_Constants.MARKET_FILE_OBS_HEADER      = "[OBS]"
