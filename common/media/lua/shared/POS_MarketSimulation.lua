@@ -428,28 +428,41 @@ function POS_MarketSimulation.tickSimulation(currentDay)
 
     PhobosLib.debug("POS", _TAG, "tickSimulation — day " .. tostring(currentDay))
 
+    PhobosLib.debug("POS", _TAG, "tickSimulation: getting wholesaler store")
     local wholesalerStore = POS_MarketSimulation._getWholesalerStore()
+    PhobosLib.debug("POS", _TAG, "tickSimulation: store type=" .. type(wholesalerStore))
 
     -- First tick: spawn wholesalers from definitions
     if not _firstTickDone then
+        PhobosLib.debug("POS", _TAG, "tickSimulation: first tick — checking spawn")
         if not next(wholesalerStore) then
+            PhobosLib.debug("POS", _TAG, "tickSimulation: spawning wholesalers")
             POS_MarketSimulation._spawnWholesalers(wholesalerStore)
         end
         _firstTickDone = true
+        PhobosLib.debug("POS", _TAG, "tickSimulation: first tick done")
     end
 
     -- One-time migration validation pass on first load
     if not _migrationChecked then
-        local wsRegistry = POS_WholesalerService.getRegistry()
-        for wId, w in pairs(wholesalerStore) do
-            local def = wsRegistry:get(wId)
-            if def then
-                _validateWholesalerState(w, def)
-            else
-                PhobosLib.debug("POS", _TAG,
-                    "Orphaned wholesaler in save data: " .. tostring(wId)
-                    .. " (no matching definition)")
+        PhobosLib.debug("POS", _TAG, "tickSimulation: migration check")
+        local wsOk, wsRegistry = PhobosLib.safecall(POS_WholesalerService.getRegistry)
+        if wsOk and wsRegistry and wsRegistry.get then
+            for wId, w in pairs(wholesalerStore) do
+                local defOk, def = PhobosLib.safecall(wsRegistry.get, wsRegistry, wId)
+                if defOk and def then
+                    _validateWholesalerState(w, def)
+                elseif not defOk then
+                    PhobosLib.debug("POS", _TAG,
+                        "Migration lookup failed for: " .. tostring(wId))
+                else
+                    PhobosLib.debug("POS", _TAG,
+                        "Orphaned wholesaler in save data: " .. tostring(wId)
+                        .. " (no matching definition)")
+                end
             end
+        else
+            PhobosLib.debug("POS", _TAG, "tickSimulation: wsRegistry unavailable, skipping migration")
         end
         _migrationChecked = true
     end
