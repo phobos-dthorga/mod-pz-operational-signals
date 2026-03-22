@@ -1416,6 +1416,9 @@ POS_Constants.SIGINT_XP_WITHHOLDING_MULT     = 2.0
 POS_Constants.SIGINT_XP_STRAINED_MULT        = 1.5
 POS_Constants.SIGINT_XP_DEFAULT_MULT         = 1.0
 
+-- SIGINT XP from satellite operations
+POS_Constants.SIGINT_XP_SATELLITE_CALIBRATE  = 2
+
 -- Passive recon zone pressure
 POS_Constants.RECON_PRESSURE_NOISE_MIN       = 0.05
 POS_Constants.RECON_PRESSURE_NOISE_MAX       = 0.30
