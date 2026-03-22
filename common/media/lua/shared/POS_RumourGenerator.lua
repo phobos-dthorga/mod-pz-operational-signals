@@ -25,7 +25,7 @@ require "PhobosLib"
 require "POS_Constants"
 require "POS_WorldState"
 
-local POS_RumourGenerator = {}
+POS_RumourGenerator = {}
 local _TAG = "Rumour"
 
 ---------------------------------------------------------------
