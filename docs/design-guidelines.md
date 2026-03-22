@@ -1669,6 +1669,118 @@ shows a count badge of active rumours.
 - Never generate rumours from hard-class events. The signal class on the
   event definition is the sole discriminator.
 
+### 24.12 Agent Observation Rules
+
+Agent observations are the per-agent counterpart to wholesaler hard signals.
+Each tick, every agent in a zone may produce observations for the categories
+it has affinity with. These observations reflect the agent's personality
+(archetype) and hidden internal state, making each agent a biased lens on the
+underlying market conditions.
+
+**Generation** — Each agent iterates its `categories` list weighted by
+affinity. For each category that passes a `refreshDays` cooldown and a
+probability roll, the agent produces an observation record. Higher-affinity
+categories are more likely to generate observations; low-affinity categories
+may be skipped entirely.
+
+**Visibility gate** — Before any observations are generated for an agent, a
+reliability check is performed. If the agent fails the reliability roll
+(based on archetype `reliability` and the current `exposure` meter), the
+entire tick is skipped for that agent. This prevents unreliable agents from
+flooding the database with low-quality data.
+
+**Hidden state modifiers** — The agent's five hidden-state meters bias the
+generated observations:
+
+- High `greed` inflates the reported price (positive price bias).
+- High `surplus` deflates the reported price and inflates the reported stock
+  level.
+- High `exposure` reduces observation confidence (the agent's secrecy is
+  compromised, so its reports are less trustworthy).
+- Non-zero `trustShift` applies a temporary reliability modifier that decays
+  over time.
+- `pressure` influences the probability of generating observations at all —
+  high pressure increases generation frequency.
+
+**Archetype-specific behaviour:**
+
+- **Smuggler** — Observations have inherently low confidence. Occasional
+  "ghost stock" inversion: the agent reports stock in a category where it
+  actually has none, producing misleading signals.
+- **Speculator** — Price markup bias is amplified beyond what `greed` alone
+  would produce. Stock claims may be understated to create artificial scarcity
+  signals.
+- **Specialist crafter** — Only generates observations for categories where
+  affinity exceeds a threshold. Observations in those categories are
+  higher-quality (elevated confidence) but narrow in scope.
+- **Scavenger** — Extra noise is added to all observation fields. Price and
+  stock values jitter more than other archetypes, reflecting the chaotic
+  nature of scavenging.
+
+**Source tier** — All agent-generated observations use
+`POS_Constants.SOURCE_TIER_FIELD` as the source tier. The observation key is
+prefixed with `"agent_"` to distinguish agent observations from wholesaler
+hard signals in the database.
+
+**Anti-patterns:**
+
+- Never generate observations from agent meters directly into the UI. All
+  agent observations MUST be routed through `POS_MarketIngestion` into
+  `POS_MarketDatabase`. The terminal reads from the database, never from
+  agent state.
+- Never bypass the visibility gate. If the reliability check fails, the
+  agent produces zero observations for that tick — no partial output.
+- Never expose the agent's hidden meter values to the player. The player
+  sees only the resulting observation records (price, stock, confidence).
+
+### 24.13 SIGINT Integration with Living Market
+
+When the Living Market is enabled, the SIGINT intelligence pipeline connects
+to the simulation layer. This section defines how each SIGINT tier interacts
+with Living Market data.
+
+**Passive recon sampling** — `POS_MarketReconAction` samples zone pressure
+via `POS_MarketSimulation.getZonePressure()` with SIGINT-scaled noise added
+to the reading. High SIGINT skill produces low noise (accurate pressure
+readings); low SIGINT skill produces high noise (readings may diverge
+significantly from true zone state). The noise formula is:
+`actualPressure + PhobosLib.randFloat(-noiseRange, noiseRange)` where
+`noiseRange = BASE_RECON_NOISE * (1 - skillFraction)`.
+
+**SIGINT XP from market events** — When a wholesaler emits a soft-class
+event (e.g. state transition, convoy disruption) and the player has an
+active passive recon scan in that zone, SIGINT XP is awarded. XP amount is
+scaled by the wholesaler's current operational state:
+
+- `Collapsing` / `Dumping` — full XP multiplier (significant event).
+- `Strained` / `Withholding` — reduced XP multiplier.
+- `Tight` — minimal XP.
+- `Stable` — no XP awarded (nothing noteworthy happened).
+
+**Field notes from state transitions** — When a wholesaler transitions into
+`Collapsing` or `Dumping` operational state, a field note is generated via
+`POS_MarketNoteGenerator`. The note describes the zone and affected
+categories in vague terms (no numerical values). A cooldown of once per
+in-game day per wholesaler prevents note spam. Only one note is generated
+per transition regardless of how many categories the wholesaler covers.
+
+**Camera and satellite analysis** — When the Living Market is enabled,
+camera-tier and satellite-tier analysis screens include zone pressure
+summaries alongside their standard intelligence output:
+
+- Camera-tier analysis of a zone produces a per-category pressure breakdown
+  with trend indicators (rising/falling/stable).
+- Satellite-tier broadcast propagates zone state summaries to all connected
+  POSnet terminals, showing the aggregate picture across all zones.
+
+**Anti-patterns:**
+
+- Never award SIGINT XP without first checking `POS_Sandbox.isLivingMarketEnabled()`.
+  All Living Market XP paths are gated behind the sandbox option.
+- Never expose raw zone pressure values in field notes or camera summaries.
+  Always use qualitative descriptors (e.g. "tightening", "oversupplied")
+  resolved through the stock-tier bucketing system.
+
 ---
 
 ## 25. Error Handling & Strict Mode

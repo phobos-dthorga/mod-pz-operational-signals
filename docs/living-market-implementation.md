@@ -140,7 +140,7 @@ Tuning values follow `living-market-design.md` §4 and the category affinity tab
 
 ---
 
-### Phase 3: Signal Emission (Partially Done)
+### Phase 3: Signal Emission (Complete)
 
 **3A. Hard Signal Emission** — ✅ Complete
 
@@ -155,15 +155,13 @@ Tuning values follow `living-market-design.md` §4 and the category affinity tab
 - All observations tagged with `POS_Constants.SOURCE_TIER_BROADCAST`
 - Records injected via `POS_MarketIngestion.ingestObservation()`
 
-**Remaining components:**
-
 **3B. Soft Signal Emission (Rumours)** — ✅ Complete
 
 Soft-class events in `tickWholesaler()` Phase 4 now generate rumour records stored in world ModData via `POS_WorldState.getRumours()`. Rumours expire after `RUMOUR_EXPIRY_DAYS` (7) and are capped at `RUMOUR_MAX_ACTIVE` (20). Impact hints are derived from the event's `pressureEffect` sign; confidence is always `"low"`. The BBS screen displays active rumours with region, category, duration, and impact hint. Hard-class events do not generate rumours. See `design-guidelines.md` §24.11 for the full rule set.
 
-**3C. Structural Signals**
+**3C. Structural Signals** — ✅ Complete (implicit)
 - These are invisible — they bias downstream agent behaviour rather than producing UI records
-- `getDownstreamInfluence()` is already implemented; it needs to be called during agent observation generation (Phase 4, below) to modify quote reliability and stock claim biases
+- `getDownstreamInfluence()` is called during agent observation generation (Phase 4B) to modify quote reliability and stock claim biases
 
 **3D. PriceEngine Integration** — ✅ Complete
 
@@ -171,100 +169,83 @@ Zone pressure from the Living Market simulation biases the S/D factor in `POS_Pr
 
 ---
 
-### Phase 4: Agent Observation Generation (Not Started)
+### Phase 4: Agent Observation Generation (Complete)
 
-Agents have hidden-state meters (pressure, greed, exposure, surplus, trustShift) that are updated each tick. These meters need to drive actual observation output.
+Agent hidden-state meters (pressure, greed, exposure, surplus, trustShift) now drive actual observation output through the full agent observation pipeline.
 
-**Components:**
+**4A. Per-Agent Observation Generator** — ✅ Complete
 
-**4A. Per-Agent Observation Generator**
-- New function: `POS_MarketAgent.generateObservations(agent, zoneState, currentDay)`
-- For each category in `agent.categories` (weighted by affinity), generate 0–N observations per tick gated by `refreshDays` and probability roll
-- Observation quality/reliability adjusted by hidden meters:
-  - High `greed` → inflated price
-  - High `exposure` → reduced confidence (`secrecy` modifier)
-  - High `surplus` → lower price bias, higher stock claim
-  - Non-zero `trustShift` → temporary reliability modifier
-- Smugglers: apply confidence penalty, occasional "ghost stock" inversion
-- Speculators: exaggerated price, hidden stock bias
+`POS_MarketAgent.generateObservations(agent, zoneState, currentDay)` iterates agent categories weighted by affinity, generating 0–N observations per tick gated by `refreshDays` and probability roll. Observation quality/reliability is adjusted by hidden meters: high `greed` inflates price, high `exposure` reduces confidence, high `surplus` lowers price bias and raises stock claims, non-zero `trustShift` applies a temporary reliability modifier. Archetype-specific behaviours: smugglers apply confidence penalty with occasional ghost stock inversion; speculators exaggerate price with hidden stock bias; specialist crafters only observe high-affinity categories; scavengers add extra noise. All observations use `SOURCE_TIER_FIELD` with `"agent_"` prefix. See `design-guidelines.md` §24.12 for the full rule set.
 
-**4B. Downstream Influence Application**
-- Before generating observations, look up all wholesalers in the same zone
-- Call `POS_WholesalerService.getDownstreamInfluence(wholesaler, agent.archetype)` for each
-- Apply weighted sum of `stockBias` and `priceBias` modifiers to the agent's observation parameters
-- Respect `strainDelay` — effects from state changes propagate with a day lag
+**4B. Downstream Influence Application** — ✅ Complete
+
+Before generating observations, the system looks up all wholesalers in the same zone and calls `POS_WholesalerService.getDownstreamInfluence(wholesaler, agent.archetype)` for each. The weighted sum of `stockBias` and `priceBias` modifiers is applied to agent observation parameters. `strainDelay` is respected — effects from state changes propagate with a day lag.
 
 ---
 
-### Phase 5: Persistence & Save Safety (Partially Done)
+### Phase 5: Persistence & Save Safety (Complete)
 
-**What is done:**
+All persistence and save safety components are fully implemented.
+
 - `POS_WorldState.getWholesalers()` and `getMarketZones()` provide ModData containers
 - `tickSimulation()` persists zone pressure snapshots to `WMD_MARKET_ZONES` each tick
 - Wholesaler runtime state (including `stockLevel`, `pressure`, `disruption`, `_operationalState`) lives in `WMD_WHOLESALERS` via `_getWholesalerStore()`
 - World reset/wipe clears both containers
 
-**What is not done:**
+**5A. Load Restoration** — ✅ Complete
 
-**5A. Load Restoration**
-- On world load, wholesalers are restored from `WMD_WHOLESALERS` ModData as-is
-- The current `_spawnWholesalers()` only runs if the store is empty — this is correct, but there is no explicit validation that restored wholesaler data matches the current definition schema
-- Add a migration/revalidation pass on load: check `schemaVersion`, rebuild missing fields from current definition defaults
+On world load, wholesalers are restored from `WMD_WHOLESALERS` ModData. `_spawnWholesalers()` only runs if the store is empty. A migration/revalidation pass on load checks `schemaVersion` and rebuilds missing fields from current definition defaults.
 
 **5B. Zone State Load** — ✅ Complete
-- `_ensureZoneState()` now checks `WMD_MARKET_ZONES` ModData first and restores saved zone state if available
-- Zone pressure snapshots survive world load/save cycles, consistent with wholesaler state persistence
 
-**5C. Save Migration Path**
-- When wholesaler or zone definition schemas evolve (new required fields, renamed fields), existing saves will have stale structures
-- Design and document a migration strategy (schemaVersion field in saved state + a migration function called during `_spawnWholesalers()` / zone restore)
+`_ensureZoneState()` checks `WMD_MARKET_ZONES` ModData first and restores saved zone state if available. Zone pressure snapshots survive world load/save cycles, consistent with wholesaler state persistence.
+
+**5C. Save Migration Path** — ✅ Complete
+
+Schema evolution is handled via `schemaVersion` field in saved state with a migration function called during `_spawnWholesalers()` and zone restore. When wholesaler or zone definition schemas evolve, existing saves are migrated to the current schema on load.
 
 ---
 
-### Phase 6: Terminal UI Integration (Not Started)
+### Phase 6: Terminal UI Integration (Complete)
 
-The simulation runs but no terminal screens expose its state. This phase makes the Living Market visible to the player through the intelligence pipeline.
+The Living Market simulation state is now exposed to the player through the intelligence pipeline via three terminal screens.
 
-**Screens to implement:**
+**Screens implemented:**
 
-| Screen | Purpose |
-|---|---|
-| Market Zone Overview | Show all 6 zones with aggregated pressure per category (colour-coded), active wholesaler count, volatility indicator |
-| Wholesaler Directory | List active wholesalers with current operational state, zone, and stock level (visibility-gated — high-secrecy wholesalers are obscured) |
-| Market Event Log | Recent market events with signal classification, zone, affected categories, day |
+| Screen | Purpose | Status |
+|---|---|---|
+| Market Zone Overview | Shows all 6 zones with aggregated pressure per category (colour-coded), active wholesaler count, volatility indicator | ✅ Complete |
+| Wholesaler Directory | Lists active wholesalers with current operational state, zone, and stock level (visibility-gated — high-secrecy wholesalers are obscured) | ✅ Complete |
+| Market Event Log | Recent market events with signal classification, zone, affected categories, day | ✅ Complete |
 
 **Price integration:**
-- `POS_Screen_Markets.lua` and `POS_Screen_Stockmarket.lua` currently show prices from `POS_MarketDatabase`
-- Once Phase 3 (signal emission) is done, Living Market observations flow through the same database — prices update without UI changes
-- Zone pressure could optionally annotate category rows with a trend indicator (rising/falling)
+- `POS_Screen_Markets.lua` and `POS_Screen_Stockmarket.lua` show prices from `POS_MarketDatabase`
+- Living Market observations flow through the same database — prices update without UI changes
+- Zone pressure annotates category rows with a trend indicator (rising/falling)
 
-**Note:** Do not expose wholesaler identity directly. Players infer existence through repeated observation patterns. The Wholesaler Directory is an advanced intel screen, gated behind SIGINT skill tier or camera/satellite analysis.
+Wholesaler identity is not exposed directly. Players infer existence through repeated observation patterns. The Wholesaler Directory is an advanced intel screen, gated behind SIGINT skill tier or camera/satellite analysis.
 
 ---
 
-### Phase 7: SIGINT & Intel Pipeline Integration (Not Started)
+### Phase 7: SIGINT & Intel Pipeline Integration (Complete)
 
-The Living Market's full potential is unlocked when its events connect to the intelligence collection pipeline.
+The Living Market's events are fully connected to the intelligence collection pipeline. See `design-guidelines.md` §24.13 for the full rule set.
 
-**Components:**
+**7A. Passive Recon Integration** — ✅ Complete
 
-**7A. Passive Recon Integration**
-- `POS_MarketReconAction` currently generates data; it should instead sample `getZonePressure()` with noise derived from SIGINT skill level
-- Low skill → noisy sample (add ±N% variance to zone pressure readings)
-- High skill → detect trends (compare current tick pressure to rolling average)
+`POS_MarketReconAction` samples `getZonePressure()` with SIGINT-scaled noise. Low skill produces noisy readings (high variance); high skill produces accurate readings and can detect trends by comparing current tick pressure to rolling average.
 
-**7B. SIGINT XP from Market Events**
-- When a market event fires and the player has active passive recon in that zone, award SIGINT XP
-- Event significance scales XP: Collapsing/Withholding > Strained > Tight
+**7B. SIGINT XP from Market Events** — ✅ Complete
 
-**7C. Field Notes from Significant Shifts**
-- When a wholesaler transitions into Collapsing or Dumping state, optionally generate a field note entry (soft signal)
-- Note content derived from event type and zone display name
-- Routed through `POS_MarketNoteGenerator` (existing module)
+When a soft-class market event fires and the player has active passive recon in that zone, SIGINT XP is awarded. XP is scaled by wholesaler operational state: Collapsing/Dumping award full XP, Strained/Withholding reduced, Tight minimal, Stable none. Gated behind `POS_Sandbox.isLivingMarketEnabled()`.
 
-**7D. Camera/Satellite Intel**
-- Camera-tier analysis of a zone produces a market zone summary (pressure by category, dominant archetype activity)
-- Satellite-tier broadcast propagates zone state summaries to all connected POSnet terminals
+**7C. Field Notes from Significant Shifts** — ✅ Complete
+
+When a wholesaler transitions into Collapsing or Dumping state, a field note is generated via `POS_MarketNoteGenerator`. Notes describe zone and affected categories in vague terms (no numerical values). Cooldown: once per in-game day per wholesaler to prevent note spam.
+
+**7D. Camera/Satellite Intel** — ✅ Complete
+
+Camera-tier analysis of a zone produces a per-category pressure breakdown with trend indicators (rising/falling/stable). Satellite-tier broadcast propagates zone state summaries to all connected POSnet terminals, showing the aggregate picture across all zones.
 
 ---
 
@@ -280,13 +261,15 @@ POS_Constants
                                  POS_MarketSimulation
                                         ↑
                                   POS_WorldState
-                                  (getWholesalers, getMarketZones)
+                                  (getWholesalers, getMarketZones, getRumours)
 
-Future connections (Phases 3–7):
+Active connections:
     POS_MarketSimulation ──→ POS_MarketIngestion ──→ POS_MarketDatabase
     POS_MarketSimulation ──→ POS_PriceEngine
     POS_MarketSimulation ──→ POS_MarketNoteGenerator
     POS_MarketReconAction ──→ POS_MarketSimulation.getZonePressure()
+    POS_MarketAgent ──→ POS_MarketIngestion (agent observations)
+    POS_WholesalerService ──→ POS_MarketAgent (downstream influence)
 ```
 
 ---
@@ -300,18 +283,18 @@ Future connections (Phases 3–7):
 | ~~Hard signal emission (Phase 3A)~~ | ~~Medium~~ | — | ✅ Complete |
 | ~~PriceEngine pressure bias (Phase 3D)~~ | ~~Medium~~ | ~~Phase 3A schema work~~ | ✅ Complete |
 | ~~Soft signal / rumour emission (Phase 3B)~~ | ~~Medium~~ | ~~Phase 3A done, note generator~~ | ✅ Complete |
-| Per-agent observation generator (Phase 4A) | High | Phase 3A, archetype definitions | 6 |
-| Downstream influence application (Phase 4B) | Medium | Phase 4A | 7 |
-| Save migration path (Phase 5C) | Medium | Phase 5A done | 8 |
-| Terminal UI: Zone Overview screen (Phase 6) | High | Phase 3 producing real data | 9 |
-| Terminal UI: Event Log screen (Phase 6) | Medium | Phase 3 producing events | 10 |
-| Terminal UI: Wholesaler Directory (Phase 6) | High | Phase 6 Zone Overview, SIGINT gating | 11 |
-| Passive recon SIGINT integration (Phase 7A) | Medium | Phase 3, SIGINT skill system | 12 |
-| SIGINT XP from market events (Phase 7B) | Low | Phase 3A signals firing | 13 |
-| Field notes from state transitions (Phase 7C) | Low | Phase 3 + POS_MarketNoteGenerator | 14 |
-| Camera/satellite intel tier (Phase 7D) | High | Camera/satellite systems | 15 |
+| ~~Per-agent observation generator (Phase 4A)~~ | ~~High~~ | ~~Phase 3A, archetype definitions~~ | ✅ Complete |
+| ~~Downstream influence application (Phase 4B)~~ | ~~Medium~~ | ~~Phase 4A~~ | ✅ Complete |
+| ~~Save migration path (Phase 5C)~~ | ~~Medium~~ | ~~Phase 5A done~~ | ✅ Complete |
+| ~~Terminal UI: Zone Overview screen (Phase 6)~~ | ~~High~~ | ~~Phase 3 producing real data~~ | ✅ Complete |
+| ~~Terminal UI: Event Log screen (Phase 6)~~ | ~~Medium~~ | ~~Phase 3 producing events~~ | ✅ Complete |
+| ~~Terminal UI: Wholesaler Directory (Phase 6)~~ | ~~High~~ | ~~Phase 6 Zone Overview, SIGINT gating~~ | ✅ Complete |
+| ~~Passive recon SIGINT integration (Phase 7A)~~ | ~~Medium~~ | ~~Phase 3, SIGINT skill system~~ | ✅ Complete |
+| ~~SIGINT XP from market events (Phase 7B)~~ | ~~Low~~ | ~~Phase 3A signals firing~~ | ✅ Complete |
+| ~~Field notes from state transitions (Phase 7C)~~ | ~~Low~~ | ~~Phase 3 + POS_MarketNoteGenerator~~ | ✅ Complete |
+| ~~Camera/satellite intel tier (Phase 7D)~~ | ~~High~~ | ~~Camera/satellite systems~~ | ✅ Complete |
 
-**Current state:** Phases 2, 5B, 3A, 3D, and 3B are complete. Wholesalers emit hard signal observations into `POS_MarketDatabase`, zone pressure biases terminal prices through the S/D composite in `POS_PriceEngine`, and soft-class events now generate rumour bulletins visible on the BBS screen. **Next recommended target:** Phase 4A (Per-agent observation generator) — this wires the hidden-state meters into actual observation output, making agent archetypes produce differentiated intelligence records.
+**Current state:** All phases complete. Living Market Layer 0 is fully implemented.
 
 ---
 
@@ -405,8 +388,10 @@ Future connections (Phases 3–7):
 
 ## Known Gaps Summary
 
-1. **No downstream influence from `getDownstreamInfluence()`** — the function is implemented and returns correct data, but nothing reads it during observation generation (Phase 4).
+1. ~~**No downstream influence from `getDownstreamInfluence()`**~~ — ✅ Resolved (Phase 4B). Downstream influence is applied during agent observation generation.
 2. ~~**PriceEngine is not connected**~~ — ✅ Resolved (Phase 3D). Zone pressure biases the S/D factor in `generatePrice()`.
-3. **No terminal UI** — the simulation is fully invisible to the player until Phase 6.
+3. ~~**No terminal UI**~~ — ✅ Resolved (Phase 6). Three terminal screens expose Living Market state.
 4. ~~**Soft signal / rumour emission not implemented**~~ — ✅ Resolved (Phase 3B). Soft-class events generate rumour bulletins displayed on the BBS screen.
-5. **Save migration path not designed** — Phase 5C. Schema evolution strategy for wholesaler/zone saved state.
+5. ~~**Save migration path not designed**~~ — ✅ Resolved (Phase 5C). Schema versioning and migration implemented.
+6. **Integration testing required** — end-to-end testing of the full Living Market pipeline across all phases.
+7. **Balance tuning pending player feedback** — simulation parameters (tick rates, pressure clamps, XP multipliers, noise ranges) will require adjustment based on real gameplay data.
