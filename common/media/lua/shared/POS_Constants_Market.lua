@@ -194,17 +194,10 @@ POS_Constants.EXCHANGE_INDEX_LOOKBACK_DAYS = 30
 POS_Constants.EXCHANGE_TREND_LOOKBACK_DAYS = 7
 
 ---------------------------------------------------------------
--- Market data file store (observations + rolling closes)
+-- Market data world ModData key
 ---------------------------------------------------------------
 
-POS_Constants.MARKET_DATA_FILE            = "POSNET/market_data.dat"
-POS_Constants.MARKET_FILE_SECTION_PREFIX  = "[CATEGORY:"
-POS_Constants.MARKET_FILE_SECTION_SUFFIX  = "]"
-POS_Constants.MARKET_FILE_OBS_HEADER      = "[OBS]"
-POS_Constants.MARKET_FILE_CLOSES_HEADER   = "[CLOSES]"
-POS_Constants.MARKET_FILE_ITEM_SEP        = ";"
-POS_Constants.MARKET_FILE_ITEM_KV_SEP     = ":"
-POS_Constants.MARKET_FILE_CHUNK_SIZE      = 4
+POS_Constants.WMD_MARKET_DATA = "POSNET.MarketData"
 
 ---------------------------------------------------------------
 -- Per-player file storage (Zomboid/Lua/POSNET/)

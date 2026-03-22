@@ -18,8 +18,8 @@
 -- POS_EconomyTick.lua
 -- Server-side daily economy tick processor.
 -- Purges expired observations, rebuilds category aggregates,
--- trims rolling windows, writes event log snapshots, and
--- notifies clients on completion.
+-- trims rolling windows, writes event log snapshots, and notifies
+-- clients on completion.  Market data is persisted via ModData.
 ---------------------------------------------------------------
 
 require "PhobosLib"
@@ -73,8 +73,8 @@ function POS_EconomyTick.processDayTick()
         PhobosLib.debug("POS", _TAG, "[EconomyTick] Purged " .. tostring(purged) .. " expired observations")
     end
 
-    -- Phase 2: Aggregate category summaries (from file store)
-    -- Mirror aggregates back to ModData for MP client snapshots.
+    -- Phase 2: Aggregate category summaries (from MarketData ModData)
+    -- Mirror aggregates back to world ModData for MP client snapshots.
     local world = POS_WorldState.getWorld()
     world.categories = world.categories or {}
     for catId, catData in pairs(POS_MarketFileStore.getAllCategories()) do
@@ -86,7 +86,7 @@ function POS_EconomyTick.processDayTick()
         world.categories[catId].aggregate = catData.aggregate
     end
 
-    -- Phase 3: Trim rolling closes and events (from file store)
+    -- Phase 3: Trim rolling closes and events
     local maxCloses = POS_Sandbox and POS_Sandbox.getMaxRollingCloses
         and POS_Sandbox.getMaxRollingCloses() or POS_Constants.MAX_ROLLING_CLOSES
     local maxEvents = POS_Sandbox and POS_Sandbox.getMaxGlobalEvents
@@ -129,15 +129,6 @@ function POS_EconomyTick.processDayTick()
     -- Phase 6: Mark tick processed
     meta.lastProcessedDay = currentDay
     meta.lastProcessedHour = currentHour
-
-    -- Phase 6.5: Begin chunked persist of market data to external file.
-    -- The write is spread across subsequent EveryOneMinute ticks via
-    -- POS_MarketFileStore.tickChunkedSave() (called from onEveryOneMinute).
-    if POS_MarketFileStore and POS_MarketFileStore.startChunkedSave then
-        POS_MarketFileStore.startChunkedSave()
-    elseif POS_MarketFileStore and POS_MarketFileStore.save then
-        POS_MarketFileStore.save()
-    end
 
     -- Phase 7: Notify clients via SP-safe broadcastToAll.
     -- In SP, broadcastToAll invokes the client handler directly
@@ -276,12 +267,6 @@ end
 
 function POS_EconomyTick.onEveryOneMinute()
     POS_EconomyTick.processDayTick()
-
-    -- Drain chunked file store writes (started by Phase 6.5 above)
-    if POS_MarketFileStore and POS_MarketFileStore.isChunkedSaveInProgress
-            and POS_MarketFileStore.isChunkedSaveInProgress() then
-        POS_MarketFileStore.tickChunkedSave()
-    end
 end
 
 Events.EveryOneMinute.Add(POS_EconomyTick.onEveryOneMinute)

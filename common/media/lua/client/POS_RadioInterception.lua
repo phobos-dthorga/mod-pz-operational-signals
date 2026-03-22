@@ -136,7 +136,7 @@ local function onServerCommand(module, command, args)
         end
 
     elseif command == POS_Constants.CMD_MARKET_SNAPSHOT then
-        -- SP/authority: data is already in POS_MarketFileStore — skip
+        -- SP/authority: data is already in ModData — skip
         -- the client cache entirely. Only MP clients need snapshot data.
         if POS_WorldState and POS_WorldState.isAuthority() then
             PhobosLib.debug("POS", _TAG, "[RadioInterception] Market snapshot ignored (SP authority)")

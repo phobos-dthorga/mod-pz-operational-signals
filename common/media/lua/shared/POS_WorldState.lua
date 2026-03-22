@@ -65,6 +65,10 @@ function POS_WorldState.getMailboxes()
     return ModData.getOrCreate(POS_Constants.WMD_MAILBOXES)
 end
 
+function POS_WorldState.getMarketData()
+    return ModData.getOrCreate(POS_Constants.WMD_MARKET_DATA)
+end
+
 ---------------------------------------------------------------
 -- PZ API thin wrappers (forward-compatibility layer)
 ---------------------------------------------------------------
@@ -266,6 +270,10 @@ function POS_WorldState.bootstrap()
     local mailboxes = POS_WorldState.getMailboxes()
     mailboxes.entries = mailboxes.entries or {}
 
+    -- Ensure market data container (observations + rolling closes)
+    local marketData = POS_WorldState.getMarketData()
+    marketData.categories = marketData.categories or {}
+
     -- One-time migration from player modData to world ModData
     if not meta.migrated then
         local player = getSpecificPlayer(0)
@@ -313,24 +321,25 @@ function POS_WorldState.bootstrap()
     -- Migrate building/mailbox caches from ModData to external files
     POS_WorldState.migrateModDataCaches()
 
-    -- Load market data from external file store
+    -- Initialise market file store (reads from ModData)
     POS_MarketFileStore.load()
 
-    -- One-time migration of market observations/closes from ModData to file store
-    POS_WorldState.migrateMarketDataToFile()
+    -- One-time migration of market observations/closes from
+    -- world.categories into the dedicated MarketData container
+    POS_WorldState.migrateMarketDataToModData()
 
     PhobosLib.debug("POS", _TAG, "[WorldState] Bootstrap complete, schema v"
         .. tostring(meta.schemaVersion) .. ", seed=" .. tostring(meta.worldSeed))
 end
 
 ---------------------------------------------------------------
--- Market data migration (ModData → external file store)
+-- Market data migration (world.categories → dedicated ModData)
 ---------------------------------------------------------------
 
 --- One-time migration: move observations and rollingCloses from
---- world.categories ModData into the file-backed store.
---- Keeps aggregates in ModData for MP client snapshot delivery.
-function POS_WorldState.migrateMarketDataToFile()
+--- world.categories into the dedicated WMD_MARKET_DATA container.
+--- Keeps aggregates in world.categories for MP client snapshot delivery.
+function POS_WorldState.migrateMarketDataToModData()
     local meta = POS_WorldState.getMeta()
     if meta.marketDataMigrated then return end
 
@@ -344,12 +353,12 @@ function POS_WorldState.migrateMarketDataToFile()
     local migratedObs = 0
 
     for catId, catData in pairs(world.categories) do
-        local fileData = POS_MarketFileStore.getCategory(catId)
+        local mdCat = POS_MarketFileStore.getCategory(catId)
 
         -- Transfer observations
         if catData.observations and #catData.observations > 0 then
             for _, obs in ipairs(catData.observations) do
-                table.insert(fileData.observations, obs)
+                table.insert(mdCat.observations, obs)
             end
             migratedObs = migratedObs + #catData.observations
             catData.observations = nil
@@ -357,34 +366,22 @@ function POS_WorldState.migrateMarketDataToFile()
 
         -- Transfer rolling closes
         if catData.rollingCloses and #catData.rollingCloses > 0 then
-            fileData.rollingCloses = catData.rollingCloses
+            mdCat.rollingCloses = catData.rollingCloses
             catData.rollingCloses = nil
         end
 
-        -- Keep aggregate in ModData (for MP snapshot delivery)
+        -- Keep aggregate in world.categories (for MP snapshot delivery)
         migratedCats = migratedCats + 1
     end
 
     if migratedObs > 0 then
-        POS_MarketFileStore.save()
-        PhobosLib.debug("POS", _TAG, "[WorldState] Migrated market data to file store: "
+        PhobosLib.debug("POS", _TAG, "[WorldState] Migrated market data to ModData: "
             .. tostring(migratedCats) .. " categories, "
             .. tostring(migratedObs) .. " observations")
     end
 
     meta.marketDataMigrated = true
 end
-
----------------------------------------------------------------
--- Dirty-flag flush: persist unsaved market data every minute
----------------------------------------------------------------
-
-Events.EveryOneMinute.Add(function()
-    if POS_WorldState.isAuthority()
-            and POS_MarketFileStore.isDirty() then
-        POS_MarketFileStore.save()
-    end
-end)
 
 -- Hook bootstrap
 Events.OnGameStart.Add(function()

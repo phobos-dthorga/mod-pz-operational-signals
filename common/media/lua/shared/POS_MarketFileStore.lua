@@ -16,12 +16,14 @@
 
 ---------------------------------------------------------------
 -- POS_MarketFileStore.lua
--- File-backed storage for market observations and rolling
--- closes. Replaces Global ModData as the authoritative store
--- for server/SP, reducing save file I/O and MP sync overhead.
+-- World ModData-backed storage for market observations and
+-- rolling closes.  Data lives in the POSNET.MarketData Global
+-- ModData container and is persisted automatically by PZ's
+-- save system.
 --
--- File format: section-header based, pipe-delimited fields.
--- See plan Appendix A for full format specification.
+-- Public API is unchanged from the previous file-backed version
+-- so callers (POS_MarketDatabase, POS_EconomyTick, etc.) do not
+-- need modifications.
 ---------------------------------------------------------------
 
 require "PhobosLib"
@@ -32,228 +34,50 @@ POS_MarketFileStore = {}
 local _TAG = "[POS:MktFile]"
 
 ---------------------------------------------------------------
--- Session cache and dirty flag
+-- Local cache reference (points directly to ModData table)
 ---------------------------------------------------------------
 
---- { [catId] = { observations = {}, rollingCloses = {} } }
+--- { [catId] = { observations = {}, rollingCloses = {}, aggregate = {} } }
+--- After load(), this points to getMarketData().categories.
 local cache = {}
 
---- Set true when addRecord modifies data; cleared on save.
-local dirty = false
-
 ---------------------------------------------------------------
--- Serialisation helpers (private)
+-- Load / Save
 ---------------------------------------------------------------
 
-local SEP = POS_Constants.CACHE_FILE_SEPARATOR  -- "|"
-local ITEM_SEP = POS_Constants.MARKET_FILE_ITEM_SEP  -- ";"
-local KV_SEP = POS_Constants.MARKET_FILE_ITEM_KV_SEP  -- ":"
-
---- Serialize an items array to a flat string.
---- { {fullType="Base.Axe", price=5.5}, ... } → "Base.Axe:5.50;Base.Hammer:3.20"
----@param items table[] Array of {fullType, price}
----@return string
-local function serializeItems(items)
-    if not items or #items == 0 then return "" end
-    local parts = {}
-    for _, item in ipairs(items) do
-        if item.fullType and item.price then
-            parts[#parts + 1] = tostring(item.fullType) .. KV_SEP
-                .. string.format("%.2f", item.price)
-        end
-    end
-    return table.concat(parts, ITEM_SEP)
-end
-
---- Deserialize a flat string back to an items array.
----@param str string
----@return table[]
-local function deserializeItems(str)
-    if not str or str == "" then return nil end
-    local items = {}
-    local pairs_ = PhobosLib.split(str, ITEM_SEP)
-    if not pairs_ then return nil end
-    for _, pair in ipairs(pairs_) do
-        local kv = PhobosLib.split(pair, KV_SEP)
-        if kv and #kv >= 2 then
-            items[#items + 1] = {
-                fullType = kv[1],
-                price = tonumber(kv[2]) or 0,
-            }
-        end
-    end
-    return #items > 0 and items or nil
-end
-
---- Build one pipe-delimited line from an observation table.
---- 10 fields: id|day|price|stock|source|location|confidence|sourceTier|quality|items
----@param obs table Observation record
----@return string
-local function serializeObservation(obs)
-    return table.concat({
-        tostring(obs.id or ""),
-        tostring(obs.day or 0),
-        string.format("%.2f", obs.price or 0),
-        tostring(obs.stock or ""),
-        tostring(obs.source or ""),
-        tostring(obs.location or ""),
-        tostring(obs.confidence or 0),
-        tostring(obs.sourceTier or ""),
-        tostring(obs.quality or 0),
-        serializeItems(obs.items),
-    }, SEP)
-end
-
---- Parse one pipe-delimited line back to an observation table.
----@param line string
----@return table|nil
-local function deserializeObservation(line)
-    local parts = PhobosLib.split(line, SEP)
-    if not parts or #parts < 9 then return nil end
-    local obs = {
-        id = parts[1],
-        day = tonumber(parts[2]) or 0,
-        price = tonumber(parts[3]) or 0,
-        stock = parts[4] ~= "" and parts[4] or nil,
-        source = parts[5] ~= "" and parts[5] or nil,
-        location = parts[6] ~= "" and parts[6] or nil,
-        confidence = tonumber(parts[7]) or 0,
-        sourceTier = parts[8] ~= "" and parts[8] or nil,
-        quality = tonumber(parts[9]) or 0,
-    }
-    -- Field 10: items (optional, may be empty or absent)
-    if parts[10] and parts[10] ~= "" then
-        obs.items = deserializeItems(parts[10])
-    end
-    return obs
-end
-
----------------------------------------------------------------
--- File I/O
----------------------------------------------------------------
-
---- Load all market data from the .dat file into the session cache.
---- Called once during bootstrap. Non-destructive: merges with
---- any data already in cache (e.g., from migration).
+--- Bind the local cache to the world ModData categories table.
+--- Called once during bootstrap after POS_WorldState creates
+--- the container.  If ModData is not yet available (edge case),
+--- falls back to an empty table that will be replaced on the
+--- next call.
 function POS_MarketFileStore.load()
-    local reader = getFileReader(POS_Constants.MARKET_DATA_FILE, false)
-    if not reader then
-        PhobosLib.debug("POS", _TAG,
-            "No market data file found — starting with empty cache")
-        return
+    if POS_WorldState and POS_WorldState.getMarketData then
+        local md = POS_WorldState.getMarketData()
+        md.categories = md.categories or {}
+        cache = md.categories
+    else
+        cache = {}
     end
 
-    local currentCatId = nil
-    local currentSection = nil
-    local loadedCats = 0
-    local loadedObs = 0
-
-    local line = reader:readLine()
-    while line do
-        -- Wrap each line parse in safecall to survive corrupted data
-        local parseOk = PhobosLib.safecall(function()
-            -- Check for category header: [CATEGORY:fuel]
-            if string.sub(line, 1, #POS_Constants.MARKET_FILE_SECTION_PREFIX)
-                    == POS_Constants.MARKET_FILE_SECTION_PREFIX then
-                local catId = string.sub(line,
-                    #POS_Constants.MARKET_FILE_SECTION_PREFIX + 1,
-                    #line - #POS_Constants.MARKET_FILE_SECTION_SUFFIX)
-                if catId and catId ~= "" then
-                    currentCatId = catId
-                    currentSection = nil
-                    if not cache[catId] then
-                        cache[catId] = { observations = {}, rollingCloses = {}, aggregate = {} }
-                    end
-                    loadedCats = loadedCats + 1
-                end
-
-            elseif line == POS_Constants.MARKET_FILE_OBS_HEADER then
-                currentSection = "obs"
-
-            elseif line == POS_Constants.MARKET_FILE_CLOSES_HEADER then
-                currentSection = "closes"
-
-            elseif currentCatId and currentSection and line ~= "" then
-                if currentSection == "obs" then
-                    local obs = deserializeObservation(line)
-                    if obs then
-                        table.insert(cache[currentCatId].observations, obs)
-                        loadedObs = loadedObs + 1
-                    end
-                elseif currentSection == "closes" then
-                    local nums = PhobosLib.split(line, SEP)
-                    if nums then
-                        cache[currentCatId].rollingCloses = {}
-                        for _, n in ipairs(nums) do
-                            local v = tonumber(n)
-                            if v then
-                                table.insert(cache[currentCatId].rollingCloses, v)
-                            end
-                        end
-                    end
-                end
-            end
-        end)
-
-        if not parseOk then
-            PhobosLib.debug("POS", _TAG, "Skipped corrupt line: " .. tostring(line))
+    -- Count for debug log
+    local cats = 0
+    local obs = 0
+    for _, catData in pairs(cache) do
+        cats = cats + 1
+        if catData.observations then
+            obs = obs + #catData.observations
         end
-
-        line = reader:readLine()
     end
-    reader:close()
 
     PhobosLib.debug("POS", _TAG,
-        "Loaded market data: " .. tostring(loadedCats)
-        .. " categories, " .. tostring(loadedObs) .. " observations")
+        "Loaded market data from ModData: " .. tostring(cats)
+        .. " categories, " .. tostring(obs) .. " observations")
 end
 
---- Write the entire session cache to the .dat file.
---- Clears the dirty flag on success.
+--- No-op.  ModData is persisted automatically by PZ's save
+--- system.  Retained for API compatibility.
 function POS_MarketFileStore.save()
-    local writer = getFileWriter(POS_Constants.MARKET_DATA_FILE, false, false)
-    if not writer then
-        PhobosLib.debug("POS", _TAG,
-            "Failed to open market data file for writing")
-        return
-    end
-
-    local totalObs = 0
-    local totalCats = 0
-
-    for catId, catData in pairs(cache) do
-        totalCats = totalCats + 1
-
-        -- Category header
-        writer:writeln(POS_Constants.MARKET_FILE_SECTION_PREFIX
-            .. catId .. POS_Constants.MARKET_FILE_SECTION_SUFFIX)
-
-        -- Observations section
-        writer:writeln(POS_Constants.MARKET_FILE_OBS_HEADER)
-        if catData.observations then
-            for _, obs in ipairs(catData.observations) do
-                writer:writeln(serializeObservation(obs))
-                totalObs = totalObs + 1
-            end
-        end
-
-        -- Rolling closes section
-        writer:writeln(POS_Constants.MARKET_FILE_CLOSES_HEADER)
-        if catData.rollingCloses and #catData.rollingCloses > 0 then
-            local nums = {}
-            for _, v in ipairs(catData.rollingCloses) do
-                nums[#nums + 1] = string.format("%.2f", v)
-            end
-            writer:writeln(table.concat(nums, SEP))
-        end
-    end
-
-    writer:close()
-    dirty = false
-
-    PhobosLib.debug("POS", _TAG,
-        "Saved market data: " .. tostring(totalCats)
-        .. " categories, " .. tostring(totalObs) .. " observations")
+    -- ModData auto-persists; nothing to do.
 end
 
 ---------------------------------------------------------------
@@ -277,94 +101,49 @@ function POS_MarketFileStore.getAllCategories()
     return cache
 end
 
---- Mark the cache as dirty (data has changed since last save).
+--- No-op.  Retained for API compatibility.  ModData mutations
+--- are automatically persisted so dirty tracking is unnecessary.
 function POS_MarketFileStore.markDirty()
-    dirty = true
+    -- no-op
 end
 
---- Check if the cache has unsaved changes.
+--- Always returns false.  Retained for API compatibility.
 ---@return boolean
 function POS_MarketFileStore.isDirty()
-    return dirty
+    return false
 end
 
---- Reset the session cache (for testing or disconnect).
+--- Re-bind cache to ModData (useful after a world reset).
 function POS_MarketFileStore.clearCache()
-    cache = {}
-    dirty = false
-    PhobosLib.debug("POS", _TAG, "Session cache cleared")
+    if POS_WorldState and POS_WorldState.getMarketData then
+        local md = POS_WorldState.getMarketData()
+        md.categories = md.categories or {}
+        cache = md.categories
+    else
+        cache = {}
+    end
+    PhobosLib.debug("POS", _TAG, "Session cache re-bound to ModData")
 end
 
 ---------------------------------------------------------------
--- Chunked (staggered) save via PhobosLib_ChunkedWriter.
--- Spreads file I/O across multiple EveryOneMinute ticks.
+-- Chunked save stubs (no-ops, retained for API compatibility)
 ---------------------------------------------------------------
 
---- Serialize one category to an array of lines for the chunked writer.
----@param catId string  Category ID (key from cache)
----@param catData table  { observations, rollingCloses }
----@return string[]     Lines to write for this category
-local function serializeCategory(catId, catData)
-    local lines = {}
-
-    -- Category header
-    lines[#lines + 1] = POS_Constants.MARKET_FILE_SECTION_PREFIX
-        .. catId .. POS_Constants.MARKET_FILE_SECTION_SUFFIX
-
-    -- Observations section
-    lines[#lines + 1] = POS_Constants.MARKET_FILE_OBS_HEADER
-    if catData.observations then
-        for _, obs in ipairs(catData.observations) do
-            lines[#lines + 1] = serializeObservation(obs)
-        end
-    end
-
-    -- Rolling closes section
-    lines[#lines + 1] = POS_Constants.MARKET_FILE_CLOSES_HEADER
-    if catData.rollingCloses and #catData.rollingCloses > 0 then
-        local nums = {}
-        for _, v in ipairs(catData.rollingCloses) do
-            nums[#nums + 1] = string.format("%.2f", v)
-        end
-        lines[#lines + 1] = table.concat(nums, SEP)
-    end
-
-    return lines
-end
-
---- Chunk size is read from sandbox on first use (lazy).
-local function getChunkSize()
-    if POS_Sandbox and POS_Sandbox.getMarketFileChunkSize then
-        return POS_Sandbox.getMarketFileChunkSize()
-    end
-    return POS_Constants.MARKET_FILE_CHUNK_SIZE
-end
-
---- PhobosLib-backed chunked writer instance.
-local _writer = PhobosLib.createChunkedWriter({
-    filePath    = POS_Constants.MARKET_DATA_FILE,
-    chunkSize   = getChunkSize(),
-    onSerialize = serializeCategory,
-    onComplete  = function() dirty = false end,
-})
-
---- Begin a chunked save. Subsequent tickChunkedSave() calls drain the queue.
----@return boolean true if a chunked save was started
+--- No-op.  Retained so callers that guard-check this function
+--- do not need changes.
+---@return boolean Always false
 function POS_MarketFileStore.startChunkedSave()
-    if not dirty then return false end
-    -- Update chunk size from sandbox in case it changed
-    _writer._opts.chunkSize = getChunkSize()
-    return PhobosLib.startChunkedWrite(_writer, cache)
+    return false
 end
 
---- Process the next chunk. Call once per EveryOneMinute tick.
----@return boolean true if the chunked save is now complete
+--- No-op.
+---@return boolean Always false
 function POS_MarketFileStore.tickChunkedSave()
-    return PhobosLib.tickChunkedWrite(_writer)
+    return false
 end
 
---- Whether a chunked save is currently in progress.
+--- Always returns false.
 ---@return boolean
 function POS_MarketFileStore.isChunkedSaveInProgress()
-    return PhobosLib.isChunkedWriteActive(_writer)
+    return false
 end
