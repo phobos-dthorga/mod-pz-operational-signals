@@ -269,21 +269,19 @@ jobs:
           python3 <<'PYEOF'
           import re, os, sys, glob
 
-          # Scan POS_Constants.lua for all defined fields
-          constants_file = "common/media/lua/shared/POS_Constants.lua"
-          if not os.path.isfile(constants_file):
-              print("No POS_Constants.lua found — skipping.")
+          # Scan all POS_Constants*.lua files for defined fields
+          constants_files = sorted(glob.glob("common/media/lua/shared/POS_Constants*.lua"))
+          if not constants_files:
+              print("No POS_Constants*.lua found — skipping.")
               sys.exit(0)
 
-          with open(constants_file) as f:
-              constants_text = f.read()
-
-          # Extract all assigned fields: POS_Constants.FIELD_NAME = ...
           defined = set()
-          for m in re.finditer(r'POS_Constants\.(\w+)\s*=', constants_text):
-              defined.add(m.group(1))
+          for cf in constants_files:
+              with open(cf) as f:
+                  for m in re.finditer(r'POS_Constants\.(\w+)\s*=', f.read()):
+                      defined.add(m.group(1))
 
-          print(f"Found {len(defined)} defined POS_Constants fields")
+          print(f"Found {len(defined)} defined POS_Constants fields across {len(constants_files)} files")
 
           # Scan all Lua files for POS_Constants.FIELD_NAME references
           lua_files = glob.glob("common/media/lua/**/*.lua", recursive=True)
