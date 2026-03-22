@@ -249,6 +249,56 @@ Camera-tier analysis of a zone produces a per-category pressure breakdown with t
 
 ---
 
+### Phase 8: Trading System (Complete)
+
+A standalone trading system allows players to buy and sell physical items
+directly through wholesalers via the POSnet terminal. All business logic
+lives in `POS_TradeService` (shared); four new terminal screens handle
+presentation. See `design-guidelines.md` §30 for the full rule set.
+
+**Service Layer (`POS_TradeService.lua`)** — Complete
+
+- `getTradeableWholesalers(player)` — returns wholesalers with at least one
+  trade direction open, sorted by region
+- `getBuyableItems(wholesalerId, categoryId, player)` — items available for
+  purchase with computed buy/sell prices and stock indicators
+- `getSellableItems(wholesalerId, categoryId, player)` — player inventory
+  items matching a wholesaler's categories with sell prices
+- `computeBuyPrice(fullType, categoryId, wholesaler, player)` — formula:
+  `basePrice * stateMultiplier * (1 + markupBias)`, with extra dumping
+  discount
+- `computeSellPrice(fullType, categoryId, wholesaler, player)` — `buyPrice
+  * SellPriceRatio` (sandbox-configurable)
+- `computeBulkDiscount(quantity)` — threshold + percent from sandbox options
+- `validateBuy` / `validateSell` — state gates, stock checks, affordability,
+  quantity caps
+- `executeBuy` / `executeSell` — atomic transactions with rollback on
+  failure; adjusts wholesaler stock, re-evaluates operational state, awards
+  SIGINT XP, sends PN notifications
+
+**Terminal Screens** — Complete
+
+| Screen | File | Purpose |
+|---|---|---|
+| Trade Terminal | `POS_Screen_TradeTerminal.lua` | Paginated wholesaler list; gated behind Living Market + SIGINT level |
+| Trade Catalog | `POS_Screen_TradeCatalog.lua` | Category browser, paginated item list with BUY/SELL mode toggle |
+| Trade Confirm | `POS_Screen_TradeConfirm.lua` | Quantity picker, price preview, bulk discount display, execute button |
+| Trade Receipt | `POS_Screen_TradeReceipt.lua` | Static transaction summary (items, cost/revenue, new balance) |
+
+**Key design decisions:**
+
+- Screens are presentation only — all inventory/money mutations happen in
+  `POS_TradeService` (§30.7 anti-patterns)
+- Buy depletes wholesaler stock; sell replenishes it — creating a feedback
+  loop with the Living Market simulation
+- State gates: Withholding blocks buys, Collapsing blocks all trade,
+  Dumping adds extra discount
+- SIGINT skill gates access to the Trade Terminal (intel advantage)
+- Bulk discount threshold and percent are sandbox-configurable
+- Transactions award SIGINT XP with a bonus for bulk orders
+
+---
+
 ## Module Dependency Graph
 
 ```
@@ -267,6 +317,11 @@ Active connections:
     POS_MarketSimulation ──→ POS_MarketIngestion ──→ POS_MarketDatabase
     POS_MarketSimulation ──→ POS_PriceEngine
     POS_MarketSimulation ──→ POS_MarketNoteGenerator
+    POS_TradeService ──→ POS_WorldState (wholesaler stock)
+    POS_TradeService ──→ POS_PriceEngine (buy prices)
+    POS_TradeService ──→ POS_ItemPool (category items, base prices)
+    POS_TradeService ──→ POS_WholesalerService (state resolution)
+    POS_TradeService ──→ PhobosLib (inventory, money, notifications)
     POS_MarketReconAction ──→ POS_MarketSimulation.getZonePressure()
     POS_MarketAgent ──→ POS_MarketIngestion (agent observations)
     POS_WholesalerService ──→ POS_MarketAgent (downstream influence)
@@ -294,7 +349,7 @@ Active connections:
 | ~~Field notes from state transitions (Phase 7C)~~ | ~~Low~~ | ~~Phase 3 + POS_MarketNoteGenerator~~ | ✅ Complete |
 | ~~Camera/satellite intel tier (Phase 7D)~~ | ~~High~~ | ~~Camera/satellite systems~~ | ✅ Complete |
 
-**Current state:** All phases complete. Living Market Layer 0 is fully implemented.
+**Current state:** All phases complete. Living Market Layer 0 is fully implemented, including the standalone trading system (Phase 8).
 
 ---
 
@@ -311,6 +366,16 @@ Active connections:
 | `common/media/lua/shared/POS_ZoneSchema.lua` | Complete | Schema for zone definition files |
 | `common/media/lua/shared/POS_EventSchema.lua` | Complete | Schema for event definition files |
 | `common/media/lua/shared/POS_WholesalerSchema.lua` | Complete | Schema for wholesaler definition files |
+| `common/media/lua/shared/POS_TradeService.lua` | Complete | Trading business logic: query, validate, execute buy/sell transactions |
+
+### Engine Modules (Client)
+
+| File | Status | Description |
+|---|---|---|
+| `common/media/lua/client/POS_Screen_TradeTerminal.lua` | Complete | Paginated wholesaler list; SIGINT-gated |
+| `common/media/lua/client/POS_Screen_TradeCatalog.lua` | Complete | Category browser + item list with BUY/SELL toggle |
+| `common/media/lua/client/POS_Screen_TradeConfirm.lua` | Complete | Quantity picker, price preview, bulk discount, execute |
+| `common/media/lua/client/POS_Screen_TradeReceipt.lua` | Complete | Static transaction receipt |
 
 ### Engine Modules (Server)
 
