@@ -52,6 +52,10 @@ local BUILTIN_ARCHETYPE_PATHS = {
     "Definitions/Archetypes/scavenger_trader",
     "Definitions/Archetypes/quartermaster",
     "Definitions/Archetypes/wholesaler",
+    "Definitions/Archetypes/smuggler",
+    "Definitions/Archetypes/military_logistician",
+    "Definitions/Archetypes/speculator",
+    "Definitions/Archetypes/specialist_crafter",
 }
 
 ---------------------------------------------------------------

@@ -483,9 +483,11 @@ function POS_MarketSimulation.tickSimulation(currentDay)
         if agent.active ~= false then
             local zoneState = _zoneStates[agent.zoneId]
             if zoneState then
-                local obsCount = PhobosLib.safecall(
+                local obsOk, obsCount = PhobosLib.safecall(
                     POS_MarketAgent.generateObservations, agent, zoneState, currentDay)
-                if obsCount then totalObs = totalObs + obsCount end
+                if obsOk and type(obsCount) == "number" then
+                    totalObs = totalObs + obsCount
+                end
             end
         end
     end
