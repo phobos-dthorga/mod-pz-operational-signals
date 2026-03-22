@@ -340,6 +340,9 @@
     "Sandbox_POS_SimulationTickInterval": "Simulation Tick Interval (minutes):",
     "Sandbox_POS_SimulationTickInterval_tooltip": "In-game minutes between Living Market simulation ticks. Lower values produce a more responsive economy but increase server load. <BR> <BR> <INDENT:20> Only effective when Living Market is enabled. <BR> Range: 5-120. Default: 20",
 
+    "Sandbox_POS_EconomyTickIntervalHours": "Economy Tick Interval (hours):",
+    "Sandbox_POS_EconomyTickIntervalHours_tooltip": "In-game hours between economy processing ticks. At 24 (default), the economy updates once per day. Lower values mean faster market shifts — set to 1 for rapid testing. <BR> <BR> <INDENT:20> Range: 1-24. Default: 24",
+
     "Sandbox_POS_MarketFileChunkSize": "Market File Chunk Size:",
     "Sandbox_POS_MarketFileChunkSize_tooltip": "Number of market categories to serialise per game-minute when saving market data to disk. Lower values spread I/O over more ticks, reducing frame spikes. Higher values save faster but may cause brief stutters. <BR> <BR> <INDENT:20> Range: 1-20. Default: 4"
 }

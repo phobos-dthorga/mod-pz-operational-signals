@@ -45,8 +45,18 @@ function POS_EconomyTick.processDayTick()
     local meta = POS_WorldState.getMeta()
     local currentDay = POS_WorldState.getWorldDay()
 
-    -- Already processed today?
-    if meta.lastProcessedDay and meta.lastProcessedDay >= currentDay then return end
+    -- Compute fractional world time (day + hour/24)
+    local gt = getGameTime and getGameTime()
+    local hourOfDay = gt and gt:getTimeOfDay() or 0
+    local worldTime = currentDay + (hourOfDay / 24)
+
+    -- Check interval (default 24h = once per day)
+    local intervalHours = POS_Sandbox and POS_Sandbox.getEconomyTickIntervalHours
+        and POS_Sandbox.getEconomyTickIntervalHours()
+        or POS_Constants.ECONOMY_TICK_INTERVAL_HOURS_DEFAULT
+    local intervalFraction = intervalHours / 24
+    local lastTick = meta.lastProcessedTick or 0
+    if (worldTime - lastTick) < intervalFraction then return end
 
     -- Check sandbox toggle
     if POS_Sandbox and POS_Sandbox.getEconomyTickEnabled
@@ -115,8 +125,9 @@ function POS_EconomyTick.processDayTick()
         end
     end
 
-    -- Phase 6: Mark day processed
+    -- Phase 6: Mark tick processed
     meta.lastProcessedDay = currentDay
+    meta.lastProcessedTick = worldTime
 
     -- Phase 6.5: Begin chunked persist of market data to external file.
     -- The write is spread across subsequent EveryOneMinute ticks via

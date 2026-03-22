@@ -731,6 +731,11 @@ function POS_Sandbox.getSimulationTickInterval()
         POS_Constants.SIMULATION_TICK_INTERVAL_DEFAULT)
 end
 
+function POS_Sandbox.getEconomyTickIntervalHours()
+    return PhobosLib.getSandboxVar("POS", "EconomyTickIntervalHours",
+        POS_Constants.ECONOMY_TICK_INTERVAL_HOURS_DEFAULT)
+end
+
 function POS_Sandbox.getMarketFileChunkSize()
     return PhobosLib.getSandboxVar("POS", "MarketFileChunkSize",
         POS_Constants.MARKET_FILE_CHUNK_SIZE)

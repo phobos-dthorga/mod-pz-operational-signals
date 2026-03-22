@@ -1307,6 +1307,9 @@ POS_Constants.SIMULATION_ZONE_DEFAULT_VOLATILITY   = 0.20
 -- Save migration
 POS_Constants.MARKET_SCHEMA_VERSION = 1
 
+-- Economy tick interval
+POS_Constants.ECONOMY_TICK_INTERVAL_HOURS_DEFAULT = 24
+
 ---------------------------------------------------------------
 -- Living Market: Natural Drift Rates (per tick)
 ---------------------------------------------------------------
