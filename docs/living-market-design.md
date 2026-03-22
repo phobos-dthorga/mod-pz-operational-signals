@@ -1,7 +1,8 @@
 # POSnet Living Market — Autonomous Economic Simulation Design
 
-> **Status**: Scaffolded (stubs, constants, schemas, definitions committed;
-> simulation logic not yet active). Gated behind `POS.EnableLivingMarket`.
+> **Status**: Phase 1 implemented — wholesaler lifecycle, zone pressure
+> aggregation, agent meter updates, and simulation tick active.
+> Signal emission remains placeholder. Gated behind `POS.EnableLivingMarket`.
 > **Prerequisite reading**: `market-exchange-design.md` (current 3-layer architecture),
 > `design-guidelines.md` Sections 12–13, 24 (Living Market), 26 (Data-Pack Architecture).
 
@@ -698,10 +699,17 @@ Data-pack architecture implemented: 4 schema files, 15 definition files,
 (commented out). All gated behind `POS.EnableLivingMarket`. PhobosLib
 provides `PhobosLib_Schema`, `PhobosLib_Registry`, and `PhobosLib_DataLoader`.
 
-### Phase 1 — Foundation (3 Archetypes)
+### Phase 1 — Foundation (3 Archetypes) ✅
 
 Implement: Scavenger Trader, Quartermaster, Wholesaler.
 Result: noise, stability, regional backbone.
+
+Implemented: 8 wholesaler definitions (scaled by zone population),
+6-state operational state machine, supply pressure formula, 6-phase
+wholesaler tick lifecycle (natural drift, demand pull, convoy resolution,
+event roll, market influence, signal emission placeholder), zone pressure
+aggregation, agent hidden state meter updates, hybrid persistence.
+`PhobosLib.approach()` added for natural drift smoothing.
 
 ### Phase 2 — Tension (2 Archetypes)
 

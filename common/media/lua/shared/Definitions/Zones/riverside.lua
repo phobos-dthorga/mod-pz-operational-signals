@@ -18,6 +18,7 @@ return {
     schemaVersion = 1,
     id = "riverside",
     name = "Riverside",
+    displayNameKey = "UI_POS_Zone_Riverside",
     description = "Larger settlement with diverse supply chains and higher demand.",
     baseVolatility = 0.18,
     population = "dense",

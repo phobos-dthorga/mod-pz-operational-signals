@@ -52,6 +52,7 @@ POS_Constants.SCREEN_BBS_POST    = "pos.bbs.investments.detail"
 POS_Constants.SCREEN_OPERATIONS  = "pos.bbs.operations"
 POS_Constants.SCREEN_DELIVERIES  = "pos.bbs.deliveries"
 POS_Constants.SCREEN_NEGOTIATE   = "pos.negotiate"
+POS_Constants.SCREEN_BBS_RUMOURS = "pos.bbs.rumours"
 POS_Constants.SCREEN_STOCKMARKET = "pos.stockmarket"
 
 ---------------------------------------------------------------
@@ -127,6 +128,12 @@ POS_Constants.SCREEN_WATCHLIST          = "pos.markets.watchlist"
 POS_Constants.SCREEN_EXCHANGE           = "pos.exchange"
 POS_Constants.SCREEN_EXCHANGE_OVERVIEW  = "pos.exchange.overview"
 POS_Constants.SCREEN_EXCHANGE_PORTFOLIO = "pos.exchange.portfolio"
+POS_Constants.SCREEN_ZONE_OVERVIEW     = "pos.markets.zones"
+POS_Constants.SCREEN_EVENT_LOG         = "pos.markets.events"
+POS_Constants.SCREEN_WHOLESALER_DIR    = "pos.markets.directory"
+
+POS_Constants.WHOLESALER_VISIBLE_THRESHOLD = 0.3
+POS_Constants.WHOLESALER_DIR_SIGINT_REQ    = 3
 
 ---------------------------------------------------------------
 -- Market modData keys
@@ -260,6 +267,8 @@ POS_Constants.CATEGORY_PRICE_MULTIPLIERS = {
 POS_Constants.PRICE_SD_FACTOR_PER_SOURCE = 0.01
 POS_Constants.PRICE_SD_FACTOR_BASELINE   = 5
 POS_Constants.PRICE_SD_FACTOR_CLAMP      = 0.1
+POS_Constants.PRICE_ZONE_PRESSURE_WEIGHT = 0.05   -- pressure [-2,2] scaled by this → ±10% max
+POS_Constants.PRICE_ZONE_PRESSURE_CLAMP  = 0.10   -- absolute cap on zone pressure effect
 
 ---------------------------------------------------------------
 -- Exchange engine
@@ -310,8 +319,12 @@ POS_Constants.PAGE_SIZE_COMMODITIES      = 8
 POS_Constants.PAGE_SIZE_COMMODITY_ITEMS  = 8
 POS_Constants.PAGE_SIZE_MARKET_REPORTS   = 5
 POS_Constants.PAGE_SIZE_WATCHLIST        = 6
+POS_Constants.PAGE_SIZE_BBS_RUMOURS      = 5
 POS_Constants.WATCHLIST_MAX_ENTRIES      = 20
 POS_Constants.WATCHLIST_PRICE_CHANGE_PCT = 10
+POS_Constants.PAGE_SIZE_EVENT_LOG      = 8
+POS_Constants.PAGE_SIZE_ZONE_OVERVIEW  = 6
+POS_Constants.PAGE_SIZE_WHOLESALER_DIR = 6
 
 ---------------------------------------------------------------
 -- Signal bar display (POS_NavPanel)
@@ -548,6 +561,7 @@ POS_Constants.MARKET_FILE_OBS_HEADER      = "[OBS]"
 POS_Constants.MARKET_FILE_CLOSES_HEADER   = "[CLOSES]"
 POS_Constants.MARKET_FILE_ITEM_SEP        = ";"
 POS_Constants.MARKET_FILE_ITEM_KV_SEP     = ":"
+POS_Constants.MARKET_FILE_CHUNK_SIZE      = 4
 
 ---------------------------------------------------------------
 -- Per-player file storage (Zomboid/Lua/POSNET/)
@@ -654,6 +668,8 @@ POS_Constants.WRITING_DAMAGE_VARIANCE_OFFSET = 2
 POS_Constants.MODDATA_OPERATIONS    = "POS_Operations"
 POS_Constants.MODDATA_OPPORTUNITIES = "POS_Opportunities"
 POS_Constants.MODDATA_INVESTMENTS   = "POS_Investments"
+POS_Constants.MODDATA_WATCHLIST     = "POS_Watchlist"
+POS_Constants.MODDATA_ALERTS        = "POS_Alerts"
 
 ---------------------------------------------------------------
 -- Operations display
@@ -783,6 +799,38 @@ POS_Constants.MD_RECORDER_LAST_REGION    = "POS_RecorderLastRegion"
 POS_Constants.MD_RECORDER_POWERED        = "POS_RecorderPowered"
 POS_Constants.MD_RECORDER_SOURCE_ID      = "POS_RecorderSourceId"
 POS_Constants.MD_RECORDER_TUTORIAL_SHOWN = "POS_RecorderTutorialShown"
+POS_Constants.MD_RECORDER_AUTO_FEED      = "POS_RecorderAutoFeed"
+
+---------------------------------------------------------------
+-- Media search order (shared between context menu, auto-feed,
+-- and MediaManager.findUsableMedia). Priority: floppy (digital)
+-- > microcassette (high) > VHS (best quality first).
+---------------------------------------------------------------
+
+POS_Constants.USABLE_MEDIA_SEARCH_ORDER = {
+    POS_Constants.ITEM_BLANK_FLOPPY_DISK,
+    POS_Constants.ITEM_RECORDED_FLOPPY_DISK,
+    POS_Constants.ITEM_WORN_FLOPPY_DISK,
+    POS_Constants.ITEM_MICROCASSETTE,
+    POS_Constants.ITEM_RECORDED_MICROCASSETTE,
+    POS_Constants.ITEM_REWOUND_MICROCASSETTE,
+    POS_Constants.ITEM_BLANK_VHS_TAPE,
+    POS_Constants.ITEM_REFURBISHED_TAPE,
+    POS_Constants.ITEM_SPLICED_TAPE,
+    POS_Constants.ITEM_IMPROVISED_TAPE,
+}
+
+POS_Constants.MEDIA_FAMILY_DISPLAY_ORDER = {
+    POS_Constants.MEDIA_FAMILY_FLOPPY,
+    POS_Constants.MEDIA_FAMILY_MICROCASSETTE,
+    POS_Constants.MEDIA_FAMILY_VHS,
+}
+
+POS_Constants.MEDIA_FAMILY_LABEL_KEYS = {
+    [POS_Constants.MEDIA_FAMILY_FLOPPY]       = "UI_POS_ContextMenu_FamilyFloppy",
+    [POS_Constants.MEDIA_FAMILY_MICROCASSETTE] = "UI_POS_ContextMenu_FamilyMicrocassette",
+    [POS_Constants.MEDIA_FAMILY_VHS]          = "UI_POS_ContextMenu_FamilyVHS",
+}
 
 ---------------------------------------------------------------
 -- Unified media modData keys (replaces POS_Tape* keys)
@@ -926,8 +974,13 @@ POS_Constants.CAMERA_BULLETIN_COOLDOWN_DEFAULT = 12  -- hours
 -- Camera reputation
 POS_Constants.CAMERA_BULLETIN_REP_DEFAULT     = 50   -- hundredths of rep point
 
--- Camera workstation sprites (populated after sprite audit)
-POS_Constants.CAMERA_WORKSTATION_SPRITES      = {}
+-- Camera workstation sprites (vanilla security camera monitors, 4 rotations)
+POS_Constants.CAMERA_WORKSTATION_SPRITES      = {
+    "appliances_com_01_44",
+    "appliances_com_01_45",
+    "appliances_com_01_46",
+    "appliances_com_01_47",
+}
 
 -- Media building room types for location bonus
 POS_Constants.CAMERA_MEDIA_ROOM_TYPES         = {
@@ -1100,8 +1153,34 @@ POS_Constants.SATELLITE_FUEL_DRAIN_BROADCAST   = 0.10
 POS_Constants.SATELLITE_LOW_FUEL_THRESHOLD     = 0.20
 POS_Constants.SATELLITE_LOW_FUEL_PENALTY       = 0.25
 
--- Satellite dish sprites (populated after sprite audit)
-POS_Constants.SATELLITE_DISH_SPRITES           = {}
+-- Satellite Wiring
+POS_Constants.SATELLITE_WIRING_ITEM              = "Base.ElectricWire"
+POS_Constants.SATELLITE_WIRING_TOOL_SCREWDRIVER  = "Base.Screwdriver"
+POS_Constants.SATELLITE_WIRING_TOOL_PLIERS       = "Base.Pliers"
+POS_Constants.SATELLITE_WIRING_MIN_ELECTRICAL    = 2
+POS_Constants.SATELLITE_WIRING_MAX_RANGE_DEFAULT = 100
+POS_Constants.SATELLITE_WIRING_Z_PENALTY         = 5
+POS_Constants.SATELLITE_WIRING_KEY_PREFIX        = "POS_SatelliteWiring_"
+POS_Constants.SATELLITE_WIRING_TIME_PER_TILE     = 3
+POS_Constants.SATELLITE_WIRING_TIME_MIN          = 30
+POS_Constants.SATELLITE_WIRING_TIME_MAX          = 600
+POS_Constants.SATELLITE_WIRING_RETURN_PCT        = 75
+POS_Constants.SATELLITE_DISCONNECT_TIME          = 60
+POS_Constants.SATELLITE_LINK_TYPE_WIRED          = "hardwired_satellite"
+
+-- Desktop computer sprites (vanilla, 4 rotations)
+POS_Constants.DESKTOP_COMPUTER_SPRITES = {
+    ["appliances_com_01_72"] = true,
+    ["appliances_com_01_73"] = true,
+    ["appliances_com_01_74"] = true,
+    ["appliances_com_01_75"] = true,
+}
+
+-- Satellite dish sprites (vanilla satellite dish, 2 rotations)
+POS_Constants.SATELLITE_DISH_SPRITES           = {
+    "appliances_com_01_20",
+    "appliances_com_01_21",
+}
 
 -- Equipment condition threshold for bonus
 POS_Constants.SATELLITE_DISH_CONDITION_BONUS_MIN = 80
@@ -1225,9 +1304,270 @@ POS_Constants.SIMULATION_PRESSURE_CLAMP_MAX       = 2.0
 POS_Constants.SIMULATION_THROUGHPUT_FACTOR         = 0.5
 POS_Constants.SIMULATION_ZONE_DEFAULT_VOLATILITY   = 0.20
 
+-- Save migration
+POS_Constants.MARKET_SCHEMA_VERSION = 1
+
+-- Economy tick interval
+POS_Constants.ECONOMY_TICK_INTERVAL_HOURS_DEFAULT = 24
+
+---------------------------------------------------------------
+-- Living Market: Natural Drift Rates (per tick)
+---------------------------------------------------------------
+
+POS_Constants.SIMULATION_PRESSURE_DECAY_RATE       = 0.15
+POS_Constants.SIMULATION_DISRUPTION_DECAY_RATE     = 0.10
+POS_Constants.SIMULATION_STOCK_REPLENISH_RATE      = 0.05
+
+---------------------------------------------------------------
+-- Living Market: Demand Pull (per population tier)
+---------------------------------------------------------------
+
+POS_Constants.SIMULATION_DEMAND_PULL = {
+    sparse = 0.02,
+    medium = 0.04,
+    dense  = 0.07,
+}
+
+--- Essential categories subject to demand pull each tick.
+POS_Constants.SIMULATION_ESSENTIAL_CATEGORIES = {
+    "food", "medicine", "fuel",
+}
+
+---------------------------------------------------------------
+-- Living Market: Wholesaler State Machine Thresholds
+---------------------------------------------------------------
+
+POS_Constants.WHOLESALER_PRESSURE_TIGHT_THRESHOLD       = 0.30
+POS_Constants.WHOLESALER_PRESSURE_STRAINED_THRESHOLD    = 0.60
+POS_Constants.WHOLESALER_DISRUPTION_STRAINED_THRESHOLD  = 0.40
+POS_Constants.WHOLESALER_DISRUPTION_COLLAPSING_THRESHOLD = 0.70
+POS_Constants.WHOLESALER_STOCK_COLLAPSING_THRESHOLD     = 0.15
+POS_Constants.WHOLESALER_STOCK_WITHHOLDING_FLOOR        = 0.50
+
+---------------------------------------------------------------
+-- Living Market: Wholesaler Property Bounds
+---------------------------------------------------------------
+
+POS_Constants.WHOLESALER_STOCK_MIN      = 0.0
+POS_Constants.WHOLESALER_STOCK_MAX      = 1.0
+POS_Constants.WHOLESALER_PRESSURE_MIN   = 0.0
+POS_Constants.WHOLESALER_PRESSURE_MAX   = 1.0
+POS_Constants.WHOLESALER_DISRUPTION_MIN = 0.0
+POS_Constants.WHOLESALER_DISRUPTION_MAX = 1.0
+
+---------------------------------------------------------------
+-- Living Market: Event Effects
+---------------------------------------------------------------
+
+POS_Constants.SIMULATION_EVENT_PROBABILITY_MULT        = 1.0
+POS_Constants.EVENT_STOCK_EFFECT_BULK_ARRIVAL           = 0.20
+POS_Constants.EVENT_STOCK_EFFECT_THEFT_RAID             = -0.15
+POS_Constants.EVENT_STOCK_EFFECT_CONTROLLED_RELEASE     = 0.10
+POS_Constants.EVENT_STOCK_EFFECT_REQUISITION            = -0.10
+POS_Constants.EVENT_DISRUPTION_THEFT_RAID               = 0.25
+POS_Constants.EVENT_DISRUPTION_REQUISITION              = 0.15
+
+---------------------------------------------------------------
+-- Living Market: Downstream Influence
+---------------------------------------------------------------
+
+POS_Constants.WHOLESALER_DOWNSTREAM_DELAY_DAYS = 2
+
+---------------------------------------------------------------
+-- Living Market: Convoy Mechanics
+---------------------------------------------------------------
+
+POS_Constants.CONVOY_OVERDUE_TOLERANCE_DAYS = 1
+
+---------------------------------------------------------------
+-- Living Market: All Commodity Category IDs
+---------------------------------------------------------------
+
+POS_Constants.MARKET_CATEGORIES = {
+    "food", "medicine", "ammunition", "fuel", "tools", "radio", "weapons",
+}
+
+---------------------------------------------------------------
+-- Living Market: Agent Meter Rates (per tick)
+---------------------------------------------------------------
+
+POS_Constants.AGENT_PRESSURE_APPROACH_RATE   = 0.20
+POS_Constants.AGENT_GREED_VOLATILITY_FACTOR  = 0.10
+POS_Constants.AGENT_EXPOSURE_DECAY_RATE      = 0.08
+POS_Constants.AGENT_SURPLUS_APPROACH_RATE    = 0.15
+POS_Constants.AGENT_TRUST_DECAY_RATE         = 0.05
+
+-- Agent observation generation
+POS_Constants.AGENT_OBS_GREED_THRESHOLD      = 0.5
+POS_Constants.AGENT_OBS_GREED_MULTIPLIER     = 0.15
+POS_Constants.AGENT_OBS_EXPOSURE_THRESHOLD   = 0.3
+POS_Constants.AGENT_OBS_SURPLUS_THRESHOLD    = 0.6
+POS_Constants.AGENT_OBS_SURPLUS_MULTIPLIER   = 0.10
+POS_Constants.AGENT_OBS_SMUGGLER_INVERSION   = 0.05
+POS_Constants.AGENT_OBS_SPECULATOR_MARKUP    = 1.2
+POS_Constants.AGENT_OBS_SCAVENGER_NOISE      = 0.20
+POS_Constants.AGENT_OBS_DEFAULT_NOISE        = 0.10
+POS_Constants.AGENT_OBS_SOURCE_PREFIX        = "agent_"
+
+-- SIGINT XP from market events
+POS_Constants.SIGINT_XP_MARKET_EVENT_BASE    = 5
+POS_Constants.SIGINT_XP_COLLAPSING_MULT      = 3.0
+POS_Constants.SIGINT_XP_WITHHOLDING_MULT     = 2.0
+POS_Constants.SIGINT_XP_STRAINED_MULT        = 1.5
+POS_Constants.SIGINT_XP_DEFAULT_MULT         = 1.0
+
+-- SIGINT XP from satellite operations
+POS_Constants.SIGINT_XP_SATELLITE_CALIBRATE  = 2
+
+-- Passive recon zone pressure
+POS_Constants.RECON_PRESSURE_NOISE_MIN       = 0.05
+POS_Constants.RECON_PRESSURE_NOISE_MAX       = 0.30
+
+---------------------------------------------------------------
+-- Living Market: Simulation Tuning
+---------------------------------------------------------------
+
+POS_Constants.SIMULATION_PRESSURE_DECAY_RATE       = 0.12
+POS_Constants.SIMULATION_DISRUPTION_DECAY_RATE     = 0.08
+POS_Constants.SIMULATION_STOCK_REPLENISH_RATE      = 0.10
+POS_Constants.SIMULATION_EVENT_PROBABILITY_MULT    = 1.0
+
+POS_Constants.SIMULATION_DEMAND_PULL = {
+    low    = 0.02,
+    medium = 0.05,
+    high   = 0.10,
+    dense  = 0.15,
+}
+
+POS_Constants.SIMULATION_ESSENTIAL_CATEGORIES = {
+    "food", "medicine", "fuel",
+}
+
+---------------------------------------------------------------
+-- Living Market: Event Effects
+---------------------------------------------------------------
+
+POS_Constants.EVENT_STOCK_EFFECT_BULK_ARRIVAL       =  0.25
+POS_Constants.EVENT_STOCK_EFFECT_THEFT_RAID         = -0.20
+POS_Constants.EVENT_STOCK_EFFECT_CONTROLLED_RELEASE =  0.15
+POS_Constants.EVENT_STOCK_EFFECT_REQUISITION        = -0.30
+POS_Constants.EVENT_DISRUPTION_THEFT_RAID           =  0.15
+POS_Constants.EVENT_DISRUPTION_REQUISITION          =  0.25
+
+---------------------------------------------------------------
+-- Living Market: Wholesaler Stock Bounds
+---------------------------------------------------------------
+
+POS_Constants.WHOLESALER_STOCK_MIN = 0.0
+POS_Constants.WHOLESALER_STOCK_MAX = 1.0
+
 ---------------------------------------------------------------
 -- Living Market: World ModData
 ---------------------------------------------------------------
 
 POS_Constants.WMD_MARKET_ZONES = "POSNET.MarketZones"
+
+---------------------------------------------------------------
+-- Living Market: Signal Emission
+---------------------------------------------------------------
+
+-- State → price multiplier applied to category base price
+POS_Constants.WHOLESALER_PRICE_MULTIPLIER = {
+    [POS_Constants.WHOLESALER_STATE_STABLE]      = 1.00,
+    [POS_Constants.WHOLESALER_STATE_TIGHT]       = 1.05,
+    [POS_Constants.WHOLESALER_STATE_STRAINED]    = 1.15,
+    [POS_Constants.WHOLESALER_STATE_DUMPING]     = 0.75,
+    [POS_Constants.WHOLESALER_STATE_WITHHOLDING] = 1.25,
+    [POS_Constants.WHOLESALER_STATE_COLLAPSING]  = 1.40,
+}
+
+-- Category base prices (calibrated against Dynamic Trading mod)
+-- DT ranges: food canned 137-297, medical 45-183, ammo mags 70,
+-- fuel 127-215, tools 57-216, electronics wide, weapons wide,
+-- armor 15-360, moveables 15-70, PCP chemicals 12-500.
+-- These represent the "average street price" per category.
+POS_Constants.CATEGORY_BASE_PRICE = {
+    food          = 120,
+    medicine      = 150,
+    ammunition    = 70,
+    fuel          = 160,
+    tools         = 100,
+    radio         = 180,
+    weapons       = 250,
+    survival      = 80,
+    clothing      = 60,
+    literature    = 40,
+    miscellaneous = 50,
+    chemicals     = 45,
+    agriculture   = 20,
+    biofuel       = 120,
+    specimens     = 200,
+    biohazard     = 300,
+}
+
+-- Price noise range (±%) applied to each emitted observation
+POS_Constants.SIGNAL_PRICE_NOISE = 0.10
+
+-- Stock level tiers for PhobosLib.getQualityTier()
+-- Maps stockLevel (0–100 after ×100) to display bucket
+POS_Constants.STOCK_LEVEL_TIERS = {
+    { name = "UI_POS_Stock_Abundant", min = 70 },
+    { name = "UI_POS_Stock_Moderate", min = 40 },
+    { name = "UI_POS_Stock_Low",     min = 20 },
+    { name = "UI_POS_Stock_Scarce",  min = 0 },
+}
+
+-- Confidence tiers for PhobosLib.getQualityTier()
+-- Maps reliability (0–100 after ×100) to confidence string
+POS_Constants.CONFIDENCE_TIERS = {
+    { name = "high",   min = 70 },
+    { name = "medium", min = 40 },
+    { name = "low",    min = 0 },
+}
+
+-- Record ID prefix for Living Market observations
+POS_Constants.SIGNAL_RECORD_PREFIX = "lm_"
+
+-- Rumour system
+POS_Constants.RUMOUR_MAX_ACTIVE     = 20
+POS_Constants.RUMOUR_EXPIRY_DAYS    = 7
+POS_Constants.RUMOUR_CONFIDENCE     = "low"
+POS_Constants.RUMOUR_SOURCE_TIER    = "field"
+POS_Constants.RUMOUR_KEY_PREFIX     = "POS_Rumour_"
+POS_Constants.WMD_RUMOURS           = "POSNET.Rumours"
+POS_Constants.NOTE_TYPE_MARKET      = "market"
+POS_Constants.NOTE_TYPE_RUMOUR      = "rumour"
+POS_Constants.SCREEN_BBS_RUMOURS    = "pos.bbs.rumours"
+
+-- Rumour impact directions
+POS_Constants.RUMOUR_IMPACT_SHORTAGE   = "shortage"
+POS_Constants.RUMOUR_IMPACT_SURPLUS    = "surplus"
+POS_Constants.RUMOUR_IMPACT_DISRUPTION = "disruption"
+
+-- Rumour event message key lookup
+POS_Constants.RUMOUR_EVENT_KEYS = {
+    bulk_arrival           = "UI_POS_Rumour_BulkArrival",
+    convoy_delay           = "UI_POS_Rumour_ConvoyDelay",
+    theft_raid             = "UI_POS_Rumour_TheftRaid",
+    controlled_release     = "UI_POS_Rumour_ControlledRelease",
+    strategic_withholding  = "UI_POS_Rumour_StrategicWithholding",
+    requisition_diversion  = "UI_POS_Rumour_Requisition",
+}
+
+-- Rumour impact hint key lookup
+POS_Constants.RUMOUR_IMPACT_KEYS = {
+    shortage   = "UI_POS_Rumour_ShortageExpected",
+    surplus    = "UI_POS_Rumour_SurplusExpected",
+    disruption = "UI_POS_Rumour_DisruptionReported",
+}
+
+---------------------------------------------------------------
+-- Living Market: Field Notes from State Transitions (Phase 7C)
+---------------------------------------------------------------
+
+--- States that trigger field note generation on transition.
+POS_Constants.FIELD_NOTE_STATES = { "collapsing", "dumping" }
+
+--- Per-wholesaler modData key storing the last day a note was generated.
+POS_Constants.FIELD_NOTE_COOLDOWN_KEY = "_lastNoteDay"
 

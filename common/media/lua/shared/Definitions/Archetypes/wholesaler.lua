@@ -18,6 +18,7 @@ return {
     schemaVersion = 1,
     id = "wholesaler",
     name = "Wholesaler",
+    displayNameKey = "UI_POS_Agent_Wholesaler",
     description = "A bulk distributor whose stock levels drive regional supply and scarcity.",
     behaviour = "wholesaler",
     tuning = {

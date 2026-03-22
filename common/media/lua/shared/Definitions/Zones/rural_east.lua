@@ -18,6 +18,7 @@ return {
     schemaVersion = 1,
     id = "rural_east",
     name = "Rural East",
+    displayNameKey = "UI_POS_Zone_RuralEast",
     description = "Isolated farming region with infrequent but reliable supply.",
     baseVolatility = 0.22,
     population = "sparse",

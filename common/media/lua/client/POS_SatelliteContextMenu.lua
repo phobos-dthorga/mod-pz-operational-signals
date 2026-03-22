@@ -25,6 +25,7 @@ require "PhobosLib"
 require "POS_Constants"
 require "POS_SatelliteService"
 require "POS_SatelliteBroadcastAction"
+require "POS_SatelliteWiringAction"
 
 POS_SatelliteContextMenu = {}
 
@@ -110,6 +111,12 @@ function POS_SatelliteContextMenu.onFillWorldObjectContextMenu(playerNum, contex
     elseif not status.hasPower then
         broadcastState = "no_power"
         broadcastTip = PhobosLib.safeGetText("UI_POS_Satellite_NoPower")
+    elseif not status.hasLink then
+        broadcastState = "no_link"
+        broadcastTip = PhobosLib.safeGetText("UI_POS_Satellite_NoTerminalLink")
+    elseif status.fuelLow then
+        broadcastState = "low_fuel"
+        broadcastTip = PhobosLib.safeGetText("UI_POS_Satellite_InsufficientFuel")
     elseif not status.calibrated then
         broadcastState = "not_calibrated"
         broadcastTip = PhobosLib.safeGetText("UI_POS_Satellite_NotCalibrated")
@@ -156,6 +163,12 @@ function POS_SatelliteContextMenu.onFillWorldObjectContextMenu(playerNum, contex
     elseif not status.hasPower then
         calibrateState = "no_power"
         calibrateTip = PhobosLib.safeGetText("UI_POS_Satellite_NoPower")
+    elseif not status.hasLink then
+        calibrateState = "no_link"
+        calibrateTip = PhobosLib.safeGetText("UI_POS_Satellite_NoTerminalLink")
+    elseif status.fuelLow then
+        calibrateState = "low_fuel"
+        calibrateTip = PhobosLib.safeGetText("UI_POS_Satellite_InsufficientFuel")
     else
         -- Check danger
         if PhobosLib and PhobosLib.isDangerNearby then
@@ -195,6 +208,106 @@ function POS_SatelliteContextMenu.onFillWorldObjectContextMenu(playerNum, contex
     local statusTT = ISWorldObjectContextMenu.addToolTip()
     statusTT.description = PhobosLib.safeGetText("UI_POS_Satellite_CheckStatusTip")
     statusOption.toolTip = statusTT
+
+    -- 4. Wire to Terminal (only when NOT wired)
+    if not POS_SatelliteService.isWired(sq) then
+        local maxRange = POS_Sandbox and POS_Sandbox.getSatelliteWiringMaxRange
+            and POS_Sandbox.getSatelliteWiringMaxRange()
+            or POS_Constants.SATELLITE_WIRING_MAX_RANGE_DEFAULT
+        local targets = POS_SatelliteService.findDesktopTargets(sq, maxRange)
+
+        if #targets == 0 then
+            -- Grey out with "no desktop in range"
+            local wireOpt = subMenu:addOption(
+                PhobosLib.safeGetText("UI_POS_Satellite_WireToTerminal"))
+            wireOpt.notAvailable = true
+            local tooltip = ISWorldObjectContextMenu.addToolTip()
+            tooltip.description = PhobosLib.safeGetText("UI_POS_Satellite_WireNoDesktop", tostring(maxRange))
+            wireOpt.toolTip = tooltip
+        elseif #targets == 1 then
+            -- Single target — direct option
+            local t = targets[1]
+            local reqs = POS_SatelliteService.checkWiringRequirements(player, t.wireCount)
+            local wireOpt = subMenu:addOption(
+                PhobosLib.safeGetText("UI_POS_Satellite_WireToTerminal"))
+
+            if not reqs.ok then
+                wireOpt.notAvailable = true
+                local tooltip = ISWorldObjectContextMenu.addToolTip()
+                if reqs.skillTooLow then
+                    tooltip.description = PhobosLib.safeGetText("UI_POS_Satellite_WireLowSkill",
+                        tostring(reqs.skillNeed), tostring(reqs.skillHave))
+                elseif #reqs.missingTools > 0 then
+                    tooltip.description = PhobosLib.safeGetText("UI_POS_Satellite_WireNoTools")
+                elseif reqs.missingItems and reqs.missingItems.type then
+                    tooltip.description = PhobosLib.safeGetText("UI_POS_Satellite_WireNotEnough",
+                        tostring(reqs.missingItems.need), tostring(reqs.missingItems.have))
+                end
+                wireOpt.toolTip = tooltip
+            else
+                local tooltip = ISWorldObjectContextMenu.addToolTip()
+                tooltip.description = PhobosLib.safeGetText("UI_POS_Satellite_WireReady",
+                    tostring(t.wireCount), tostring(t.wireCount))
+                wireOpt.toolTip = tooltip
+                wireOpt.onSelect = function()
+                    ISTimedActionQueue.add(POS_SatelliteWiringAction:new(
+                        player, POS_SatelliteWiringAction.TYPE_WIRE,
+                        sq, t.x, t.y, t.z, t.wireCount))
+                end
+            end
+        else
+            -- Multiple targets — nested sub-menu
+            local wireOpt = subMenu:addOption(
+                PhobosLib.safeGetText("UI_POS_Satellite_WireToTerminal"))
+            local chooseMenu = ISContextMenu:getNew(subMenu)
+            subMenu:addSubMenu(wireOpt, chooseMenu)
+
+            for _, t in ipairs(targets) do
+                local reqs = POS_SatelliteService.checkWiringRequirements(player, t.wireCount)
+                local label = PhobosLib.safeGetText("UI_POS_Satellite_TerminalAt",
+                    tostring(t.x), tostring(t.y), tostring(t.wireCount), tostring(t.wireCount))
+                local opt = chooseMenu:addOption(label)
+
+                if not reqs.ok then
+                    opt.notAvailable = true
+                    local tooltip = ISWorldObjectContextMenu.addToolTip()
+                    if reqs.skillTooLow then
+                        tooltip.description = PhobosLib.safeGetText("UI_POS_Satellite_WireLowSkill",
+                            tostring(reqs.skillNeed), tostring(reqs.skillHave))
+                    elseif #reqs.missingTools > 0 then
+                        tooltip.description = PhobosLib.safeGetText("UI_POS_Satellite_WireNoTools")
+                    elseif reqs.missingItems and reqs.missingItems.type then
+                        tooltip.description = PhobosLib.safeGetText("UI_POS_Satellite_WireNotEnough",
+                            tostring(reqs.missingItems.need), tostring(reqs.missingItems.have))
+                    end
+                    opt.toolTip = tooltip
+                else
+                    local tx, ty, tz, wc = t.x, t.y, t.z, t.wireCount
+                    opt.onSelect = function()
+                        ISTimedActionQueue.add(POS_SatelliteWiringAction:new(
+                            player, POS_SatelliteWiringAction.TYPE_WIRE,
+                            sq, tx, ty, tz, wc))
+                    end
+                end
+            end
+        end
+    end
+
+    -- 5. Disconnect Wiring (only when IS wired)
+    if POS_SatelliteService.isWired(sq) then
+        local data = POS_SatelliteService.getWiringData(sq)
+        local returnCount = math.floor((data.wireCount or 0) * POS_Constants.SATELLITE_WIRING_RETURN_PCT / 100)
+        local disconnectOpt = subMenu:addOption(
+            PhobosLib.safeGetText("UI_POS_Satellite_DisconnectWiring"))
+        local tooltip = ISWorldObjectContextMenu.addToolTip()
+        tooltip.description = PhobosLib.safeGetText("UI_POS_Satellite_DisconnectReady",
+            tostring(returnCount))
+        disconnectOpt.toolTip = tooltip
+        disconnectOpt.onSelect = function()
+            ISTimedActionQueue.add(POS_SatelliteWiringAction:new(
+                player, POS_SatelliteWiringAction.TYPE_DISCONNECT, sq))
+        end
+    end
 end
 
 ---------------------------------------------------------------
@@ -214,6 +327,14 @@ function POS_SatelliteContextMenu.showStatus(player, sq)
         player:Say(PhobosLib.safeGetText("UI_POS_Satellite_StatusCalibrated"))
     else
         player:Say(PhobosLib.safeGetText("UI_POS_Satellite_StatusUncalibrated"))
+    end
+
+    -- Wired/wireless link state
+    local wiringData = POS_SatelliteService.getWiringData(sq)
+    if wiringData then
+        player:Say(PhobosLib.safeGetText("UI_POS_Satellite_StatusWired", tostring(wiringData.wireCount)))
+    else
+        player:Say(PhobosLib.safeGetText("UI_POS_Satellite_StatusWireless"))
     end
 
     -- Terminal link

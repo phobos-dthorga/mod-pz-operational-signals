@@ -18,6 +18,7 @@ return {
     schemaVersion = 1,
     id = "strategic_withholding",
     name = "Strategic Withholding",
+    displayNameKey = "UI_POS_MarketEvent_Withholding",
     description = "A supplier deliberately restricts output to drive up prices.",
     signalClass = "structural",
     pressureEffect = 0.35,

@@ -26,6 +26,8 @@
 require "PhobosLib"
 require "POS_Constants"
 require "POS_MarketDatabase"
+require "POS_WorldState"
+require "POS_WatchlistService"
 
 POS_RadioInterception = {}
 
@@ -134,13 +136,32 @@ local function onServerCommand(module, command, args)
         end
 
     elseif command == POS_Constants.CMD_MARKET_SNAPSHOT then
-        -- Server sent market snapshot — update local cache
-        if args and args.data and POS_MarketDatabase then
+        -- SP/authority: data is already in POS_MarketFileStore — skip
+        -- the client cache entirely. Only MP clients need snapshot data.
+        if POS_WorldState and POS_WorldState.isAuthority() then
+            PhobosLib.debug("POS", _TAG, "[RadioInterception] Market snapshot ignored (SP authority)")
+        elseif args and args.data and POS_MarketDatabase then
+            -- MP client: store aggregates only. Observations are too large
+            -- to process during a server command handler without risking
+            -- a JVM crash from bulk table allocation. MP clients access
+            -- observations on-demand via per-screen requests (future).
             for catId, catData in pairs(args.data) do
-                POS_MarketDatabase.updateClientCache(catId, catData)
+                POS_MarketDatabase.updateClientCache(catId, {
+                    observations  = {},
+                    rollingCloses = catData.rollingCloses or {},
+                    aggregate     = catData.aggregate or {},
+                })
+            end
+            PhobosLib.debug("POS", _TAG, "[RadioInterception] Market snapshot received (aggregates + closes)")
+        end
+
+        -- Refresh watchlist snapshots now that fresh price data is available.
+        if getGameTime and getGameTime():getWorldAgeHours() > 0 then
+            local snapshotPlayer = getSpecificPlayer(0)
+            if snapshotPlayer and POS_WatchlistService then
+                PhobosLib.safecall(POS_WatchlistService.refresh, snapshotPlayer)
             end
         end
-        PhobosLib.debug("POS", _TAG, "[RadioInterception] Market snapshot received")
 
     elseif command == POS_Constants.CMD_ECONOMY_TICK_COMPLETE then
         -- Economy day tick completed — request fresh snapshot
@@ -153,6 +174,15 @@ local function onServerCommand(module, command, args)
             sendClientCommand(player, POS_Constants.CMD_MODULE,
                 POS_Constants.CMD_REQUEST_MARKET_SNAPSHOT, {})
         end
+
+        -- SP shortcut: server and client share the same data, so refresh
+        -- the watchlist immediately without waiting for a snapshot response.
+        if POS_WorldState and POS_WorldState.isAuthority() then
+            if player and POS_WatchlistService then
+                PhobosLib.safecall(POS_WatchlistService.refresh, player)
+            end
+        end
+
         PhobosLib.debug("POS", _TAG, "[RadioInterception] Economy tick day="
             .. tostring(args and args.day or "?"))
 
@@ -170,6 +200,14 @@ local function onServerCommand(module, command, args)
             mailboxes.entries = args.entries
         end
     end
+end
+
+--- Public entry point for server-side code to invoke client command
+--- handlers directly in SP (bypassing sendServerCommand).
+--- @param command string Command name (without module prefix)
+--- @param args table|nil Command arguments
+function POS_RadioInterception.handleCommand(command, args)
+    onServerCommand(POS_Constants.CMD_MODULE, command, args)
 end
 
 --- Request a new operation from the server (future use).
@@ -191,14 +229,28 @@ function POS_RadioInterception.init()
     POS_RadioInterception.registerChannels()
     Events.OnServerCommand.Add(onServerCommand)
 
-    -- Request initial market snapshot from server (MP clients only)
-    local player = getSpecificPlayer(0)
-    if player and POS_WorldState and not POS_WorldState.isAuthority() then
-        sendClientCommand(player, POS_Constants.CMD_MODULE,
-            POS_Constants.CMD_REQUEST_MARKET_SNAPSHOT, {})
-    end
+    -- Initial market snapshot request deferred to first EveryOneMinute tick.
+    -- Requesting at frame 0 triggers synchronous data exchange during init
+    -- when the engine is already under heavy load from ~200 mods booting.
 
     PhobosLib.debug("POS", _TAG, "Radio interception initialised")
 end
 
-Events.OnGameStart.Add(POS_RadioInterception.init)
+--- Deferred initial market snapshot request (MP clients only).
+--- Runs once on the first EveryOneMinute tick after game start.
+local snapshotRequested = false
+local function onDeferredSnapshotRequest()
+    if snapshotRequested then return end
+    snapshotRequested = true
+    local player = getSpecificPlayer(0)
+    if player and POS_WorldState and not POS_WorldState.isAuthority() then
+        sendClientCommand(player, POS_Constants.CMD_MODULE,
+            POS_Constants.CMD_REQUEST_MARKET_SNAPSHOT, {})
+        PhobosLib.debug("POS", _TAG, "Deferred market snapshot requested")
+    end
+end
+
+Events.OnGameStart.Add(function()
+    POS_RadioInterception.init()
+    Events.EveryOneMinute.Add(onDeferredSnapshotRequest)
+end)

@@ -35,14 +35,17 @@ POS_TerminalWidgets = {}
 -- Colour palette (delegated to POS_TerminalTheme)
 ---------------------------------------------------------------
 POS_TerminalWidgets.COLOURS = POS_TerminalTheme and POS_TerminalTheme.getColours() or {
-    text   = { r = 0.33, g = 1.00, b = 0.33, a = 1.0 },
-    dim    = { r = 0.20, g = 0.60, b = 0.20, a = 1.0 },
-    header = { r = 0.50, g = 1.00, b = 0.50, a = 1.0 },
-    border = { r = 0.15, g = 0.50, b = 0.15, a = 1.0 },
-    bg     = { r = 0.00, g = 0.05, b = 0.00, a = 0.95 },
-    warn   = { r = 1.00, g = 0.80, b = 0.20, a = 1.0 },
-    error  = { r = 1.00, g = 0.30, b = 0.30, a = 1.0 },
-    success = { r = 0.20, g = 0.90, b = 0.50, a = 1.0 },
+    text       = { r = 0.33, g = 1.00, b = 0.33, a = 1.0 },
+    textBright = { r = 0.30, g = 1.00, b = 0.30, a = 1.0 },
+    dim        = { r = 0.20, g = 0.60, b = 0.20, a = 1.0 },
+    header     = { r = 0.50, g = 1.00, b = 0.50, a = 1.0 },
+    border     = { r = 0.15, g = 0.50, b = 0.15, a = 1.0 },
+    bg         = { r = 0.00, g = 0.05, b = 0.00, a = 0.95 },
+    bgDark     = { r = 0.04, g = 0.04, b = 0.04, a = 0.8 },
+    bgHover    = { r = 0.12, g = 0.12, b = 0.12, a = 0.8 },
+    warn       = { r = 1.00, g = 0.80, b = 0.20, a = 1.0 },
+    error      = { r = 1.00, g = 0.30, b = 0.30, a = 1.0 },
+    success    = { r = 0.20, g = 0.90, b = 0.50, a = 1.0 },
 }
 
 function POS_TerminalWidgets.resetColours()

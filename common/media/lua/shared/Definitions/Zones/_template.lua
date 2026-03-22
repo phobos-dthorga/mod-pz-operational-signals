@@ -36,6 +36,9 @@ return {
     -- Display name shown in the terminal UI
     name = "My Custom Zone",
 
+    -- Translation key for the display name (used for i18n lookup in getText())
+    displayNameKey = "UI_POS_Zone_YourZone",
+
     -- Short description of the zone's character and trade environment
     description = "A brief description of this zone.",
 

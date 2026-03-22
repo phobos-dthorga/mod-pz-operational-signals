@@ -372,6 +372,15 @@ local function indexItem(record)
 end
 
 ---------------------------------------------------------------
+-- Lazy bootstrap — deferred to first access instead of OnGameStart.
+-- Iterating all base items (~2000+) is the most expensive single
+-- operation in POSnet's init; deferring it moves the cost from
+-- frame 0 to first market terminal open or mission generation.
+---------------------------------------------------------------
+
+local ensureInit  -- forward declaration; assigned after init() below
+
+---------------------------------------------------------------
 -- Public API
 ---------------------------------------------------------------
 
@@ -432,6 +441,7 @@ end
 --- @param categoryId string
 --- @return table[]
 function POS_ItemPool.getItemsForCategory(categoryId)
+    ensureInit()
     return pool[categoryId] or {}
 end
 
@@ -439,6 +449,7 @@ end
 --- @param subCategoryId string
 --- @return table[]
 function POS_ItemPool.getItemsForSubCategory(subCategoryId)
+    ensureInit()
     return subPool[subCategoryId] or {}
 end
 
@@ -449,6 +460,7 @@ end
 --- @param ctx table|nil  Optional context (unused currently, reserved for future filtering)
 --- @return table[]
 function POS_ItemPool.selectItems(categoryId, count, ctx)
+    ensureInit()
     local items = pool[categoryId]
     if not items or #items == 0 then return {} end
 
@@ -518,6 +530,7 @@ end
 --- @param fullType string
 --- @return number|nil
 function POS_ItemPool.getBasePrice(fullType)
+    ensureInit()
     local record = itemIndex[fullType]
     return record and record.basePrice or nil
 end
@@ -528,6 +541,7 @@ end
 --- @param categoryId string
 --- @param basePrice number
 function POS_ItemPool.registerItem(fullType, categoryId, basePrice)
+    ensureInit()
     local existing = itemIndex[fullType]
     if existing then
         -- Remove from old pools before re-indexing
@@ -579,12 +593,9 @@ end
 --- @param fullType string
 --- @return string|nil
 function POS_ItemPool.getCategoryForItem(fullType)
+    ensureInit()
     local record = itemIndex[fullType]
     return record and record.commodityCategory or nil
 end
 
----------------------------------------------------------------
--- Bootstrap
----------------------------------------------------------------
-
-Events.OnGameStart.Add(POS_ItemPool.init)
+ensureInit = PhobosLib.lazyInit(POS_ItemPool.init)

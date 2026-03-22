@@ -49,6 +49,10 @@ function POS_WorldState.getMarketZones()
     return ModData.getOrCreate(POS_Constants.WMD_MARKET_ZONES)
 end
 
+function POS_WorldState.getRumours()
+    return ModData.getOrCreate(POS_Constants.WMD_RUMOURS)
+end
+
 function POS_WorldState.getMeta()
     return ModData.getOrCreate(POS_Constants.WMD_META)
 end
@@ -71,11 +75,12 @@ function POS_WorldState.getWorldDay()
 end
 
 function POS_WorldState.isAuthority()
-    -- Returns true in SP (server+client) and on dedicated/listen server
-    -- Returns false on MP clients
-    if isServer then return isServer() end
-    if isClient then return not isClient() end
-    return true  -- SP fallback
+    -- Returns true in SP (server+client) and on dedicated/listen server.
+    -- Returns false on MP clients only.
+    -- NOTE: in SP, both isServer() and isClient() return false.
+    -- A pure MP client has isClient() == true.
+    if isClient and isClient() then return false end
+    return true
 end
 
 function POS_WorldState.getWorldSeed()
@@ -225,6 +230,7 @@ function POS_WorldState.bootstrap()
     meta.buildingScanDone = meta.buildingScanDone or false
     meta.mailboxScanDone = meta.mailboxScanDone or false
     meta.migrated = meta.migrated or false
+    meta.marketSchemaVersion = meta.marketSchemaVersion or POS_Constants.MARKET_SCHEMA_VERSION
 
     -- World seed (deterministic per-world, set once)
     if not meta.worldSeed or meta.worldSeed == 0 then
@@ -248,6 +254,10 @@ function POS_WorldState.bootstrap()
     -- Ensure market zones container
     local zones = POS_WorldState.getMarketZones()
     zones.entries = zones.entries or {}
+
+    -- Ensure rumours container
+    local rumours = POS_WorldState.getRumours()
+    rumours.entries = rumours.entries or {}
 
     -- Ensure building/mailbox containers
     local buildings = POS_WorldState.getBuildings()

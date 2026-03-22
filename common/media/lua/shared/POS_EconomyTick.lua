@@ -29,6 +29,7 @@ require "POS_MarketDatabase"
 require "POS_MarketFileStore"
 require "POS_BasisPoints"
 require "POS_EventLog"
+require "POS_MarketSimulation"
 
 POS_EconomyTick = {}
 
@@ -44,8 +45,19 @@ function POS_EconomyTick.processDayTick()
     local meta = POS_WorldState.getMeta()
     local currentDay = POS_WorldState.getWorldDay()
 
-    -- Already processed today?
-    if meta.lastProcessedDay and meta.lastProcessedDay >= currentDay then return end
+    -- Use monotonic world-age hours (integer, always increases)
+    -- Pattern proven by DynamicTrading — immune to float precision issues
+    local gt = getGameTime and getGameTime()
+    if not gt then return end
+    local currentHour = math.floor(gt:getWorldAgeHours())
+
+    -- Check interval (default 24h, sandbox-configurable)
+    local intervalHours = POS_Sandbox and POS_Sandbox.getEconomyTickIntervalHours
+        and POS_Sandbox.getEconomyTickIntervalHours()
+        or POS_Constants.ECONOMY_TICK_INTERVAL_HOURS_DEFAULT
+    local lastTickHour = meta.lastProcessedHour or 0
+
+    if (currentHour - lastTickHour) < intervalHours then return end
 
     -- Check sandbox toggle
     if POS_Sandbox and POS_Sandbox.getEconomyTickEnabled
@@ -106,35 +118,35 @@ function POS_EconomyTick.processDayTick()
         POS_SatelliteService.checkDecalibration()
     end
 
-    -- Phase 5.75: Living Market simulation tick (scaffolded, not yet active)
-    -- if POS_Sandbox and POS_Sandbox.isLivingMarketEnabled
-    --         and POS_Sandbox.isLivingMarketEnabled() then
-    --     if POS_MarketSimulation and POS_MarketSimulation.tickSimulation then
-    --         POS_MarketSimulation.tickSimulation(currentDay)
-    --     end
-    -- end
+    -- Phase 5.75: Living Market simulation tick
+    if POS_Sandbox and POS_Sandbox.isLivingMarketEnabled
+            and POS_Sandbox.isLivingMarketEnabled() then
+        if POS_MarketSimulation and POS_MarketSimulation.tickSimulation then
+            PhobosLib.safecall(POS_MarketSimulation.tickSimulation, currentDay)
+        end
+    end
 
-    -- Phase 6: Mark day processed
+    -- Phase 6: Mark tick processed
     meta.lastProcessedDay = currentDay
+    meta.lastProcessedHour = currentHour
 
-    -- Phase 6.5: Persist market data to external file
-    if POS_MarketFileStore and POS_MarketFileStore.save then
+    -- Phase 6.5: Begin chunked persist of market data to external file.
+    -- The write is spread across subsequent EveryOneMinute ticks via
+    -- POS_MarketFileStore.tickChunkedSave() (called from onEveryOneMinute).
+    if POS_MarketFileStore and POS_MarketFileStore.startChunkedSave then
+        POS_MarketFileStore.startChunkedSave()
+    elseif POS_MarketFileStore and POS_MarketFileStore.save then
         POS_MarketFileStore.save()
     end
 
-    -- Phase 7: Notify clients
+    -- Phase 7: Notify clients via SP-safe broadcastToAll.
+    -- In SP, broadcastToAll invokes the client handler directly
+    -- instead of sendServerCommand (which crashes the JVM during init).
     if POS_BroadcastSystem and POS_BroadcastSystem.broadcastToAll then
         POS_BroadcastSystem.broadcastToAll(
             POS_Constants.CMD_MODULE,
             POS_Constants.CMD_ECONOMY_TICK_COMPLETE,
             { day = currentDay })
-    else
-        -- Fallback: send to local player (SP)
-        local player = getSpecificPlayer(0)
-        if player then
-            sendServerCommand(player, POS_Constants.CMD_MODULE,
-                POS_Constants.CMD_ECONOMY_TICK_COMPLETE, { day = currentDay })
-        end
     end
 
     PhobosLib.debug("POS", _TAG, "[EconomyTick] Day " .. tostring(currentDay) .. " complete")
@@ -264,6 +276,12 @@ end
 
 function POS_EconomyTick.onEveryOneMinute()
     POS_EconomyTick.processDayTick()
+
+    -- Drain chunked file store writes (started by Phase 6.5 above)
+    if POS_MarketFileStore and POS_MarketFileStore.isChunkedSaveInProgress
+            and POS_MarketFileStore.isChunkedSaveInProgress() then
+        POS_MarketFileStore.tickChunkedSave()
+    end
 end
 
 Events.EveryOneMinute.Add(POS_EconomyTick.onEveryOneMinute)

@@ -40,9 +40,26 @@ local ROOM_ENTRY_THRESHOLD = 100
 --- Tick counter.
 local tickCounter = 0
 
+--- Cached active recon operation (avoids scanning the full operation log
+--- ~120 times per minute when no recon is active).
+local cachedRecon = nil
+local cacheValid = false
+
+--- Invalidate the cached recon — call on operation status changes.
+function POS_ReconScanner.invalidateCache()
+    cacheValid = false
+    cachedRecon = nil
+end
+
 --- Find the active recon operation with entered=true, photographed=false.
+--- Uses a module-level cache; only scans the operation log when invalidated.
 ---@return table|nil The active recon operation, or nil
 local function getPhotoReadyRecon()
+    if cacheValid then return cachedRecon end
+
+    cacheValid = true
+    cachedRecon = nil
+
     if not POS_OperationLog then return nil end
     local ops = POS_OperationLog.getByStatus(POS_Constants.STATUS_ACTIVE)
     for _, op in ipairs(ops) do
@@ -50,6 +67,7 @@ local function getPhotoReadyRecon()
            and op.objectives[1].type == POS_Constants.MISSION_TYPE_RECON
            and op.objectives[1].entered
            and not op.objectives[1].photographed then
+            cachedRecon = op
             return op
         end
     end
@@ -141,6 +159,7 @@ local function onTick()
     -- Take photograph
     pushPhotograph(player, recon.id)
     obj.photographed = true
+    POS_ReconScanner.invalidateCache()
 
     -- Notify player
     player:Say(POS_TerminalWidgets.safeGetText("UI_POS_Ops_PhotoCaptured"))

@@ -160,7 +160,7 @@ function POS_MarketFileStore.load()
                 currentCatId = catId
                 currentSection = nil
                 if not cache[catId] then
-                    cache[catId] = { observations = {}, rollingCloses = {} }
+                    cache[catId] = { observations = {}, rollingCloses = {}, aggregate = {} }
                 end
                 loadedCats = loadedCats + 1
             end
@@ -260,7 +260,7 @@ end
 ---@return table
 function POS_MarketFileStore.getCategory(catId)
     if not cache[catId] then
-        cache[catId] = { observations = {}, rollingCloses = {} }
+        cache[catId] = { observations = {}, rollingCloses = {}, aggregate = {} }
     end
     return cache[catId]
 end
@@ -287,4 +287,78 @@ function POS_MarketFileStore.clearCache()
     cache = {}
     dirty = false
     PhobosLib.debug("POS", _TAG, "Session cache cleared")
+end
+
+---------------------------------------------------------------
+-- Chunked (staggered) save via PhobosLib_ChunkedWriter.
+-- Spreads file I/O across multiple EveryOneMinute ticks.
+---------------------------------------------------------------
+
+--- Serialize one category to an array of lines for the chunked writer.
+---@param catId string  Category ID (key from cache)
+---@param catData table  { observations, rollingCloses }
+---@return string[]     Lines to write for this category
+local function serializeCategory(catId, catData)
+    local lines = {}
+
+    -- Category header
+    lines[#lines + 1] = POS_Constants.MARKET_FILE_SECTION_PREFIX
+        .. catId .. POS_Constants.MARKET_FILE_SECTION_SUFFIX
+
+    -- Observations section
+    lines[#lines + 1] = POS_Constants.MARKET_FILE_OBS_HEADER
+    if catData.observations then
+        for _, obs in ipairs(catData.observations) do
+            lines[#lines + 1] = serializeObservation(obs)
+        end
+    end
+
+    -- Rolling closes section
+    lines[#lines + 1] = POS_Constants.MARKET_FILE_CLOSES_HEADER
+    if catData.rollingCloses and #catData.rollingCloses > 0 then
+        local nums = {}
+        for _, v in ipairs(catData.rollingCloses) do
+            nums[#nums + 1] = string.format("%.2f", v)
+        end
+        lines[#lines + 1] = table.concat(nums, SEP)
+    end
+
+    return lines
+end
+
+--- Chunk size is read from sandbox on first use (lazy).
+local function getChunkSize()
+    if POS_Sandbox and POS_Sandbox.getMarketFileChunkSize then
+        return POS_Sandbox.getMarketFileChunkSize()
+    end
+    return POS_Constants.MARKET_FILE_CHUNK_SIZE
+end
+
+--- PhobosLib-backed chunked writer instance.
+local _writer = PhobosLib.createChunkedWriter({
+    filePath    = POS_Constants.MARKET_DATA_FILE,
+    chunkSize   = getChunkSize(),
+    onSerialize = serializeCategory,
+    onComplete  = function() dirty = false end,
+})
+
+--- Begin a chunked save. Subsequent tickChunkedSave() calls drain the queue.
+---@return boolean true if a chunked save was started
+function POS_MarketFileStore.startChunkedSave()
+    if not dirty then return false end
+    -- Update chunk size from sandbox in case it changed
+    _writer._opts.chunkSize = getChunkSize()
+    return PhobosLib.startChunkedWrite(_writer, cache)
+end
+
+--- Process the next chunk. Call once per EveryOneMinute tick.
+---@return boolean true if the chunked save is now complete
+function POS_MarketFileStore.tickChunkedSave()
+    return PhobosLib.tickChunkedWrite(_writer)
+end
+
+--- Whether a chunked save is currently in progress.
+---@return boolean
+function POS_MarketFileStore.isChunkedSaveInProgress()
+    return PhobosLib.isChunkedWriteActive(_writer)
 end

@@ -50,7 +50,8 @@ end
 
 --- Get all commodity categories and a display location for the
 --- player's current room. Uses PhobosLib.getPlayerRoomName() for
---- correct IRoomDef resolution (not IsoRoom:getName()).
+--- correct IRoomDef resolution (not IsoRoom:getName()) and
+--- PhobosLib.formatPlayerLocation() for combined address + room format.
 ---@return string[] categories, string location
 local function getRoomCategoriesAndLocation(player)
     local roomName = PhobosLib.getPlayerRoomName(player)
@@ -59,15 +60,8 @@ local function getRoomCategoriesAndLocation(player)
     local categories = POS_RoomCategoryMap.getCategories(roomName)
     if #categories == 0 then return {}, nil end
 
-    -- Resolve a human-readable address if PhobosLib_Address is available
-    local location = roomName
-    local sq = player:getSquare()
-    if sq and PhobosLib_Address and PhobosLib_Address.resolveAddress then
-        local addr = PhobosLib_Address.resolveAddress(sq:getX(), sq:getY())
-        if addr and addr.street then
-            location = PhobosLib_Address.formatAddress(addr)
-        end
-    end
+    local location = PhobosLib.formatPlayerLocation(player,
+        { fallback = PhobosLib.safeGetText("UI_POS_Market_Unknown") })
     return categories, location
 end
 

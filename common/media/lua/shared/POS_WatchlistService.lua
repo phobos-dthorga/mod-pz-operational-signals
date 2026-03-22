@@ -107,6 +107,8 @@ function POS_WatchlistService.fireNotifications(player, alerts)
 end
 
 --- Convenience: check and fire in one call.
+--- Refresh watchlist alerts. Snapshot mutations persist automatically
+--- via player modData (engine-managed, no manual save needed).
 --- @param player IsoPlayer
 function POS_WatchlistService.refresh(player)
     local alerts = POS_WatchlistService.checkForAlerts(player)

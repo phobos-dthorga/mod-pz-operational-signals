@@ -37,7 +37,7 @@ function POS_ContextPanel.render(contextPanel, terminal)
     if not screen or not screen.getContextData then return end
 
     local data = nil
-    local ok, result = pcall(screen.getContextData, POS_ScreenManager.currentParams)
+    local ok, result = PhobosLib.safecall(screen.getContextData, POS_ScreenManager.currentParams)
     if ok then data = result end
     if not data or #data == 0 then return end
 

@@ -254,7 +254,12 @@ local function onPassiveMailboxScan()
     end
 end
 
-Events.EveryOneMinute.Add(onPassiveMailboxScan)
+-- Throttle passive scans to every 5 game-minutes (was every 1 minute).
+-- Buildings and mailboxes do not appear/disappear frequently; the reduced
+-- frequency saves ~80% of findWorldObjectsBySprite() calls per session.
+local PASSIVE_SCAN_INTERVAL_MINUTES = 5
+
+Events.EveryOneMinute.Add(PhobosLib.throttle(onPassiveMailboxScan, PASSIVE_SCAN_INTERVAL_MINUTES))
 
 --- Also passively scan for buildings with recon-relevant rooms.
 local function onPassiveBuildingScan()
@@ -263,11 +268,15 @@ local function onPassiveBuildingScan()
     end
 end
 
-Events.EveryOneMinute.Add(onPassiveBuildingScan)
+Events.EveryOneMinute.Add(PhobosLib.throttle(onPassiveBuildingScan, PASSIVE_SCAN_INTERVAL_MINUTES))
 
---- One-time retroactive scan on first mod load.
---- Catches buildings and mailboxes the player has already explored.
-local function onInitialScan()
+--- One-time retroactive scan — deferred to first EveryOneMinute tick
+--- instead of OnGameStart. The 250-tile radius scan is too expensive
+--- to run at frame 0 alongside ~200 other mods booting simultaneously.
+local initialScanDone = false
+local function onDeferredInitialScan()
+    if initialScanDone then return end
+    initialScanDone = true
     if POS_BuildingCache and POS_BuildingCache.initialScan then
         POS_BuildingCache.initialScan()
     end
@@ -276,4 +285,4 @@ local function onInitialScan()
     end
 end
 
-Events.OnGameStart.Add(onInitialScan)
+Events.EveryOneMinute.Add(onDeferredInitialScan)

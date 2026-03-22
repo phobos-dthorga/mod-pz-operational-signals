@@ -192,5 +192,20 @@ function POS_MarketNoteGenerator.createReadableDocument(note, categoryId, locati
     pageLines[#pageLines + 1] = PhobosLib.safeGetText("UI_POS_Note_UploadInstructions")
 
     local pageText = table.concat(pageLines, "\n")
-    PhobosLib.createReadableDocument(note, PhobosLib.safeGetText("UI_POS_Note_Title") .. ": " .. catLabel, { pageText })
+
+    -- Page 1: field-notes template for player annotation
+    local fieldLines = {}
+    fieldLines[#fieldLines + 1] = "[" .. PhobosLib.safeGetText("UI_POS_Note_FieldNotesHeader")
+        .. " — Day " .. tostring(getGameTime():getNightsSurvived()) .. "]"
+    fieldLines[#fieldLines + 1] = PhobosLib.safeGetText("UI_POS_Note_Category") .. ": " .. catLabel
+    fieldLines[#fieldLines + 1] = PhobosLib.safeGetText("UI_POS_Note_Location") .. ": "
+        .. PhobosLib.titleCase(location or PhobosLib.safeGetText("UI_POS_Market_Unknown"))
+    fieldLines[#fieldLines + 1] = ""
+    fieldLines[#fieldLines + 1] = PhobosLib.safeGetText("UI_POS_Note_ObservationsPrompt") .. ":"
+    fieldLines[#fieldLines + 1] = "_______________________"
+    local fieldText = table.concat(fieldLines, "\n")
+
+    PhobosLib.createReadableDocument(note,
+        PhobosLib.safeGetText("UI_POS_Note_Title") .. ": " .. catLabel,
+        { pageText, fieldText })
 end

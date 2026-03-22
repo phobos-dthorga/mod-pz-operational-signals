@@ -18,6 +18,7 @@ return {
     schemaVersion = 1,
     id = "convoy_delay",
     name = "Convoy Delay",
+    displayNameKey = "UI_POS_MarketEvent_ConvoyDelay",
     description = "Expected shipment delayed, creating temporary scarcity.",
     signalClass = "soft",
     pressureEffect = 0.2,

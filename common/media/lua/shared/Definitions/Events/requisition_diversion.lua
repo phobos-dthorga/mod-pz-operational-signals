@@ -18,6 +18,7 @@ return {
     schemaVersion = 1,
     id = "requisition_diversion",
     name = "Requisition / Diversion",
+    displayNameKey = "UI_POS_MarketEvent_Requisition",
     description = "Military or authority redirects civilian supplies for their own use.",
     signalClass = "hard",
     pressureEffect = 0.5,

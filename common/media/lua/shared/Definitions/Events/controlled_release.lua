@@ -18,6 +18,7 @@ return {
     schemaVersion = 1,
     id = "controlled_release",
     name = "Controlled Release",
+    displayNameKey = "UI_POS_MarketEvent_ControlledRelease",
     description = "A wholesaler strategically releases stockpiled goods.",
     signalClass = "structural",
     pressureEffect = -0.2,

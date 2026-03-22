@@ -98,30 +98,46 @@ end
 
 function screen.create(contentPanel, _params, _terminal)
     local _TAG = "[POS:IntelSummary]"
+    PhobosLib.debug("POS", "[POS:IntelSummary]", "create() START")
     local ok, err = PhobosLib.safecall(function()
+        PhobosLib.debug("POS", "[POS:IntelSummary]", "A: inside safecall")
         local W = POS_TerminalWidgets
         local C = W.COLOURS
+        PhobosLib.debug("POS", "[POS:IntelSummary]", "B: initLayout")
         local ctx = W.initLayout(contentPanel)
-
-        -- Header
+        PhobosLib.debug("POS", "[POS:IntelSummary]", "C: drawHeader")
         W.drawHeader(ctx, "UI_POS_IntelSummary_Title")
-
+        PhobosLib.debug("POS", "[POS:IntelSummary]", "D: getSpecificPlayer")
         local player = getSpecificPlayer(0)
-
+        PhobosLib.debug("POS", "[POS:IntelSummary]", "E: gatherCategorySummaries")
         local summOk, summaries = PhobosLib.safecall(gatherCategorySummaries)
         if not summOk then summaries = {} end
         summaries = summaries or {}
-
+        PhobosLib.debug("POS", "[POS:IntelSummary]", "F: summaries=" .. tostring(#summaries))
         local catOk, visibleCats = PhobosLib.safecall(
             POS_MarketRegistry.getVisibleCategories, {})
         local totalCategories = (catOk and visibleCats) and #visibleCats or 0
-
-        -- If no data at all, show empty state
+        PhobosLib.debug("POS", "[POS:IntelSummary]", "G: totalCategories=" .. tostring(totalCategories))
+        -- Dump first summary for diagnosis
+        if #summaries > 0 then
+            local s1 = summaries[1]
+            PhobosLib.debug("POS", "[POS:IntelSummary]", "G2: first summary cat=" .. tostring(s1.categoryId)
+                .. " avg=" .. tostring(s1.avgPrice)
+                .. " low=" .. tostring(s1.lowPrice)
+                .. " high=" .. tostring(s1.highPrice)
+                .. " fresh=" .. tostring(s1.freshnessKey)
+                .. " conf=" .. tostring(s1.confidenceKey)
+                .. " trend=" .. tostring(s1.trendKey)
+                .. " trendPct=" .. tostring(s1.trendPct))
+        end
         if #summaries == 0 then
+            PhobosLib.debug("POS", "[POS:IntelSummary]", "H: no data, showing empty state")
             W.createLabel(ctx.panel, 8, ctx.y,
                 W.safeGetText("UI_POS_IntelSummary_NoData"), C.dim)
             ctx.y = ctx.y + ctx.lineH * 2
+            PhobosLib.debug("POS", "[POS:IntelSummary]", "I: drawFooter")
             W.drawFooter(ctx)
+            PhobosLib.debug("POS", "[POS:IntelSummary]", "J: returning from no-data path")
             return
         end
 

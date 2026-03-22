@@ -1304,6 +1304,16 @@ option POS.SatelliteDecalibrationDays
     translation = POS_SatelliteDecalibrationDays,
 }
 
+option POS.SatelliteWiringMaxRange
+{
+    type = integer,
+    default = 100,
+    min = 20,
+    max = 300,
+    page = POS_Sandbox,
+    translation = POS_SatelliteWiringMaxRange,
+}
+
 option POS.EnableTutorialHints
 {
     type = boolean,
@@ -1328,4 +1338,24 @@ option POS.SimulationTickInterval
     max = 120,
     page = POS_Sandbox,
     translation = POS_SimulationTickInterval,
+}
+
+option POS.EconomyTickIntervalHours
+{
+    type = integer,
+    default = 24,
+    min = 1,
+    max = 24,
+    page = POS_Sandbox,
+    translation = POS_EconomyTickIntervalHours,
+}
+
+option POS.MarketFileChunkSize
+{
+    type = integer,
+    default = 4,
+    min = 1,
+    max = 20,
+    page = POS_Sandbox,
+    translation = POS_MarketFileChunkSize,
 }

@@ -302,21 +302,7 @@ function POS_MediaManager.findUsableMedia(player)
     local inv = player:getInventory()
     if not inv then return nil end
 
-    -- Priority order: floppy (digital) > microcassette (high) > VHS (standard, best first)
-    local searchOrder = {
-        POS_Constants.ITEM_BLANK_FLOPPY_DISK,
-        POS_Constants.ITEM_RECORDED_FLOPPY_DISK,
-        POS_Constants.ITEM_WORN_FLOPPY_DISK,
-        POS_Constants.ITEM_MICROCASSETTE,
-        POS_Constants.ITEM_RECORDED_MICROCASSETTE,
-        POS_Constants.ITEM_REWOUND_MICROCASSETTE,
-        POS_Constants.ITEM_BLANK_VHS_TAPE,
-        POS_Constants.ITEM_REFURBISHED_TAPE,
-        POS_Constants.ITEM_SPLICED_TAPE,
-        POS_Constants.ITEM_IMPROVISED_TAPE,
-    }
-
-    for _, ft in ipairs(searchOrder) do
+    for _, ft in ipairs(POS_Constants.USABLE_MEDIA_SEARCH_ORDER) do
         if POS_MediaManager.isUsableMedia({ getFullType = function() return ft end }) then
             local items = inv:getItemsFromFullType(ft)
             if items then

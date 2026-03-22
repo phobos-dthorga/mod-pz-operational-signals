@@ -153,7 +153,7 @@ function screen.create(contentPanel, _params, _terminal)
         else
             status = W.safeGetText("UI_POS_Delivery_Status_InTransit")
         end
-        W.createLabel(ctx.panel, 8, ctx.y, "  Status: " .. status, C.text)
+        W.createLabel(ctx.panel, 8, ctx.y, "  " .. W.safeGetText("UI_POS_Delivery_StatusLabel") .. ": " .. status, C.text)
         ctx.y = ctx.y + ctx.lineH
 
         -- Item

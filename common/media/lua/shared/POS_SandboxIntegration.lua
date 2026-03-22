@@ -705,6 +705,11 @@ function POS_Sandbox.getSatelliteDecalibrationDays()
         POS_Constants.SATELLITE_DECALIBRATION_DAYS)
 end
 
+function POS_Sandbox.getSatelliteWiringMaxRange()
+    return PhobosLib.getSandboxVar("POS", "SatelliteWiringMaxRange",
+        POS_Constants.SATELLITE_WIRING_MAX_RANGE_DEFAULT)
+end
+
 ---------------------------------------------------------------
 -- Tutorial
 ---------------------------------------------------------------
@@ -724,4 +729,14 @@ end
 function POS_Sandbox.getSimulationTickInterval()
     return PhobosLib.getSandboxVar("POS", "SimulationTickInterval",
         POS_Constants.SIMULATION_TICK_INTERVAL_DEFAULT)
+end
+
+function POS_Sandbox.getEconomyTickIntervalHours()
+    return PhobosLib.getSandboxVar("POS", "EconomyTickIntervalHours",
+        POS_Constants.ECONOMY_TICK_INTERVAL_HOURS_DEFAULT)
+end
+
+function POS_Sandbox.getMarketFileChunkSize()
+    return PhobosLib.getSandboxVar("POS", "MarketFileChunkSize",
+        POS_Constants.MARKET_FILE_CHUNK_SIZE)
 end

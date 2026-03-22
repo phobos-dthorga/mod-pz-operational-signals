@@ -197,7 +197,7 @@ function POS_MarketDatabase.getSummary(categoryId)
         trend = "unknown",
     }
 
-    if #records == 0 then return summary end
+    if #records == 0 then return nil end
 
     local weightedTotal = 0
     local totalWeight = 0

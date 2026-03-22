@@ -240,9 +240,13 @@ cost to terminal usage and giving the shutdown action meaningful purpose.
   handle grid vs generator detection automatically.
 - **Power failure**: Terminal auto-closes with `PhobosLib.say()` message
   when power is lost mid-session (generator empty or turned off).
-- **Connection gate**: `POS_ConnectionManager.canConnect()` checks
-  `square:haveElectricity()` at the desktop computer location. No power
-  = greyed-out context menu option with clear reason text.
+- **Connection gate**: `POS_ConnectionManager.canConnect()` checks power
+  at the desktop computer location via `PhobosLib.hasPower(square)`. No
+  power = greyed-out context menu option with clear reason text.
+- **Power detection**: All wall-power checks (radio and desktop) use
+  `PhobosLib.hasPower(square)` which covers grid power, generators, and
+  any custom power sources registered by other mods. Do NOT call
+  `square:haveElectricity()` directly.
 - **Portable computers**: Use item condition drain (separate system,
   unchanged). Not affected by generator power.
 - **Cross-mod drain detection**: Drain rate stored on square modData
@@ -259,6 +263,36 @@ Radio signal strength should influence mission generation parameters:
 - Signal quality affects the "clarity" of mission briefings
 - Gated by `SignalAffectsMissionRange` sandbox toggle (placeholder, not yet wired)
 
+### 5.6 Satellite Wiring Connection
+
+The satellite dish can be physically wired to a desktop terminal using `Base.ElectricWire`. This replaces the wireless 50-tile range scan with a persistent wired link stored in world modData.
+
+**Wire cost formula:**
+```
+wireCount = |dx| + |dy| + (|dz| × SATELLITE_WIRING_Z_PENALTY)
+```
+Where `SATELLITE_WIRING_Z_PENALTY = 5` (extra wires per floor difference).
+
+**Requirements:**
+- `Base.Screwdriver` and `Base.Pliers` in inventory (not consumed)
+- Electrical skill ≥ `SATELLITE_WIRING_MIN_ELECTRICAL` (default 2)
+- Sufficient `Base.ElectricWire` in inventory (consumed on wire)
+
+**Storage:** Flat keys in `ModData.getOrCreate("POS_Satellite")` keyed by satellite building key. Schema: `targetX`, `targetY`, `targetZ`, `wireCount`, `createdDay`, `linkType`.
+
+**Validation:** `hasTerminalLink()` checks wired link first (Priority 1), then falls back to wireless scan (Priority 2). Stale wiring (desktop removed) is auto-cleared. Unloaded chunks are treated as valid to avoid false negatives.
+
+**Disconnect:** Returns `SATELLITE_WIRING_RETURN_PCT` (75%) of wires rounded down.
+
+**Timed action:** Duration scales with wire count (`SATELLITE_WIRING_TIME_PER_TILE` × wireCount, clamped to `TIME_MIN`–`TIME_MAX`).
+
+**Anti-patterns:**
+- ❌ Checking `hasTerminalLink` without considering wired links
+- ❌ Using magic numbers for wire cost — always use `PhobosLib.manhattanDistance` with `SATELLITE_WIRING_Z_PENALTY`
+- ❌ Storing wiring data as nested tables in modData — use flat keys with prefix
+
+**Implementation references:** `POS_SatelliteService.lua` (wiring CRUD, validation), `POS_SatelliteWiringAction.lua` (timed action), `POS_SatelliteContextMenu.lua` (menu options).
+
 ---
 
 ## 6. Location Display
@@ -269,6 +303,12 @@ All mission locations must be displayed as human-readable street addresses
 using `PhobosLib_Address.resolveAddress()`. Raw coordinates are the
 fallback if street resolution fails (e.g. modded maps without
 `streets.xml`).
+
+For **player-facing location strings** that combine street address and room
+name (e.g. "Rosewood Ave (Kitchen)"), use
+`PhobosLib.formatPlayerLocation(player, opts)` instead of manually
+assembling address + room. It handles the full format priority chain
+(street name, room name fallback, title-casing) in a single call.
 
 ### 6.2 Show on Map
 
@@ -737,17 +777,71 @@ When multiple context-menu actions exist on a single inventory object, they
 context menu. This applies to all POSnet items — existing and new.
 
 Examples:
-- **Data-Recorder** → "Data-Recorder" sub-menu containing: Insert Media,
-  Eject Media, View Status
+- **Data-Recorder** → "Data-Recorder" sub-menu containing: Media Management
+  (nested), View Recorder Status
 - **Source devices** (camcorder, logger, radio) → "POSnet" sub-menu
   containing: Record Using Data-Recorder
 - Any future item with 2+ POSnet context actions must follow this pattern
+
+Full Data-Recorder hierarchy:
+
+```
+Data-Recorder (L1)
+  ├── Media Management (L2)
+  │    ├── Insert Media > (L3, family-grouped)
+  │    ├── Eject Media
+  │    ├── Auto-Feed [ON/OFF]
+  │    ├── Flush Buffer → Media
+  │    └── View Media Status
+  └── View Recorder Status
+```
+
+The Media Management sub-menu groups all media-related operations at L2,
+with Insert Media expanding to an L3 family-grouped list of compatible media
+items. This keeps the top-level Data-Recorder sub-menu clean (two entries)
+while providing full media control one level deeper.
 
 ### 10.2 Nested Sub-Menus
 
 When a sub-menu action itself has multiple choices (e.g., "Insert Media"
 with multiple compatible media items), use a nested sub-menu. Maximum
 nesting depth: 2 levels (top → sub-menu → nested sub-menu).
+
+### 10.3 Auto-Feed & Deep Inventory Search
+
+Auto-feed is a per-recorder toggle stored in recorder modData under the key
+`POS_Constants.MD_RECORDER_AUTO_FEED`. It controls whether the recorder
+automatically ejects spent media and searches for a replacement when the
+current media fills up.
+
+**Behaviour when auto-feed is enabled:**
+
+1. When `appendChunk()` detects the current media is full, it auto-ejects
+   the spent media and performs a deep inventory search for a replacement.
+2. The deep search uses `PhobosLib.findItemByFullTypeRecurse()` and iterates
+   over `USABLE_MEDIA_SEARCH_ORDER` (the ordered list of compatible media
+   full-types, cheapest first).
+3. If a replacement is found, it is inserted automatically.
+4. If **no** replacement is found, auto-feed auto-disables itself and sends
+   a PhobosNotifications (PN) warning to the player.
+
+**Behaviour when toggling auto-feed ON with no media loaded:**
+
+- An immediate deep search is performed. If compatible media is found, it is
+  inserted into the recorder in the same action. If none is found, the toggle
+  reverts to OFF and the player is warned.
+
+**Notification rule:** All outcomes (insert, eject, auto-disable, toggle
+state changes) notify via `PhobosLib.notifyOrSay()`.
+
+**Anti-pattern — shallow search only:**
+Do **not** use `getItemsFromFullType()` on the main inventory alone. Players
+routinely carry media inside bags and containers. Always use
+`PhobosLib.findItemByFullTypeRecurse()` to search the full inventory tree.
+
+**Implementation reference:**
+`POS_DataRecorderService.findUsableMediaDeep()`,
+`POS_DataRecorderService.tryAutoFeedMedia()`.
 
 ---
 
@@ -829,8 +923,8 @@ with 4-5 sub-categories per parent, paginated if needed.
 Player modData is limited to per-player **scalar** state only:
 - Reputation, cash balance, intel access bands, UI preferences, cooldowns.
 - Growth-prone arrays (watchlist, alerts, orders, holdings) are stored in
-  per-player flat files via `POS_PlayerFileStore` (see `persistence-architecture.md`
-  Layer 2b). VHS tape entries are in the event log; only a summary is in item modData.
+  player modData via `PhobosLib.getPlayerModDataTable()` (see §27.6).
+  VHS tape entries are in the event log; only a summary is in item modData.
 
 ### 11.3 Authority Model
 
@@ -946,9 +1040,10 @@ which ensures consistent 2-decimal-place formatting (e.g., "$0.60" not "$0.6").
 
 ### 13.3 Location Display
 
-Locations should display resolved street addresses when available
-(via PhobosLib_Address). When no street data exists, raw room names
-are title-cased via `PhobosLib.titleCase()` (e.g., "grocery" -> "Grocery").
+Locations should use `PhobosLib.formatPlayerLocation(player, opts)` to
+produce combined "Street (Room)" strings. This replaces manual address
+resolution + room name assembly. When no street data exists, raw room
+names are title-cased automatically (e.g., "grocery" -> "Grocery").
 
 ### 13.4 Item Filtering
 
@@ -1403,8 +1498,8 @@ if POS_Sandbox.isLivingMarketEnabled() then
 end
 ```
 
-The simulation tick is integrated into `POS_EconomyTick.lua` Phase 5.75
-(currently commented out). When enabled, it runs every
+The simulation tick is integrated into `POS_EconomyTick.lua` Phase 5.75,
+wrapped in `PhobosLib.safecall()`. When enabled, it runs every
 `POS_Sandbox.getSimulationTickInterval()` game minutes.
 
 ### 24.8 Translation Key Conventions
@@ -1435,6 +1530,256 @@ accessors, never hard-coded strings.
 - Smugglers must be risky, not clownish.
 - Speculators must be rare — too many makes the economy silly.
 - Old keys are preserved (not deleted) for backward compatibility.
+
+### 24.10 Signal Emission Rules
+
+Hard signal emission (`POS_WholesalerService.emitSignals()`) converts wholesaler
+runtime state into observation records that feed `POS_MarketDatabase`. The
+following rules govern how those records are produced.
+
+**Visibility gate** — Not every wholesaler emits every tick. High-secrecy
+wholesalers are filtered probabilistically:
+
+```lua
+if PhobosLib.randFloat(0, 1) > wholesaler.visibility then return end
+```
+
+A `visibility` of `1.0` means always visible; `0.3` means 70% of ticks are
+silent.
+
+**Price formula** — Observation prices are derived, never hardcoded:
+
+```
+price = CATEGORY_BASE_PRICE[catId]
+      * (1 + markupBias)
+      * WHOLESALER_PRICE_MULTIPLIER[state]
+      * (1 +/- SIGNAL_PRICE_NOISE)
+```
+
+- `CATEGORY_BASE_PRICE` is a constant table keyed by commodity category ID.
+  It includes cross-mod categories: PCP (chemicals, agriculture, biofuel) and
+  PIP (specimens, biohazard).
+- `markupBias` comes from the wholesaler definition.
+- `WHOLESALER_PRICE_MULTIPLIER` maps each of the 6 operational states to a
+  multiplier (e.g. Dumping < 1.0, Withholding > 1.0).
+- `SIGNAL_PRICE_NOISE` is a small constant (±%) applied via `randFloat` to
+  prevent identical prices across ticks.
+
+**Stock bucketing** — The `stockLevel` float is converted to a human-readable
+tier via `PhobosLib.getQualityTier()` using the `STOCK_LEVEL_TIERS` threshold
+table (abundant / moderate / low / scarce).
+
+**Confidence mapping** — Observation `confidence` is derived from the
+wholesaler's `reliability` field, bucketed via `PhobosLib.getQualityTier()`
+using `CONFIDENCE_TIERS` (high / medium / low).
+
+**Display names** — All emitted observations use
+`PhobosLib.getRegistryDisplayName()` (see §25.5) to resolve human-readable
+source and location strings. Every definition file MUST include a
+`displayNameKey` field pointing to a valid translation key.
+
+**Source tier** — All Living Market observations are tagged with
+`POS_Constants.SOURCE_TIER_BROADCAST`. This places them in the broadcast
+intelligence tier alongside satellite and relay data.
+
+**Anti-patterns:**
+
+- Never hardcode price values — always derive from `CATEGORY_BASE_PRICE` and
+  multipliers.
+- Never hardcode stock strings ("abundant", "scarce") — always bucket via
+  `PhobosLib.getQualityTier()` with the canonical `STOCK_LEVEL_TIERS` table.
+- Never bypass the visibility gate — even in tests, respect the probabilistic
+  filter to avoid unrealistic signal density.
+
+**Zone Pressure Price Bias** — When the Living Market is enabled, zone
+pressure from the simulation biases the supply/demand factor inside
+`POS_PriceEngine.generatePrice()`.
+
+Formula:
+
+```
+pressureFactor = getZonePressure(zoneId, categoryId) * PRICE_ZONE_PRESSURE_WEIGHT
+pressureFactor = clamp(pressureFactor, -PRICE_ZONE_PRESSURE_CLAMP, PRICE_ZONE_PRESSURE_CLAMP)
+sdFactor       = sdFactor + pressureFactor
+```
+
+- The bias is **additive** to the existing `sdFactor`, not multiplicative.
+  This preserves the S/D composite's bounded range and prevents runaway
+  feedback loops.
+- Gated behind the `EnableLivingMarket` sandbox option. When the option is
+  OFF, the pressure term is zero and `generatePrice()` behaves identically to
+  pre-Living-Market builds.
+- Callers pass `zoneId` in the `ctx` table. If `ctx.zoneId` is `nil`, the
+  pressure term is skipped entirely (graceful fallback — no error, no bias).
+- Constants: `PRICE_ZONE_PRESSURE_WEIGHT = 0.05`,
+  `PRICE_ZONE_PRESSURE_CLAMP = 0.10`.
+
+Anti-pattern: never multiply zone pressure directly into `basePrice`. The
+pressure effect MUST flow through the S/D composite so that all price
+modifiers interact through a single authoritative channel.
+
+### 24.11 Soft Signal Rules (Rumours)
+
+Rumours are the soft-signal counterpart to hard observations. They are
+generated when **soft-class events** fire during Phase 4 of
+`tickWholesaler()` and provide players with vague, unverified hints about
+upcoming market shifts.
+
+**Generation** — When a soft-class event fires (e.g. `convoy_delay`,
+`strategic_withholding`), a rumour record is created containing the event ID,
+affected region, affected categories, and an impact hint. Hard-class events
+(e.g. `bulk_arrival`) MUST NOT generate rumours.
+
+**Storage** — Rumours are stored in world ModData and accessed via
+`POS_WorldState.getRumours()`. This follows the same pattern as
+`getWholesalers()` and `getMarketZones()`.
+
+**Expiry and cap:**
+
+- `RUMOUR_EXPIRY_DAYS = 7` — rumours older than 7 in-game days are pruned
+  during the next tick.
+- `RUMOUR_MAX_ACTIVE = 20` — if the cap is exceeded, the oldest rumours are
+  discarded first.
+
+**Impact hints** — The hint direction is derived from the event's
+`pressureEffect` sign:
+
+- Positive `pressureEffect` → shortage/tightening hint.
+- Negative `pressureEffect` → surplus/easing hint.
+- Zero `pressureEffect` → neutral/ambiguous hint.
+
+The hint text MUST remain vague (e.g. "supplies may tighten") and never
+expose precise numerical values.
+
+**Confidence** — Rumour confidence is always `"low"`. Rumours are unverified
+intelligence; they hint at possible conditions but carry no guarantees.
+
+**BBS display** — The BBS screen displays all active (non-expired) rumours in
+a paginated list. Each entry shows: event message, region, affected
+categories, impact hint, and days remaining until expiry. The BBS hub entry
+shows a count badge of active rumours.
+
+**Anti-patterns:**
+
+- Never treat rumours as hard data — they hint, they do not confirm. No
+  gameplay system should read rumour records as authoritative price or stock
+  signals.
+- Never expose the underlying event ID or numerical `pressureEffect` to the
+  player. The UI shows only the translated hint string.
+- Never generate rumours from hard-class events. The signal class on the
+  event definition is the sole discriminator.
+
+### 24.12 Agent Observation Rules
+
+Agent observations are the per-agent counterpart to wholesaler hard signals.
+Each tick, every agent in a zone may produce observations for the categories
+it has affinity with. These observations reflect the agent's personality
+(archetype) and hidden internal state, making each agent a biased lens on the
+underlying market conditions.
+
+**Generation** — Each agent iterates its `categories` list weighted by
+affinity. For each category that passes a `refreshDays` cooldown and a
+probability roll, the agent produces an observation record. Higher-affinity
+categories are more likely to generate observations; low-affinity categories
+may be skipped entirely.
+
+**Visibility gate** — Before any observations are generated for an agent, a
+reliability check is performed. If the agent fails the reliability roll
+(based on archetype `reliability` and the current `exposure` meter), the
+entire tick is skipped for that agent. This prevents unreliable agents from
+flooding the database with low-quality data.
+
+**Hidden state modifiers** — The agent's five hidden-state meters bias the
+generated observations:
+
+- High `greed` inflates the reported price (positive price bias).
+- High `surplus` deflates the reported price and inflates the reported stock
+  level.
+- High `exposure` reduces observation confidence (the agent's secrecy is
+  compromised, so its reports are less trustworthy).
+- Non-zero `trustShift` applies a temporary reliability modifier that decays
+  over time.
+- `pressure` influences the probability of generating observations at all —
+  high pressure increases generation frequency.
+
+**Archetype-specific behaviour:**
+
+- **Smuggler** — Observations have inherently low confidence. Occasional
+  "ghost stock" inversion: the agent reports stock in a category where it
+  actually has none, producing misleading signals.
+- **Speculator** — Price markup bias is amplified beyond what `greed` alone
+  would produce. Stock claims may be understated to create artificial scarcity
+  signals.
+- **Specialist crafter** — Only generates observations for categories where
+  affinity exceeds a threshold. Observations in those categories are
+  higher-quality (elevated confidence) but narrow in scope.
+- **Scavenger** — Extra noise is added to all observation fields. Price and
+  stock values jitter more than other archetypes, reflecting the chaotic
+  nature of scavenging.
+
+**Source tier** — All agent-generated observations use
+`POS_Constants.SOURCE_TIER_FIELD` as the source tier. The observation key is
+prefixed with `"agent_"` to distinguish agent observations from wholesaler
+hard signals in the database.
+
+**Anti-patterns:**
+
+- Never generate observations from agent meters directly into the UI. All
+  agent observations MUST be routed through `POS_MarketIngestion` into
+  `POS_MarketDatabase`. The terminal reads from the database, never from
+  agent state.
+- Never bypass the visibility gate. If the reliability check fails, the
+  agent produces zero observations for that tick — no partial output.
+- Never expose the agent's hidden meter values to the player. The player
+  sees only the resulting observation records (price, stock, confidence).
+
+### 24.13 SIGINT Integration with Living Market
+
+When the Living Market is enabled, the SIGINT intelligence pipeline connects
+to the simulation layer. This section defines how each SIGINT tier interacts
+with Living Market data.
+
+**Passive recon sampling** — `POS_MarketReconAction` samples zone pressure
+via `POS_MarketSimulation.getZonePressure()` with SIGINT-scaled noise added
+to the reading. High SIGINT skill produces low noise (accurate pressure
+readings); low SIGINT skill produces high noise (readings may diverge
+significantly from true zone state). The noise formula is:
+`actualPressure + PhobosLib.randFloat(-noiseRange, noiseRange)` where
+`noiseRange = BASE_RECON_NOISE * (1 - skillFraction)`.
+
+**SIGINT XP from market events** — When a wholesaler emits a soft-class
+event (e.g. state transition, convoy disruption) and the player has an
+active passive recon scan in that zone, SIGINT XP is awarded. XP amount is
+scaled by the wholesaler's current operational state:
+
+- `Collapsing` / `Dumping` — full XP multiplier (significant event).
+- `Strained` / `Withholding` — reduced XP multiplier.
+- `Tight` — minimal XP.
+- `Stable` — no XP awarded (nothing noteworthy happened).
+
+**Field notes from state transitions** — When a wholesaler transitions into
+`Collapsing` or `Dumping` operational state, a field note is generated via
+`POS_MarketNoteGenerator`. The note describes the zone and affected
+categories in vague terms (no numerical values). A cooldown of once per
+in-game day per wholesaler prevents note spam. Only one note is generated
+per transition regardless of how many categories the wholesaler covers.
+
+**Camera and satellite analysis** — When the Living Market is enabled,
+camera-tier and satellite-tier analysis screens include zone pressure
+summaries alongside their standard intelligence output:
+
+- Camera-tier analysis of a zone produces a per-category pressure breakdown
+  with trend indicators (rising/falling/stable).
+- Satellite-tier broadcast propagates zone state summaries to all connected
+  POSnet terminals, showing the aggregate picture across all zones.
+
+**Anti-patterns:**
+
+- Never award SIGINT XP without first checking `POS_Sandbox.isLivingMarketEnabled()`.
+  All Living Market XP paths are gated behind the sandbox option.
+- Never expose raw zone pressure values in field notes or camera summaries.
+  Always use qualitative descriptors (e.g. "tightening", "oversupplied")
+  resolved through the stock-tier bucketing system.
 
 ---
 
@@ -1490,6 +1835,49 @@ reimplement these locally — use the PhobosLib versions:
 | `PhobosLib.round(value, decimals)` | Decimal rounding |
 | `PhobosLib.map(tbl, fn)` | Array transform |
 | `PhobosLib.filter(tbl, predicate)` | Array filter |
+| `PhobosLib.lazyInit(initFn)` | Deferred one-shot initialisation (see §27) |
+| `PhobosLib.throttle(fn, intervalMinutes)` | Rate-limit an EveryOneMinute handler (see §27) |
+| `PhobosLib.formatPlayerLocation(player, opts)` | Combined "Street (Room)" location string (see §6.1) |
+| `PhobosLib.hasPower(square)` | Grid + generator + custom power check (see §5.5) |
+| `PhobosLib.getRegistryDisplayName(registry, id, fallback)` | Resolve a definition's `displayNameKey` via `getText()`, with fallback (see §26) |
+| `PhobosLib.manhattanDistance(x1,y1,z1, x2,y2,z2, zPenalty)` | 3D Manhattan distance with Z penalty (see §5.6) |
+| `PhobosLib.consumeItems(player, fullType, count)` | Remove N items from inventory (see §5.6) |
+| `PhobosLib.grantItems(player, fullType, count)` | Add N items to inventory (see §5.6) |
+| `PhobosLib.checkRequirements(player, opts)` | Composite item/tool/skill check (see §5.6) |
+
+### 25.6 Empty-Data Return Convention
+
+Two rules govern what functions return when they have no data:
+
+1. **Functions that compute/aggregate data** (`getSummary`, `getCommoditySummary`,
+   `resolveAddress`) MUST return `nil` when input data is empty — never a table
+   with nil-valued named fields.
+2. **Functions that list/collect items** (`getRecords`, `getNotes`, `getCache`)
+   MAY return `{}` (empty array) — downstream code handles via `#result == 0`
+   or `ipairs()`.
+
+**Anti-pattern (BAD):**
+
+```lua
+-- BAD: returns non-nil table with nil fields — callers treat as valid data
+local summary = { low = nil, high = nil, avg = nil, sourceCount = 0 }
+if #records == 0 then return summary end
+```
+
+**Correct (GOOD):**
+
+```lua
+-- GOOD: forces callers to nil-check before field access
+if #records == 0 then return nil end
+```
+
+**Why:** In Kahlua, passing `nil` from a named field into string concatenation
+or arithmetic triggers a Java `RuntimeException` that `pcall`/`safecall` cannot
+catch, causing a silent JVM crash (CTD with no stack trace).
+
+**Implementation references:**
+`POS_MarketDatabase.getSummary`, `PhobosLib_Address.resolveAddress`,
+`PN_ChannelRegistry.getMutedSet`
 
 ---
 
@@ -1628,7 +2016,7 @@ standard determines whether the system feels **moddable or hostile**.
 Every definition file includes `schemaVersion = 1`. When schemas evolve:
 - The validator warns on version mismatch but does not reject
 - Future migrations can read `schemaVersion` to apply transforms
-- This applies to all data formats (definition files, file store, event logs)
+- This applies to all data formats (definition files, event logs, world ModData)
 
 ### 26.9 Two-Tier Extensibility
 
@@ -1667,3 +2055,298 @@ When a schema does evolve, the `schemaVersion` field enables safe migration
 - **Never skip validation** — every code path that loads external data must
   pass through schema validation. "Trust but verify" is not acceptable;
   **verify unconditionally**.
+
+---
+
+## 27. Init-Time Performance
+
+POSnet modules must not do expensive work during the bootstrap phase
+(OnGameStart / frame 0). The PZ engine processes OnGameStart callbacks
+synchronously on the main thread — heavy work here causes visible load-screen
+stalls and blocks other mods.
+
+### 27.1 Rules
+
+1. **Never run expensive spatial scans at OnGameStart.** Functions like
+   `findNearbyBuildings`, `findWorldObjectsBySprite`, and any radius-based
+   world queries must be deferred to the **first EveryOneMinute tick** or to
+   first user interaction (e.g. terminal open).
+
+2. **Use `PhobosLib.lazyInit(initFn)` for heavy catalogue work.** Modules
+   that iterate large datasets (e.g. all game items via `ScriptManager`) but
+   are only accessed on user interaction (terminal open, mission generation)
+   must wrap their initialisation in `lazyInit`. The init function runs once
+   on first access, not at load time.
+
+3. **Use `PhobosLib.throttle(fn, intervalMinutes)` for spatial tick
+   handlers.** Any EveryOneMinute handler that performs world scans must be
+   throttled. The default throttle interval is **5 game-minutes** unless
+   gameplay requires tighter cadence.
+
+4. **Defer file I/O writes to first EveryOneMinute tick.** Only reads are
+   needed during the bootstrap phase. Writes (ModData persistence, file-store
+   flushes) must wait until the world is fully loaded.
+
+5. **Defer server command requests to first EveryOneMinute tick.**
+   `sendClientCommand` calls at frame 0 trigger synchronous processing during
+   init and can stall both client and server. Issue them on the first tick
+   instead.
+
+### 27.2 Anti-Patterns
+
+- Iterating all game items via `ScriptManager:getAllItems()` at OnGameStart
+- Running 250-tile radius spatial scans at frame 0
+- Requesting market snapshots from the server during `init()`
+- Running `findWorldObjectsBySprite` every 1 game-minute when every 5 suffices
+
+### 27.3 Implementation Reference
+
+| Module | Technique |
+|--------|-----------|
+| `POS_ItemPool.lua` | Lazy-init via `PhobosLib.lazyInit()` — item catalogue built on first access |
+| `POS_DeliveryContextMenu.lua` | Deferred initial scan + throttled passive scans |
+| `POS_RadioInterception.lua` | Deferred snapshot request (first tick, not init) |
+| `POS_ReconScanner.lua` | Cached active operation to avoid O(n) per-tick scan |
+
+### 27.4 Chunked File Writes
+
+Large file-store saves (e.g. market categories, ledger history) must not
+serialise all data in a single `getFileWriter` / `close` cycle. Writing
+dozens of categories in one frame causes a visible hitch, especially on
+slower hardware or when save data grows over a long-running world.
+
+**Rules:**
+
+1. **Use `PhobosLib.createChunkedWriter` for any save that iterates more
+   than a handful of entries.** The writer spreads serialisation across
+   multiple `EveryOneMinute` ticks, keeping each frame's cost bounded.
+
+2. **Chunk size must be sandbox-configurable.** Expose the value as a
+   sandbox option (default **4**) so server operators can tune the
+   trade-off between save latency and per-tick cost.
+
+3. **Guard against overlapping writes.** Check
+   `PhobosLib.isChunkedWriteActive(writer)` before starting a new write.
+   If a previous write is still in progress, skip or defer.
+
+**Anti-pattern:**
+
+```lua
+-- BAD: blocks the main thread for the entire category list
+local fw = getFileWriter("POSnet/market_data.txt", true, false)
+for _, cat in ipairs(allCategories) do
+    serializeCategory(cat, fw)
+end
+fw:close()
+```
+
+**Implementation reference:** `POS_MarketFileStore.lua` —
+`serializeCategory` pattern with a chunked writer whose chunk size is
+read from `SandboxVars.POS.MarketSaveChunkSize`.
+
+### 27.5 SP-Safe Server Commands
+
+Singleplayer and multiplayer share the same Lua API surface, but the
+networking layer behaves differently. Careless `sendServerCommand` calls
+can crash the JVM silently during early game frames in SP, and are
+unnecessary since the SP client and server share the same process.
+
+**Rules:**
+
+1. **Never call `sendServerCommand` in singleplayer.** It can crash the
+   JVM silently during early game frames and serves no purpose when
+   client and server share the same process.
+
+2. **All server-to-client broadcasts must go through
+   `POS_BroadcastSystem.broadcastToAll()`.** In SP this routes directly
+   to `POS_RadioInterception.handleCommand()`, bypassing the network
+   layer entirely. In MP it delegates to `sendServerCommand` as normal.
+
+3. **Never duplicate the `broadcastToAll` helper locally.** Individual
+   modules must delegate to `POS_BroadcastSystem.broadcastToAll()`
+   rather than reimplementing the SP/MP routing logic.
+
+4. **Client-to-server commands that fire at `OnGameStart` must be
+   deferred to the first `EveryOneMinute` tick.** Use a one-shot boolean
+   flag to ensure the command fires exactly once, after the server-side
+   state is fully initialised.
+
+**Anti-patterns:**
+
+```lua
+-- BAD: direct sendServerCommand in a server module
+sendServerCommand(player, "POSnet", "broadcast", args)
+-- GOOD: use the central SP-safe helper
+POS_BroadcastSystem.broadcastToAll("broadcast", args)
+```
+
+```lua
+-- BAD: sendClientCommand inside OnGameStart (may fire before server is ready)
+Events.OnGameStart.Add(function()
+    sendClientCommand(getPlayer(), "POSnet", "requestPayouts", {})
+end)
+-- GOOD: defer to first EveryOneMinute tick with a one-shot flag
+local _pendingRequest = true
+Events.EveryOneMinute.Add(function()
+    if _pendingRequest then
+        _pendingRequest = false
+        sendClientCommand(getPlayer(), "POSnet", "requestPayouts", {})
+    end
+end)
+```
+
+```lua
+-- BAD: local copy of broadcastToAll in a module
+local function broadcastToAll(cmd, args)
+    if isClient() then sendServerCommand(...) else ... end
+end
+-- GOOD: delegate to the authoritative implementation
+POS_BroadcastSystem.broadcastToAll(cmd, args)
+```
+
+**Implementation references:**
+
+| File | Role |
+|------|------|
+| `POS_BroadcastSystem.lua` | Central SP-safe `broadcastToAll` implementation |
+| `POS_RadioInterception.lua` | `handleCommand()` — public entry point for SP direct routing |
+| `POS_InvestmentLog.lua` | Deferred payout request pattern (one-shot `EveryOneMinute`) |
+| `POS_EconomyTick.lua` | Phase 7 uses `broadcastToAll` unconditionally (SP + MP safe) |
+
+### 27.6 Per-Player Data Storage
+
+Per-player data (watchlist, alerts, orders, holdings) MUST use player modData
+via `PhobosLib.getPlayerModDataTable(player, key)`, NOT custom file I/O via
+`getFileReader`/`getFileWriter`.
+
+**Why:** `getFileReader` causes silent JVM crashes in multiple PZ lifecycle
+contexts (OnGameStart, render frames, event ticks). Player modData is
+engine-managed, auto-persisted on save, and safe to access at any time.
+
+**Pattern:**
+
+```lua
+-- GOOD: engine-managed, safe at any time
+local wl = PhobosLib.getPlayerModDataTable(player, POS_Constants.MODDATA_WATCHLIST) or {}
+
+-- BAD: getFileReader crashes the JVM silently in render frames and OnGameStart
+local reader = getFileReader("POSNET/player_" .. username .. ".dat", false)
+```
+
+**When file I/O IS acceptable:** World-level data (market observations,
+building caches) that is NOT tied to a specific player and is accessed from
+server-side tick handlers (not render frames). These use
+`getFileReader`/`getFileWriter` during `EveryOneMinute` or `OnSave` events.
+
+**Implementation references:**
+
+| File | Role |
+|------|------|
+| `POS_PlayerState.lua` | Per-player modData access (canonical pattern) |
+| `POS_MarketFileStore.lua` | World-level file I/O (acceptable use of getFileReader/getFileWriter) |
+
+---
+
+## 28. Interoperability Principles
+
+### 28.1 Canonical Identity Rule
+
+Every entity (category, zone, archetype, device, event, signal, artifact) must
+have a stable string ID defined in `POS_Constants.lua`. Never use display names,
+ad-hoc strings, or translation keys as lookup identifiers. IDs are the contract
+between subsystems.
+
+Anti-pattern:
+
+```lua
+-- BAD: using display name as lookup key
+local cat = registry:get("Ammunition & Weapons")
+
+-- GOOD: using canonical ID constant
+local cat = registry:get(POS_Constants.CATEGORY_AMMUNITION)
+```
+
+### 28.2 Capability-Based Dispatch
+
+Check capabilities or tags, not specific device/object types. This lets future
+devices and addon mods plug in without rewriting core logic.
+
+Anti-pattern:
+
+```lua
+-- BAD: hardcoding device identity
+if deviceType == "camcorder" then captureVisual() end
+
+-- GOOD: checking capability
+if device.capabilities and device.capabilities.capture_rawintel then captureRawIntel(device) end
+```
+
+Reference: `POS_DataSourceRegistry` already implements this pattern with
+`canRecord()` / `getSignalQuality()` / `generateChunk()` callbacks.
+
+### 28.3 Payload Shape Documentation
+
+Every cross-system data structure must have its canonical shape documented. See
+`docs/interoperability-matrix.md` for the authoritative payload reference. When
+adding a new payload type, document it in the matrix before implementing
+consumers.
+
+Canonical shapes currently documented:
+
+- Observation record
+- Market effect
+- Rumour payload
+- Recorder chunk
+
+### 28.4 The Seven Questions
+
+Every new subsystem must answer these questions in its design phase:
+
+1. **What canonical IDs does it use?** — List all ID types from POS_Constants
+2. **What payloads does it consume?** — Which data structures does it read?
+3. **What payloads does it produce?** — Which data structures does it emit?
+4. **What capabilities/tags does it require?** — What must exist for it to function?
+5. **What persistence layer owns its truth?** — ModData key, file store, or none?
+6. **What events does it emit and listen for?** — PZ events or internal notifications?
+7. **What systems should react to its outputs?** — List downstream consumers that need to update when this subsystem's state changes. This drives refresh propagation and future event wiring.
+
+Document the answers in the subsystem's module header comment or in
+`docs/interoperability-matrix.md`.
+
+### 28.5 Cross-System Call Discipline
+
+Rules:
+
+1. Use `PhobosLib.safecall(require, "ModuleName")` for optional dependencies —
+   never assume a module exists at call time
+2. Guard with `if Module and Module.fn then` before calling cross-system
+   functions
+3. Never directly mutate another subsystem's persistence (e.g., recorder must
+   not write to market database; it emits chunks, and the market system ingests
+   them)
+4. Never read another subsystem's private/internal state — use its public API
+5. Screens never mutate shared state directly — they gather params, call a service function, and render the result. All state mutations live in service modules. (Cross-reference: CLAUDE.md "UI / Business Logic Separation")
+6. Services never navigate UI — a service may return data or status codes, but must never call `POS_ScreenManager.navigateTo()` or create UI widgets. Navigation belongs in the presentation layer.
+7. Forward-looking: when a service mutates state, it should be structured so a future event notification can be added at the mutation point without refactoring. Keep mutations in single authoritative functions, not scattered across multiple callers.
+8. When event names are introduced, use dot-namespaced prefixes: `market.*`, `intel.*`, `ops.*`, `delivery.*`, `player.*`, `terminal.*`
+
+Anti-pattern:
+
+```lua
+-- BAD: reaching into another module's internal cache
+local price = POS_MarketDatabase._clientCache["food"].avgPrice
+
+-- GOOD: using the public API
+local summary = POS_MarketDatabase.getSummary("food")
+local price = summary and summary.avgPrice
+```
+
+### 28.6 Interoperability Anti-Patterns
+
+| Anti-Pattern | Why It's Dangerous | Rule |
+|---|---|---|
+| **ID drift** | Category names diverge between registries, causing silent lookup failures | All IDs come from POS_Constants (§28.1) |
+| **Unvalidated tables** | Raw ad-hoc tables passed between systems cause nil-field JVM crashes | Document payload shapes (§28.3) |
+| **Deep internal calls** | Tight coupling makes refactoring impossible | Use public APIs only (§28.5) |
+| **Tight coupling threshold** | 3+ systems calling the same function directly | Introduce an event/callback pattern |
+| **Display name as key** | Translation changes break lookup logic | Use canonical string IDs |

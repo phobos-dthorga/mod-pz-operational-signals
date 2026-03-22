@@ -36,13 +36,8 @@ POS_ConnectionManager = {}
 
 local _TAG = "[POS:ConnMgr]"
 
---- Desktop computer sprite names (base + 3 rotations).
-local DESKTOP_SPRITES = {
-    ["appliances_com_01_72"] = true,
-    ["appliances_com_01_73"] = true,
-    ["appliances_com_01_74"] = true,
-    ["appliances_com_01_75"] = true,
-}
+--- Desktop computer sprite lookup (delegated to POS_Constants).
+local DESKTOP_SPRITES = POS_Constants.DESKTOP_COMPUTER_SPRITES
 
 --- Search radius for nearby desktop computers (tiles).
 local DESKTOP_SEARCH_RADIUS = 3
@@ -191,7 +186,7 @@ function POS_ConnectionManager.canConnect(player, radioObj)
             local parent = dd:getParent()
             if parent then
                 local sq = parent:getSquare()
-                if sq and sq:haveElectricity() then
+                if sq and PhobosLib.hasPower(sq) then
                     hasPower = true
                 end
             end
@@ -243,8 +238,8 @@ function POS_ConnectionManager.canConnect(player, radioObj)
         end
     end
 
-    -- Desktop computer requires electricity at its location
-    if hasDesktop and playerSquare and not playerSquare:haveElectricity() then
+    -- Desktop computer requires electricity at its location (grid, generator, or custom)
+    if hasDesktop and playerSquare and not PhobosLib.hasPower(playerSquare) then
         return false, POS_Constants.ERR_NO_POWER
     end
 

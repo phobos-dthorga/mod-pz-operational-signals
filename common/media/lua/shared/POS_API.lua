@@ -86,7 +86,7 @@ end
 --- Safe registration wrapper for third-party extensions.
 --- Returns ok (boolean), err (string or nil).
 function POS_API.tryRegisterScreen(def)
-    local ok, err = pcall(POS_API.registerScreen, def)
+    local ok, err = PhobosLib.safecall(POS_API.registerScreen, def)
     if not ok then
         PhobosLib.debug("POS", _TAG, "Screen registration failed: " .. tostring(err))
     end

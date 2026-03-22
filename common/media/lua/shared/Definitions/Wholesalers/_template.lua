@@ -40,6 +40,9 @@ return {
     -- Display name shown in the terminal UI
     name = "My Custom Wholesaler",
 
+    -- Translation key for the display name (used for i18n lookup in getText())
+    displayNameKey = "UI_POS_Wholesaler_Name_YourWholesaler",
+
     -- Short description of this wholesaler's role and character
     description = "A brief description of this wholesaler.",
 

@@ -41,7 +41,8 @@ POS_BroadcastSystem = {}
 local _TAG = "[POS:Broadcast]"
 
 --- Broadcast a server command to all connected players.
---- In SP, sends to getSpecificPlayer(0). In MP, iterates getOnlinePlayers().
+--- In SP, invokes the client handler directly (sendServerCommand crashes
+--- the JVM during early frames in SP). In MP, iterates getOnlinePlayers().
 --- @param module string Command module
 --- @param command string Command name
 --- @param args table Command arguments
@@ -58,10 +59,10 @@ function POS_BroadcastSystem.broadcastToAll(module, command, args)
             end
         end
     else
-        -- Single-player: send to local player
-        local player = getSpecificPlayer(0)
-        if player then
-            sendServerCommand(player, module, command, args)
+        -- Single-player: invoke client handler directly to avoid
+        -- sendServerCommand which can crash the JVM during init.
+        if POS_RadioInterception and POS_RadioInterception.handleCommand then
+            POS_RadioInterception.handleCommand(command, args)
         end
     end
 end
@@ -228,18 +229,19 @@ function POS_BroadcastSystem.onClientCommand(module, command, player, args)
         POS_MarketDatabase.addRecord(record)
 
     elseif command == POS_Constants.CMD_REQUEST_MARKET_SNAPSHOT then
-        -- Client requesting market overview for their local cache
+        -- Client requesting market overview for their local cache.
+        -- Send aggregates + rolling closes only — observations are too
+        -- large to pass through sendServerCommand safely (bulk table
+        -- allocation can crash the JVM). MP clients that need per-item
+        -- observations will request them on-demand per screen (future).
         if player then
             local snapshot = {}
             local world = POS_WorldState and POS_WorldState.getWorld()
-            -- Observations and rolling closes come from file store;
-            -- aggregates are mirrored to ModData by EconomyTick.
             for catId, catData in pairs(POS_MarketFileStore.getAllCategories()) do
                 local agg = (world and world.categories
                     and world.categories[catId]
                     and world.categories[catId].aggregate) or {}
                 snapshot[catId] = {
-                    observations = catData.observations or {},
                     rollingCloses = catData.rollingCloses or {},
                     aggregate = agg,
                 }
