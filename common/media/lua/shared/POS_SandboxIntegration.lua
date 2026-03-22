@@ -736,10 +736,8 @@ function POS_Sandbox.getEconomyTickIntervalHours()
         POS_Constants.ECONOMY_TICK_INTERVAL_HOURS_DEFAULT)
 end
 
-function POS_Sandbox.getMarketFileChunkSize()
-    return PhobosLib.getSandboxVar("POS", "MarketFileChunkSize",
-        POS_Constants.MARKET_FILE_CHUNK_SIZE)
-end
+--- Removed: getMarketFileChunkSize() — market data now uses ModData,
+--- file chunking is no longer needed.
 
 ---------------------------------------------------------------
 -- Trade Terminal
