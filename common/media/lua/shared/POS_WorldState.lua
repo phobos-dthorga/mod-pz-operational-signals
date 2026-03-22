@@ -49,6 +49,10 @@ function POS_WorldState.getMarketZones()
     return ModData.getOrCreate(POS_Constants.WMD_MARKET_ZONES)
 end
 
+function POS_WorldState.getRumours()
+    return ModData.getOrCreate(POS_Constants.WMD_RUMOURS)
+end
+
 function POS_WorldState.getMeta()
     return ModData.getOrCreate(POS_Constants.WMD_META)
 end
@@ -249,6 +253,10 @@ function POS_WorldState.bootstrap()
     -- Ensure market zones container
     local zones = POS_WorldState.getMarketZones()
     zones.entries = zones.entries or {}
+
+    -- Ensure rumours container
+    local rumours = POS_WorldState.getRumours()
+    rumours.entries = rumours.entries or {}
 
     -- Ensure building/mailbox containers
     local buildings = POS_WorldState.getBuildings()

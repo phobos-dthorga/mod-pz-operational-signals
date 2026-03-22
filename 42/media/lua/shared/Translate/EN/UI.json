@@ -793,5 +793,24 @@
     "UI_POS_Wholesaler_Name_LouisvilleMedical": "Louisville Medical Depot",
     "UI_POS_Wholesaler_Name_MilitaryDepot": "Military Surplus Depot",
     "UI_POS_Wholesaler_Name_MilitaryFieldHospital": "Military Field Hospital",
-    "UI_POS_Wholesaler_Name_RuralEastSalvage": "Rural East Salvage Yard"
+    "UI_POS_Wholesaler_Name_RuralEastSalvage": "Rural East Salvage Yard",
+
+    "UI_POS_Rumour_ShortageExpected": "Supply shortage expected",
+    "UI_POS_Rumour_SurplusExpected": "Surplus incoming",
+    "UI_POS_Rumour_DisruptionReported": "Supply disruption reported",
+    "UI_POS_Rumour_BulkArrival": "Word is a large shipment just came through",
+    "UI_POS_Rumour_ConvoyDelay": "Heard the convoys are running behind schedule",
+    "UI_POS_Rumour_TheftRaid": "Sounds like raiders hit a supply cache recently",
+    "UI_POS_Rumour_ControlledRelease": "Someone is offloading stock at below market rate",
+    "UI_POS_Rumour_StrategicWithholding": "Suppliers are sitting on inventory, prices could spike",
+    "UI_POS_Rumour_Requisition": "Military requisitions are diverting civilian supplies",
+    "UI_POS_Rumour_Source": "Contact at %1",
+    "UI_POS_Rumour_AffectedCategories": "Affected: %1",
+    "UI_POS_Rumour_ExpectedDuration": "Expected duration: %1 days",
+    "UI_POS_Rumour_Confidence_Low": "Unverified — treat with caution",
+    "UI_POS_Rumour_DaysRemaining": "%1 days remaining",
+    "UI_POS_BBS_MarketRumours": "Market Rumours",
+    "UI_POS_BBS_NoRumours": "No current rumours",
+    "UI_POS_Rumour_Impact": "Expected impact: %1",
+    "UI_POS_Rumour_Region": "Region: %1"
 }

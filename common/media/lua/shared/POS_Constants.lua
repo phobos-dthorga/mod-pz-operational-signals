@@ -52,6 +52,7 @@ POS_Constants.SCREEN_BBS_POST    = "pos.bbs.investments.detail"
 POS_Constants.SCREEN_OPERATIONS  = "pos.bbs.operations"
 POS_Constants.SCREEN_DELIVERIES  = "pos.bbs.deliveries"
 POS_Constants.SCREEN_NEGOTIATE   = "pos.negotiate"
+POS_Constants.SCREEN_BBS_RUMOURS = "pos.bbs.rumours"
 POS_Constants.SCREEN_STOCKMARKET = "pos.stockmarket"
 
 ---------------------------------------------------------------
@@ -312,6 +313,7 @@ POS_Constants.PAGE_SIZE_COMMODITIES      = 8
 POS_Constants.PAGE_SIZE_COMMODITY_ITEMS  = 8
 POS_Constants.PAGE_SIZE_MARKET_REPORTS   = 5
 POS_Constants.PAGE_SIZE_WATCHLIST        = 6
+POS_Constants.PAGE_SIZE_BBS_RUMOURS      = 5
 POS_Constants.WATCHLIST_MAX_ENTRIES      = 20
 POS_Constants.WATCHLIST_PRICE_CHANGE_PCT = 10
 
@@ -1484,4 +1486,37 @@ POS_Constants.CONFIDENCE_TIERS = {
 
 -- Record ID prefix for Living Market observations
 POS_Constants.SIGNAL_RECORD_PREFIX = "lm_"
+
+-- Rumour system
+POS_Constants.RUMOUR_MAX_ACTIVE     = 20
+POS_Constants.RUMOUR_EXPIRY_DAYS    = 7
+POS_Constants.RUMOUR_CONFIDENCE     = "low"
+POS_Constants.RUMOUR_SOURCE_TIER    = "field"
+POS_Constants.RUMOUR_KEY_PREFIX     = "POS_Rumour_"
+POS_Constants.WMD_RUMOURS           = "POSNET.Rumours"
+POS_Constants.NOTE_TYPE_MARKET      = "market"
+POS_Constants.NOTE_TYPE_RUMOUR      = "rumour"
+POS_Constants.SCREEN_BBS_RUMOURS    = "pos.bbs.rumours"
+
+-- Rumour impact directions
+POS_Constants.RUMOUR_IMPACT_SHORTAGE   = "shortage"
+POS_Constants.RUMOUR_IMPACT_SURPLUS    = "surplus"
+POS_Constants.RUMOUR_IMPACT_DISRUPTION = "disruption"
+
+-- Rumour event message key lookup
+POS_Constants.RUMOUR_EVENT_KEYS = {
+    bulk_arrival           = "UI_POS_Rumour_BulkArrival",
+    convoy_delay           = "UI_POS_Rumour_ConvoyDelay",
+    theft_raid             = "UI_POS_Rumour_TheftRaid",
+    controlled_release     = "UI_POS_Rumour_ControlledRelease",
+    strategic_withholding  = "UI_POS_Rumour_StrategicWithholding",
+    requisition_diversion  = "UI_POS_Rumour_Requisition",
+}
+
+-- Rumour impact hint key lookup
+POS_Constants.RUMOUR_IMPACT_KEYS = {
+    shortage   = "UI_POS_Rumour_ShortageExpected",
+    surplus    = "UI_POS_Rumour_SurplusExpected",
+    disruption = "UI_POS_Rumour_DisruptionReported",
+}
 

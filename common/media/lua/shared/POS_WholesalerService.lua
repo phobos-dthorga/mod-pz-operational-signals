@@ -478,6 +478,15 @@ function POS_WholesalerService._applyEvent(wholesaler, eventDef)
         .. tostring(eventDef.id) .. " triggered (pressure="
         .. string.format("%.2f", wholesaler.pressure)
         .. ", stock=" .. string.format("%.2f", wholesaler.stockLevel) .. ")")
+
+    -- Emit soft signal rumour for soft-class events
+    if eventDef.signalClass == POS_Constants.SIGNAL_CLASS_SOFT then
+        PhobosLib.safecall(function()
+            local POS_RumourGenerator = require("POS_RumourGenerator")
+            local currentDay = POS_WorldState and POS_WorldState.getWorldDay() or 0
+            POS_RumourGenerator.generateRumour(eventDef, wholesaler, currentDay)
+        end)
+    end
 end
 
 

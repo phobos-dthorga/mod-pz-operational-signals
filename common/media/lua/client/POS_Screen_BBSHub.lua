@@ -62,6 +62,12 @@ function screen.create(contentPanel, _params, _terminal)
         end
     end
 
+    local rumourCount = 0
+    if POS_RumourGenerator and POS_RumourGenerator.getRumourCount then
+        local currentDay = getGameTime():getNightsSurvived()
+        rumourCount = POS_RumourGenerator.getRumourCount(currentDay) or 0
+    end
+
     -- Band-based content gating
     local terminal = POS_TerminalUI and POS_TerminalUI.instance
     local band = terminal and terminal.band or "operations"
@@ -71,6 +77,7 @@ function screen.create(contentPanel, _params, _terminal)
         [POS_Constants.SCREEN_BBS_LIST] = investCount,
         [POS_Constants.SCREEN_OPERATIONS] = reconCount,
         [POS_Constants.SCREEN_DELIVERIES] = deliveryCount,
+        [POS_Constants.SCREEN_BBS_RUMOURS] = rumourCount,
     }
 
     -- Sub-menu options (built dynamically from registry)
