@@ -263,6 +263,36 @@ Radio signal strength should influence mission generation parameters:
 - Signal quality affects the "clarity" of mission briefings
 - Gated by `SignalAffectsMissionRange` sandbox toggle (placeholder, not yet wired)
 
+### 5.6 Satellite Wiring Connection
+
+The satellite dish can be physically wired to a desktop terminal using `Base.ElectricWire`. This replaces the wireless 50-tile range scan with a persistent wired link stored in world modData.
+
+**Wire cost formula:**
+```
+wireCount = |dx| + |dy| + (|dz| × SATELLITE_WIRING_Z_PENALTY)
+```
+Where `SATELLITE_WIRING_Z_PENALTY = 5` (extra wires per floor difference).
+
+**Requirements:**
+- `Base.Screwdriver` and `Base.Pliers` in inventory (not consumed)
+- Electrical skill ≥ `SATELLITE_WIRING_MIN_ELECTRICAL` (default 2)
+- Sufficient `Base.ElectricWire` in inventory (consumed on wire)
+
+**Storage:** Flat keys in `ModData.getOrCreate("POS_Satellite")` keyed by satellite building key. Schema: `targetX`, `targetY`, `targetZ`, `wireCount`, `createdDay`, `linkType`.
+
+**Validation:** `hasTerminalLink()` checks wired link first (Priority 1), then falls back to wireless scan (Priority 2). Stale wiring (desktop removed) is auto-cleared. Unloaded chunks are treated as valid to avoid false negatives.
+
+**Disconnect:** Returns `SATELLITE_WIRING_RETURN_PCT` (75%) of wires rounded down.
+
+**Timed action:** Duration scales with wire count (`SATELLITE_WIRING_TIME_PER_TILE` × wireCount, clamped to `TIME_MIN`–`TIME_MAX`).
+
+**Anti-patterns:**
+- ❌ Checking `hasTerminalLink` without considering wired links
+- ❌ Using magic numbers for wire cost — always use `PhobosLib.manhattanDistance` with `SATELLITE_WIRING_Z_PENALTY`
+- ❌ Storing wiring data as nested tables in modData — use flat keys with prefix
+
+**Implementation references:** `POS_SatelliteService.lua` (wiring CRUD, validation), `POS_SatelliteWiringAction.lua` (timed action), `POS_SatelliteContextMenu.lua` (menu options).
+
 ---
 
 ## 6. Location Display
@@ -1620,6 +1650,10 @@ reimplement these locally — use the PhobosLib versions:
 | `PhobosLib.formatPlayerLocation(player, opts)` | Combined "Street (Room)" location string (see §6.1) |
 | `PhobosLib.hasPower(square)` | Grid + generator + custom power check (see §5.5) |
 | `PhobosLib.getRegistryDisplayName(registry, id, fallback)` | Resolve a definition's `displayNameKey` via `getText()`, with fallback (see §26) |
+| `PhobosLib.manhattanDistance(x1,y1,z1, x2,y2,z2, zPenalty)` | 3D Manhattan distance with Z penalty (see §5.6) |
+| `PhobosLib.consumeItems(player, fullType, count)` | Remove N items from inventory (see §5.6) |
+| `PhobosLib.grantItems(player, fullType, count)` | Add N items to inventory (see §5.6) |
+| `PhobosLib.checkRequirements(player, opts)` | Composite item/tool/skill check (see §5.6) |
 
 ### 25.6 Empty-Data Return Convention
 

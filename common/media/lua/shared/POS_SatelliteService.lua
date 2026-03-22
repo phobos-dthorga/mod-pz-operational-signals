@@ -29,6 +29,7 @@ require "POS_SIGINTService"
 POS_SatelliteService = {}
 
 local _TAG = "[POS:Satellite]"
+local _TAG_WIRE = "POS:SatWire"
 
 ---------------------------------------------------------------
 -- Satellite Dish Detection
@@ -228,12 +229,23 @@ end
 ---------------------------------------------------------------
 
 --- Check if a terminal is within link range of the satellite.
---- Scans for desktop computers (by sprite) within SATELLITE_LINK_RANGE tiles.
+--- Checks wired link first, then falls back to wireless range scan.
 ---@param sq IsoGridSquare Satellite dish square
 ---@return boolean
 function POS_SatelliteService.hasTerminalLink(sq)
     if not sq then return false end
 
+    -- Priority 1: Wired connection
+    if POS_SatelliteService.isWired(sq) then
+        if POS_SatelliteService.validateWiredLink(sq) then
+            return true
+        end
+        -- Stale wiring — desktop removed. Clear silently.
+        POS_SatelliteService.clearWiringData(sq)
+        PhobosLib.debug("POS", _TAG_WIRE, "Stale wired link cleared")
+    end
+
+    -- Priority 2: Wireless range scan (existing behaviour)
     local desktopSprites = POS_Constants.DESKTOP_COMPUTER_SPRITES
     if not desktopSprites then return false end
 
@@ -437,15 +449,199 @@ end
 --- Get the current status of a satellite dish.
 ---@param player IsoPlayer
 ---@param sq IsoGridSquare
----@return table status { calibrated, hasPower, onCooldown, hoursLeft, hasLink, fuelLow }
+---@return table status { calibrated, hasPower, onCooldown, hoursLeft, hasLink, fuelLow, isWired, wiredDistance }
 function POS_SatelliteService.getStatus(player, sq)
+    local wiringData = POS_SatelliteService.getWiringData(sq)
     return {
         calibrated = POS_SatelliteService.isCalibrated(sq),
         hasPower = POS_SatelliteService.hasPower(sq),
         onCooldown = POS_SatelliteService.isOnCooldown(player),
         hasLink = POS_SatelliteService.hasTerminalLink(sq),
         fuelLow = POS_SatelliteService.isFuelLow(sq),
+        isWired = wiringData ~= nil,
+        wiredDistance = wiringData and wiringData.wireCount or nil,
     }
+end
+
+---------------------------------------------------------------
+-- Satellite Wiring
+---------------------------------------------------------------
+
+--- Read wiring data for a satellite dish from world modData.
+-- @return table|nil {targetX, targetY, targetZ, wireCount, createdDay, linkType} or nil
+function POS_SatelliteService.getWiringData(sq)
+    if not sq then return nil end
+    local buildingKey = getBuildingKey(sq)
+    if not buildingKey then return nil end
+    local satData = ModData.getOrCreate("POS_Satellite")
+    local prefix = POS_Constants.SATELLITE_WIRING_KEY_PREFIX .. buildingKey .. "_"
+    local targetX = satData[prefix .. "targetX"]
+    if not targetX then return nil end
+    return {
+        targetX    = targetX,
+        targetY    = satData[prefix .. "targetY"],
+        targetZ    = satData[prefix .. "targetZ"],
+        wireCount  = satData[prefix .. "wireCount"],
+        createdDay = satData[prefix .. "createdDay"],
+        linkType   = satData[prefix .. "linkType"],
+    }
+end
+
+function POS_SatelliteService.setWiringData(sq, data)
+    if not sq or not data then return end
+    local buildingKey = getBuildingKey(sq)
+    if not buildingKey then return end
+    local satData = ModData.getOrCreate("POS_Satellite")
+    local prefix = POS_Constants.SATELLITE_WIRING_KEY_PREFIX .. buildingKey .. "_"
+    satData[prefix .. "targetX"]    = data.targetX
+    satData[prefix .. "targetY"]    = data.targetY
+    satData[prefix .. "targetZ"]    = data.targetZ
+    satData[prefix .. "wireCount"]  = data.wireCount
+    satData[prefix .. "createdDay"] = data.createdDay
+    satData[prefix .. "linkType"]   = data.linkType
+end
+
+function POS_SatelliteService.clearWiringData(sq)
+    if not sq then return end
+    local buildingKey = getBuildingKey(sq)
+    if not buildingKey then return end
+    local satData = ModData.getOrCreate("POS_Satellite")
+    local prefix = POS_Constants.SATELLITE_WIRING_KEY_PREFIX .. buildingKey .. "_"
+    satData[prefix .. "targetX"]    = nil
+    satData[prefix .. "targetY"]    = nil
+    satData[prefix .. "targetZ"]    = nil
+    satData[prefix .. "wireCount"]  = nil
+    satData[prefix .. "createdDay"] = nil
+    satData[prefix .. "linkType"]   = nil
+end
+
+function POS_SatelliteService.isWired(sq)
+    return POS_SatelliteService.getWiringData(sq) ~= nil
+end
+
+--- Validate that a wired link's target desktop still exists.
+-- Returns true if the target square has a desktop sprite, or if the chunk is unloaded.
+function POS_SatelliteService.validateWiredLink(sq)
+    local data = POS_SatelliteService.getWiringData(sq)
+    if not data then return false end
+    local ok, targetSq = PhobosLib.safecall(getSquare, data.targetX, data.targetY, data.targetZ)
+    if not ok or not targetSq then
+        -- Chunk not loaded — assume valid
+        return true
+    end
+    local desktopSprites = POS_Constants.DESKTOP_COMPUTER_SPRITES
+    for i = 0, targetSq:getObjects():size() - 1 do
+        local obj = targetSq:getObjects():get(i)
+        local sprite = obj:getSprite()
+        if sprite then
+            local spriteName = sprite:getName()
+            if spriteName and desktopSprites[spriteName] then
+                return true
+            end
+        end
+    end
+    return false
+end
+
+--- Find desktop computers within wiring range of a satellite dish.
+-- @return table Array of {x, y, z, wireCount} sorted by wireCount ascending
+function POS_SatelliteService.findDesktopTargets(sq, maxRange)
+    if not sq then return {} end
+    maxRange = maxRange or POS_Constants.SATELLITE_WIRING_MAX_RANGE_DEFAULT
+    local desktopSprites = POS_Constants.DESKTOP_COMPUTER_SPRITES
+    if not desktopSprites then return {} end
+    local targets = {}
+    local sx, sy, sz = sq:getX(), sq:getY(), sq:getZ()
+
+    local found = PhobosLib.scanNearbySquares(sq, maxRange, function(scanSq)
+        for i = 0, scanSq:getObjects():size() - 1 do
+            local obj = scanSq:getObjects():get(i)
+            local sprite = obj:getSprite()
+            if sprite then
+                local spriteName = sprite:getName()
+                if spriteName and desktopSprites[spriteName] then
+                    local tx, ty, tz = scanSq:getX(), scanSq:getY(), scanSq:getZ()
+                    local wireCount = PhobosLib.manhattanDistance(
+                        sx, sy, sz, tx, ty, tz,
+                        POS_Constants.SATELLITE_WIRING_Z_PENALTY)
+                    if wireCount <= maxRange then
+                        table.insert(targets, {
+                            x = tx, y = ty, z = tz,
+                            wireCount = wireCount,
+                        })
+                    end
+                end
+            end
+        end
+        return false -- keep scanning
+    end)
+
+    table.sort(targets, function(a, b) return a.wireCount < b.wireCount end)
+    return targets
+end
+
+--- Wire a satellite dish to a terminal. Consumes wire from inventory.
+function POS_SatelliteService.wireToTerminal(player, sq, targetX, targetY, targetZ, wireCount)
+    if not player or not sq then return false end
+    local consumed = PhobosLib.consumeItems(player, POS_Constants.SATELLITE_WIRING_ITEM, wireCount)
+    if consumed < wireCount then
+        -- Not enough wire — refund what was taken
+        if consumed > 0 then
+            PhobosLib.grantItems(player, POS_Constants.SATELLITE_WIRING_ITEM, consumed)
+        end
+        return false
+    end
+    local currentDay = 0
+    local ok, gameTime = PhobosLib.safecall(getGameTime)
+    if ok and gameTime then
+        local ok2, day = PhobosLib.safecall(gameTime.getWorldAgeHours, gameTime)
+        if ok2 and day then
+            currentDay = math.floor(day / 24)
+        end
+    end
+    POS_SatelliteService.setWiringData(sq, {
+        targetX    = targetX,
+        targetY    = targetY,
+        targetZ    = targetZ,
+        wireCount  = wireCount,
+        createdDay = currentDay,
+        linkType   = POS_Constants.SATELLITE_LINK_TYPE_WIRED,
+    })
+    -- Award SIGINT XP
+    local ok3, sigintService = PhobosLib.safecall(require, "POS_SIGINTService")
+    if ok3 and sigintService and sigintService.awardXP then
+        PhobosLib.safecall(sigintService.awardXP, player, POS_Constants.SIGINT_XP_SATELLITE_CALIBRATE or 2)
+    end
+    PhobosLib.debug("POS", _TAG_WIRE, "Wired to terminal at " .. targetX .. "," .. targetY .. "," .. targetZ .. " (" .. wireCount .. " wires)")
+    return true
+end
+
+--- Disconnect wiring from a satellite dish. Returns wire to player.
+-- @return table|nil {returned = count} or nil if not wired
+function POS_SatelliteService.disconnectWiring(player, sq)
+    if not player or not sq then return nil end
+    local data = POS_SatelliteService.getWiringData(sq)
+    if not data then return nil end
+    local returnCount = math.floor((data.wireCount or 0) * POS_Constants.SATELLITE_WIRING_RETURN_PCT / 100)
+    if returnCount > 0 then
+        PhobosLib.grantItems(player, POS_Constants.SATELLITE_WIRING_ITEM, returnCount)
+    end
+    POS_SatelliteService.clearWiringData(sq)
+    PhobosLib.debug("POS", _TAG_WIRE, "Disconnected wiring, returned " .. returnCount .. " wires")
+    return { returned = returnCount }
+end
+
+--- Check wiring requirements using PhobosLib.checkRequirements.
+function POS_SatelliteService.checkWiringRequirements(player, wireCount)
+    return PhobosLib.checkRequirements(player, {
+        items = { POS_Constants.SATELLITE_WIRING_ITEM, wireCount },
+        tools = {
+            POS_Constants.SATELLITE_WIRING_TOOL_SCREWDRIVER,
+            POS_Constants.SATELLITE_WIRING_TOOL_PLIERS,
+        },
+        minSkill  = POS_Constants.SATELLITE_WIRING_MIN_ELECTRICAL,
+        skillType = "Electrical",
+    })
 end
 
 ---------------------------------------------------------------

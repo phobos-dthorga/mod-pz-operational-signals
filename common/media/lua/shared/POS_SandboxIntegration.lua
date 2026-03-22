@@ -705,6 +705,11 @@ function POS_Sandbox.getSatelliteDecalibrationDays()
         POS_Constants.SATELLITE_DECALIBRATION_DAYS)
 end
 
+function POS_Sandbox.getSatelliteWiringMaxRange()
+    return PhobosLib.getSandboxVar("POS", "SatelliteWiringMaxRange",
+        POS_Constants.SATELLITE_WIRING_MAX_RANGE_DEFAULT)
+end
+
 ---------------------------------------------------------------
 -- Tutorial
 ---------------------------------------------------------------

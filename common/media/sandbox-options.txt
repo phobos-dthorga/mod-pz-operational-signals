@@ -1304,6 +1304,16 @@ option POS.SatelliteDecalibrationDays
     translation = POS_SatelliteDecalibrationDays,
 }
 
+option POS.SatelliteWiringMaxRange
+{
+    type = integer,
+    default = 100,
+    min = 20,
+    max = 300,
+    page = POS_Sandbox,
+    translation = POS_SatelliteWiringMaxRange,
+}
+
 option POS.EnableTutorialHints
 {
     type = boolean,
