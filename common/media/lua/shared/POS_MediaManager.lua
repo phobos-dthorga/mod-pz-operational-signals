@@ -280,8 +280,7 @@ function POS_MediaManager.degradeMedia(item)
     local def = POS_MediaManager.getMediaDef(item)
     if not def then return false end
 
-    local degradeRate = POS_Sandbox and POS_Sandbox.getTapeDegradationRate
-        and POS_Sandbox.getTapeDegradationRate() or POS_Constants.VHS_DEGRADATION_RATE_PCT
+    local degradeRate = POS_Constants.VHS_DEGRADATION_RATE_PCT
     local currentWear = tonumber(md[POS_Constants.MD_MEDIA_WEAR]) or 0
     md[POS_Constants.MD_MEDIA_WEAR] = currentWear + degradeRate
 

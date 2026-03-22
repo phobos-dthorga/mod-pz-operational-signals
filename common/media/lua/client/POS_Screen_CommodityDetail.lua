@@ -171,9 +171,8 @@ function screen.create(contentPanel, params, _terminal)
         end)
     ctx.y = ctx.y + ctx.btnH + 4
 
-    -- Watch/Unwatch toggle (only when watchlist is enabled)
-    if POS_Sandbox and POS_Sandbox.getEnableWatchlist
-        and POS_Sandbox.getEnableWatchlist() then
+    -- Watch/Unwatch toggle
+    do
         local player = getSpecificPlayer(0)
         if player then
             local isWatching = POS_PlayerState.isWatching(player, catId)

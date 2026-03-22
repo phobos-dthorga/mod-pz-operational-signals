@@ -59,12 +59,6 @@ function POS_EconomyTick.processDayTick()
 
     if (currentHour - lastTickHour) < intervalHours then return end
 
-    -- Check sandbox toggle
-    if POS_Sandbox and POS_Sandbox.getEconomyTickEnabled
-            and not POS_Sandbox.getEconomyTickEnabled() then
-        return
-    end
-
     PhobosLib.debug("POS", _TAG, "[EconomyTick] Processing day " .. tostring(currentDay))
 
     -- Phase 1: Purge expired observations

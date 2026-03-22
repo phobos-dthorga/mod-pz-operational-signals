@@ -274,12 +274,6 @@ end
 
 --- Main scan tick -- called every game minute.
 function POS_PassiveRecon.onEveryOneMinute()
-    -- Master toggle
-    if POS_Sandbox and POS_Sandbox.getEnablePassiveRecon
-            and not POS_Sandbox.getEnablePassiveRecon() then
-        return
-    end
-
     local player = getSpecificPlayer(0)
     if not player then return end
 
@@ -292,9 +286,7 @@ function POS_PassiveRecon.onEveryOneMinute()
 
     -- Danger detection gate
     if PhobosLib and PhobosLib.isDangerNearby then
-        local radius = POS_Sandbox and POS_Sandbox.getDangerCheckRadius
-            and POS_Sandbox.getDangerCheckRadius()
-            or POS_Constants.DANGER_CHECK_RADIUS
+        local radius = POS_Constants.DANGER_CHECK_RADIUS
         if PhobosLib.isDangerNearby(player, radius) then
             PhobosLib.debug("POS", _TAG, "scanning paused — danger nearby")
             return

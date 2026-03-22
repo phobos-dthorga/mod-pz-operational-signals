@@ -90,8 +90,7 @@ function POS_MarketBroadcaster.generatePacket()
         local selected = PhobosLib.weightedRandom(allCats, function(cat)
             local w = cat.weight or 1.0
             local bfm = cat.broadcastFrequencyMult or 1.0
-            if cat.isEssential and POS_Sandbox and POS_Sandbox.getEssentialGoodsPriority
-                    and POS_Sandbox.getEssentialGoodsPriority() then
+            if cat.isEssential then
                 w = w * 1.5
             end
             return w * bfm
@@ -110,10 +109,8 @@ function POS_MarketBroadcaster.generatePacket()
     local srcIdx = ZombRand(#BROADCAST_SOURCES) + 1
     local source = BROADCAST_SOURCES[srcIdx]
 
-    -- Get broadcast quality from sandbox
-    local quality = POS_Sandbox and POS_Sandbox.getMarketBroadcastQuality
-        and POS_Sandbox.getMarketBroadcastQuality()
-        or 50
+    -- Broadcast quality (hardcoded default)
+    local quality = 50
 
     -- Broadcast confidence is always lower than field notes
     local confidence = "low"
@@ -181,8 +178,7 @@ function POS_MarketBroadcaster.broadcast()
             recordedDay = POS_WorldState and POS_WorldState.getWorldDay() or 0,
             confidence = packet.confidence or "low",
             sourceTier = POS_Constants.SOURCE_TIER_BROADCAST,
-            quality = POS_Sandbox and POS_Sandbox.getMarketBroadcastQuality
-                and POS_Sandbox.getMarketBroadcastQuality() or 50,
+            quality = 50,
             items = packet.items,
         })
     end

@@ -51,10 +51,6 @@ end
 function POS_EventLog.append(system, eventType, entityId, regionId, actorId, qty, priceBps, cause)
     if not POS_WorldState or not POS_WorldState.isAuthority() then return false end
 
-    local enableLogs = POS_Sandbox and POS_Sandbox.getEnableEventLogs
-        and POS_Sandbox.getEnableEventLogs()
-    if enableLogs == false then return false end
-
     local day = POS_WorldState.getWorldDay()
     local path = POS_EventLog.getLogPath(system, day)
 

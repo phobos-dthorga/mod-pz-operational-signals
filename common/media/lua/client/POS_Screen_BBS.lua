@@ -60,8 +60,7 @@ function screen.create(contentPanel, _params, _terminal)
     end
 
     -- On-demand generation if none available
-    if #opportunities == 0 and POS_Sandbox and POS_Sandbox.isInvestmentEnabled
-       and POS_Sandbox.isInvestmentEnabled()
+    if #opportunities == 0
        and POS_InvestmentGenerator and POS_InvestmentGenerator.generate then
         local opp = POS_InvestmentGenerator.generate()
         if opp and POS_InvestmentLog then

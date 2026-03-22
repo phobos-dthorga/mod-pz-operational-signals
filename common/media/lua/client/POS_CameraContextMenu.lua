@@ -108,9 +108,7 @@ local function resolveActionState(player, actionType, inputCount, requiresPaper,
 
     -- Check danger
     if PhobosLib and PhobosLib.isDangerNearby then
-        local radius = POS_Sandbox and POS_Sandbox.getDangerCheckRadius
-            and POS_Sandbox.getDangerCheckRadius()
-            or POS_Constants.DANGER_CHECK_RADIUS
+        local radius = POS_Constants.DANGER_CHECK_RADIUS
         if PhobosLib.isDangerNearby(player, radius) then
             state = "danger"
             tooltipText = PhobosLib.safeGetText("UI_POS_Camera_DangerNearby")
@@ -128,11 +126,6 @@ end
 
 function POS_CameraContextMenu.onFillWorldObjectContextMenu(playerNum, context, worldobjects, test)
     if test then return end
-
-    -- Master toggle
-    if POS_Sandbox and POS_Sandbox.getEnableMarkets and not POS_Sandbox.getEnableMarkets() then
-        return
-    end
 
     local player = getSpecificPlayer(playerNum)
     if not player then return end

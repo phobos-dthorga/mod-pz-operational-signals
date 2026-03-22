@@ -4,7 +4,8 @@ This document is the authoritative reference for subsystem data flows within
 POSnet. It defines what each subsystem consumes, produces, where it persists
 its truth, and which dependencies are optional. All new subsystems must be
 documented here before implementation begins. See `design-guidelines.md` §28
-for the governing principles.
+for the governing principles. Sandbox option conventions (when to add one, naming,
+anti-patterns) are covered in `design-guidelines.md` §34.
 
 ---
 

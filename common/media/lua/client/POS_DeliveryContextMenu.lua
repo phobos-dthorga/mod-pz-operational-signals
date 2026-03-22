@@ -229,8 +229,6 @@ Events.OnFillWorldObjectContextMenu.Add(onFillWorldObjectContextMenu)
 --- Scan a small radius around the player for mailboxes and cache them.
 --- Runs every in-game minute to passively build the discovery cache.
 local function onPassiveMailboxScan()
-    if not POS_Sandbox or not POS_Sandbox.isDeliveryEnabled() then return end
-
     local player = getSpecificPlayer(0)
     if not player then return end
 

@@ -115,8 +115,7 @@ local function getAvailableRecons()
     end
 
     -- On-demand generation if none available
-    if #results == 0 and POS_Sandbox and POS_Sandbox.isReconEnabled
-       and POS_Sandbox.isReconEnabled() then
+    if #results == 0 then
         local player = getSpecificPlayer(0)
         if player then
             local op = POS_OperationService.generateAndRegister(player, minTier, maxTier)
@@ -144,8 +143,7 @@ local function getAvailableDeliveries()
     end
 
     -- On-demand generation
-    if #results == 0 and POS_Sandbox and POS_Sandbox.isDeliveryEnabled
-       and POS_Sandbox.isDeliveryEnabled() then
+    if #results == 0 then
         local player = getSpecificPlayer(0)
         if player then
             local delivery = POS_DeliveryGenerator.generate(player)
@@ -566,20 +564,8 @@ local function renderAvailableTab(contentPanel, startY)
             local opId = op.id
             W.createButton(parent, rx + 100, ry + itemY, rw - 100, btnH, label, nil,
                 function()
-                    local negotiateEnabled = POS_Sandbox
-                        and POS_Sandbox.isNegotiationEnabled
-                        and POS_Sandbox.isNegotiationEnabled()
-                    if negotiateEnabled then
-                        POS_ScreenManager.navigateTo(POS_Constants.SCREEN_NEGOTIATE,
-                            { operationId = opId })
-                    else
-                        local operation = POS_OperationLog
-                            and POS_OperationLog.get(opId)
-                        if operation then
-                            POS_OperationService.activateOperation(operation)
-                            POS_ScreenManager.markDirty()
-                        end
-                    end
+                    POS_ScreenManager.navigateTo(POS_Constants.SCREEN_NEGOTIATE,
+                        { operationId = opId })
                 end)
             itemY = itemY + btnH + 4
 

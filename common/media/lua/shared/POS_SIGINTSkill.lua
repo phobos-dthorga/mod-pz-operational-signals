@@ -41,18 +41,9 @@ local registered = false
 --- Resolve the SIGINT perk reference from PerkFactory.
 --- The perk itself is registered declaratively via common/media/perks.txt;
 --- this function only caches the runtime enum value for getLevel()/addXP().
---- Gated by sandbox option POS_Sandbox.getEnableSIGINTSkill().
 function POS_SIGINTSkill.register()
     if registered then return end
     registered = true
-
-    -- Sandbox gate
-    if POS_Sandbox and POS_Sandbox.getEnableSIGINTSkill
-        and not POS_Sandbox.getEnableSIGINTSkill() then
-        PhobosLib.debug("POS", _TAG,
-            "SIGINT skill disabled by sandbox option")
-        return
-    end
 
     -- Guard: ensure PerkFactory is available
     if not PerkFactory or not PerkFactory.Perks then

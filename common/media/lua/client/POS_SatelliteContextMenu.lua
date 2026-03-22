@@ -68,12 +68,6 @@ end
 function POS_SatelliteContextMenu.onFillWorldObjectContextMenu(playerNum, context, worldobjects, test)
     if test then return end
 
-    -- Master toggle
-    if POS_Sandbox and POS_Sandbox.getEnableSatelliteUplink
-        and not POS_Sandbox.getEnableSatelliteUplink() then
-        return
-    end
-
     local player = getSpecificPlayer(playerNum)
     if not player then return end
 
@@ -126,9 +120,7 @@ function POS_SatelliteContextMenu.onFillWorldObjectContextMenu(playerNum, contex
     else
         -- Check danger
         if PhobosLib and PhobosLib.isDangerNearby then
-            local radius = POS_Sandbox and POS_Sandbox.getDangerCheckRadius
-                and POS_Sandbox.getDangerCheckRadius()
-                or POS_Constants.DANGER_CHECK_RADIUS
+            local radius = POS_Constants.DANGER_CHECK_RADIUS
             if PhobosLib.isDangerNearby(player, radius) then
                 broadcastState = "danger"
                 broadcastTip = PhobosLib.safeGetText("UI_POS_Satellite_DangerNearby")
@@ -172,9 +164,7 @@ function POS_SatelliteContextMenu.onFillWorldObjectContextMenu(playerNum, contex
     else
         -- Check danger
         if PhobosLib and PhobosLib.isDangerNearby then
-            local radius = POS_Sandbox and POS_Sandbox.getDangerCheckRadius
-                and POS_Sandbox.getDangerCheckRadius()
-                or POS_Constants.DANGER_CHECK_RADIUS
+            local radius = POS_Constants.DANGER_CHECK_RADIUS
             if PhobosLib.isDangerNearby(player, radius) then
                 calibrateState = "danger"
                 calibrateTip = PhobosLib.safeGetText("UI_POS_Satellite_DangerNearby")

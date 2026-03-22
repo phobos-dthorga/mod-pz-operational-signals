@@ -169,11 +169,9 @@ function POS_ChunkProcessor._generateArtifact(player, confidence, source)
     end
 
     -- Optionally damage writing implement
-    local damageChance = POS_Sandbox and POS_Sandbox.getWritingDamageChance
-        and POS_Sandbox.getWritingDamageChance() or POS_Constants.WRITING_DAMAGE_CHANCE_DEFAULT
+    local damageChance = POS_Constants.WRITING_DAMAGE_CHANCE_DEFAULT
     if ZombRand(100) < damageChance then
-        local damageAmt = POS_Sandbox and POS_Sandbox.getWritingDamageAmount
-            and POS_Sandbox.getWritingDamageAmount() or POS_Constants.WRITING_DAMAGE_AMOUNT_DEFAULT
+        local damageAmt = POS_Constants.WRITING_DAMAGE_AMOUNT_DEFAULT
         if PhobosLib.damageItemCondition then
             PhobosLib.damageItemCondition(pen, damageAmt)
         end

@@ -96,9 +96,7 @@ end
 local function awardTradeXP(player, quantity)
     local baseXP = POS_Constants.SIGINT_XP_TRADE_BASE
     local xp = baseXP
-    if quantity >= (POS_Sandbox.getBulkDiscountThreshold
-            and POS_Sandbox.getBulkDiscountThreshold()
-            or POS_Constants.TRADE_BULK_DISCOUNT_THRESHOLD) then
+    if quantity >= POS_Constants.TRADE_BULK_DISCOUNT_THRESHOLD then
         xp = xp + POS_Constants.SIGINT_XP_TRADE_BULK_BONUS
     end
     local ok, POS_SIGINTSkill = PhobosLib.safecall(require, "POS_SIGINTSkill")
@@ -368,13 +366,9 @@ end
 ---@param quantity number
 ---@return number  Discount multiplier (e.g. 0.95 for 5% off)
 function POS_TradeService.computeBulkDiscount(quantity)
-    local threshold = POS_Sandbox.getBulkDiscountThreshold
-        and POS_Sandbox.getBulkDiscountThreshold()
-        or POS_Constants.TRADE_BULK_DISCOUNT_THRESHOLD
+    local threshold = POS_Constants.TRADE_BULK_DISCOUNT_THRESHOLD
     if quantity >= threshold then
-        local pct = POS_Sandbox.getBulkDiscountPercent
-            and POS_Sandbox.getBulkDiscountPercent()
-            or POS_Constants.TRADE_BULK_DISCOUNT_PERCENT
+        local pct = POS_Constants.TRADE_BULK_DISCOUNT_PERCENT
         return 1.0 - (pct / 100)
     end
     return 1.0

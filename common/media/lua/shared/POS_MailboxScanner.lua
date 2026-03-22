@@ -144,9 +144,6 @@ function POS_MailboxScanner.initialScan()
     local meta = POS_WorldState and POS_WorldState.getMeta()
     if meta and meta.mailboxScanDone then return end
 
-    if not POS_Sandbox or not POS_Sandbox.isDeliveryEnabled
-       or not POS_Sandbox.isDeliveryEnabled() then return end
-
     -- Try loading from external cache first
     if POS_WorldState and POS_WorldState.loadMailboxCache then
         local cached = POS_WorldState.loadMailboxCache()

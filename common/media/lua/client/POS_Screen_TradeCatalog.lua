@@ -241,9 +241,7 @@ local function renderItemList(ctx, W, C, params, player, balance)
             itemY = itemY + ctx.btnH + 4
 
             -- Bulk discount hint
-            local bulkThreshold = POS_Sandbox and POS_Sandbox.getBulkDiscountThreshold
-                and POS_Sandbox.getBulkDiscountThreshold()
-                or POS_Constants.TRADE_BULK_THRESHOLD_DEFAULT
+            local bulkThreshold = POS_Constants.TRADE_BULK_THRESHOLD_DEFAULT
             if qty >= bulkThreshold then
                 W.createLabel(parent, rx + 8, ry + itemY,
                     W.safeGetText("UI_POS_Trade_BulkDiscount"), C.success)

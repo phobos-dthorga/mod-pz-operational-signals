@@ -40,7 +40,7 @@ screen.menuPath = {"pos.main"}
 screen.titleKey = "UI_POS_Markets_Title"
 screen.sortOrder = 40
 screen.shouldShow = function(_player, _ctx)
-    return POS_Sandbox and POS_Sandbox.getEnableMarkets and POS_Sandbox.getEnableMarkets()
+    return true
 end
 
 function screen.create(contentPanel, _params, _terminal)
@@ -146,8 +146,7 @@ screen.getContextData = function(_params)
         table.insert(data, { type = "kv", key = "UI_POS_Market_NotesCount",
             value = tostring(noteCount) })
     end
-    if player and POS_Sandbox and POS_Sandbox.getEnableWatchlist
-        and POS_Sandbox.getEnableWatchlist() then
+    if player then
         local alertCount = POS_WatchlistService.countPendingAlerts(player)
         if alertCount > 0 then
             table.insert(data, { type = "kv", key = "UI_POS_Market_AlertCount",

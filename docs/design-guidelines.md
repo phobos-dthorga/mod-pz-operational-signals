@@ -2802,3 +2802,57 @@ implementation is `createTabbedView()` from `POS_TerminalWidgets`.
 | **Creating a new screen for a confirmation dialog** | Adds unnecessary navigation depth | Use an inline confirm pattern within the existing screen |
 | **Hub screens with content** | Hubs should be menu-only; mixing content with navigation confuses the player | Keep hub screens as pure menu builders; put content in leaf screens |
 | **Tabs that push to the navigation stack** | Pollutes the back-stack, breaks breadcrumbs | Tabs must use `replaceCurrent()`, never `navigateTo()` |
+
+---
+
+## 34. Sandbox Option Hygiene
+
+POSnet exposes sandbox options so server admins and solo players can tune the
+experience. Not every tunable value should be a sandbox option. This section
+defines when to add one, how to name it, and what to avoid.
+
+### 34.1 When to Add a Sandbox Option
+
+- Only add an option when the player meaningfully benefits from tuning it.
+- Feature toggles that default to `true` and are never expected to be disabled
+  should **not** be sandbox options.
+- Numeric values that are implementation details (buffer sizes, internal timers)
+  should be constants, not sandbox options.
+- Ask: "Would a player ever change this?" -- if the answer is "probably not",
+  it is a constant.
+
+### 34.2 Option Categories
+
+| Category | Example | Belongs In |
+|---|---|---|
+| Gameplay balance | ReputationCap, OperationExpiryDays | Sandbox option |
+| Player preference | TerminalFontSize, ColourTheme | Sandbox option |
+| Experimental gate | EnableLivingMarket | Sandbox option |
+| Performance limit | MaxObservationsPerCategory | Sandbox option |
+| Core feature toggle | "EnableMarkets" on a market mod | Constant (always true) |
+| Internal tuning | WritingDamageChance, BufferSize | Constant |
+| Unused placeholder | "Reserved for future" | Don't add until needed |
+
+### 34.3 Naming Conventions
+
+- Boolean gates: `POS.EnableFeatureName` (only for genuinely optional features).
+- Numeric tuning: `POS.FeatureParameterName` (e.g.,
+  `POS.EconomyTickIntervalHours`).
+- All options need both `Sandbox_POS_Name` and `Sandbox_POS_Name_tooltip`
+  translation keys.
+
+### 34.4 Anti-Patterns
+
+| Anti-Pattern | Why It's Wrong |
+|---|---|
+| Feature toggle for core functionality | Players installed the mod for this feature -- don't let them break it |
+| Placeholder options with no reads | Wastes sandbox UI space, confuses players |
+| Hyper-granular numeric tuning | Six weight sliders nobody will touch -- use a single preset or hardcode |
+| Option without tooltip | Players can't understand what it does |
+
+### 34.5 Cleanup Reference
+
+POSnet underwent a sandbox option cleanup from 135 to approximately 96 options
+in v0.17.0, removing 19 unused options and 20 always-on feature toggles. This
+section codifies the principles that guided that cleanup so future development
+does not re-introduce the same bloat.

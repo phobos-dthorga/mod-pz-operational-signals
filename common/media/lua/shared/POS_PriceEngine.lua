@@ -84,10 +84,6 @@ end
 --- @param player IsoPlayer|nil
 --- @return number
 function POS_PriceEngine.getVarianceMultiplier(player)
-    if not (POS_Sandbox and POS_Sandbox.getReputationAffectsVariance
-            and POS_Sandbox.getReputationAffectsVariance()) then
-        return 1.0
-    end
     local tier = POS_Reputation and POS_Reputation.getTier(player) or 3
     return POS_Constants.REP_VARIANCE_MULTIPLIERS[tier]
         or POS_Constants.REP_VARIANCE_MULTIPLIERS[3]

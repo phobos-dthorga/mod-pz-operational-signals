@@ -39,8 +39,7 @@ screen.menuPath = {"pos.markets"}
 screen.titleKey = "UI_POS_Market_Watchlist"
 screen.sortOrder = 50
 screen.shouldShow = function(_player, _ctx)
-    return POS_Sandbox and POS_Sandbox.getEnableWatchlist
-        and POS_Sandbox.getEnableWatchlist()
+    return true
 end
 
 function screen.create(contentPanel, params, _terminal)

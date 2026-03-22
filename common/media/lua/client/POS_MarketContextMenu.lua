@@ -89,9 +89,7 @@ local function resolveIntelState(player, hasCategories)
         state = POS_Constants.INTEL_STATE_WRONG_LOCATION
         tooltipText = PhobosLib.safeGetText("UI_POS_Market_GatherIntel_WrongLocation")
     elseif PhobosLib and PhobosLib.isDangerNearby then
-        local radius = POS_Sandbox and POS_Sandbox.getDangerCheckRadius
-            and POS_Sandbox.getDangerCheckRadius()
-            or POS_Constants.DANGER_CHECK_RADIUS
+        local radius = POS_Constants.DANGER_CHECK_RADIUS
         if PhobosLib.isDangerNearby(player, radius) then
             state = POS_Constants.INTEL_STATE_DANGER_NEARBY
             tooltipText = PhobosLib.safeGetText("UI_POS_Market_GatherIntel_DangerNearby")
@@ -109,8 +107,7 @@ local function resolveIntelState(player, hasCategories)
             if visitKey then
                 local lastVisitDay = player:getModData()[visitKey] or -999
                 local currentDay = getGameTime():getNightsSurvived()
-                local cooldownDays = POS_Sandbox and POS_Sandbox.getIntelCooldownDays
-                    and POS_Sandbox.getIntelCooldownDays() or POS_Constants.INTEL_COOLDOWN_DAYS_DEFAULT
+                local cooldownDays = POS_Constants.INTEL_COOLDOWN_DAYS_DEFAULT
                 local daysSince = currentDay - lastVisitDay
 
                 if daysSince < cooldownDays then
@@ -134,11 +131,6 @@ end
 
 function POS_MarketContextMenu.onFillWorldObjectContextMenu(playerNum, context, worldobjects, test)
     if test then return end
-
-    -- Master toggle
-    if POS_Sandbox and POS_Sandbox.getEnableMarkets and not POS_Sandbox.getEnableMarkets() then
-        return
-    end
 
     local player = getSpecificPlayer(playerNum)
     if not player then return end

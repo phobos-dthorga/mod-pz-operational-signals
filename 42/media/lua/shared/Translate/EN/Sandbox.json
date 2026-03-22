@@ -3,8 +3,6 @@
     "Sandbox_POS_Sandbox": "Phobos Operational Signals",
     "Sandbox_POS_EnableDebugLogging": "Enable Debug Logging",
     "Sandbox_POS_EnableDebugLogging_tooltip": "Print verbose debug messages from POSnet modules to console.txt. <BR> <BR> <INDENT:20> Useful for troubleshooting but may impact performance. <BR> Default: OFF",
-    "Sandbox_POS_EnableBroadcasts": "Enable POSnet Broadcasts",
-    "Sandbox_POS_EnableBroadcasts_tooltip": "Master toggle for the POSnet radio broadcast system. <BR> <BR> <INDENT:20> When disabled, no operations will be generated or broadcast. <BR> Default: ON",
     "Sandbox_POS_BroadcastIntervalMinutes": "Broadcast Interval (minutes)",
     "Sandbox_POS_BroadcastIntervalMinutes_tooltip": "Time in game-minutes between POSnet broadcast transmissions. <BR> <BR> <INDENT:20> Lower values = more frequent operations. <BR> Range: 5–120. Default: 30",
     "Sandbox_POS_MaxActiveOperations": "Max Active Operations",
@@ -32,8 +30,6 @@
     "Sandbox_POS_SignalAffectsMissionRange": "Signal Affects Mission Range",
     "Sandbox_POS_SignalAffectsMissionRange_tooltip": "When enabled, radio signal strength influences mission distance and quality. <BR> <BR> <INDENT:20> Weaker signals produce closer, simpler missions. <BR> Stronger signals unlock longer-range, higher-reward operations. <BR> Default: ON",
 
-    "Sandbox_POS_EnableInvestments": "Enable BBS Investments",
-    "Sandbox_POS_EnableInvestments_tooltip": "Master toggle for the BBS investment system. <BR> <BR> <INDENT:20> When disabled, no investment opportunities will be generated. <BR> Default: ON",
     "Sandbox_POS_InvestmentMinPaybackDays": "Investment Min Payback (days)",
     "Sandbox_POS_InvestmentMinPaybackDays_tooltip": "Minimum payback period for investment opportunities in game days. <BR> <BR> <INDENT:20> Shorter payback = lower base risk. <BR> Range: 7–60. Default: 14",
     "Sandbox_POS_InvestmentMaxPaybackDays": "Investment Max Payback (days)",
@@ -55,8 +51,6 @@
     "Sandbox_POS_InvestmentBroadcastMins": "Investment Broadcast Interval (minutes)",
     "Sandbox_POS_InvestmentBroadcastMins_tooltip": "Time in game-minutes between new investment opportunity broadcasts. <BR> <BR> <INDENT:20> Lower values = more frequent opportunities. <BR> Range: 15–240. Default: 60",
 
-    "Sandbox_POS_EnableDeliveryMissions": "Enable Delivery Missions",
-    "Sandbox_POS_EnableDeliveryMissions_tooltip": "Master toggle for the Courier Service delivery mission system. <BR> <BR> <INDENT:20> When disabled, no delivery missions will be generated. <BR> Default: ON",
     "Sandbox_POS_MinDeliveryDistance": "Min Delivery Distance (tiles)",
     "Sandbox_POS_MinDeliveryDistance_tooltip": "Minimum road distance in tiles between pickup and dropoff mailboxes. <BR> <BR> <INDENT:20> Shorter distances give lower rewards (~$1,000). <BR> Based on ~5 min drive time at 65 MPH. <BR> Range: 1000–15000. Default: 4400",
     "Sandbox_POS_MaxDeliveryDistance": "Max Delivery Distance (tiles)",
@@ -64,8 +58,6 @@
     "Sandbox_POS_DeliveryRoadFactor": "Delivery Road Factor",
     "Sandbox_POS_DeliveryRoadFactor_tooltip": "Estimated road distance as a percentage of straight-line distance. <BR> <BR> <INDENT:20> 130 means road distance is ~1.3x the straight-line distance. <BR> Used for reward estimation before actual distance is tracked. <BR> Range: 100–200. Default: 130",
 
-    "Sandbox_POS_EnableReconMissions": "Enable Recon Missions",
-    "Sandbox_POS_EnableReconMissions_tooltip": "Master toggle for building recon missions. <BR> <BR> <INDENT:20> When disabled, no recon operations will be generated. <BR> Default: ON",
     "Sandbox_POS_ReputationCap": "Reputation Cap",
     "Sandbox_POS_ReputationCap_tooltip": "Maximum reputation a player can reach. <BR> <BR> <INDENT:20> Higher caps require more missions to reach endgame tiers. <BR> Range: 500–10000. Default: 2500",
     "Sandbox_POS_ReputationMultiplier": "Reputation Multiplier",
@@ -83,18 +75,9 @@
     "Sandbox_POS_InvestmentRepPerHundred": "Investment Rep per $100",
     "Sandbox_POS_InvestmentRepPerHundred_tooltip": "Reputation gained per $100 invested when an investment matures successfully. <BR> <BR> <INDENT:20> Defaulted investments apply a minor negative equivalent. <BR> Range: 0–50. Default: 10",
 
-    "Sandbox_POS_WritingDamageChance": "Writing Damage Chance",
-    "Sandbox_POS_WritingDamageChance_tooltip": "Percentage chance that a pen or pencil takes condition damage when crafting field reports. <BR> <BR> <INDENT:20> Set to 0 to disable writing implement wear. <BR> Range: 0–100. Default: 20",
-    "Sandbox_POS_WritingDamageAmount": "Writing Damage Amount",
-    "Sandbox_POS_WritingDamageAmount_tooltip": "Average condition loss per damage event on writing implements. <BR> <BR> <INDENT:20> Actual loss varies ±2 around this value. <BR> Range: 1–20. Default: 7",
-
-    "Sandbox_POS_EnableNegotiation": "Enable Mission Negotiation",
-    "Sandbox_POS_EnableNegotiation_tooltip": "When enabled, players can negotiate mission terms (reward, deadline) before accepting. <BR> <BR> <INDENT:20> Success chance is based on reputation tier. <BR> When disabled, missions are accepted at the posted terms. <BR> Default: ON",
     "Sandbox_POS_NegotiationSuccessBonus": "Negotiation Success Bonus",
     "Sandbox_POS_NegotiationSuccessBonus_tooltip": "Flat bonus (or penalty if negative) added to the base negotiation success chance. <BR> <BR> <INDENT:20> Base chances: Tier I = 30%, Tier II = 50%, Tier III = 70%, Tier IV = 85%. <BR> Range: -50 to 50. Default: 0",
 
-    "Sandbox_POS_EnableCancellationPenalty": "Enable Cancellation Penalties",
-    "Sandbox_POS_EnableCancellationPenalty_tooltip": "When enabled, cancelling active missions incurs a reputation penalty scaled by mission tier. <BR> <BR> <INDENT:20> Tier I (low risk) missions are always free to cancel. <BR> Default: ON",
     "Sandbox_POS_BaseCancelPenalty": "Base Cancel Penalty (recon)",
     "Sandbox_POS_BaseCancelPenalty_tooltip": "Base reputation penalty for cancelling recon operations. <BR> <BR> <INDENT:20> Scaled by tier: Tier II = 0.5x, Tier III = 1.0x, Tier IV = 1.5x. <BR> Set to 0 to remove recon cancel penalties. <BR> Range: 0–200. Default: 30",
     "Sandbox_POS_BaseCancelPenaltyDelivery": "Base Cancel Penalty (delivery)",
@@ -107,16 +90,9 @@
     "Sandbox_POS_FontScaleWithWindow": "Scale Font with Window Size",
     "Sandbox_POS_FontScaleWithWindow_tooltip": "When enabled, the terminal font size adjusts based on window width. <BR> <BR> <INDENT:20> Smaller windows use a smaller font; larger windows use a larger font. <BR> Independent of PZ's global font settings. <BR> Default: OFF",
 
-    "Sandbox_POS_EnableNavPanel": "Enable Navigation Panel",
-    "Sandbox_POS_EnableNavPanel_tooltip": "Show the persistent navigation sidebar on the left side of the terminal. <BR> <BR> <INDENT:20> Provides quick access to all terminal sections and displays signal strength. <BR> Disable for a full-width content panel. <BR> Default: ON",
-    "Sandbox_POS_EnableContextPanel": "Enable Context Panel",
-    "Sandbox_POS_EnableContextPanel_tooltip": "Show the context-sensitive detail panel on the right side of the terminal. <BR> <BR> <INDENT:20> Displays mission details, negotiation chances, and investment info. <BR> Automatically collapses on narrow windows. <BR> Disable for more content width. <BR> Default: ON",
-
     "Sandbox_POS_TerminalPowerDrainRate": "Terminal Power Drain Rate",
     "Sandbox_POS_TerminalPowerDrainRate_tooltip": "Generator fuel drain rate while the desktop terminal is active (as hundredths of % per real-time minute). <BR> <BR> <INDENT:20> Only applies when grid power is off. Grid power is free. <BR> Set to 0 to disable power drain entirely. <BR> Range: 0–100. Default: 15 (0.15%/min, ~11 hours per full generator)",
 
-    "Sandbox_POS_EnableMarkets": "Enable Market Intelligence",
-    "Sandbox_POS_EnableMarkets_tooltip": "Master toggle for the market intelligence system. <BR> <BR> <INDENT:20> When enabled, players can gather and compile commodity data. <BR> Default: ON",
     "Sandbox_POS_EnableExchange": "Enable Commodity Exchange",
     "Sandbox_POS_EnableExchange_tooltip": "Master toggle for the commodity exchange system. <BR> <BR> <INDENT:20> Provides commodity indices, trends, and portfolio tracking. <BR> Currently experimental — disabled by default. <BR> Default: OFF",
     "Sandbox_POS_IntelFreshnessDecayDays": "Intel Freshness Decay (days)",
@@ -128,29 +104,14 @@
     "Sandbox_POS_MarketNoteActionTime_tooltip": "Duration of the 'Gather Market Intel' timed action in game ticks. <BR> <BR> <INDENT:20> Lower values = faster note-taking. <BR> Range: 100–600. Default: 300",
     "Sandbox_POS_EnableMarketBroadcasts": "Enable Market Broadcasts",
     "Sandbox_POS_EnableMarketBroadcasts_tooltip": "When enabled, the server periodically broadcasts market intel data to all players. <BR> <BR> <INDENT:20> Broadcast data is lower quality than field-gathered notes. <BR> Default: ON",
-    "Sandbox_POS_MarketBroadcastQuality": "Market Broadcast Quality",
-    "Sandbox_POS_MarketBroadcastQuality_tooltip": "Quality of server-broadcast market intel (0–100). <BR> <BR> <INDENT:20> Higher values produce more reliable broadcast data. <BR> Field-gathered notes are always higher quality than broadcasts. <BR> Range: 0–100. Default: 50",
-
-    "Sandbox_POS_EnableCategoryWeighting": "Enable Category Weighting",
-    "Sandbox_POS_EnableCategoryWeighting_tooltip": "When enabled, commodity categories are weighted by importance. <BR> <BR> <INDENT:20> Essential goods (fuel, medicine, food) appear more frequently in broadcasts and intel. <BR> When disabled, all categories are equally likely. <BR> Default: ON",
-
-    "Sandbox_POS_EnableItemLevelIntel": "Enable Item-Level Intel",
-    "Sandbox_POS_EnableItemLevelIntel_tooltip": "When enabled, market notes track specific items within categories. <BR> <BR> <INDENT:20> Field notes will contain 1-5 specific items with individual prices. <BR> When disabled, only category-level prices are recorded. <BR> Default: ON",
-
     "Sandbox_POS_ItemSelectionPoolSize": "Items Per Recon Note",
     "Sandbox_POS_ItemSelectionPoolSize_tooltip": "Number of specific items recorded per field reconnaissance note. <BR> <BR> <INDENT:20> Higher values give more detailed market intelligence per action. <BR> Range: 1-5. Default: 3",
 
     "Sandbox_POS_BroadcastItemsPerPacket": "Items Per Broadcast",
     "Sandbox_POS_BroadcastItemsPerPacket_tooltip": "Number of specific items included in each market broadcast. <BR> <BR> <INDENT:20> Higher values provide more data but broadcast intel is less accurate than field notes. <BR> Range: 1-5. Default: 2",
 
-    "Sandbox_POS_ReputationAffectsVariance": "Reputation Affects Price Accuracy",
-    "Sandbox_POS_ReputationAffectsVariance_tooltip": "When enabled, higher reputation tiers produce more accurate price estimates. <BR> <BR> <INDENT:20> Tier 1 (Untrusted): 1.5x variance (wide, inaccurate) <BR> Tier 3 (Trusted): 1.0x (baseline) <BR> Tier 5 (Legendary): 0.6x (very accurate) <BR> When disabled, all players get baseline accuracy. <BR> Default: ON",
-
     "Sandbox_POS_DailyPriceDriftPct": "Daily Price Drift",
     "Sandbox_POS_DailyPriceDriftPct_tooltip": "Maximum percentage that commodity prices can drift per game day. <BR> <BR> <INDENT:20> Higher values create more volatile markets. 0 = prices never drift. <BR> Drift direction is influenced by supply/demand intel from player reconnaissance. <BR> Range: 0-10. Default: 2",
-
-    "Sandbox_POS_EssentialGoodsPriority": "Essential Goods Priority",
-    "Sandbox_POS_EssentialGoodsPriority_tooltip": "When enabled, essential categories (fuel, medicine, food) are broadcast 1.5x more frequently. <BR> <BR> <INDENT:20> This makes survival-critical market data more available to players. <BR> When disabled, all categories broadcast at their base frequency. <BR> Default: ON",
 
     "Sandbox_POS_WeightFuel": "Fuel Category Weight",
     "Sandbox_POS_WeightFuel_tooltip": "Selection weight for the Fuel commodity category (divided by 100). <BR> <BR> <INDENT:20> Higher values make fuel appear more often in market data. <BR> 150 = 1.5x importance. Range: 10-300. Default: 150",
@@ -185,17 +146,8 @@
     "Sandbox_POS_MaxPlayerAlerts": "Max Player Alerts",
     "Sandbox_POS_MaxPlayerAlerts_tooltip": "Maximum number of market alerts retained per player. <BR> <BR> <INDENT:20> Older alerts are discarded when this cap is exceeded. <BR> Range: 5-50. Default: 20",
 
-    "Sandbox_POS_EconomyTickEnabled": "Enable Economy Daily Tick",
-    "Sandbox_POS_EconomyTickEnabled_tooltip": "When enabled, the market economy processes a daily tick that updates prices, aggregates observations, and advances wholesaler behaviour. <BR> <BR> <INDENT:20> Disabling freezes the economy at its current state. <BR> Default: ON",
-
-    "Sandbox_POS_EnableEventLogs": "Enable Event Logs",
-    "Sandbox_POS_EnableEventLogs_tooltip": "When enabled, the server writes append-only event logs for market activity. <BR> <BR> <INDENT:20> Useful for debugging, auditing, and admin analysis. <BR> Logs are stored outside the save file and do not affect modData size. <BR> Default: ON",
-
     "Sandbox_POS_EventLogRetentionDays": "Event Log Retention (days)",
     "Sandbox_POS_EventLogRetentionDays_tooltip": "Number of in-game days to retain event log files before purging. <BR> <BR> <INDENT:20> Older log files are truncated during the daily economy tick. <BR> Range: 7-90. Default: 30",
-
-    "Sandbox_POS_EnablePassiveRecon": "Enable Passive Reconnaissance",
-    "Sandbox_POS_EnablePassiveRecon_tooltip": "When enabled, recon devices passively scan the environment while carried and equipped. <BR> <BR> <INDENT:20> Default: ON",
 
     "Sandbox_POS_PassiveReconInterval": "Passive Recon Interval (seconds)",
     "Sandbox_POS_PassiveReconInterval_tooltip": "Time between passive reconnaissance scans in game seconds. <BR> <BR> <INDENT:20> Lower values scan more frequently but use more battery. <BR> Range: 30-180. Default: 60",
@@ -206,58 +158,20 @@
     "Sandbox_POS_LoggerScanRadius": "Field Logger Scan Radius (tiles)",
     "Sandbox_POS_LoggerScanRadius_tooltip": "Passive scan radius for the Field Survey Logger when equipped. <BR> <BR> <INDENT:20> Range: 10-50. Default: 25",
 
-    "Sandbox_POS_VHSTapeMinDays": "VHS Tape Minimum Operation (days)",
-    "Sandbox_POS_VHSTapeMinDays_tooltip": "Minimum number of in-game days a VHS tape should last under continuous recording. <BR> <BR> <INDENT:20> Range: 1-7. Default: 3",
-
-    "Sandbox_POS_CamcorderNoiseLevel": "Camcorder Noise Level",
-    "Sandbox_POS_CamcorderNoiseLevel_tooltip": "Percentage increase to player noise while the camcorder is actively recording. <BR> <BR> <INDENT:20> 0 = silent operation. Higher values attract more zombies. <BR> Range: 0-20. Default: 5",
-
-    "Sandbox_POS_TapeDegradationRate": "Tape Degradation Rate",
-    "Sandbox_POS_TapeDegradationRate_tooltip": "Quality loss applied to a VHS tape each time it is uploaded and erased. <BR> <BR> <INDENT:20> Higher values make tapes wear out faster. 0 = no degradation. <BR> Range: 0-30. Default: 10",
-
-    "Sandbox_POS_CalculatorConfidenceBonus": "Calculator Confidence Bonus",
-    "Sandbox_POS_CalculatorConfidenceBonus_tooltip": "Passive confidence bonus applied to all recon data when a Data Calculator is in inventory. <BR> <BR> <INDENT:20> Range: 0-15. Default: 5",
-
-    "Sandbox_POS_EnableVHSCrafting": "Enable VHS Tape Crafting",
-    "Sandbox_POS_EnableVHSCrafting_tooltip": "When enabled, players can repair, splice, and improvise VHS tapes from scavenged materials. <BR> <BR> <INDENT:20> Default: ON",
-
-    "Sandbox_POS_EnableForagingTapes": "Enable Tape Foraging",
-    "Sandbox_POS_EnableForagingTapes_tooltip": "When enabled, damaged VHS tapes and magnetic tape scraps can be found while foraging in urban areas. <BR> <BR> <INDENT:20> Default: ON",
-
-    "Sandbox_POS_IntelCooldownDays": "Intel Gathering Cooldown",
-    "Sandbox_POS_IntelCooldownDays_tooltip": "Number of in-game days before the same location can be surveyed again for market intel. <BR> <BR> <INDENT:20> Prevents repeat-farming at the same building. <BR> Approaches but does not exceed the intel freshness decay period. <BR> Range: 3-14. Default: 12",
-
-    "Sandbox_POS_VHSReviewTimePerEntry": "VHS Review Time Per Entry (ticks)",
-    "Sandbox_POS_VHSReviewTimePerEntry_tooltip": "Duration of each VHS tape entry review at a TV station in game ticks. <BR> <BR> <INDENT:20> 300 ticks = ~5 minutes at 1x game speed. <BR> Each entry on the tape requires a separate review action. <BR> Range: 100-600. Default: 300",
-
-    "Sandbox_POS_DangerCheckRadius": "Danger Detection Radius (tiles)",
-    "Sandbox_POS_DangerCheckRadius_tooltip": "Radius in tiles for threat detection when gathering intel or using passive recon devices. <BR> <BR> <INDENT:20> Detects: live zombies, active fires, combat. <BR> Higher values are safer but more restrictive. <BR> Range: 5-30. Default: 15",
-
-    "Sandbox_POS_EnableWatchlist": "Enable Watchlist",
-    "Sandbox_POS_EnableWatchlist_tooltip": "Allow players to watch commodity categories and receive price alerts. <BR> <BR> <INDENT:20> When disabled, the watchlist screen and watch/unwatch buttons are hidden. <BR> Default: ON",
-
     "Sandbox_POS_WatchlistAlertThresholdPct": "Watchlist Alert Threshold (%)",
     "Sandbox_POS_WatchlistAlertThresholdPct_tooltip": "Percentage price change that triggers a watchlist alert. <BR> <BR> <INDENT:20> A value of 10 means alerts fire when a watched category's average price changes by 10% or more since the last check. <BR> Range: 1-50. Default: 10",
 
-    "Sandbox_POS_EnableDataRecorder": "Enable Data-Recorder System",
-    "Sandbox_POS_EnableDataRecorder_tooltip": "Master toggle for the Data-Recorder passive ingestion system. <BR> <BR> <INDENT:20> When enabled, all passive recon data routes through an equipped Data-Recorder. <BR> When disabled, the recorder item still exists but passive scanning reverts to legacy behaviour. <BR> Default: ON",
     "Sandbox_POS_RecorderInternalBufferSize": "Recorder Internal Buffer Size",
     "Sandbox_POS_RecorderInternalBufferSize_tooltip": "Number of data chunks the recorder can store internally when no media is inserted. <BR> <BR> <INDENT:20> Overflow chunks are lost. Insert media for extended storage. <BR> Range: 4-32. Default: 8",
     "Sandbox_POS_RecorderPowerDrainRate": "Recorder Power Drain Rate",
     "Sandbox_POS_RecorderPowerDrainRate_tooltip": "Condition loss per in-game hour while the Data-Recorder is actively recording. <BR> <BR> <INDENT:20> Expressed in hundredths of condition (50 = 0.5 condition per hour). <BR> Range: 10-200. Default: 50",
     "Sandbox_POS_RecorderProcessingTime": "Recorder Processing Time (ticks)",
     "Sandbox_POS_RecorderProcessingTime_tooltip": "Duration of each chunk processing action at a POSnet terminal in game ticks. <BR> <BR> <INDENT:20> Lower values = faster processing. <BR> Range: 10-100. Default: 30",
-    "Sandbox_POS_EnableMicrocassettes": "Enable Microcassettes",
-    "Sandbox_POS_EnableMicrocassettes_tooltip": "When enabled, microcassette tapes appear in loot and can be used with the Data-Recorder. <BR> <BR> <INDENT:20> High-fidelity medium (+1000 BPS confidence). 10 entries per tape. <BR> Default: ON",
-    "Sandbox_POS_EnableFloppyDisks": "Enable Floppy Disks",
-    "Sandbox_POS_EnableFloppyDisks_tooltip": "When enabled, floppy disks appear in loot and can be used with the Data-Recorder. <BR> <BR> <INDENT:20> Digital precision (+2000 BPS confidence). 40 entries per disk. Extremely rare. <BR> Default: ON",
     "Sandbox_POS_FloppyCorruptionChance": "Floppy Corruption Chance (%)",
     "Sandbox_POS_FloppyCorruptionChance_tooltip": "Percentage chance that a worn floppy disk corrupts irreparably on each review cycle. <BR> <BR> <INDENT:20> Set to 0 for indestructible floppies. <BR> Range: 0-50. Default: 15",
     "Sandbox_POS_MicrocassetteMaxRewinds": "Microcassette Max Rewinds",
     "Sandbox_POS_MicrocassetteMaxRewinds_tooltip": "Maximum number of times a microcassette can be rewound for reuse. <BR> <BR> <INDENT:20> After reaching this limit, the tape becomes spent and must be recycled. <BR> Range: 1-5. Default: 1",
 
-    "Sandbox_POS_EnableCameraWorkstation": "Enable Camera Workstation",
-    "Sandbox_POS_EnableCameraWorkstation_tooltip": "Master toggle for the Camera Workstation intelligence compilation system. <BR> <BR> <INDENT:20> When disabled, camera furniture context menus are hidden. <BR> Default: ON",
     "Sandbox_POS_CameraCompileTime": "Camera Compile Time (seconds)",
     "Sandbox_POS_CameraCompileTime_tooltip": "Duration of the Compile Site Survey timed action in seconds. <BR> <BR> <INDENT:20> Range: 120-600. Default: 300",
     "Sandbox_POS_CameraTapeReviewTime": "Camera Tape Review Time (seconds)",
@@ -277,8 +191,6 @@
     "Sandbox_POS_CameraBulletinRepBonus": "Camera Bulletin Reputation Bonus",
     "Sandbox_POS_CameraBulletinRepBonus_tooltip": "Reputation bonus (in hundredths) awarded for producing a Market Bulletin. <BR> <BR> <INDENT:20> 50 = +0.50 reputation. <BR> Range: 0-200. Default: 50",
 
-    "Sandbox_POS_EnableSIGINTSkill": "Enable SIGINT Skill",
-    "Sandbox_POS_EnableSIGINTSkill_tooltip": "Master toggle for the Signal Intelligence perk. <BR> <BR> <INDENT:20> When disabled, the SIGINT skill is not registered and all level-based modifiers are inactive. <BR> Default: ON",
     "Sandbox_POS_SIGINTXPMultiplier": "SIGINT XP Multiplier (%)",
     "Sandbox_POS_SIGINTXPMultiplier_tooltip": "Global multiplier for all SIGINT XP gains. <BR> <BR> <INDENT:20> 100 = standard, 200 = double XP, 50 = half XP. <BR> Range: 25-400. Default: 100",
     "Sandbox_POS_SIGINTNoiseReduction": "SIGINT Noise Reduction",
@@ -294,8 +206,6 @@
     "Sandbox_POS_SIGINTBookSpawns": "SIGINT Book Spawns",
     "Sandbox_POS_SIGINTBookSpawns_tooltip": "When enabled, SIGINT skill books appear in world loot (libraries, military bases, electronics stores). <BR> <BR> <INDENT:20> Default: ON",
 
-    "Sandbox_POS_EnableTerminalAnalysis": "Enable Terminal Analysis",
-    "Sandbox_POS_EnableTerminalAnalysis_tooltip": "Master toggle for the Process Intelligence action at POSnet terminals. <BR> <BR> <INDENT:20> When disabled, the analysis screen and action are hidden. <BR> Default: ON",
     "Sandbox_POS_AnalysisBaseTime": "Analysis Base Time (seconds)",
     "Sandbox_POS_AnalysisBaseTime_tooltip": "Base duration of the Process Intelligence timed action in seconds. <BR> <BR> <INDENT:20> Reduced by SIGINT skill when time reduction is enabled. <BR> Range: 60-600. Default: 180",
     "Sandbox_POS_AnalysisMaxInputs": "Analysis Max Inputs",
@@ -309,8 +219,6 @@
     "Sandbox_POS_AnalysisDiversityBonus": "Analysis Diversity Bonus",
     "Sandbox_POS_AnalysisDiversityBonus_tooltip": "When enabled, using inputs from diverse sources and categories grants a confidence bonus. <BR> <BR> <INDENT:20> Default: ON",
 
-    "Sandbox_POS_EnableSatelliteUplink": "Enable Satellite Uplink",
-    "Sandbox_POS_EnableSatelliteUplink_tooltip": "Master toggle for satellite dish interactions. <BR> <BR> <INDENT:20> When disabled, satellite dish context menus are hidden. <BR> Default: ON",
     "Sandbox_POS_SatelliteBroadcastCooldownHours": "Satellite Broadcast Cooldown (hours)",
     "Sandbox_POS_SatelliteBroadcastCooldownHours_tooltip": "Cooldown between broadcasts at the same satellite dish. <BR> <BR> <INDENT:20> 0 = no cooldown. <BR> Range: 0-72. Default: 24",
     "Sandbox_POS_SatelliteBroadcastStrength": "Satellite Broadcast Strength (%)",
@@ -332,9 +240,6 @@
     "Sandbox_POS_SatelliteWiringMaxRange": "Satellite Wiring Max Range",
     "Sandbox_POS_SatelliteWiringMaxRange_tooltip": "Maximum distance (in tiles) that a satellite dish can be wired to a desktop terminal. Uses Manhattan distance with a 5-wire penalty per floor difference. Default: 100.",
 
-    "Sandbox_POS_EnableTutorialHints": "Enable Tutorial Hints",
-    "Sandbox_POS_EnableTutorialHints_tooltip": "When enabled, progressive tutorial toasts and popups guide the player through POSnet features as they reach each milestone. <BR> <BR> <INDENT:20> Disable for experienced players. <BR> Default: ON",
-
     "Sandbox_POS_EnableLivingMarket": "LIVING MARKET (EXPERIMENTAL):",
     "Sandbox_POS_EnableLivingMarket_tooltip": "Enable the autonomous Living Market economy simulation. When active, market agents generate observations, wholesalers influence regional supply and prices, and economic events occur independently of player actions. <BR> <BR> <INDENT:20> This is an experimental feature under active development. <BR> Default: OFF",
     "Sandbox_POS_SimulationTickInterval": "Simulation Tick Interval (minutes):",
@@ -345,10 +250,6 @@
 
     "Sandbox_POS_SellPriceRatio": "Sell Price Ratio (%)",
     "Sandbox_POS_SellPriceRatio_tooltip": "Percentage of buy price that merchants will pay when buying from you. Default: 65%.",
-    "Sandbox_POS_BulkDiscountThreshold": "Bulk Discount Threshold",
-    "Sandbox_POS_BulkDiscountThreshold_tooltip": "Minimum quantity per transaction to qualify for bulk discount. Default: 10.",
-    "Sandbox_POS_BulkDiscountPercent": "Bulk Discount (%)",
-    "Sandbox_POS_BulkDiscountPercent_tooltip": "Percentage discount applied to bulk purchases meeting the threshold. Default: 10%.",
     "Sandbox_POS_TradeTerminalSIGINTReq": "Trade Terminal SIGINT Requirement",
     "Sandbox_POS_TradeTerminalSIGINTReq_tooltip": "Minimum SIGINT skill level required to access the Trade Terminal. Default: 1.",
 
