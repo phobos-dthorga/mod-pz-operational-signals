@@ -1299,7 +1299,6 @@ Operator (9-10).
 ### 21.5 Cross-Mod
 
 - ZScienceSkill: optional XP mirror (0.5x ratio) + 3 SIGINT specimens.
-- Dynamic Trading: high-SIGINT discount on information trades (optional).
 - See `sigint-skill-design.md` Section 8 for integration details.
 
 ---

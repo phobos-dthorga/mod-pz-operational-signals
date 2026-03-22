@@ -131,9 +131,15 @@ POS_Constants.SCREEN_EXCHANGE_PORTFOLIO = "pos.exchange.portfolio"
 POS_Constants.SCREEN_ZONE_OVERVIEW     = "pos.markets.zones"
 POS_Constants.SCREEN_EVENT_LOG         = "pos.markets.events"
 POS_Constants.SCREEN_WHOLESALER_DIR    = "pos.markets.directory"
+POS_Constants.SCREEN_TRADE_TERMINAL    = "pos.markets.trade"
+POS_Constants.SCREEN_TRADE_CATALOG     = "pos.markets.trade.catalog"
+POS_Constants.SCREEN_TRADE_CONFIRM     = "pos.markets.trade.confirm"
+POS_Constants.SCREEN_TRADE_RECEIPT     = "pos.markets.trade.receipt"
 
 POS_Constants.WHOLESALER_VISIBLE_THRESHOLD = 0.3
 POS_Constants.WHOLESALER_DIR_SIGINT_REQ    = 3
+POS_Constants.TRADE_TERMINAL_SIGINT_REQ    = 4
+POS_Constants.TRADE_MAX_QUANTITY_PER_TX    = 50
 
 ---------------------------------------------------------------
 -- Market modData keys
@@ -325,6 +331,8 @@ POS_Constants.WATCHLIST_PRICE_CHANGE_PCT = 10
 POS_Constants.PAGE_SIZE_EVENT_LOG      = 8
 POS_Constants.PAGE_SIZE_ZONE_OVERVIEW  = 6
 POS_Constants.PAGE_SIZE_WHOLESALER_DIR = 6
+POS_Constants.PAGE_SIZE_TRADE_TERMINAL = 6
+POS_Constants.PAGE_SIZE_TRADE_CATALOG  = 8
 
 ---------------------------------------------------------------
 -- Signal bar display (POS_NavPanel)
@@ -1611,4 +1619,48 @@ POS_Constants.FIELD_NOTE_STATES = { "collapsing", "dumping" }
 
 --- Per-wholesaler modData key storing the last day a note was generated.
 POS_Constants.FIELD_NOTE_COOLDOWN_KEY = "_lastNoteDay"
+
+---------------------------------------------------------------
+-- Trade Terminal
+---------------------------------------------------------------
+
+POS_Constants.SCREEN_TRADE_TERMINAL    = "pos.markets.trade"
+POS_Constants.SCREEN_TRADE_CATALOG     = "pos.markets.trade.catalog"
+POS_Constants.SCREEN_TRADE_CONFIRM     = "pos.markets.trade.confirm"
+POS_Constants.SCREEN_TRADE_RECEIPT     = "pos.markets.trade.receipt"
+
+-- Trade tuning
+POS_Constants.TRADE_STOCK_DEPLETION_PER_UNIT   = 0.02
+POS_Constants.TRADE_STOCK_REPLENISH_PER_UNIT   = 0.015
+POS_Constants.TRADE_MAX_QUANTITY_PER_TX        = 50
+POS_Constants.TRADE_SELL_PRICE_RATIO_DEFAULT   = 0.65
+POS_Constants.TRADE_BULK_THRESHOLD_DEFAULT     = 10
+POS_Constants.TRADE_BULK_DISCOUNT_PCT_DEFAULT  = 10
+POS_Constants.TRADE_SIGINT_REQ_DEFAULT         = 1
+POS_Constants.TRADE_DUMPING_EXTRA_DISCOUNT     = 0.10
+
+-- Trade state gates
+POS_Constants.TRADE_BLOCKED_BUY_STATES = {
+    [POS_Constants.WHOLESALER_STATE_WITHHOLDING] = true,
+    [POS_Constants.WHOLESALER_STATE_COLLAPSING]  = true,
+}
+POS_Constants.TRADE_BLOCKED_SELL_STATES = {
+    [POS_Constants.WHOLESALER_STATE_COLLAPSING] = true,
+}
+
+-- Trade stock indicators
+POS_Constants.TRADE_STOCK_ABUNDANT  = 0.70
+POS_Constants.TRADE_STOCK_MODERATE  = 0.40
+POS_Constants.TRADE_STOCK_LOW       = 0.15
+
+-- Trade page sizes
+POS_Constants.PAGE_SIZE_TRADE_WHOLESALERS = 5
+POS_Constants.PAGE_SIZE_TRADE_ITEMS       = 6
+
+-- Trade SIGINT XP
+POS_Constants.SIGINT_XP_TRADE_BASE        = 2
+POS_Constants.SIGINT_XP_TRADE_BULK_BONUS  = 1
+
+-- Trade WMD key
+POS_Constants.WMD_TRADE_HISTORY = "POSNET.TradeHistory"
 
