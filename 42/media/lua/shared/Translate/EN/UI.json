@@ -844,5 +844,16 @@
     "UI_POS_Zone_VolatilityHigh": "High",
     "UI_POS_Zone_VolatilityLow": "Low",
     "UI_POS_Zone_VolatilityMed": "Medium",
-    "UI_POS_Zone_WholesalerCount": "%1 active contacts"
+    "UI_POS_Zone_WholesalerCount": "%1 active contacts",
+
+    "UI_POS_Note_Header": "FIELD INTELLIGENCE REPORT",
+    "UI_POS_Note_CategoryLabel": "Category: %1",
+    "UI_POS_Note_PriceRange": "Est. Price Range: $%1 - $%2",
+    "UI_POS_Note_AvgPrice": "Average Price: $%1",
+    "UI_POS_Note_Confidence_Low": "Confidence: Low (unverified)",
+    "UI_POS_Note_Confidence_Medium": "Confidence: Medium (partial verification)",
+    "UI_POS_Note_Confidence_High": "Confidence: High (verified source)",
+    "UI_POS_Note_Source": "Source: %1",
+    "UI_POS_Note_Entries": "Data Points: %1",
+    "UI_POS_Note_Footer": "--- End of Report ---"
 }

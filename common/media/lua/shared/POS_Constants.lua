@@ -661,6 +661,47 @@ POS_Constants.WRITING_DAMAGE_AMOUNT_DEFAULT  = 7
 POS_Constants.WRITING_DAMAGE_VARIANCE        = 5
 POS_Constants.WRITING_DAMAGE_VARIANCE_OFFSET = 2
 
+--- Writing implement full type names for damage targeting.
+POS_Constants.WRITING_IMPLEMENTS = {
+    ["Base.Pen"]            = true,
+    ["Base.Pencil"]         = true,
+    ["Base.RedPen"]         = true,
+    ["Base.BluePen"]        = true,
+    ["Base.GreenPen"]       = true,
+    ["Base.PenMultiColor"]  = true,
+    ["Base.PenFancy"]       = true,
+    ["Base.PenSpiffo"]      = true,
+    ["Base.PencilSpiffo"]   = true,
+}
+
+---------------------------------------------------------------
+-- VHS media confidence threshold tiers (for resolveThresholdTier)
+---------------------------------------------------------------
+
+--- Sorted ascending by threshold. Used with PhobosLib.resolveThresholdTier().
+--- confMod <= -2500 -> low, confMod <= -1000 -> medium, else -> high.
+POS_Constants.VHS_CONFIDENCE_THRESHOLDS = {
+    { threshold = POS_Constants.VHS_CONFIDENCE_MOD_SPLICED,     result = POS_Constants.CONFIDENCE_LOW },
+    { threshold = POS_Constants.VHS_CONFIDENCE_MOD_REFURBISHED, result = POS_Constants.CONFIDENCE_MEDIUM },
+}
+
+--- Microcassette: confMod >= MICROCASSETTE_CONFIDENCE_MOD -> high, else -> medium.
+--- Default: high (when confMod exceeds all thresholds).
+POS_Constants.MICROCASSETTE_CONFIDENCE_THRESHOLDS = {
+    { threshold = POS_Constants.MICROCASSETTE_CONFIDENCE_MOD - 1,
+      result    = POS_Constants.CONFIDENCE_MEDIUM },
+}
+
+--- Floppy: confMod >= FLOPPY_CONFIDENCE_MOD -> high,
+---         confMod >= FLOPPY_WORN_CONFIDENCE_MOD -> medium, else -> low.
+--- Default: high (when confMod exceeds all thresholds).
+POS_Constants.FLOPPY_CONFIDENCE_THRESHOLDS = {
+    { threshold = POS_Constants.FLOPPY_WORN_CONFIDENCE_MOD - 1,
+      result    = POS_Constants.CONFIDENCE_LOW },
+    { threshold = POS_Constants.FLOPPY_CONFIDENCE_MOD - 1,
+      result    = POS_Constants.CONFIDENCE_MEDIUM },
+}
+
 ---------------------------------------------------------------
 -- Persistence modData keys (operations / investments)
 ---------------------------------------------------------------
