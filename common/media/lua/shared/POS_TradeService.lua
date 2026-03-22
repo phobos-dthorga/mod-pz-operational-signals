@@ -25,6 +25,7 @@
 require "PhobosLib"
 require "POS_Constants"
 require "POS_WorldState"
+require "POS_PlayerState"
 require "POS_SandboxIntegration"
 
 POS_TradeService = POS_TradeService or {}
@@ -96,9 +97,7 @@ end
 local function awardTradeXP(player, quantity)
     local baseXP = POS_Constants.SIGINT_XP_TRADE_BASE
     local xp = baseXP
-    if quantity >= (POS_Sandbox.getBulkDiscountThreshold
-            and POS_Sandbox.getBulkDiscountThreshold()
-            or POS_Constants.TRADE_BULK_DISCOUNT_THRESHOLD) then
+    if quantity >= POS_Constants.TRADE_BULK_DISCOUNT_THRESHOLD then
         xp = xp + POS_Constants.SIGINT_XP_TRADE_BULK_BONUS
     end
     local ok, POS_SIGINTSkill = PhobosLib.safecall(require, "POS_SIGINTSkill")
@@ -193,6 +192,8 @@ end
 
 
 --- Get items available for purchase from a wholesaler in a category.
+--- Items are filtered by player discovery state — only discovered items
+--- are returned. totalCount is stored on the result for UI display.
 ---@param wholesalerId string
 ---@param categoryId   string
 ---@param player       IsoPlayer|nil
@@ -204,6 +205,19 @@ function POS_TradeService.getBuyableItems(wholesalerId, categoryId, player)
 
     local ok, items = PhobosLib.safecall(POS_ItemPool.getItemsForCategory, categoryId)
     if not ok or not items then return result end
+
+    -- Filter by player discoveries
+    local totalCount = #items
+    if player then
+        local discovered = POS_PlayerState.getDiscoveredItems(player)
+        local filtered = {}
+        for _, item in ipairs(items) do
+            if discovered[item.fullType] then
+                filtered[#filtered + 1] = item
+            end
+        end
+        items = filtered
+    end
 
     for _, item in ipairs(items) do
         local fullType = item.fullType
@@ -227,6 +241,7 @@ function POS_TradeService.getBuyableItems(wholesalerId, categoryId, player)
         }
     end
 
+    result.totalCount = totalCount
     return result
 end
 
@@ -368,13 +383,9 @@ end
 ---@param quantity number
 ---@return number  Discount multiplier (e.g. 0.95 for 5% off)
 function POS_TradeService.computeBulkDiscount(quantity)
-    local threshold = POS_Sandbox.getBulkDiscountThreshold
-        and POS_Sandbox.getBulkDiscountThreshold()
-        or POS_Constants.TRADE_BULK_DISCOUNT_THRESHOLD
+    local threshold = POS_Constants.TRADE_BULK_DISCOUNT_THRESHOLD
     if quantity >= threshold then
-        local pct = POS_Sandbox.getBulkDiscountPercent
-            and POS_Sandbox.getBulkDiscountPercent()
-            or POS_Constants.TRADE_BULK_DISCOUNT_PERCENT
+        local pct = POS_Constants.TRADE_BULK_DISCOUNT_PERCENT
         return 1.0 - (pct / 100)
     end
     return 1.0

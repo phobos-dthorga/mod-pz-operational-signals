@@ -128,10 +128,6 @@ end
 --- Called by POS_BroadcastSystem on timer tick.
 ---@return table|nil Investment opportunity data, or nil on failure
 function POS_InvestmentGenerator.generate()
-    if not POS_Sandbox.isInvestmentEnabled() then
-        return nil
-    end
-
     local gameTime = getGameTime()
     if not gameTime then return nil end
     local currentDay = gameTime:getNightsSurvived()

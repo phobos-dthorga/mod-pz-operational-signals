@@ -27,12 +27,16 @@ require "POS_ScreenManager"
 require "POS_TerminalWidgets"
 require "POS_WorldState"
 require "POS_WholesalerService"
+require "POS_TradeService"
 require "PhobosLib_Pagination"
 require "POS_API"
 
 ---------------------------------------------------------------
 
 local screen = {}
+
+-- Per-session quantity selections, keyed by fullType. Reset on create/mode/page.
+local _quantities = {}
 screen.id = POS_Constants.SCREEN_TRADE_CATALOG
 screen.menuPath = {"pos.markets.trade"}
 screen.titleKey = "UI_POS_Trade_CatalogTitle"
@@ -78,7 +82,7 @@ end
 -- Paginated item list (categoryId selected)
 ---------------------------------------------------------------
 
-local function renderItemList(ctx, W, C, params, player)
+local function renderItemList(ctx, W, C, params, player, balance)
     local wsId = params.wholesalerId
     local mode = params.mode or "buy"
     local categoryId = params.categoryId
@@ -88,8 +92,8 @@ local function renderItemList(ctx, W, C, params, player)
     local emptyKey
     if mode == "buy" then
         items = POS_TradeService and POS_TradeService.getBuyableItems
-            and POS_TradeService.getBuyableItems(wsId, categoryId)
-        emptyKey = "UI_POS_Trade_NoItems"
+            and POS_TradeService.getBuyableItems(wsId, categoryId, player)
+        emptyKey = "UI_POS_Trade_NoDiscoveries"
     else
         items = POS_TradeService and POS_TradeService.getSellableItems
             and POS_TradeService.getSellableItems(wsId, categoryId, player)
@@ -101,6 +105,15 @@ local function renderItemList(ctx, W, C, params, player)
             W.safeGetText(emptyKey), C.dim)
         ctx.y = ctx.y + ctx.lineH
         return
+    end
+
+    -- Discovery count label (buy mode only)
+    if mode == "buy" and items.totalCount then
+        local discoveryText = W.safeGetText("UI_POS_Trade_DiscoveryCount")
+        discoveryText = discoveryText:gsub("%%1", tostring(#items))
+        discoveryText = discoveryText:gsub("%%2", tostring(items.totalCount))
+        W.createLabel(ctx.panel, 8, ctx.y, discoveryText, C.dim)
+        ctx.y = ctx.y + ctx.lineH + 4
     end
 
     ctx.y = PhobosLib_Pagination.create(ctx.panel, {
@@ -117,44 +130,137 @@ local function renderItemList(ctx, W, C, params, player)
         },
         renderItem = function(parent, rx, ry, rw, item, _idx)
             local itemY = 0
+            local ft = item.fullType
 
             -- Item name
-            local displayName = item.displayName or item.name or item.fullType or "???"
+            local displayName = item.displayName or item.name or ft or "???"
             W.createLabel(parent, rx, ry + itemY, displayName, C.text)
 
             -- Price + stock/owned on same line
+            local unitPrice
+            local maxQty
             local detailStr
             if mode == "buy" then
-                local price = item.buyPrice or item.price or 0
+                unitPrice = item.buyPrice or item.price or 0
                 local stock = item.stock
-                detailStr = "$" .. string.format("%.2f", price)
+                maxQty = stock or POS_Constants.TRADE_MAX_QUANTITY_PER_TX
+                detailStr = "$" .. string.format("%.2f", unitPrice)
                 if stock then
                     detailStr = detailStr .. "  "
                         .. W.safeGetText("UI_POS_Trade_Stock") .. ": " .. tostring(stock)
                 end
             else
-                local price = item.sellPrice or item.price or 0
+                unitPrice = item.sellPrice or item.price or 0
                 local owned = item.ownedCount or 0
-                detailStr = "$" .. string.format("%.2f", price)
+                maxQty = owned
+                detailStr = "$" .. string.format("%.2f", unitPrice)
                     .. "  " .. W.safeGetText("UI_POS_Trade_Owned") .. ": " .. tostring(owned)
             end
             W.createLabel(parent, rx + rw * 0.55, ry + itemY, detailStr, C.dim)
             itemY = itemY + ctx.lineH
 
-            -- Trade button
-            local ft = item.fullType
-            W.createButton(parent, rx, ry + itemY, rw, ctx.btnH,
-                W.safeGetText("UI_POS_Trade_TradeBtn"), nil,
+            -- Cap maxQty to the per-tx limit
+            maxQty = math.min(maxQty or 1, POS_Constants.TRADE_MAX_QUANTITY_PER_TX)
+            if maxQty < 1 then maxQty = 1 end
+
+            -- Initialise quantity for this item if not set
+            if not _quantities[ft] then _quantities[ft] = 1 end
+            local qty = _quantities[ft]
+
+            -- Inline quantity controls: [-] qty [+] [Confirm]
+            local btnMinus   = 30
+            local lblQtyW    = 40
+            local btnPlus    = 30
+            local gap        = 4
+            local confirmX   = rx + btnMinus + lblQtyW + btnPlus + (gap * 3)
+            local confirmW   = rw - (btnMinus + lblQtyW + btnPlus + (gap * 3))
+            if confirmW < 60 then confirmW = 60 end
+
+            -- [-] button
+            W.createButton(parent, rx, ry + itemY, btnMinus, ctx.btnH,
+                "-", nil,
                 function()
-                    POS_ScreenManager.navigateTo(
-                        POS_Constants.SCREEN_TRADE_CONFIRM,
-                        { wholesalerId = wsId, fullType = ft, quantity = 1, mode = mode })
+                    _quantities[ft] = math.max((_quantities[ft] or 1) - 1, 1)
+                    POS_ScreenManager.replaceCurrent(POS_Constants.SCREEN_TRADE_CATALOG,
+                        { wholesalerId = wsId, mode = mode, categoryId = categoryId,
+                          page = currentPage })
                 end)
+
+            -- Qty label
+            W.createLabel(parent, rx + btnMinus + gap, ry + itemY + 2,
+                tostring(qty), C.text)
+
+            -- [+] button
+            W.createButton(parent, rx + btnMinus + lblQtyW + (gap * 2),
+                ry + itemY, btnPlus, ctx.btnH,
+                "+", nil,
+                function()
+                    _quantities[ft] = math.min((_quantities[ft] or 1) + 1, maxQty)
+                    POS_ScreenManager.replaceCurrent(POS_Constants.SCREEN_TRADE_CATALOG,
+                        { wholesalerId = wsId, mode = mode, categoryId = categoryId,
+                          page = currentPage })
+                end)
+
+            -- Determine if confirm button should be disabled
+            local totalCost = unitPrice * qty
+            local disabled = false
+            if mode == "buy" then
+                disabled = balance < totalCost
+            else
+                local owned = item.ownedCount or 0
+                disabled = owned < qty
+            end
+
+            -- Confirm button label with total
+            local confirmLabel
+            if mode == "buy" then
+                confirmLabel = W.safeGetText("UI_POS_Trade_BuyTotal")
+                    :gsub("%%1", string.format("%.2f", totalCost))
+            else
+                confirmLabel = W.safeGetText("UI_POS_Trade_SellTotal")
+                    :gsub("%%1", string.format("%.2f", totalCost))
+            end
+
+            local confirmColour = disabled and C.dim or nil
+            local confirmCb = nil
+            if not disabled then
+                confirmCb = function()
+                    local p = getSpecificPlayer(0)
+                    if not p then return end
+                    local success, receipt
+                    if mode == "buy" then
+                        success, receipt = POS_TradeService.executeBuy(
+                            p, wsId, ft, qty)
+                    else
+                        success, receipt = POS_TradeService.executeSell(
+                            p, wsId, ft, qty)
+                    end
+                    if success then
+                        receipt.mode = mode
+                        POS_ScreenManager.navigateTo(
+                            POS_Constants.SCREEN_TRADE_RECEIPT,
+                            { receipt = receipt })
+                    end
+                    -- On failure, TradeService already notifies via PN
+                end
+            end
+
+            W.createButton(parent, confirmX, ry + itemY, confirmW, ctx.btnH,
+                confirmLabel, confirmColour, confirmCb)
             itemY = itemY + ctx.btnH + 4
+
+            -- Bulk discount hint
+            local bulkThreshold = POS_Constants.TRADE_BULK_THRESHOLD_DEFAULT
+            if qty >= bulkThreshold then
+                W.createLabel(parent, rx + 8, ry + itemY,
+                    W.safeGetText("UI_POS_Trade_BulkDiscount"), C.success)
+                itemY = itemY + ctx.lineH
+            end
 
             return itemY
         end,
         onPageChange = function(newPage)
+            _quantities = {}
             POS_ScreenManager.replaceCurrent(POS_Constants.SCREEN_TRADE_CATALOG,
                 { wholesalerId = wsId, mode = mode, categoryId = categoryId, page = newPage })
         end,
@@ -166,6 +272,7 @@ end
 ---------------------------------------------------------------
 
 function screen.create(contentPanel, params, _terminal)
+    _quantities = {}
     local W = POS_TerminalWidgets
     local C = W.COLOURS
     local ctx = W.initLayout(contentPanel)
@@ -221,6 +328,7 @@ function screen.create(contentPanel, params, _terminal)
     local buyBtn = W.createButton(ctx.panel, ctx.btnX, ctx.y, halfW, ctx.btnH,
         W.safeGetText("UI_POS_Trade_ModeBuy"), nil,
         function()
+            _quantities = {}
             POS_ScreenManager.replaceCurrent(POS_Constants.SCREEN_TRADE_CATALOG,
                 { wholesalerId = wsId, mode = "buy", categoryId = categoryId })
         end)
@@ -229,6 +337,7 @@ function screen.create(contentPanel, params, _terminal)
     local sellBtn = W.createButton(ctx.panel, ctx.btnX + halfW + 4, ctx.y, halfW, ctx.btnH,
         W.safeGetText("UI_POS_Trade_ModeSell"), nil,
         function()
+            _quantities = {}
             POS_ScreenManager.replaceCurrent(POS_Constants.SCREEN_TRADE_CATALOG,
                 { wholesalerId = wsId, mode = "sell", categoryId = categoryId })
         end)
@@ -242,7 +351,7 @@ function screen.create(contentPanel, params, _terminal)
     if not categoryId then
         renderCategoryBrowser(ctx, W, C, wholesaler, wsId, mode)
     else
-        renderItemList(ctx, W, C, params, player)
+        renderItemList(ctx, W, C, params, player, balance)
     end
 
     -- Footer

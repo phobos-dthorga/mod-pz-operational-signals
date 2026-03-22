@@ -24,13 +24,6 @@ option POS.EnableDebugLogging
     translation = POS_EnableDebugLogging,
 }
 
-option POS.EnableBroadcasts
-{
-    type = boolean,
-    default = true,
-    page = POS_Sandbox,
-    translation = POS_EnableBroadcasts,
-}
 
 option POS.BroadcastIntervalMinutes
 {
@@ -148,13 +141,6 @@ option POS.SignalAffectsMissionRange
     translation = POS_SignalAffectsMissionRange,
 }
 
-option POS.EnableInvestments
-{
-    type = boolean,
-    default = true,
-    page = POS_Sandbox,
-    translation = POS_EnableInvestments,
-}
 
 option POS.InvestmentMinPaybackDays
 {
@@ -256,13 +242,6 @@ option POS.InvestmentBroadcastMins
     translation = POS_InvestmentBroadcastMins,
 }
 
-option POS.EnableDeliveryMissions
-{
-    type = boolean,
-    default = true,
-    page = POS_Sandbox,
-    translation = POS_EnableDeliveryMissions,
-}
 
 option POS.MinDeliveryDistance
 {
@@ -294,13 +273,6 @@ option POS.DeliveryRoadFactor
     translation = POS_DeliveryRoadFactor,
 }
 
-option POS.EnableReconMissions
-{
-    type = boolean,
-    default = true,
-    page = POS_Sandbox,
-    translation = POS_EnableReconMissions,
-}
 
 option POS.ReputationCap
 {
@@ -382,33 +354,7 @@ option POS.InvestmentRepPerHundred
     translation = POS_InvestmentRepPerHundred,
 }
 
-option POS.WritingDamageChance
-{
-    type = integer,
-    default = 20,
-    min = 0,
-    max = 100,
-    page = POS_Sandbox,
-    translation = POS_WritingDamageChance,
-}
 
-option POS.WritingDamageAmount
-{
-    type = integer,
-    default = 7,
-    min = 1,
-    max = 20,
-    page = POS_Sandbox,
-    translation = POS_WritingDamageAmount,
-}
-
-option POS.EnableNegotiation
-{
-    type = boolean,
-    default = true,
-    page = POS_Sandbox,
-    translation = POS_EnableNegotiation,
-}
 
 option POS.NegotiationSuccessBonus
 {
@@ -420,13 +366,6 @@ option POS.NegotiationSuccessBonus
     translation = POS_NegotiationSuccessBonus,
 }
 
-option POS.EnableCancellationPenalty
-{
-    type = boolean,
-    default = true,
-    page = POS_Sandbox,
-    translation = POS_EnableCancellationPenalty,
-}
 
 option POS.BaseCancelPenalty
 {
@@ -476,21 +415,6 @@ option POS.FontScaleWithWindow
     translation = POS_FontScaleWithWindow,
 }
 
-option POS.EnableNavPanel
-{
-    type = boolean,
-    default = true,
-    page = POS_Sandbox,
-    translation = POS_EnableNavPanel,
-}
-
-option POS.EnableContextPanel
-{
-    type = boolean,
-    default = true,
-    page = POS_Sandbox,
-    translation = POS_EnableContextPanel,
-}
 
 option POS.TerminalPowerDrainRate
 {
@@ -502,13 +426,6 @@ option POS.TerminalPowerDrainRate
     translation = POS_TerminalPowerDrainRate,
 }
 
-option POS.EnableMarkets
-{
-    type = boolean,
-    default = true,
-    page = POS_Sandbox,
-    translation = POS_EnableMarkets,
-}
 
 option POS.EnableExchange
 {
@@ -556,31 +473,7 @@ option POS.EnableMarketBroadcasts
     translation = POS_EnableMarketBroadcasts,
 }
 
-option POS.MarketBroadcastQuality
-{
-    type = integer,
-    default = 50,
-    min = 0,
-    max = 100,
-    page = POS_Sandbox,
-    translation = POS_MarketBroadcastQuality,
-}
 
-option POS.EnableCategoryWeighting
-{
-    type = boolean,
-    default = true,
-    page = POS_Sandbox,
-    translation = POS_EnableCategoryWeighting,
-}
-
-option POS.EnableItemLevelIntel
-{
-    type = boolean,
-    default = true,
-    page = POS_Sandbox,
-    translation = POS_EnableItemLevelIntel,
-}
 
 option POS.ItemSelectionPoolSize
 {
@@ -602,13 +495,6 @@ option POS.BroadcastItemsPerPacket
     translation = POS_BroadcastItemsPerPacket,
 }
 
-option POS.ReputationAffectsVariance
-{
-    type = boolean,
-    default = true,
-    page = POS_Sandbox,
-    translation = POS_ReputationAffectsVariance,
-}
 
 option POS.DailyPriceDriftPct
 {
@@ -620,13 +506,6 @@ option POS.DailyPriceDriftPct
     translation = POS_DailyPriceDriftPct,
 }
 
-option POS.EssentialGoodsPriority
-{
-    type = boolean,
-    default = true,
-    page = POS_Sandbox,
-    translation = POS_EssentialGoodsPriority,
-}
 
 option POS.WeightFuel
 {
@@ -738,21 +617,6 @@ option POS.MaxPlayerAlerts
     translation = POS_MaxPlayerAlerts,
 }
 
-option POS.EconomyTickEnabled
-{
-    type = boolean,
-    default = true,
-    page = POS_Sandbox,
-    translation = POS_EconomyTickEnabled,
-}
-
-option POS.EnableEventLogs
-{
-    type = boolean,
-    default = true,
-    page = POS_Sandbox,
-    translation = POS_EnableEventLogs,
-}
 
 option POS.EventLogRetentionDays
 {
@@ -764,13 +628,6 @@ option POS.EventLogRetentionDays
     translation = POS_EventLogRetentionDays,
 }
 
-option POS.EnablePassiveRecon
-{
-    type = boolean,
-    default = true,
-    page = POS_Sandbox,
-    translation = POS_EnablePassiveRecon,
-}
 
 option POS.PassiveReconInterval
 {
@@ -802,99 +659,7 @@ option POS.LoggerScanRadius
     translation = POS_LoggerScanRadius,
 }
 
-option POS.VHSTapeMinDays
-{
-    type = integer,
-    default = 3,
-    min = 1,
-    max = 7,
-    page = POS_Sandbox,
-    translation = POS_VHSTapeMinDays,
-}
 
-option POS.CamcorderNoiseLevel
-{
-    type = integer,
-    default = 5,
-    min = 0,
-    max = 20,
-    page = POS_Sandbox,
-    translation = POS_CamcorderNoiseLevel,
-}
-
-option POS.TapeDegradationRate
-{
-    type = integer,
-    default = 10,
-    min = 0,
-    max = 30,
-    page = POS_Sandbox,
-    translation = POS_TapeDegradationRate,
-}
-
-option POS.CalculatorConfidenceBonus
-{
-    type = integer,
-    default = 5,
-    min = 0,
-    max = 15,
-    page = POS_Sandbox,
-    translation = POS_CalculatorConfidenceBonus,
-}
-
-option POS.EnableVHSCrafting
-{
-    type = boolean,
-    default = true,
-    page = POS_Sandbox,
-    translation = POS_EnableVHSCrafting,
-}
-
-option POS.EnableForagingTapes
-{
-    type = boolean,
-    default = true,
-    page = POS_Sandbox,
-    translation = POS_EnableForagingTapes,
-}
-
-option POS.IntelCooldownDays
-{
-    type = integer,
-    default = 12,
-    min = 3,
-    max = 14,
-    page = POS_Sandbox,
-    translation = POS_IntelCooldownDays,
-}
-
-option POS.DangerCheckRadius
-{
-    type = integer,
-    default = 15,
-    min = 5,
-    max = 30,
-    page = POS_Sandbox,
-    translation = POS_DangerCheckRadius,
-}
-
-option POS.VHSReviewTimePerEntry
-{
-    type = integer,
-    default = 300,
-    min = 100,
-    max = 600,
-    page = POS_Sandbox,
-    translation = POS_VHSReviewTimePerEntry,
-}
-
-option POS.EnableWatchlist
-{
-    type = boolean,
-    default = true,
-    page = POS_Sandbox,
-    translation = POS_EnableWatchlist,
-}
 
 option POS.WatchlistAlertThresholdPct
 {
@@ -906,13 +671,6 @@ option POS.WatchlistAlertThresholdPct
     translation = POS_WatchlistAlertThresholdPct,
 }
 
-option POS.EnableDataRecorder
-{
-    type = boolean,
-    default = true,
-    page = POS_Sandbox,
-    translation = POS_EnableDataRecorder,
-}
 
 option POS.RecorderInternalBufferSize
 {
@@ -944,21 +702,6 @@ option POS.RecorderProcessingTime
     translation = POS_RecorderProcessingTime,
 }
 
-option POS.EnableMicrocassettes
-{
-    type = boolean,
-    default = true,
-    page = POS_Sandbox,
-    translation = POS_EnableMicrocassettes,
-}
-
-option POS.EnableFloppyDisks
-{
-    type = boolean,
-    default = true,
-    page = POS_Sandbox,
-    translation = POS_EnableFloppyDisks,
-}
 
 option POS.FloppyCorruptionChance
 {
@@ -980,13 +723,6 @@ option POS.MicrocassetteMaxRewinds
     translation = POS_MicrocassetteMaxRewinds,
 }
 
-option POS.EnableCameraWorkstation
-{
-    type = boolean,
-    default = true,
-    page = POS_Sandbox,
-    translation = POS_EnableCameraWorkstation,
-}
 
 option POS.CameraCompileTime
 {
@@ -1076,13 +812,6 @@ option POS.CameraBulletinRepBonus
     translation = POS_CameraBulletinRepBonus,
 }
 
-option POS.EnableSIGINTSkill
-{
-    type = boolean,
-    default = true,
-    page = POS_Sandbox,
-    translation = POS_EnableSIGINTSkill,
-}
 
 option POS.SIGINTXPMultiplier
 {
@@ -1148,13 +877,6 @@ option POS.SIGINTBookSpawns
     translation = POS_SIGINTBookSpawns,
 }
 
-option POS.EnableTerminalAnalysis
-{
-    type = boolean,
-    default = true,
-    page = POS_Sandbox,
-    translation = POS_EnableTerminalAnalysis,
-}
 
 option POS.AnalysisBaseTime
 {
@@ -1212,13 +934,6 @@ option POS.AnalysisDiversityBonus
     translation = POS_AnalysisDiversityBonus,
 }
 
-option POS.EnableSatelliteUplink
-{
-    type = boolean,
-    default = true,
-    page = POS_Sandbox,
-    translation = POS_EnableSatelliteUplink,
-}
 
 option POS.SatelliteBroadcastCooldownHours
 {
@@ -1314,13 +1029,6 @@ option POS.SatelliteWiringMaxRange
     translation = POS_SatelliteWiringMaxRange,
 }
 
-option POS.EnableTutorialHints
-{
-    type = boolean,
-    default = true,
-    page = POS_Sandbox,
-    translation = POS_EnableTutorialHints,
-}
 
 option POS.EnableLivingMarket
 {
@@ -1360,25 +1068,6 @@ option POS.SellPriceRatio
     translation = POS_SellPriceRatio,
 }
 
-option POS.BulkDiscountThreshold
-{
-    type = integer,
-    default = 10,
-    min = 1,
-    max = 50,
-    page = POS_Sandbox,
-    translation = POS_BulkDiscountThreshold,
-}
-
-option POS.BulkDiscountPercent
-{
-    type = integer,
-    default = 10,
-    min = 0,
-    max = 50,
-    page = POS_Sandbox,
-    translation = POS_BulkDiscountPercent,
-}
 
 option POS.TradeTerminalSIGINTReq
 {
@@ -1388,4 +1077,14 @@ option POS.TradeTerminalSIGINTReq
     max = 10,
     page = POS_Sandbox,
     translation = POS_TradeTerminalSIGINTReq,
+}
+
+option POS.AmbientIntelInterval
+{
+    type = integer,
+    min = 10,
+    max = 120,
+    default = 30,
+    page = POS_Sandbox,
+    translation = POS_AmbientIntelInterval,
 }

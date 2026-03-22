@@ -99,8 +99,7 @@ end
 --- Check if the tutorial system is enabled.
 ---@return boolean
 function POS_TutorialService.isEnabled()
-    return POS_Sandbox and POS_Sandbox.getEnableTutorialHints
-        and POS_Sandbox.getEnableTutorialHints()
+    return true
 end
 
 --- Try to award a tutorial milestone. Safe to call from hot paths.

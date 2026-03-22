@@ -139,12 +139,8 @@ function POS_MarketReconAction:perform()
 
     -- Damage writing tool
     if self.writingTool then
-        local dmgChance = POS_Sandbox and POS_Sandbox.getWritingDamageChance
-            and POS_Sandbox.getWritingDamageChance()
-            or POS_Constants.WRITING_DAMAGE_CHANCE_DEFAULT
-        local dmgAmount = POS_Sandbox and POS_Sandbox.getWritingDamageAmount
-            and POS_Sandbox.getWritingDamageAmount()
-            or POS_Constants.WRITING_DAMAGE_AMOUNT_DEFAULT
+        local dmgChance = POS_Constants.WRITING_DAMAGE_CHANCE_DEFAULT
+        local dmgAmount = POS_Constants.WRITING_DAMAGE_AMOUNT_DEFAULT
         PhobosLib.damageItemCondition(self.writingTool,
             math.max(1, dmgAmount - POS_Constants.WRITING_DAMAGE_VARIANCE_OFFSET),
             dmgAmount + POS_Constants.WRITING_DAMAGE_VARIANCE_OFFSET,

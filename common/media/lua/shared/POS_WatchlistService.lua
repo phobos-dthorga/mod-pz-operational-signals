@@ -38,7 +38,6 @@ POS_WatchlistService = {}
 --- @return table[] Array of alert objects { categoryId, labelKey, oldAvg, newAvg, changePct }
 function POS_WatchlistService.checkForAlerts(player)
     if not player then return {} end
-    if not POS_Sandbox or not POS_Sandbox.getEnableWatchlist() then return {} end
 
     local wl = POS_PlayerState.getWatchlist(player)
     local threshold = POS_Sandbox.getWatchlistAlertThresholdPct()

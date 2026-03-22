@@ -167,3 +167,33 @@ function POS_PlayerState.removeFromWatchlist(player, categoryId)
     end
     return false
 end
+
+---------------------------------------------------------------
+-- Item discovery (intel-gated trade catalog)
+---------------------------------------------------------------
+
+--- Discover an item for the player via PhobosLib tracking.
+--- @param player IsoPlayer
+--- @param fullType string Item full type (e.g. "Base.Axe")
+--- @param categoryId string Commodity category ID
+--- @param day number|nil Game day of discovery (defaults to 0)
+--- @return boolean true if newly discovered, false if already known
+function POS_PlayerState.discoverItem(player, fullType, categoryId, day)
+    return PhobosLib.trackDiscovery(player, POS_Constants.DISCOVERY_NAMESPACE,
+        fullType, { categoryId = categoryId, day = day or 0 })
+end
+
+--- Check whether an item has been discovered by the player.
+--- @param player IsoPlayer
+--- @param fullType string Item full type
+--- @return boolean
+function POS_PlayerState.isItemDiscovered(player, fullType)
+    return PhobosLib.isDiscovered(player, POS_Constants.DISCOVERY_NAMESPACE, fullType)
+end
+
+--- Get the full set of discovered items for a player.
+--- @param player IsoPlayer
+--- @return table Map of fullType -> discovery metadata
+function POS_PlayerState.getDiscoveredItems(player)
+    return PhobosLib.getDiscoveries(player, POS_Constants.DISCOVERY_NAMESPACE)
+end

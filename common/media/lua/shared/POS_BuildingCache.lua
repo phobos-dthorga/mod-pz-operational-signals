@@ -172,9 +172,6 @@ function POS_BuildingCache.initialScan()
     local meta = POS_WorldState and POS_WorldState.getMeta()
     if meta and meta.buildingScanDone then return end
 
-    if not POS_Sandbox or not POS_Sandbox.isReconEnabled
-       or not POS_Sandbox.isReconEnabled() then return end
-
     -- Try loading from external cache first
     if POS_WorldState and POS_WorldState.loadBuildingCache then
         local cached = POS_WorldState.loadBuildingCache()
@@ -216,9 +213,6 @@ end
 --- Scan nearby loaded buildings and cache interesting ones.
 --- Called periodically (every in-game minute).
 function POS_BuildingCache.passiveScan()
-    if not POS_Sandbox or not POS_Sandbox.isReconEnabled
-       or not POS_Sandbox.isReconEnabled() then return end
-
     local player = getSpecificPlayer(0)
     if not player then return end
 

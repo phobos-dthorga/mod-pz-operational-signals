@@ -202,11 +202,8 @@ function POS_TerminalUI:repositionPanels()
     local innerW = sw - pad * 2
     local innerH = sh - pad * 2
 
-    local showNav = POS_Sandbox and POS_Sandbox.getEnableNavPanel
-        and POS_Sandbox.getEnableNavPanel() or true
+    local showNav = true
     local showContext = (self.width >= CONTEXT_COLLAPSE_THRESHOLD)
-        and (POS_Sandbox and POS_Sandbox.getEnableContextPanel
-             and POS_Sandbox.getEnableContextPanel() or true)
 
     -- NavPanel (left, fixed width)
     if self.navPanel then

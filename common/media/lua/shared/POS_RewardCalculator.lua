@@ -111,11 +111,6 @@ end
 local function calculateCancellationPenalty(operation)
     if not operation then return 0 end
 
-    if POS_Sandbox and POS_Sandbox.isCancellationPenaltyEnabled
-       and not POS_Sandbox.isCancellationPenaltyEnabled() then
-        return 0
-    end
-
     local tier = operation.tier or 1
     if tier <= 1 then return 0 end
 

@@ -106,7 +106,7 @@ function screen.create(contentPanel, params, _terminal)
     W.createButton(ctx.panel, ctx.btnX, ctx.y, ctx.btnW, ctx.btnH,
         "[2] " .. W.safeGetText("UI_POS_Trade_BackToTerminal"), nil,
         function()
-            POS_ScreenManager.navigateTo(POS_Constants.SCREEN_TRADE_TERMINAL, {})
+            POS_ScreenManager.navigateTo(POS_Constants.SCREEN_CONTACTS, {})
         end)
     ctx.y = ctx.y + ctx.btnH + 4
 end

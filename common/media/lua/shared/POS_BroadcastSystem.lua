@@ -81,11 +81,6 @@ local FIRST_INVESTMENT_DELAY_MINS = 5
 
 --- Start the broadcast system.
 function POS_BroadcastSystem.start()
-    if not POS_Sandbox.isBroadcastEnabled() then
-        PhobosLib.debug("POS", _TAG, "Broadcasts disabled in sandbox — system not started")
-        return
-    end
-
     systemActive = true
     local now = getTimestampMs()
     lastBroadcastTime = now
@@ -136,7 +131,6 @@ end
 --- @return boolean True if a broadcast was sent
 function POS_BroadcastSystem.broadcastInvestment()
     if not systemActive then return false end
-    if not POS_Sandbox.isInvestmentEnabled() then return false end
 
     local opportunity = POS_InvestmentGenerator.generate()
     if not opportunity then
