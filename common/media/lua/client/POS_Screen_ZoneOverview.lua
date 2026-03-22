@@ -45,11 +45,11 @@ screen.sortOrder = 15
 ---@return table           RGBA colour table
 local function _getPressureColour(pressure, C)
     if pressure < -0.3 then
-        return C.success or {0.4, 0.8, 0.4, 1}
+        return C.dim       -- Surplus: muted/calm
     elseif pressure > 0.3 then
-        return C.error or {0.8, 0.3, 0.3, 1}
+        return C.textBright or C.text  -- Shortage: urgent/bright
     else
-        return C.warning or {0.9, 0.7, 0.2, 1}
+        return C.text      -- Neutral: standard
     end
 end
 
