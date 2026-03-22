@@ -38,8 +38,9 @@ local registered = false
 -- Registration
 ---------------------------------------------------------------
 
---- Register the SIGINT perk with PZ's PerkFactory.
---- Must be called once during game initialisation.
+--- Resolve the SIGINT perk reference from PerkFactory.
+--- The perk itself is registered declaratively via common/media/perks.txt;
+--- this function only caches the runtime enum value for getLevel()/addXP().
 --- Gated by sandbox option POS_Sandbox.getEnableSIGINTSkill().
 function POS_SIGINTSkill.register()
     if registered then return end
@@ -60,35 +61,17 @@ function POS_SIGINTSkill.register()
         return
     end
 
-    local ok, err = pcall(function()
-        local perkId = POS_Constants.SIGINT_PERK_ID
-        local parentPerk = PerkFactory.Perks[POS_Constants.SIGINT_PERK_PARENT]
-            or PerkFactory.Perks.None
-
-        -- Create the custom perk enum value
-        local perk = PerkFactory.Perk.new(perkId)
-        perk:setCustom()
-
-        -- XP thresholds per level (values before PZ's internal 1.5x multiplier)
-        local xp = POS_Constants.SIGINT_XP_THRESHOLDS
-        PerkFactory.AddPerk(
-            perk,
-            perkId,         -- translation key → PZ looks up IGUI_perks_SIGINT
-            parentPerk,
-            xp[1], xp[2], xp[3], xp[4], xp[5],
-            xp[6], xp[7], xp[8], xp[9], xp[10],
-            true            -- passiv = true (passive skill category)
-        )
-
-        sigintPerk = perk
+    -- Resolve the perk enum value registered by perks.txt
+    local ok, result = PhobosLib.safecall(Perks.FromString,
+        POS_Constants.SIGINT_PERK_ID)
+    if ok and result then
+        sigintPerk = result
         PhobosLib.debug("POS", _TAG,
-            "SIGINT perk registered successfully (parent: "
+            "SIGINT perk resolved successfully (parent: "
             .. POS_Constants.SIGINT_PERK_PARENT .. ")")
-    end)
-
-    if not ok then
+    else
         PhobosLib.debug("POS", _TAG,
-            "SIGINT perk registration failed: " .. tostring(err))
+            "SIGINT perk not found — perks.txt may not have loaded")
     end
 end
 
