@@ -455,6 +455,7 @@ function POS_MarketSimulation.tickSimulation(currentDay)
     end
 
     -- Tick all active wholesalers
+    PhobosLib.debug("POS", _TAG, "tickSimulation Phase 1: ticking wholesalers")
     local tickCount = 0
     for _, w in pairs(wholesalerStore) do
         if w.active ~= false then
@@ -464,6 +465,7 @@ function POS_MarketSimulation.tickSimulation(currentDay)
     end
 
     -- Aggregate zone pressure from wholesaler contributions
+    PhobosLib.debug("POS", _TAG, "tickSimulation Phase 2: aggregating zone pressure")
     local ok_mr, POS_MarketRegistry = PhobosLib.safecall(require, "POS_MarketRegistry")
     local visibleCategories = (ok_mr and POS_MarketRegistry)
         and POS_MarketRegistry.getVisibleCategories({}) or {}
@@ -475,7 +477,8 @@ function POS_MarketSimulation.tickSimulation(currentDay)
     end
 
     -- Update agent hidden state meters
-    _updateAgentMeters(_zoneStates)
+    PhobosLib.debug("POS", _TAG, "tickSimulation Phase 3: updating agent meters")
+    PhobosLib.safecall(_updateAgentMeters, _zoneStates)
 
     -- Phase 4: Generate agent observations
     local totalObs = 0
