@@ -931,5 +931,10 @@
     "UI_POS_Trade_PN_BuySuccess": "Purchased %1x %2 for $%3",
     "UI_POS_Trade_PN_SellSuccess": "Sold %1x %2 for $%3",
     "UI_POS_Trade_PN_BuyFailed": "Purchase failed: %1",
-    "UI_POS_Trade_PN_SellFailed": "Sale failed: %1"
+    "UI_POS_Trade_PN_SellFailed": "Sale failed: %1",
+    "UI_POS_Trade_BuyTotal": "Buy $%1",
+    "UI_POS_Trade_SellTotal": "Sell $%1",
+    "UI_POS_Trade_CantAfford": "Insufficient funds",
+    "UI_POS_Trade_NoStock": "Out of stock",
+    "UI_POS_Watchlist_History": "History"
 }

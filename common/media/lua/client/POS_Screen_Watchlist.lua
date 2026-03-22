@@ -113,10 +113,22 @@ function screen.create(contentPanel, params, _terminal)
                 end
                 ry = ry + ctx.lineH
 
-                -- Unwatch button
+                -- History + Unwatch buttons
                 local catIdCopy = entry.categoryId
-                local btnW = math.min(rw / 2, 120)
-                W.createButton(parent, rx + 8, ry, btnW, ctx.btnH,
+                local histBtnW = 80
+                local unwatchBtnW = math.min(rw / 2, 120)
+                local btnGap = 4
+
+                W.createButton(parent, rx + 8, ry, histBtnW, ctx.btnH,
+                    W.safeGetText("UI_POS_Watchlist_History"), nil,
+                    function()
+                        POS_ScreenManager.navigateTo(
+                            POS_Constants.SCREEN_COMMODITY_DETAIL,
+                            { categoryId = catIdCopy })
+                    end)
+
+                W.createButton(parent, rx + 8 + histBtnW + btnGap, ry,
+                    unwatchBtnW, ctx.btnH,
                     W.safeGetText("UI_POS_Market_UnwatchCategory"), nil,
                     function()
                         local p = getSpecificPlayer(0)
