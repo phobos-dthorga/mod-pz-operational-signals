@@ -1,6 +1,91 @@
 [h1]Changelog[/h1]
 
 
+
+[h2]v0.15.0 — POSnet v0.15.0[/h2]
+[list]
+[*] configurable economy tick interval (1-24 hours, default 24)
+[*] Living Market Phases 4, 5C, 6, 7 — complete implementation
+[*] Phase 3B — soft signal rumour emission system
+[*] PriceEngine zone pressure integration (Phase 3D)
+[*] satellite-to-terminal physical wiring connection
+[*] Living Market Phases 2, 5B, 3A — archetypes, zone persistence, signal emission
+[*] Media Management sub-menu with auto-feed and family-grouped insertion
+[*] add terminal link + fuel gates to satellite context menu
+[*] grid power detection, VHS conversion, note improvements
+[*] staggered market file saves via PhobosLib ChunkedWriter
+[*] activate Living Market Phase 5.75 tick hook
+[*] implement tick orchestration and zone pressure
+[*] implement full wholesaler lifecycle
+[*] add 8 wholesaler definitions and loader
+[*] add Living Market simulation tuning constants
+[*] (Fix) replace next() with pairs() count for ModData table emptiness check
+[*] (Fix) add granular breadcrumbs + safecall migration registry lookup
+[*] (Fix) wrap _updateAgentMeters in safecall + add phase breadcrumbs
+[*] (Fix) zone overview uses theme colours instead of raw RGBA arrays
+[*] (Fix) add missing archetype paths + fix safecall return destructuring
+[*] (Fix) refactor economy tick to use monotonic getWorldAgeHours()
+[*] (Fix) add sanity reset for corrupted lastProcessedTick in economy tick
+[*] (Fix) wrap distributions in OnPreDistributionMerge event handler
+[*] (Fix) add missing SIGINT_XP_SATELLITE_CALIBRATE constant
+[*] (Fix) replace nonexistent MARKET_CATEGORIES with MarketRegistry lookup
+[*] (Fix) move server/ modules to shared/ for SP compatibility
+[*] (Fix) make POS_RumourGenerator a global (not local) for PZ module system
+[*] (Fix) add missing require for POS_RumourGenerator in BBS screens
+[*] (Fix) use correct PZ perk name 'Electricity' instead of 'Electrical'
+[*] (Fix) commodities screen renders categories even with no market data
+[*] (Fix) satellite calibration persists for outdoor dishes
+[*] (Fix) satellite hasTerminalLink uses sprite lookup instead of keywords
+[*] (Fix) strip Item_ prefix from all 35 icon fields to fix question marks
+[*] (Fix) pre-warm PlayerFileStore cache in RadioInterception OnGameStart
+[*] (Fix) revert broken cache warm + add missing textBright fallback colour
+[*] (Fix) defer PlayerFileStore cache warm to first EveryOneMinute tick
+[*] (Fix) pre-warm PlayerFileStore cache on game start to prevent CTD
+[*] (Fix) getSummary returns nil instead of empty table when no records exist
+[*] (Fix) add missing aggregate field to file store category tables
+[*] (Fix) populate satellite dish and camera workstation sprite tables
+[*] (Fix) add missing Living Market simulation constants
+[*] (Fix) eliminate all sendServerCommand calls in singleplayer
+[*] (Fix) isAuthority() incorrectly returned false in singleplayer
+[*] (Fix) eliminate CTD from bulk observation data in market snapshot
+[*] (Fix) skip market snapshot processing during early init
+[*] (Fix) forward-declare ensureInit to satisfy luacheck
+[*] (Fix) guard watchlist refresh against frame-0 init crash
+[*] (Fix) correct SkillRequired syntax in craftRecipe definitions
+[*] (Fix) wire watchlist refresh to economy tick and flush file store on save
+[*] expand §28 with Seven Questions + call discipline rules + screen refresh triggers
+[*] add §28 Interoperability Principles + interop matrix
+[*] mark all Living Market phases complete, add §24.12-13
+[*] mark Phase 3B complete, add §24.11 Soft Signal Rules
+[*] mark Phase 3D complete, add zone pressure bias rule to §24.10
+[*] update design-guidelines §24.10 and implementation status for Phases 2/5B/3A
+[*] add Living Market implementation status and roadmap
+[*] remove 6 stale POS_PlayerFileStore references
+[*] add §27.6 Per-Player Data Storage convention
+[*] add §25.6 Empty-Data Return Convention
+[*] add §27.5 SP-Safe Server Commands to design guidelines
+[*] add §27.4 Chunked File Writes to design guidelines
+[*] add §27 Init-Time Performance guidelines
+[*] update Living Market docs for Phase 1 implementation
+[*] add POS_Constants field existence check
+[*] harmony audit — pcall migration, translation keys, nil guards
+[*] migrate watchlist+alerts from file store to player modData
+[*] strip diagnostic breadcrumbs from Markets and Stockmarket screens
+[*] dump first summary values + narrow crash to coverage section
+[*] granular A-J breadcrumbs in IntelSummary create()
+[*] remove early-return, enable full IntelSummary create with breadcrumb
+[*] move diagnostic to IntelSummary screen, revert markets hub
+[*] diagnostic — render menu entries only, skip upload section
+[*] add early-return diagnostic to markets and stockmarket screens
+[*] add refresh/getContextData diagnostic breadcrumbs
+[*] add diagnostic breadcrumbs to markets screen create()
+[*] defer init-time operations to reduce frame-0 resource spike
+[*] bump POSnet to v0.15.0 — Living Market Phase 1
+[*] diag: wrap PlayerFileStore warm in safecall to capture error
+[/list]
+
+[hr][/hr]
+
 [h2]v0.14.0[/h2]
 [list]
 [*] data-pack architecture with schema validation and registries (v0.14.0)
