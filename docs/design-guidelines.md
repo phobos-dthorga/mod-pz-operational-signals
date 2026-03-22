@@ -2298,7 +2298,7 @@ Canonical shapes currently documented:
 - Rumour payload
 - Recorder chunk
 
-### 28.4 The Six Questions
+### 28.4 The Seven Questions
 
 Every new subsystem must answer these questions in its design phase:
 
@@ -2308,6 +2308,7 @@ Every new subsystem must answer these questions in its design phase:
 4. **What capabilities/tags does it require?** — What must exist for it to function?
 5. **What persistence layer owns its truth?** — ModData key, file store, or none?
 6. **What events does it emit and listen for?** — PZ events or internal notifications?
+7. **What systems should react to its outputs?** — List downstream consumers that need to update when this subsystem's state changes. This drives refresh propagation and future event wiring.
 
 Document the answers in the subsystem's module header comment or in
 `docs/interoperability-matrix.md`.
@@ -2324,6 +2325,10 @@ Rules:
    not write to market database; it emits chunks, and the market system ingests
    them)
 4. Never read another subsystem's private/internal state — use its public API
+5. Screens never mutate shared state directly — they gather params, call a service function, and render the result. All state mutations live in service modules. (Cross-reference: CLAUDE.md "UI / Business Logic Separation")
+6. Services never navigate UI — a service may return data or status codes, but must never call `POS_ScreenManager.navigateTo()` or create UI widgets. Navigation belongs in the presentation layer.
+7. Forward-looking: when a service mutates state, it should be structured so a future event notification can be added at the mutation point without refactoring. Keep mutations in single authoritative functions, not scattered across multiple callers.
+8. When event names are introduced, use dot-namespaced prefixes: `market.*`, `intel.*`, `ops.*`, `delivery.*`, `player.*`, `terminal.*`
 
 Anti-pattern:
 

@@ -10,19 +10,38 @@ for the governing principles.
 
 ## Subsystem Data Flow
 
-| Subsystem | Consumes | Produces | Persistence Owner | Optional Dependencies |
-|---|---|---|---|---|
-| Passive Recon | radio signals, zone pressure | observation records, recorder chunks | POS_MarketDatabase | POS_MarketSimulation |
-| Data Recorder | datasource chunks | raw intel artifacts | recorder modData | POS_DataSourceRegistry |
-| Terminal Analysis | raw intel artifacts, observations | compiled reports, analysis summaries | POS_MarketDatabase | POS_CameraService |
-| Camera Service | building/zone context | compiled footage artifacts | camera modData | POS_MarketSimulation |
-| Satellite Service | compiled reports, zone state | broadcast payloads, market effects | satellite modData | POS_MarketSimulation |
-| Living Market | observations, market effects | zone pressure, rumours, wholesaler states | POSNET.Wholesalers, POSNET.MarketZones | POS_MarketDatabase |
-| Operations/Missions | observations, building discoveries | rewards, reputation, demand shifts | POS_OperationLog | POS_Reputation |
-| Market Service | MarketDatabase records | category summaries, freshness data | POS_MarketFileStore | — |
-| Broadcast System | economy tick events | server commands (MP), direct calls (SP) | — | — |
-| Tutorial System | milestone events from 6+ services | tutorial popups, progression flags | player modData | PhobosLib_Milestone |
-| Rumour System | soft-class market events | rumour bulletins, BBS entries | POSNET.Rumours | POS_WholesalerService |
+| Subsystem | Consumes | Produces | Persistence Owner | Optional Dependencies | Refreshed By |
+|---|---|---|---|---|---|
+| Passive Recon | radio signals, zone pressure | observation records, recorder chunks | POS_MarketDatabase | POS_MarketSimulation | EveryOneMinute tick |
+| Data Recorder | datasource chunks | raw intel artifacts | recorder modData | POS_DataSourceRegistry | chunk append, media insert/eject |
+| Terminal Analysis | raw intel artifacts, observations | compiled reports, analysis summaries | POS_MarketDatabase | POS_CameraService | analysis completion, tape review |
+| Camera Service | building/zone context | compiled footage artifacts | camera modData | POS_MarketSimulation | footage compilation |
+| Satellite Service | compiled reports, zone state | broadcast payloads, market effects | satellite modData | POS_MarketSimulation | broadcast sent, calibration change |
+| Living Market | observations, market effects | zone pressure, rumours, wholesaler states | POSNET.Wholesalers, POSNET.MarketZones | POS_MarketDatabase | economy day tick |
+| Operations/Missions | observations, building discoveries | rewards, reputation, demand shifts | POS_OperationLog | POS_Reputation | operation accept/complete, delivery complete |
+| Market Service | MarketDatabase records | category summaries, freshness data | POS_MarketFileStore | — | economy tick, note upload |
+| Broadcast System | economy tick events | server commands (MP), direct calls (SP) | — | — | economy tick complete |
+| Tutorial System | milestone events from 6+ services | tutorial popups, progression flags | player modData | PhobosLib_Milestone | any milestone-eligible action |
+| Rumour System | soft-class market events | rumour bulletins, BBS entries | POSNET.Rumours | POS_WholesalerService | wholesaler event firing |
+
+---
+
+## Screen Refresh Triggers
+
+Each terminal screen should update when specific domain actions occur. Rather than asking "How do I use this screen?", ask: "What events should make this screen meaningfully change?"
+
+| Screen | Refreshed When |
+|---|---|
+| Intel Summary | analysis completes, recon finishes, tapes compiled, broadcasts sent |
+| Event Log | missions complete, notes uploaded, broadcasts sent, investments resolve, alerts fire |
+| Watchlist | market snapshots change, economy tick completes |
+| Zone Overview | new observations arrive, economy tick completes, zone pressure changes |
+| Wholesaler Directory | stock levels change, rumours fire, wholesaler state transitions |
+| BBS Rumours | soft-class market events fire, rumours expire |
+| Commodities | economy tick completes, new observations recorded |
+| Market Reports | analysis completes, economy tick completes |
+
+This mapping prepares for a future event bus without requiring one now.
 
 ---
 
