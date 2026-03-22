@@ -1618,6 +1618,57 @@ Anti-pattern: never multiply zone pressure directly into `basePrice`. The
 pressure effect MUST flow through the S/D composite so that all price
 modifiers interact through a single authoritative channel.
 
+### 24.11 Soft Signal Rules (Rumours)
+
+Rumours are the soft-signal counterpart to hard observations. They are
+generated when **soft-class events** fire during Phase 4 of
+`tickWholesaler()` and provide players with vague, unverified hints about
+upcoming market shifts.
+
+**Generation** — When a soft-class event fires (e.g. `convoy_delay`,
+`strategic_withholding`), a rumour record is created containing the event ID,
+affected region, affected categories, and an impact hint. Hard-class events
+(e.g. `bulk_arrival`) MUST NOT generate rumours.
+
+**Storage** — Rumours are stored in world ModData and accessed via
+`POS_WorldState.getRumours()`. This follows the same pattern as
+`getWholesalers()` and `getMarketZones()`.
+
+**Expiry and cap:**
+
+- `RUMOUR_EXPIRY_DAYS = 7` — rumours older than 7 in-game days are pruned
+  during the next tick.
+- `RUMOUR_MAX_ACTIVE = 20` — if the cap is exceeded, the oldest rumours are
+  discarded first.
+
+**Impact hints** — The hint direction is derived from the event's
+`pressureEffect` sign:
+
+- Positive `pressureEffect` → shortage/tightening hint.
+- Negative `pressureEffect` → surplus/easing hint.
+- Zero `pressureEffect` → neutral/ambiguous hint.
+
+The hint text MUST remain vague (e.g. "supplies may tighten") and never
+expose precise numerical values.
+
+**Confidence** — Rumour confidence is always `"low"`. Rumours are unverified
+intelligence; they hint at possible conditions but carry no guarantees.
+
+**BBS display** — The BBS screen displays all active (non-expired) rumours in
+a paginated list. Each entry shows: event message, region, affected
+categories, impact hint, and days remaining until expiry. The BBS hub entry
+shows a count badge of active rumours.
+
+**Anti-patterns:**
+
+- Never treat rumours as hard data — they hint, they do not confirm. No
+  gameplay system should read rumour records as authoritative price or stock
+  signals.
+- Never expose the underlying event ID or numerical `pressureEffect` to the
+  player. The UI shows only the translated hint string.
+- Never generate rumours from hard-class events. The signal class on the
+  event definition is the sole discriminator.
+
 ---
 
 ## 25. Error Handling & Strict Mode

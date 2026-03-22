@@ -157,10 +157,9 @@ Tuning values follow `living-market-design.md` §4 and the category affinity tab
 
 **Remaining components:**
 
-**3B. Soft Signal Emission (Rumours)**
-- Roll against `rumorRate` per tick; if triggered, generate a soft-signal bulletin
-- Rumour content depends on operational state (Dumping → abundance rumours, Collapsing → shortage warnings, Withholding → conflicting signals)
-- Destination: field notes / BBS system (see `market-exchange-design.md` for existing note schema)
+**3B. Soft Signal Emission (Rumours)** — ✅ Complete
+
+Soft-class events in `tickWholesaler()` Phase 4 now generate rumour records stored in world ModData via `POS_WorldState.getRumours()`. Rumours expire after `RUMOUR_EXPIRY_DAYS` (7) and are capped at `RUMOUR_MAX_ACTIVE` (20). Impact hints are derived from the event's `pressureEffect` sign; confidence is always `"low"`. The BBS screen displays active rumours with region, category, duration, and impact hint. Hard-class events do not generate rumours. See `design-guidelines.md` §24.11 for the full rule set.
 
 **3C. Structural Signals**
 - These are invisible — they bias downstream agent behaviour rather than producing UI records
@@ -300,7 +299,7 @@ Future connections (Phases 3–7):
 | ~~Zone state load restoration (Phase 5B)~~ | ~~Low~~ | — | ✅ Complete |
 | ~~Hard signal emission (Phase 3A)~~ | ~~Medium~~ | — | ✅ Complete |
 | ~~PriceEngine pressure bias (Phase 3D)~~ | ~~Medium~~ | ~~Phase 3A schema work~~ | ✅ Complete |
-| Soft signal / rumour emission (Phase 3B) | Medium | Phase 3A done, note generator | 5 |
+| ~~Soft signal / rumour emission (Phase 3B)~~ | ~~Medium~~ | ~~Phase 3A done, note generator~~ | ✅ Complete |
 | Per-agent observation generator (Phase 4A) | High | Phase 3A, archetype definitions | 6 |
 | Downstream influence application (Phase 4B) | Medium | Phase 4A | 7 |
 | Save migration path (Phase 5C) | Medium | Phase 5A done | 8 |
@@ -312,7 +311,7 @@ Future connections (Phases 3–7):
 | Field notes from state transitions (Phase 7C) | Low | Phase 3 + POS_MarketNoteGenerator | 14 |
 | Camera/satellite intel tier (Phase 7D) | High | Camera/satellite systems | 15 |
 
-**Current state:** Phases 2, 5B, 3A, and 3D are complete. Wholesalers emit hard signal observations into `POS_MarketDatabase`, and zone pressure now biases terminal prices through the S/D composite in `POS_PriceEngine`. **Next recommended target:** Phase 3B (Soft signal / rumour emission) — this adds rumour bulletins driven by wholesaler operational state, giving players indirect intelligence through field notes and the BBS system.
+**Current state:** Phases 2, 5B, 3A, 3D, and 3B are complete. Wholesalers emit hard signal observations into `POS_MarketDatabase`, zone pressure biases terminal prices through the S/D composite in `POS_PriceEngine`, and soft-class events now generate rumour bulletins visible on the BBS screen. **Next recommended target:** Phase 4A (Per-agent observation generator) — this wires the hidden-state meters into actual observation output, making agent archetypes produce differentiated intelligence records.
 
 ---
 
@@ -409,5 +408,5 @@ Future connections (Phases 3–7):
 1. **No downstream influence from `getDownstreamInfluence()`** — the function is implemented and returns correct data, but nothing reads it during observation generation (Phase 4).
 2. ~~**PriceEngine is not connected**~~ — ✅ Resolved (Phase 3D). Zone pressure biases the S/D factor in `generatePrice()`.
 3. **No terminal UI** — the simulation is fully invisible to the player until Phase 6.
-4. **Soft signal / rumour emission not implemented** — Phase 3B. Hard signals flow but no rumour bulletins yet.
+4. ~~**Soft signal / rumour emission not implemented**~~ — ✅ Resolved (Phase 3B). Soft-class events generate rumour bulletins displayed on the BBS screen.
 5. **Save migration path not designed** — Phase 5C. Schema evolution strategy for wholesaler/zone saved state.
