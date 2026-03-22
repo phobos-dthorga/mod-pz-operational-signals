@@ -55,6 +55,7 @@ globals = {
     "POS_ReconGenerator",
     "POS_ReconScanner",
     "POS_CraftCallbacks",
+    "POS_CraftHelpers",
     "POS_MapMarkers",
     "POS_TerminalTheme",
     "POS_AZASIntegration",

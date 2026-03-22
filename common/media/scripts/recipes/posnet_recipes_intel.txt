@@ -1,0 +1,79 @@
+/*  ________________________________________________________________________
+ * / Copyright (c) 2026 Phobos A. D'thorga                                \
+ * |                                                                        |
+ * |           /\_/\                                                         |
+ * |         =/ o o \=    Phobos' PZ Modding                                |
+ * |          (  V  )     All rights reserved.                              |
+ * |     /\  / \   / \                                                      |
+ * |    /  \/   '-'   \   This source code is part of the Phobos            |
+ * |   /  /  \  ^  /\  \  mod suite for Project Zomboid (Build 42).         |
+ * |  (__/    \_/ \/  \__)                                                  |
+ * |     |   | |  | |     Unauthorised copying, modification, or            |
+ * |     |___|_|  |_|     distribution of this file is prohibited.          |
+ * |                                                                        |
+ * \________________________________________________________________________/
+ */
+
+module PhobosOperationalSignals {
+
+    craftRecipe CraftFieldReport
+    {
+        -- Inputs
+        item 1 PhobosOperationalSignals.ReconPhotograph,
+        item 1 [Base.SheetPaper2;Base.Notebook],
+        item keep 1 [Base.Pen;Base.Pencil;Base.RedPen;Base.BluePen;Base.GreenPen],
+
+        -- Output
+        result PhobosOperationalSignals.FieldReport 1,
+
+        -- Properties
+        time 300,
+        category PhobosFieldOps,
+        needToBeLearn false,
+        OnCreate POS_CraftCallbacks.onCreateFieldReport,
+    }
+
+    craftRecipe ReviewVHSTape
+    {
+        item 1 PhobosOperationalSignals.RecordedReconTape,
+        item 1 [Base.SheetPaper2;Base.Notebook],
+        item keep 1 [Base.Pen;Base.Pencil;Base.RedPen;Base.BluePen;Base.GreenPen],
+
+        result PhobosOperationalSignals.RawMarketNote 1,
+
+        time 300,
+        Tags = POS_TVStation;CannotBeResearched,
+        needToBeLearn false,
+        OnCreate POS_CraftCallbacks.onCreateVHSReviewNote,
+    }
+
+    craftRecipe ReviewMicrocassette
+    {
+        item 1 [PhobosOperationalSignals.RecordedMicrocassette;PhobosOperationalSignals.RewoundMicrocassette],
+        item 1 [Base.SheetPaper2;Base.Notebook],
+        item keep 1 [Base.Pen;Base.Pencil;Base.RedPen;Base.BluePen;Base.GreenPen],
+
+        result PhobosOperationalSignals.RawMarketNote 1,
+
+        time 200,
+        category PhobosFieldOps,
+        needToBeLearn false,
+        OnCreate POS_CraftCallbacks.onCreateReviewMicrocassette,
+    }
+
+    craftRecipe ReviewFloppyDisk
+    {
+        item 1 [PhobosOperationalSignals.RecordedFloppyDisk;PhobosOperationalSignals.WornFloppyDisk],
+        item 1 [Base.SheetPaper2;Base.Notebook],
+        item keep 1 [Base.Pen;Base.Pencil;Base.RedPen;Base.BluePen;Base.GreenPen],
+
+        result PhobosOperationalSignals.RawMarketNote 1,
+
+        time 150,
+        category PhobosFieldOps,
+        Tags = POS_TerminalStation;CannotBeResearched,
+        needToBeLearn false,
+        OnCreate POS_CraftCallbacks.onCreateReviewFloppyDisk,
+    }
+
+}
