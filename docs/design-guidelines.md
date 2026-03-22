@@ -1591,6 +1591,33 @@ intelligence tier alongside satellite and relay data.
 - Never bypass the visibility gate — even in tests, respect the probabilistic
   filter to avoid unrealistic signal density.
 
+**Zone Pressure Price Bias** — When the Living Market is enabled, zone
+pressure from the simulation biases the supply/demand factor inside
+`POS_PriceEngine.generatePrice()`.
+
+Formula:
+
+```
+pressureFactor = getZonePressure(zoneId, categoryId) * PRICE_ZONE_PRESSURE_WEIGHT
+pressureFactor = clamp(pressureFactor, -PRICE_ZONE_PRESSURE_CLAMP, PRICE_ZONE_PRESSURE_CLAMP)
+sdFactor       = sdFactor + pressureFactor
+```
+
+- The bias is **additive** to the existing `sdFactor`, not multiplicative.
+  This preserves the S/D composite's bounded range and prevents runaway
+  feedback loops.
+- Gated behind the `EnableLivingMarket` sandbox option. When the option is
+  OFF, the pressure term is zero and `generatePrice()` behaves identically to
+  pre-Living-Market builds.
+- Callers pass `zoneId` in the `ctx` table. If `ctx.zoneId` is `nil`, the
+  pressure term is skipped entirely (graceful fallback — no error, no bias).
+- Constants: `PRICE_ZONE_PRESSURE_WEIGHT = 0.05`,
+  `PRICE_ZONE_PRESSURE_CLAMP = 0.10`.
+
+Anti-pattern: never multiply zone pressure directly into `basePrice`. The
+pressure effect MUST flow through the S/D composite so that all price
+modifiers interact through a single authoritative channel.
+
 ---
 
 ## 25. Error Handling & Strict Mode

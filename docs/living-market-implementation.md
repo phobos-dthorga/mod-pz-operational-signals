@@ -166,10 +166,9 @@ Tuning values follow `living-market-design.md` §4 and the category affinity tab
 - These are invisible — they bias downstream agent behaviour rather than producing UI records
 - `getDownstreamInfluence()` is already implemented; it needs to be called during agent observation generation (Phase 4, below) to modify quote reliability and stock claim biases
 
-**3D. PriceEngine Integration**
-- `POS_PriceEngine` should factor in zone pressure when computing drift
-- Add a wholesaler pressure bias term to the existing drift calculation
-- This is the mechanism by which simulation state affects prices visible in the terminal
+**3D. PriceEngine Integration** — ✅ Complete
+
+Zone pressure from the Living Market simulation biases the S/D factor in `POS_PriceEngine.generatePrice()`. Two new constants govern the effect: `PRICE_ZONE_PRESSURE_WEIGHT = 0.05` and `PRICE_ZONE_PRESSURE_CLAMP = 0.10`. The bias is additive to `sdFactor`, clamped to ±0.10, and gated behind `EnableLivingMarket`. Callers pass `ctx.zoneId`; `nil` gracefully skips the pressure term. See `design-guidelines.md` §24.10 for the full rule set.
 
 ---
 
@@ -300,7 +299,7 @@ Future connections (Phases 3–7):
 | ~~Remaining archetype definitions (Phase 2)~~ | ~~Low~~ | — | ✅ Complete |
 | ~~Zone state load restoration (Phase 5B)~~ | ~~Low~~ | — | ✅ Complete |
 | ~~Hard signal emission (Phase 3A)~~ | ~~Medium~~ | — | ✅ Complete |
-| PriceEngine pressure bias (Phase 3D) | Medium | Phase 3A schema work | 4 — makes prices respond to simulation |
+| ~~PriceEngine pressure bias (Phase 3D)~~ | ~~Medium~~ | ~~Phase 3A schema work~~ | ✅ Complete |
 | Soft signal / rumour emission (Phase 3B) | Medium | Phase 3A done, note generator | 5 |
 | Per-agent observation generator (Phase 4A) | High | Phase 3A, archetype definitions | 6 |
 | Downstream influence application (Phase 4B) | Medium | Phase 4A | 7 |
@@ -313,7 +312,7 @@ Future connections (Phases 3–7):
 | Field notes from state transitions (Phase 7C) | Low | Phase 3 + POS_MarketNoteGenerator | 14 |
 | Camera/satellite intel tier (Phase 7D) | High | Camera/satellite systems | 15 |
 
-**Current state:** Phases 2, 5B, and 3A are complete. Wholesalers now emit hard signal observations into `POS_MarketDatabase`, meaning the existing market screens show simulation-driven data. **Next recommended target:** Phase 3D (PriceEngine pressure bias) — this makes terminal prices respond to zone pressure, giving the Living Market its first player-visible economic effect beyond raw observations.
+**Current state:** Phases 2, 5B, 3A, and 3D are complete. Wholesalers emit hard signal observations into `POS_MarketDatabase`, and zone pressure now biases terminal prices through the S/D composite in `POS_PriceEngine`. **Next recommended target:** Phase 3B (Soft signal / rumour emission) — this adds rumour bulletins driven by wholesaler operational state, giving players indirect intelligence through field notes and the BBS system.
 
 ---
 
@@ -408,7 +407,7 @@ Future connections (Phases 3–7):
 ## Known Gaps Summary
 
 1. **No downstream influence from `getDownstreamInfluence()`** — the function is implemented and returns correct data, but nothing reads it during observation generation (Phase 4).
-2. **PriceEngine is not connected** — zone pressure has no effect on price drift in the terminal.
+2. ~~**PriceEngine is not connected**~~ — ✅ Resolved (Phase 3D). Zone pressure biases the S/D factor in `generatePrice()`.
 3. **No terminal UI** — the simulation is fully invisible to the player until Phase 6.
 4. **Soft signal / rumour emission not implemented** — Phase 3B. Hard signals flow but no rumour bulletins yet.
 5. **Save migration path not designed** — Phase 5C. Schema evolution strategy for wholesaler/zone saved state.
