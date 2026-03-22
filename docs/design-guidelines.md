@@ -1844,6 +1844,9 @@ reimplement these locally — use the PhobosLib versions:
 | `PhobosLib.consumeItems(player, fullType, count)` | Remove N items from inventory (see §5.6) |
 | `PhobosLib.grantItems(player, fullType, count)` | Add N items to inventory (see §5.6) |
 | `PhobosLib.checkRequirements(player, opts)` | Composite item/tool/skill check (see §5.6) |
+| `PhobosLib.findItemInList(player, itemTypes)` | Find the first matching item from an array of full types (see §29) |
+| `PhobosLib.getConfigurable(sandboxKey, default)` | Fetch a sandbox option with fallback default (see §29) |
+| `PhobosLib.resolveThresholdTier(value, thresholds)` | Map a numeric value to a named tier via threshold table (see §29) |
 
 ### 25.6 Empty-Data Return Convention
 
@@ -2350,3 +2353,51 @@ local price = summary and summary.avgPrice
 | **Deep internal calls** | Tight coupling makes refactoring impossible | Use public APIs only (§28.5) |
 | **Tight coupling threshold** | 3+ systems calling the same function directly | Introduce an event/callback pattern |
 | **Display name as key** | Translation changes break lookup logic | Use canonical string IDs |
+
+---
+
+## 29. Recipe Callback Patterns
+
+All recipe callbacks in POSnet must follow a strict delegation pattern. The
+callback function itself is a **thin delegator** — 3–5 lines maximum, with
+zero business logic. All shared concerns live in `POS_CraftHelpers`.
+
+### 29.1 Delegation Rule
+
+Every `OnCreate` / `OnCanPerform` callback must delegate to
+`POS_CraftHelpers` for the following shared concerns:
+
+- **Writing implement damage** — type lookup via
+  `POS_Constants.WRITING_IMPLEMENTS`, condition drain via
+  `POS_CraftHelpers.damageWritingImplement()`.
+- **Confidence resolution** — call
+  `PhobosLib.resolveThresholdTier(skillLevel, POS_Constants.CONFIDENCE_THRESHOLDS)`
+  to map the player's skill level to a confidence tier string.
+- **Note generation** — delegate to `POS_CraftHelpers.generateNote()` or
+  equivalent helper that builds the note body and attaches it to an item.
+- **Media initialisation** — delegate to `POS_CraftHelpers.initMedia()` for
+  any item that carries embedded media state (tapes, disks, film).
+
+### 29.2 Sandbox Configuration
+
+Sandbox-configurable parameters (e.g. base confidence, damage multiplier,
+output counts) must be fetched via `PhobosLib.getConfigurable(sandboxKey,
+default)` — never read directly from `SandboxVars` inside the callback.
+This keeps the sandbox fetch centralised and testable.
+
+### 29.3 Item Lookup
+
+When a callback needs to find a specific item from the player's inventory
+(e.g. a writing implement or a media blank), use
+`PhobosLib.findItemInList(player, POS_Constants.WRITING_IMPLEMENTS)` rather
+than iterating manually. The constant array is the single source of truth
+for accepted item types.
+
+### 29.4 Anti-Patterns
+
+| Anti-Pattern | Why It's Dangerous | Correct Approach |
+|---|---|---|
+| **Duplicated sandbox fetch blocks** | Divergent defaults when one copy is updated but the other is missed | Single `PhobosLib.getConfigurable()` call in the helper |
+| **Hardcoded item types** | Adding a new writing implement requires editing every callback | Use `POS_Constants.WRITING_IMPLEMENTS` array |
+| **Direct method calls without safecall** | Kahlua nil-field crashes propagate as silent CTDs | Wrap cross-module calls in `PhobosLib.safecall()` |
+| **Business logic in the callback** | Callbacks become untestable and diverge over time | Delegate to `POS_CraftHelpers` — callback body is 3–5 lines |

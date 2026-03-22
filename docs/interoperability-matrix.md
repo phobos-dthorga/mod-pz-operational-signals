@@ -23,6 +23,7 @@ for the governing principles.
 | Broadcast System | economy tick events | server commands (MP), direct calls (SP) | — | — | economy tick complete |
 | Tutorial System | milestone events from 6+ services | tutorial popups, progression flags | player modData | PhobosLib_Milestone | any milestone-eligible action |
 | Rumour System | soft-class market events | rumour bulletins, BBS entries | POSNET.Rumours | POS_WholesalerService | wholesaler event firing |
+| Recipe Callbacks | recipe items, player modData, sandbox options | field reports, market notes, media items | player modData (note content), item modData (media state) | POS_CraftHelpers | player crafts recipe |
 
 ---
 
