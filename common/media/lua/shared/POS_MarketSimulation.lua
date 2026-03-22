@@ -435,7 +435,11 @@ function POS_MarketSimulation.tickSimulation(currentDay)
     -- First tick: spawn wholesalers from definitions
     if not _firstTickDone then
         PhobosLib.debug("POS", _TAG, "tickSimulation: first tick — checking spawn")
-        if not next(wholesalerStore) then
+        -- Use pairs() count instead of next() — Kahlua's next() can crash
+        -- on Java-backed ModData tables (KahluaTableImpl)
+        local storeCount = 0
+        for _ in pairs(wholesalerStore) do storeCount = storeCount + 1 break end
+        if storeCount == 0 then
             PhobosLib.debug("POS", _TAG, "tickSimulation: spawning wholesalers")
             POS_MarketSimulation._spawnWholesalers(wholesalerStore)
         end
