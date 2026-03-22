@@ -323,6 +323,30 @@ function POS_WholesalerService.tickWholesaler(wholesaler, currentDay)
     if wholesaler._operationalState ~= prevState then
         PhobosLib.debug("POS", _TAG, wholesaler.id .. ": state "
             .. tostring(prevState) .. " -> " .. tostring(wholesaler._operationalState))
+
+        -- Phase 7C: Generate field note for significant state transitions
+        local newState = wholesaler._operationalState
+        local isSignificant = false
+        for _, s in ipairs(POS_Constants.FIELD_NOTE_STATES) do
+            if newState == s then isSignificant = true; break end
+        end
+        if isSignificant and wholesaler[POS_Constants.FIELD_NOTE_COOLDOWN_KEY] ~= currentDay then
+            wholesaler[POS_Constants.FIELD_NOTE_COOLDOWN_KEY] = currentDay
+            local ok, gen = PhobosLib.safecall(require, "POS_MarketNoteGenerator")
+            if ok and gen and gen.generateNote then
+                local noteData = {
+                    type         = "state_transition",
+                    wholesalerId = wholesaler.id,
+                    regionId     = wholesaler.regionId,
+                    state        = newState,
+                    categories   = wholesaler.categoryWeights or {},
+                    day          = currentDay,
+                }
+                PhobosLib.safecall(gen.generateNote, noteData)
+                PhobosLib.debug("POS", _TAG,
+                    wholesaler.id .. ": field note generated for " .. newState .. " transition")
+            end
+        end
     end
 end
 
@@ -486,6 +510,29 @@ function POS_WholesalerService._applyEvent(wholesaler, eventDef)
             local currentDay = POS_WorldState and POS_WorldState.getWorldDay() or 0
             POS_RumourGenerator.generateRumour(eventDef, wholesaler, currentDay)
         end)
+    end
+
+    -- Award SIGINT XP for detecting market events (Phase 7B)
+    local player = getSpecificPlayer(0)
+    if player then
+        local baseXP = POS_Constants.SIGINT_XP_MARKET_EVENT_BASE
+        local mult = POS_Constants.SIGINT_XP_DEFAULT_MULT
+        local opState = wholesaler._operationalState
+            or POS_Constants.WHOLESALER_STATE_STABLE
+        if opState == POS_Constants.WHOLESALER_STATE_COLLAPSING then
+            mult = POS_Constants.SIGINT_XP_COLLAPSING_MULT
+        elseif opState == POS_Constants.WHOLESALER_STATE_WITHHOLDING then
+            mult = POS_Constants.SIGINT_XP_WITHHOLDING_MULT
+        elseif opState == POS_Constants.WHOLESALER_STATE_STRAINED then
+            mult = POS_Constants.SIGINT_XP_STRAINED_MULT
+        end
+        local xpAmount = PhobosLib.round(baseXP * mult, 0)
+        local ok3, POS_SIGINTSkill = PhobosLib.safecall(require, "POS_SIGINTSkill")
+        if ok3 and POS_SIGINTSkill and POS_SIGINTSkill.addXP then
+            PhobosLib.safecall(POS_SIGINTSkill.addXP, player, xpAmount)
+            PhobosLib.debug("POS", _TAG, "Awarded " .. xpAmount
+                .. " SIGINT XP for " .. tostring(eventDef.id) .. " event")
+        end
     end
 end
 

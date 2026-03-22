@@ -110,6 +110,9 @@ globals = {
     "POS_ZScienceIntegration",
     "POS_TutorialService",
     "POS_TutorialPopups",
+    "POS_Screen_ZoneOverview",
+    "POS_Screen_EventLog",
+    "POS_Screen_WholesalerDir",
 }
 
 read_globals = {

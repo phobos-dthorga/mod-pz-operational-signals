@@ -101,6 +101,7 @@ local BUILTIN_WHOLESALER_PATHS = {
 
 local _zoneStates = {}
 local _firstTickDone = false
+local _migrationChecked = false
 
 --- Ensure a zone runtime state exists. Creates it lazily from
 --- the zone registry definition if not yet cached.
@@ -144,6 +145,53 @@ local function _ensureZoneState(zoneId)
 
     _zoneStates[zoneId] = state
     return state
+end
+
+---------------------------------------------------------------
+-- Save migration validation
+---------------------------------------------------------------
+
+--- Validate and migrate a wholesaler's persisted state against
+--- its current definition. Backfills missing fields from
+--- definition defaults when the schema version has changed.
+---@param wholesaler table  Persisted wholesaler state from ModData
+---@param definition table  Wholesaler definition from registry
+---@return boolean          true if migration was applied
+local function _validateWholesalerState(wholesaler, definition)
+    if wholesaler.schemaVersion == definition.schemaVersion then
+        return false
+    end
+
+    PhobosLib.debug("POS", _TAG, "Migrating wholesaler " .. wholesaler.id
+        .. " from schema v" .. tostring(wholesaler.schemaVersion or 0)
+        .. " to v" .. tostring(definition.schemaVersion))
+
+    -- Backfill missing numeric fields from definition or createWholesaler defaults
+    local fieldDefaults = {
+        stockLevel     = definition.stockLevel     or 0.75,
+        throughput     = definition.throughput      or 0.60,
+        resilience     = definition.resilience      or 0.70,
+        visibility     = definition.visibility      or 0.35,
+        reliability    = definition.reliability     or 0.80,
+        influence      = definition.influence       or 0.85,
+        secrecy        = definition.secrecy         or 0.20,
+        markupBias     = definition.markupBias      or -0.08,
+        panicThreshold = definition.panicThreshold  or 0.25,
+        dumpThreshold  = definition.dumpThreshold   or 0.90,
+    }
+
+    for field, default in pairs(fieldDefaults) do
+        if wholesaler[field] == nil then
+            wholesaler[field] = default
+        end
+    end
+
+    if wholesaler.categoryWeights == nil then
+        wholesaler.categoryWeights = definition.categoryWeights or {}
+    end
+
+    wholesaler.schemaVersion = definition.schemaVersion
+    return true
 end
 
 ---------------------------------------------------------------
@@ -390,6 +438,22 @@ function POS_MarketSimulation.tickSimulation(currentDay)
         _firstTickDone = true
     end
 
+    -- One-time migration validation pass on first load
+    if not _migrationChecked then
+        local wsRegistry = POS_WholesalerService.getRegistry()
+        for wId, w in pairs(wholesalerStore) do
+            local def = wsRegistry:get(wId)
+            if def then
+                _validateWholesalerState(w, def)
+            else
+                PhobosLib.debug("POS", _TAG,
+                    "Orphaned wholesaler in save data: " .. tostring(wId)
+                    .. " (no matching definition)")
+            end
+        end
+        _migrationChecked = true
+    end
+
     -- Tick all active wholesalers
     local tickCount = 0
     for _, w in pairs(wholesalerStore) do
@@ -410,6 +474,19 @@ function POS_MarketSimulation.tickSimulation(currentDay)
     -- Update agent hidden state meters
     _updateAgentMeters(_zoneStates)
 
+    -- Phase 4: Generate agent observations
+    local totalObs = 0
+    for _, agent in pairs(_agents) do
+        if agent.active ~= false then
+            local zoneState = _zoneStates[agent.zoneId]
+            if zoneState then
+                local obsCount = PhobosLib.safecall(
+                    POS_MarketAgent.generateObservations, agent, zoneState, currentDay)
+                if obsCount then totalObs = totalObs + obsCount end
+            end
+        end
+    end
+
     -- Hybrid persistence: save zone states to ModData
     local ok, POS_WorldState = PhobosLib.safecall(require, "POS_WorldState")
     if ok and POS_WorldState and POS_WorldState.getMarketZones then
@@ -427,7 +504,8 @@ function POS_MarketSimulation.tickSimulation(currentDay)
 
     PhobosLib.debug("POS", _TAG, "tickSimulation complete — day " .. tostring(currentDay)
         .. " (" .. tickCount .. " wholesalers, "
-        .. tostring(#POS_Constants.MARKET_ZONES) .. " zones)")
+        .. tostring(#POS_Constants.MARKET_ZONES) .. " zones, "
+        .. totalObs .. " observations)")
 end
 
 ---------------------------------------------------------------

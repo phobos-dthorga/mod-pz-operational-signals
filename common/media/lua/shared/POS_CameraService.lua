@@ -286,6 +286,42 @@ function POS_CameraService.calculateConfidence(player, inputs, actionType)
 end
 
 ---------------------------------------------------------------
+-- Living Market Zone Pressure Enrichment (Phase 7D)
+---------------------------------------------------------------
+
+--- Attach Living Market zone pressure summary to an artifact's modData.
+--- Only runs when the Living Market is enabled. Adds POS_ZonePressure
+--- key containing a table of zoneId → pressure data.
+---@param artifact InventoryItem
+local function enrichWithZonePressure(artifact)
+    if not artifact then return end
+    if not POS_Sandbox or not POS_Sandbox.isLivingMarketEnabled() then return end
+
+    local ok, POS_MarketSimulation = PhobosLib.safecall(require, "POS_MarketSimulation")
+    if not ok or not POS_MarketSimulation or not POS_MarketSimulation.getZoneState then return end
+
+    local zones = POS_Constants.MARKET_ZONES or {}
+    local pressureData = {}
+    local count = 0
+    for _, zoneId in ipairs(zones) do
+        local state = POS_MarketSimulation.getZoneState(zoneId)
+        if state and state.pressure then
+            pressureData[zoneId] = state.pressure
+            count = count + 1
+        end
+    end
+
+    if count > 0 then
+        local md = PhobosLib.getModData(artifact)
+        if md then
+            md.POS_ZonePressure = pressureData
+        end
+        PhobosLib.debug("POS", "[POS:Camera]",
+            "Zone pressure data attached to artifact (" .. count .. " zones)")
+    end
+end
+
+---------------------------------------------------------------
 -- Core Processing
 ---------------------------------------------------------------
 
@@ -333,6 +369,9 @@ function POS_CameraService.compileSiteSurvey(player, inputs)
         if POS_NoteTooltip and POS_NoteTooltip.applyToNote then
             POS_NoteTooltip.applyToNote(artifact)
         end
+
+        -- Phase 7D: attach Living Market zone pressure data
+        enrichWithZonePressure(artifact)
     end
 
     -- Award XP
@@ -383,6 +422,9 @@ function POS_CameraService.reviewRecordedTape(player, tape)
         if POS_NoteTooltip and POS_NoteTooltip.applyToNote then
             POS_NoteTooltip.applyToNote(artifact)
         end
+
+        -- Phase 7D: attach Living Market zone pressure data
+        enrichWithZonePressure(artifact)
     end
 
     -- Award XP
@@ -435,6 +477,9 @@ function POS_CameraService.produceMarketBulletin(player, inputs)
         if POS_NoteTooltip and POS_NoteTooltip.applyToNote then
             POS_NoteTooltip.applyToNote(artifact)
         end
+
+        -- Phase 7D: attach Living Market zone pressure data
+        enrichWithZonePressure(artifact)
     end
 
     -- Award XP

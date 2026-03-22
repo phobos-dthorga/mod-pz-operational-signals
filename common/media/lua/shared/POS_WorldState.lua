@@ -230,6 +230,7 @@ function POS_WorldState.bootstrap()
     meta.buildingScanDone = meta.buildingScanDone or false
     meta.mailboxScanDone = meta.mailboxScanDone or false
     meta.migrated = meta.migrated or false
+    meta.marketSchemaVersion = meta.marketSchemaVersion or POS_Constants.MARKET_SCHEMA_VERSION
 
     -- World seed (deterministic per-world, set once)
     if not meta.worldSeed or meta.worldSeed == 0 then

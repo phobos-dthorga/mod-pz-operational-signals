@@ -333,6 +333,65 @@ function POS_PassiveRecon.onEveryOneMinute()
         end
     end
 
+    -- Living Market zone pressure sampling (Phase 7A)
+    if POS_Sandbox and POS_Sandbox.isLivingMarketEnabled
+            and POS_Sandbox.isLivingMarketEnabled() then
+        local ok, POS_MarketSimulation = PhobosLib.safecall(require, "POS_MarketSimulation")
+        if ok and POS_MarketSimulation and POS_MarketSimulation.getZonePressure then
+            -- Get player SIGINT level for noise scaling
+            local sigintLevel = 0
+            local okSig, POS_SIGINTSkill = PhobosLib.safecall(require, "POS_SIGINTSkill")
+            if okSig and POS_SIGINTSkill and POS_SIGINTSkill.getLevel then
+                sigintLevel = POS_SIGINTSkill.getLevel(player) or 0
+            end
+            local noise = PhobosLib.lerp(
+                POS_Constants.RECON_PRESSURE_NOISE_MAX,
+                POS_Constants.RECON_PRESSURE_NOISE_MIN,
+                sigintLevel / 10)
+
+            local day = POS_WorldState and POS_WorldState.getWorldDay() or 0
+            local pressureRecorded = 0
+
+            for _, zoneId in ipairs(POS_Constants.MARKET_ZONES) do
+                for _, catId in ipairs(POS_Constants.MARKET_CATEGORIES) do
+                    local pressure = POS_MarketSimulation.getZonePressure(zoneId, catId)
+                    if pressure and pressure ~= 0 then
+                        local noisyPressure = pressure + PhobosLib.randFloat(-noise, noise)
+                        local chunk = {
+                            type       = POS_Constants.CHUNK_TYPE_MARKET_OBSERVATION,
+                            entityId   = catId,
+                            category   = catId,
+                            x          = player:getX(),
+                            y          = player:getY(),
+                            region     = zoneId,
+                            day        = day,
+                            confidence = POS_Constants.CONFIDENCE_BASE_EFFECTIVE
+                                * POS_Constants.CONFIDENCE_BPS_DIVISOR,
+                            mediaMod   = 0,
+                            carryMod   = 0,
+                            signalMod  = 0,
+                            scanType   = "market_pressure",
+                            pressure   = noisyPressure,
+                        }
+                        chunk.carryMod = POS_PassiveRecon.getCarryConfidenceBonus(player)
+
+                        if POS_DataRecorderService.appendChunk(recorder, chunk) then
+                            pressureRecorded = pressureRecorded + 1
+                        else
+                            break  -- storage full
+                        end
+                    end
+                end
+            end
+
+            if pressureRecorded > 0 then
+                PhobosLib.debug("POS", _TAG,
+                    "zone pressure recorded " .. tostring(pressureRecorded)
+                    .. " chunks (noise=" .. string.format("%.2f", noise) .. ")")
+            end
+        end
+    end
+
     -- Drain recorder power (1 minute = 1/60 hour)
     POS_DataRecorderService.drainPower(recorder, 1 / 60)
 end

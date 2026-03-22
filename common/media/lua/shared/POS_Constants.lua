@@ -128,6 +128,12 @@ POS_Constants.SCREEN_WATCHLIST          = "pos.markets.watchlist"
 POS_Constants.SCREEN_EXCHANGE           = "pos.exchange"
 POS_Constants.SCREEN_EXCHANGE_OVERVIEW  = "pos.exchange.overview"
 POS_Constants.SCREEN_EXCHANGE_PORTFOLIO = "pos.exchange.portfolio"
+POS_Constants.SCREEN_ZONE_OVERVIEW     = "pos.markets.zones"
+POS_Constants.SCREEN_EVENT_LOG         = "pos.markets.events"
+POS_Constants.SCREEN_WHOLESALER_DIR    = "pos.markets.directory"
+
+POS_Constants.WHOLESALER_VISIBLE_THRESHOLD = 0.3
+POS_Constants.WHOLESALER_DIR_SIGINT_REQ    = 3
 
 ---------------------------------------------------------------
 -- Market modData keys
@@ -316,6 +322,9 @@ POS_Constants.PAGE_SIZE_WATCHLIST        = 6
 POS_Constants.PAGE_SIZE_BBS_RUMOURS      = 5
 POS_Constants.WATCHLIST_MAX_ENTRIES      = 20
 POS_Constants.WATCHLIST_PRICE_CHANGE_PCT = 10
+POS_Constants.PAGE_SIZE_EVENT_LOG      = 8
+POS_Constants.PAGE_SIZE_ZONE_OVERVIEW  = 6
+POS_Constants.PAGE_SIZE_WHOLESALER_DIR = 6
 
 ---------------------------------------------------------------
 -- Signal bar display (POS_NavPanel)
@@ -1295,6 +1304,9 @@ POS_Constants.SIMULATION_PRESSURE_CLAMP_MAX       = 2.0
 POS_Constants.SIMULATION_THROUGHPUT_FACTOR         = 0.5
 POS_Constants.SIMULATION_ZONE_DEFAULT_VOLATILITY   = 0.20
 
+-- Save migration
+POS_Constants.MARKET_SCHEMA_VERSION = 1
+
 ---------------------------------------------------------------
 -- Living Market: Natural Drift Rates (per tick)
 ---------------------------------------------------------------
@@ -1381,6 +1393,29 @@ POS_Constants.AGENT_GREED_VOLATILITY_FACTOR  = 0.10
 POS_Constants.AGENT_EXPOSURE_DECAY_RATE      = 0.08
 POS_Constants.AGENT_SURPLUS_APPROACH_RATE    = 0.15
 POS_Constants.AGENT_TRUST_DECAY_RATE         = 0.05
+
+-- Agent observation generation
+POS_Constants.AGENT_OBS_GREED_THRESHOLD      = 0.5
+POS_Constants.AGENT_OBS_GREED_MULTIPLIER     = 0.15
+POS_Constants.AGENT_OBS_EXPOSURE_THRESHOLD   = 0.3
+POS_Constants.AGENT_OBS_SURPLUS_THRESHOLD    = 0.6
+POS_Constants.AGENT_OBS_SURPLUS_MULTIPLIER   = 0.10
+POS_Constants.AGENT_OBS_SMUGGLER_INVERSION   = 0.05
+POS_Constants.AGENT_OBS_SPECULATOR_MARKUP    = 1.2
+POS_Constants.AGENT_OBS_SCAVENGER_NOISE      = 0.20
+POS_Constants.AGENT_OBS_DEFAULT_NOISE        = 0.10
+POS_Constants.AGENT_OBS_SOURCE_PREFIX        = "agent_"
+
+-- SIGINT XP from market events
+POS_Constants.SIGINT_XP_MARKET_EVENT_BASE    = 5
+POS_Constants.SIGINT_XP_COLLAPSING_MULT      = 3.0
+POS_Constants.SIGINT_XP_WITHHOLDING_MULT     = 2.0
+POS_Constants.SIGINT_XP_STRAINED_MULT        = 1.5
+POS_Constants.SIGINT_XP_DEFAULT_MULT         = 1.0
+
+-- Passive recon zone pressure
+POS_Constants.RECON_PRESSURE_NOISE_MIN       = 0.05
+POS_Constants.RECON_PRESSURE_NOISE_MAX       = 0.30
 
 ---------------------------------------------------------------
 -- Living Market: Simulation Tuning
@@ -1519,4 +1554,14 @@ POS_Constants.RUMOUR_IMPACT_KEYS = {
     surplus    = "UI_POS_Rumour_SurplusExpected",
     disruption = "UI_POS_Rumour_DisruptionReported",
 }
+
+---------------------------------------------------------------
+-- Living Market: Field Notes from State Transitions (Phase 7C)
+---------------------------------------------------------------
+
+--- States that trigger field note generation on transition.
+POS_Constants.FIELD_NOTE_STATES = { "collapsing", "dumping" }
+
+--- Per-wholesaler modData key storing the last day a note was generated.
+POS_Constants.FIELD_NOTE_COOLDOWN_KEY = "_lastNoteDay"
 
