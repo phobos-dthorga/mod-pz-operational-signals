@@ -111,13 +111,12 @@ globals = {
     "POS_ZScienceIntegration",
     "POS_TutorialService",
     "POS_TutorialPopups",
-    "POS_Screen_ZoneOverview",
-    "POS_Screen_EventLog",
-    "POS_Screen_WholesalerDir",
-    "POS_Screen_TradeTerminal",
     "POS_Screen_TradeCatalog",
-    "POS_Screen_TradeConfirm",
     "POS_Screen_TradeReceipt",
+    "POS_Screen_MarketOverview",
+    "POS_Screen_Contacts",
+    "POS_Screen_MarketSignals",
+    "POS_Screen_Assignments",
     "POS_TradeService",
 }
 

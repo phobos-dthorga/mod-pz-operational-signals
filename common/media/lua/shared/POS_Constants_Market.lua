@@ -280,6 +280,10 @@ POS_Constants.MARKET_NOTE_BASE_PRICE_DEFAULT = 10.0
 ---------------------------------------------------------------
 
 POS_Constants.SCREEN_INTEL_SUMMARY = "pos.markets.summary"
+POS_Constants.SCREEN_MARKET_OVERVIEW  = "pos.markets.overview"
+POS_Constants.SCREEN_CONTACTS         = "pos.markets.contacts"
+POS_Constants.SCREEN_MARKET_SIGNALS   = "pos.markets.signals"
+POS_Constants.SCREEN_ASSIGNMENTS      = "pos.bbs.assignments"
 
 ---------------------------------------------------------------
 -- Camera Workstation (Tier III -- Compilation)

@@ -170,6 +170,10 @@ POS_Constants.PAGE_SIZE_ZONE_OVERVIEW  = 6
 POS_Constants.PAGE_SIZE_WHOLESALER_DIR = 6
 POS_Constants.PAGE_SIZE_TRADE_TERMINAL = 6
 POS_Constants.PAGE_SIZE_TRADE_CATALOG  = 8
+POS_Constants.PAGE_SIZE_MARKET_OVERVIEW  = 6
+POS_Constants.PAGE_SIZE_CONTACTS         = 6
+POS_Constants.PAGE_SIZE_MARKET_SIGNALS   = 8
+POS_Constants.PAGE_SIZE_ASSIGNMENTS      = 5
 
 ---------------------------------------------------------------
 -- Signal bar display (POS_NavPanel)

@@ -34,18 +34,13 @@ Each terminal screen should update when specific domain actions occur. Rather th
 
 | Screen | Refreshed When |
 |---|---|
-| Intel Summary | analysis completes, recon finishes, tapes compiled, broadcasts sent |
-| Event Log | missions complete, notes uploaded, broadcasts sent, investments resolve, alerts fire |
-| Watchlist | market snapshots change, economy tick completes |
-| Zone Overview | new observations arrive, economy tick completes, zone pressure changes |
-| Wholesaler Directory | stock levels change, rumours fire, wholesaler state transitions |
-| BBS Rumours | soft-class market events fire, rumours expire |
-| Commodities | economy tick completes, new observations recorded |
+| Market Overview | economy tick completes, new observations recorded, zone pressure changes |
+| Known Contacts | wholesaler state changes, stock level changes, SIGINT level changes |
+| Market Signals | soft-class events fire, rumours expire, hard events recorded |
+| Watchlist | market snapshots change, economy tick completes, price history updated |
 | Market Reports | analysis completes, economy tick completes |
-| Trade Terminal | wholesaler state changes, stock level changes |
-| Trade Catalog | trade completes, stock changes |
-| Trade Confirm | (static, no refresh needed) |
-| Trade Receipt | (static, no refresh needed) |
+| Trade Catalog | trade completes, stock changes (updated, inline confirm now) |
+| Assignments | operation accepted/completed/expired/cancelled, new operations broadcast |
 
 This mapping prepares for a future event bus without requiring one now.
 

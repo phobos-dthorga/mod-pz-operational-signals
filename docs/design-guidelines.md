@@ -82,11 +82,17 @@ No screen should render without a navigation action at the bottom.
 
 ### 2.2 Menu Hierarchy
 
-- The **main menu** must remain uncluttered. Use sub-menus.
+- The **main menu** must remain uncluttered. Use sub-menus (hubs).
 - **BBS** is the hub for all operational content:
   - `[1] Investments`
-  - `[2] Operations`
-  - `[3] Courier Service`
+  - `[2] Assignments` (tabbed: Operations + Deliveries)
+- **Markets** is the hub for all economy/trading content:
+  - `[1] Market Overview` (consolidated: intel summary + commodities + zone data)
+  - `[2] Known Contacts` (consolidated: traders + wholesalers + trade entry)
+  - `[3] Market Signals` (consolidated: event log + rumours)
+  - `[4] Watchlist` (includes absorbed price ledger data)
+  - `[5] Market Reports`
+  - `[6] Trade Catalog` (inline confirm flow, no separate confirm/receipt screens)
 - Placeholder items (IRC, Journal, Profile, Stockmarket) remain at the
   main menu level until implemented.
 
@@ -561,7 +567,7 @@ rather than being unaware the feature is there at all.
 navigation stack using each screen's `titleKey`. Rendered automatically by
 `POS_TerminalWidgets.drawHeader()` when stack depth > 0.
 
-Example: `POSnet > BBS > Operations`
+Example: `POSnet > BBS > Assignments`
 
 Breadcrumbs do NOT appear on the root screen (Main Menu) and are NOT
 affected by `replaceCurrent()` (pagination).
@@ -2486,7 +2492,7 @@ Blocked states are defined in `POS_Constants.TRADE_BLOCKED_BUY_STATES` and
 
 ### 30.5 Intel Advantage
 
-The Trade Terminal screen is gated behind a SIGINT skill level requirement
+The Known Contacts screen is gated behind a SIGINT skill level requirement
 (`TRADE_TERMINAL_SIGINT_REQ`). Players who invest in signals intelligence
 gain access to the trading network earlier. Future iterations may add:
 
@@ -2500,15 +2506,15 @@ These are design-space reservations, not current features.
 ### 30.6 Screen Flow
 
 ```
-Trade Terminal (wholesaler list, paginated)
-    └── Trade Catalog (category browser → item list, BUY/SELL toggle)
-            └── Trade Confirm (quantity picker, price preview, bulk discount)
-                    └── Trade Receipt (static summary of completed transaction)
+Known Contacts (pos.markets.contacts — trader + wholesaler list, paginated)
+    └── Trade Catalog (pos.markets.trade — category browser → item list, BUY/SELL toggle)
+            └── inline confirm (quantity picker, price preview, bulk discount — same screen)
 ```
 
-Each screen is a separate `POS_Screen_*` module registered via
-`POS_API.registerScreen()`. Navigation uses `POS_ScreenManager.pushScreen()`
-and `replaceCurrent()`. Confirm and Receipt are static once rendered.
+Known Contacts consolidates the old Trade Terminal and Wholesaler Directory
+into a single entry point. Trade Catalog now handles confirmation inline
+(no separate Trade Confirm or Trade Receipt screens). Navigation is at most
+2 clicks from the Markets hub. See §33 for the full terminal screen tree.
 
 ### 30.7 Anti-Patterns
 
@@ -2696,3 +2702,70 @@ mission definitions. The full design lives at `docs/mission-system-design.md`.
 | `POS_MissionBriefingResolver.lua` | Briefing assembly engine |
 | `Definitions/Missions/*.lua` | Mission data files |
 | `Definitions/TextPools/*.lua` | Shared text fragments |
+
+---
+
+## 33. Terminal Screen Architecture
+
+The terminal uses **12 navigable screens** organised under 3 hubs. This
+consolidation (down from 20 screens) reduces navigation depth and cognitive
+load while preserving all functionality.
+
+### 33.1 Consolidated Screen Tree
+
+```
+Main Menu (pos.main)
+ ├── BBS Hub (pos.bbs)
+ │    ├── Investments         (pos.bbs.investments)
+ │    └── Assignments         (pos.bbs.assignments)      — tabbed: Operations + Deliveries
+ ├── Markets Hub (pos.markets)
+ │    ├── Market Overview     (pos.markets.overview)      — intel summary + commodities + zone data
+ │    ├── Known Contacts      (pos.markets.contacts)      — traders + wholesalers + trade entry
+ │    ├── Market Signals      (pos.markets.signals)       — event log + rumours
+ │    ├── Watchlist           (pos.markets.watchlist)      — includes price ledger data
+ │    ├── Market Reports      (pos.markets.reports)
+ │    └── Trade Catalog       (pos.markets.trade)         — inline confirm flow
+ ├── Settings                 (pos.settings)
+ └── [Placeholders: IRC, Journal, Profile, Stockmarket]
+```
+
+### 33.2 Hub-Screen Navigation Pattern
+
+Every screen is reachable in **1-2 clicks** from the Main Menu:
+
+1. **Click 1** — Main Menu to hub (BBS, Markets, Settings).
+2. **Click 2** — Hub to leaf screen (Assignments, Market Overview, etc.).
+
+Hubs are menu-only screens (no content of their own). They exist solely to
+group related screens and keep the Main Menu uncluttered.
+
+### 33.3 Tab Pattern for Multi-View Screens
+
+Screens that consolidate multiple former screens use **tabs** to switch
+between logical views without adding navigation depth. The canonical
+implementation is `createTabbedView()` from `POS_TerminalWidgets`.
+
+- **Assignments** uses tabs for Operations and Deliveries.
+- Tabs are rendered as inline toggle buttons at the top of the content area.
+- Tab switches use `replaceCurrent()` — they do **not** push to the
+  navigation stack and do **not** appear in breadcrumbs.
+
+### 33.4 Consolidation Map
+
+| Old Screen(s) | New Screen | Notes |
+|---|---|---|
+| Intel Summary + Commodities + Zone Overview | Market Overview (`pos.markets.overview`) | Single dashboard with zone/category/intel sections |
+| Traders + Wholesaler Directory + Trade Terminal | Known Contacts (`pos.markets.contacts`) | Unified contact list, SIGINT-gated |
+| Event Log + Market Rumours (BBS Rumours) | Market Signals (`pos.markets.signals`) | Merged event + rumour feed |
+| Operations + Deliveries | Assignments (`pos.bbs.assignments`) | Tabbed view |
+| Price Ledger | Watchlist (`pos.markets.watchlist`) | Ledger data absorbed into watchlist |
+| Trade Confirm + Trade Receipt | Trade Catalog (`pos.markets.trade`) | Inline confirm/receipt flow |
+
+### 33.5 Anti-Patterns
+
+| Anti-Pattern | Why It's Wrong | Correct Approach |
+|---|---|---|
+| **Exceeding 2 levels of navigation depth from Main Menu** | Players lose context; breadcrumbs become unwieldy | Use tabs or inline sections within a screen instead of adding sub-screens |
+| **Creating a new screen for a confirmation dialog** | Adds unnecessary navigation depth | Use an inline confirm pattern within the existing screen |
+| **Hub screens with content** | Hubs should be menu-only; mixing content with navigation confuses the player | Keep hub screens as pure menu builders; put content in leaf screens |
+| **Tabs that push to the navigation stack** | Pollutes the back-stack, breaks breadcrumbs | Tabs must use `replaceCurrent()`, never `navigateTo()` |
