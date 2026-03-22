@@ -1653,6 +1653,18 @@ POS_Constants.TRADE_STOCK_ABUNDANT  = 0.70
 POS_Constants.TRADE_STOCK_MODERATE  = 0.40
 POS_Constants.TRADE_STOCK_LOW       = 0.15
 
+-- Trade stock threshold tiers (for resolveThresholdTier)
+POS_Constants.TRADE_STOCK_THRESHOLDS = {
+    { threshold = POS_Constants.TRADE_STOCK_LOW,      result = "UI_POS_Trade_StockLow" },
+    { threshold = POS_Constants.TRADE_STOCK_MODERATE,  result = "UI_POS_Trade_StockModerate" },
+    { threshold = POS_Constants.TRADE_STOCK_ABUNDANT,  result = "UI_POS_Trade_StockAbundant" },
+}
+
+-- Trade aliases (used by POS_TradeService as direct lookups)
+POS_Constants.TRADE_DEFAULT_SELL_RATIO       = POS_Constants.TRADE_SELL_PRICE_RATIO_DEFAULT
+POS_Constants.TRADE_BULK_DISCOUNT_THRESHOLD  = POS_Constants.TRADE_BULK_THRESHOLD_DEFAULT
+POS_Constants.TRADE_BULK_DISCOUNT_PERCENT    = POS_Constants.TRADE_BULK_DISCOUNT_PCT_DEFAULT
+
 -- Trade page sizes
 POS_Constants.PAGE_SIZE_TRADE_WHOLESALERS = 5
 POS_Constants.PAGE_SIZE_TRADE_ITEMS       = 6
