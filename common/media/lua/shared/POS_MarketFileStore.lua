@@ -150,47 +150,53 @@ function POS_MarketFileStore.load()
 
     local line = reader:readLine()
     while line do
-        -- Check for category header: [CATEGORY:fuel]
-        if string.sub(line, 1, #POS_Constants.MARKET_FILE_SECTION_PREFIX)
-                == POS_Constants.MARKET_FILE_SECTION_PREFIX then
-            local catId = string.sub(line,
-                #POS_Constants.MARKET_FILE_SECTION_PREFIX + 1,
-                #line - #POS_Constants.MARKET_FILE_SECTION_SUFFIX)
-            if catId and catId ~= "" then
-                currentCatId = catId
-                currentSection = nil
-                if not cache[catId] then
-                    cache[catId] = { observations = {}, rollingCloses = {}, aggregate = {} }
+        -- Wrap each line parse in safecall to survive corrupted data
+        local parseOk = PhobosLib.safecall(function()
+            -- Check for category header: [CATEGORY:fuel]
+            if string.sub(line, 1, #POS_Constants.MARKET_FILE_SECTION_PREFIX)
+                    == POS_Constants.MARKET_FILE_SECTION_PREFIX then
+                local catId = string.sub(line,
+                    #POS_Constants.MARKET_FILE_SECTION_PREFIX + 1,
+                    #line - #POS_Constants.MARKET_FILE_SECTION_SUFFIX)
+                if catId and catId ~= "" then
+                    currentCatId = catId
+                    currentSection = nil
+                    if not cache[catId] then
+                        cache[catId] = { observations = {}, rollingCloses = {}, aggregate = {} }
+                    end
+                    loadedCats = loadedCats + 1
                 end
-                loadedCats = loadedCats + 1
-            end
 
-        elseif line == POS_Constants.MARKET_FILE_OBS_HEADER then
-            currentSection = "obs"
+            elseif line == POS_Constants.MARKET_FILE_OBS_HEADER then
+                currentSection = "obs"
 
-        elseif line == POS_Constants.MARKET_FILE_CLOSES_HEADER then
-            currentSection = "closes"
+            elseif line == POS_Constants.MARKET_FILE_CLOSES_HEADER then
+                currentSection = "closes"
 
-        elseif currentCatId and currentSection and line ~= "" then
-            if currentSection == "obs" then
-                local obs = deserializeObservation(line)
-                if obs then
-                    table.insert(cache[currentCatId].observations, obs)
-                    loadedObs = loadedObs + 1
-                end
-            elseif currentSection == "closes" then
-                -- Rolling closes: single pipe-delimited line of numbers
-                local nums = PhobosLib.split(line, SEP)
-                if nums then
-                    cache[currentCatId].rollingCloses = {}
-                    for _, n in ipairs(nums) do
-                        local v = tonumber(n)
-                        if v then
-                            table.insert(cache[currentCatId].rollingCloses, v)
+            elseif currentCatId and currentSection and line ~= "" then
+                if currentSection == "obs" then
+                    local obs = deserializeObservation(line)
+                    if obs then
+                        table.insert(cache[currentCatId].observations, obs)
+                        loadedObs = loadedObs + 1
+                    end
+                elseif currentSection == "closes" then
+                    local nums = PhobosLib.split(line, SEP)
+                    if nums then
+                        cache[currentCatId].rollingCloses = {}
+                        for _, n in ipairs(nums) do
+                            local v = tonumber(n)
+                            if v then
+                                table.insert(cache[currentCatId].rollingCloses, v)
+                            end
                         end
                     end
                 end
             end
+        end)
+
+        if not parseOk then
+            PhobosLib.debug("POS", _TAG, "Skipped corrupt line: " .. tostring(line))
         end
 
         line = reader:readLine()
