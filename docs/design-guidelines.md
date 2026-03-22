@@ -2244,3 +2244,104 @@ server-side tick handlers (not render frames). These use
 |------|------|
 | `POS_PlayerState.lua` | Per-player modData access (canonical pattern) |
 | `POS_MarketFileStore.lua` | World-level file I/O (acceptable use of getFileReader/getFileWriter) |
+
+---
+
+## 28. Interoperability Principles
+
+### 28.1 Canonical Identity Rule
+
+Every entity (category, zone, archetype, device, event, signal, artifact) must
+have a stable string ID defined in `POS_Constants.lua`. Never use display names,
+ad-hoc strings, or translation keys as lookup identifiers. IDs are the contract
+between subsystems.
+
+Anti-pattern:
+
+```lua
+-- BAD: using display name as lookup key
+local cat = registry:get("Ammunition & Weapons")
+
+-- GOOD: using canonical ID constant
+local cat = registry:get(POS_Constants.CATEGORY_AMMUNITION)
+```
+
+### 28.2 Capability-Based Dispatch
+
+Check capabilities or tags, not specific device/object types. This lets future
+devices and addon mods plug in without rewriting core logic.
+
+Anti-pattern:
+
+```lua
+-- BAD: hardcoding device identity
+if deviceType == "camcorder" then captureVisual() end
+
+-- GOOD: checking capability
+if device.capabilities and device.capabilities.capture_rawintel then captureRawIntel(device) end
+```
+
+Reference: `POS_DataSourceRegistry` already implements this pattern with
+`canRecord()` / `getSignalQuality()` / `generateChunk()` callbacks.
+
+### 28.3 Payload Shape Documentation
+
+Every cross-system data structure must have its canonical shape documented. See
+`docs/interoperability-matrix.md` for the authoritative payload reference. When
+adding a new payload type, document it in the matrix before implementing
+consumers.
+
+Canonical shapes currently documented:
+
+- Observation record
+- Market effect
+- Rumour payload
+- Recorder chunk
+
+### 28.4 The Six Questions
+
+Every new subsystem must answer these questions in its design phase:
+
+1. **What canonical IDs does it use?** — List all ID types from POS_Constants
+2. **What payloads does it consume?** — Which data structures does it read?
+3. **What payloads does it produce?** — Which data structures does it emit?
+4. **What capabilities/tags does it require?** — What must exist for it to function?
+5. **What persistence layer owns its truth?** — ModData key, file store, or none?
+6. **What events does it emit and listen for?** — PZ events or internal notifications?
+
+Document the answers in the subsystem's module header comment or in
+`docs/interoperability-matrix.md`.
+
+### 28.5 Cross-System Call Discipline
+
+Rules:
+
+1. Use `PhobosLib.safecall(require, "ModuleName")` for optional dependencies —
+   never assume a module exists at call time
+2. Guard with `if Module and Module.fn then` before calling cross-system
+   functions
+3. Never directly mutate another subsystem's persistence (e.g., recorder must
+   not write to market database; it emits chunks, and the market system ingests
+   them)
+4. Never read another subsystem's private/internal state — use its public API
+
+Anti-pattern:
+
+```lua
+-- BAD: reaching into another module's internal cache
+local price = POS_MarketDatabase._clientCache["food"].avgPrice
+
+-- GOOD: using the public API
+local summary = POS_MarketDatabase.getSummary("food")
+local price = summary and summary.avgPrice
+```
+
+### 28.6 Interoperability Anti-Patterns
+
+| Anti-Pattern | Why It's Dangerous | Rule |
+|---|---|---|
+| **ID drift** | Category names diverge between registries, causing silent lookup failures | All IDs come from POS_Constants (§28.1) |
+| **Unvalidated tables** | Raw ad-hoc tables passed between systems cause nil-field JVM crashes | Document payload shapes (§28.3) |
+| **Deep internal calls** | Tight coupling makes refactoring impossible | Use public APIs only (§28.5) |
+| **Tight coupling threshold** | 3+ systems calling the same function directly | Introduce an event/callback pattern |
+| **Display name as key** | Translation changes break lookup logic | Use canonical string IDs |
