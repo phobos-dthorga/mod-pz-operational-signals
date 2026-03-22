@@ -1846,6 +1846,10 @@ reimplement these locally — use the PhobosLib versions:
 | `PhobosLib.findItemInList(player, itemTypes)` | Find the first matching item from an array of full types (see §29) |
 | `PhobosLib.getConfigurable(sandboxKey, default)` | Fetch a sandbox option with fallback default (see §29) |
 | `PhobosLib.resolveThresholdTier(value, thresholds)` | Map a numeric value to a named tier via threshold table (see §29) |
+| `PhobosLib.resolveTokens(text, ctx)` | Replace `{key}` tokens in a string from a context table; nil-safe (see §31) |
+| `PhobosLib.pickWeighted(entries, ctx)` | Select a random entry from a weighted array, condition-filtered (see §31) |
+| `PhobosLib.conditionsPass(entry, ctx)` | Check if an entry's conditions match a context (see §31) |
+| `PhobosLib.avoidRecent(entryId, history, maxSize)` | Rolling history dedup for weighted selections (see §31) |
 
 ### 25.6 Empty-Data Return Convention
 
@@ -2400,3 +2404,229 @@ for accepted item types.
 | **Hardcoded item types** | Adding a new writing implement requires editing every callback | Use `POS_Constants.WRITING_IMPLEMENTS` array |
 | **Direct method calls without safecall** | Kahlua nil-field crashes propagate as silent CTDs | Wrap cross-module calls in `PhobosLib.safecall()` |
 | **Business logic in the callback** | Callbacks become untestable and diverge over time | Delegate to `POS_CraftHelpers` — callback body is 3–5 lines |
+
+---
+
+## 30. Standalone Trading System
+
+POSnet includes a direct trading system that lets players buy and sell
+physical items through wholesalers via the terminal. All transactions flow
+through `POS_TradeService` (shared service); screens are presentation only.
+
+### 30.1 Trading Rules
+
+- **Buy** removes items from wholesaler stock and grants them to the player.
+  Buying depletes the wholesaler's `stockLevel` by
+  `TRADE_STOCK_DEPLETION_PER_UNIT * quantity`.
+- **Sell** consumes items from the player's inventory and adds money.
+  Selling replenishes the wholesaler's `stockLevel` by
+  `TRADE_STOCK_REPLENISH_PER_UNIT * quantity`.
+- After every transaction the wholesaler's operational state is
+  re-evaluated via `POS_WholesalerService.resolveOperationalState()`.
+  A large buy can push a wholesaler from Stable into Tight; a large sell
+  can pull it back.
+- Transactions are **atomic**: if item grant or money removal fails, the
+  entire transaction rolls back (items returned, money refunded).
+- Each transaction awards SIGINT XP. Bulk orders award a bonus
+  (`SIGINT_XP_TRADE_BULK_BONUS`) on top of the base.
+
+### 30.2 Price Formula
+
+Buy price:
+
+```
+buyPrice = floor(basePrice * stateMultiplier * (1 + markupBias))
+```
+
+- `basePrice` — from `POS_PriceEngine.generatePrice()` if available,
+  otherwise `POS_ItemPool.getBasePrice()`, otherwise `PRICE_MIN_OUTPUT`.
+- `stateMultiplier` — `WHOLESALER_PRICE_MULTIPLIER[state]` (e.g. Dumping
+  has a lower multiplier, Withholding has a higher one).
+- `markupBias` — per-wholesaler markup from the wholesaler definition.
+
+Sell price:
+
+```
+sellPrice = floor(buyPrice * SellPriceRatio)
+```
+
+`SellPriceRatio` is a sandbox option (`POS.SellPriceRatio`) with a default
+of `TRADE_DEFAULT_SELL_RATIO`. Sell prices are always strictly lower than
+buy prices.
+
+### 30.3 Bulk Discount
+
+When the player buys `quantity >= BulkDiscountThreshold` (sandbox option),
+a percentage discount is applied:
+
+```
+discountMultiplier = 1.0 - (BulkDiscountPercent / 100)
+totalCost = floor(unitPrice * quantity * discountMultiplier)
+```
+
+Both threshold and percent are sandbox-configurable. The discount is
+computed by `POS_TradeService.computeBulkDiscount()` and applied at
+transaction time, not at price display time.
+
+### 30.4 State Gates
+
+Wholesaler operational state gates trade willingness:
+
+| State | Buy | Sell | Notes |
+|-------|-----|------|-------|
+| Stable | Yes | Yes | Normal operations |
+| Tight | Yes | Yes | Prices slightly elevated |
+| Strained | Yes | Yes | Prices elevated, stock low |
+| Dumping | Yes (extra discount) | Yes | `TRADE_DUMPING_EXTRA_DISCOUNT` applied on top of state multiplier |
+| Withholding | **No** | Yes | Wholesaler refuses to sell; players can still offload items |
+| Collapsing | **No** | **No** | All trade blocked |
+
+Blocked states are defined in `POS_Constants.TRADE_BLOCKED_BUY_STATES` and
+`TRADE_BLOCKED_SELL_STATES`. Validation checks these before any transaction.
+
+### 30.5 Intel Advantage
+
+The Trade Terminal screen is gated behind a SIGINT skill level requirement
+(`TRADE_TERMINAL_SIGINT_REQ`). Players who invest in signals intelligence
+gain access to the trading network earlier. Future iterations may add:
+
+- Hidden offer tiers unlocked by fresh intel (recent observations in the
+  wholesaler's zone).
+- Price accuracy bonuses for players with high-confidence data on a
+  category.
+
+These are design-space reservations, not current features.
+
+### 30.6 Screen Flow
+
+```
+Trade Terminal (wholesaler list, paginated)
+    └── Trade Catalog (category browser → item list, BUY/SELL toggle)
+            └── Trade Confirm (quantity picker, price preview, bulk discount)
+                    └── Trade Receipt (static summary of completed transaction)
+```
+
+Each screen is a separate `POS_Screen_*` module registered via
+`POS_API.registerScreen()`. Navigation uses `POS_ScreenManager.pushScreen()`
+and `replaceCurrent()`. Confirm and Receipt are static once rendered.
+
+### 30.7 Anti-Patterns
+
+| Anti-Pattern | Why It's Dangerous | Correct Approach |
+|---|---|---|
+| **Mutating inventory from a screen** | Breaks UI/service separation; untestable, rollback impossible | Call `POS_TradeService.executeBuy/executeSell` from the Confirm screen's button callback |
+| **Hardcoding prices** | Bypasses PriceEngine, state multipliers, and sandbox options | Always go through `POS_TradeService.computeBuyPrice/computeSellPrice` |
+| **Skipping validation** | Allows trades in blocked states, overdrafts, negative stock | Always call `validateBuy/validateSell` before executing |
+| **Reading sandbox directly** | Divergent defaults when one copy is updated | Use `POS_Sandbox.*` accessors or `PhobosLib.getConfigurable()` |
+
+---
+
+## 31. Text Compositor Patterns
+
+PhobosLib provides four utility functions for building dynamic,
+data-driven text from definition files. These are used by POSnet's
+rumour system, field note generator, and any future content that needs
+weighted random text selection with token substitution.
+
+### 31.1 resolveTokens
+
+```lua
+PhobosLib.resolveTokens(text, ctx) --> string
+```
+
+Replaces `{key}` tokens in `text` with values from the `ctx` table.
+Unresolved tokens are left as-is (e.g. `{unknown}` remains literal).
+Returns `""` if `text` is nil; returns `text` unchanged if `ctx` is nil.
+
+**When to use:** Any time a definition file contains a template string
+with placeholders. Pass a context table built from runtime state.
+
+```lua
+local msg = PhobosLib.resolveTokens(
+    "Convoy delayed near {region} — {category} scarce.",
+    { region = "West Point", category = "ammunition" })
+-- "Convoy delayed near West Point — ammunition scarce."
+```
+
+### 31.2 pickWeighted
+
+```lua
+PhobosLib.pickWeighted(entries, ctx) --> entry|nil
+```
+
+Selects one entry from a weighted array using `ZombRand`. Each entry must
+have at minimum `{ text = "...", weight = N }`. Optional fields:
+
+| Field | Type | Purpose |
+|-------|------|---------|
+| `text` | string | The text payload (may contain `{key}` tokens) |
+| `weight` | number | Relative selection weight (higher = more likely) |
+| `id` | string | Unique identifier for use with `avoidRecent` |
+| `conditions` | table | Optional condition block checked by `conditionsPass` |
+
+Entries whose `conditions` fail against `ctx` are filtered out before
+the roll. Returns `nil` if no valid entries remain or total weight is
+zero.
+
+### 31.3 conditionsPass
+
+```lua
+PhobosLib.conditionsPass(entry, ctx) --> boolean
+```
+
+Checks whether an entry's `conditions` table is satisfied by `ctx`.
+Returns `true` if the entry has no `conditions` field. Returns `false`
+if `ctx` is nil but conditions exist.
+
+**Supported condition types:**
+
+| Condition Key | Type | Meaning |
+|---|---|---|
+| `minDifficulty` | number | `ctx.difficulty` must be >= this value |
+| `maxDifficulty` | number | `ctx.difficulty` must be <= this value |
+| Any other key | array | `ctx[key]` must be one of the values in the array |
+
+```lua
+-- Entry visible only in high-difficulty, food-related contexts:
+{
+    text = "Rations are dwindling.",
+    weight = 10,
+    conditions = {
+        minDifficulty = 3,
+        categoryId = {"food", "agriculture"},
+    },
+}
+```
+
+### 31.4 avoidRecent
+
+```lua
+PhobosLib.avoidRecent(entryId, history, maxSize) --> boolean
+```
+
+Returns `false` if `entryId` is already in the `history` array (i.e.
+the entry was recently used). Returns `true` and appends `entryId` to
+`history` if it was not found. Trims the oldest entries when the history
+exceeds `maxSize` (default 10).
+
+**Usage with pickWeighted:** Call `pickWeighted` in a loop, checking each
+result against `avoidRecent`. If the pick is recent, discard and re-roll
+(with a max-attempts guard to avoid infinite loops).
+
+```lua
+local history = player:getModData().rumourHistory or {}
+for attempt = 1, 5 do
+    local pick = PhobosLib.pickWeighted(rumourPool, ctx)
+    if pick and PhobosLib.avoidRecent(pick.id, history, 10) then
+        return PhobosLib.resolveTokens(pick.text, ctx)
+    end
+end
+```
+
+### 31.5 Anti-Patterns
+
+| Anti-Pattern | Why It's Dangerous | Correct Approach |
+|---|---|---|
+| **Logic in definition files** | Definitions must be pure data (`return { ... }`) — functions in data files break schema validation and data-pack loading | Keep definitions declarative; use `conditions` for filtering and `{tokens}` for dynamic content |
+| **Hardcoded text in Lua** | Bypasses translation, condition filtering, and weighted selection | Put text variants in definition files; resolve at runtime |
+| **Skipping avoidRecent** | Players see the same rumour/note text repeatedly, breaking immersion | Always pair `pickWeighted` with `avoidRecent` for player-facing text |
