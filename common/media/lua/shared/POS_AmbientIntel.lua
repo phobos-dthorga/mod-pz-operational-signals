@@ -245,8 +245,14 @@ function POS_AmbientIntel.onEveryOneMinute()
                 ZombRand(POS_Constants.AMBIENT_INTEL_MIN_ITEMS,
                     POS_Constants.AMBIENT_INTEL_MAX_ITEMS + 1))
             record.discoveredItems = {}
+            record.items = {}
             for _, item in ipairs(selectedItems) do
-                record.discoveredItems[#record.discoveredItems + 1] = item.fullType or item
+                local ft = item.fullType or item
+                record.discoveredItems[#record.discoveredItems + 1] = ft
+                record.items[#record.items + 1] = {
+                    fullType = ft,
+                    price = price,
+                }
             end
 
             -- Add to database

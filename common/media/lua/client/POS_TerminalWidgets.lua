@@ -200,21 +200,7 @@ end
 --- @param h number Height
 --- @return any ISPanel
 function POS_TerminalWidgets.createScrollPanel(parent, x, y, w, h)
-    local panel = ISPanel:new(x, y, w, h)
-    panel.backgroundColor = { r = 0, g = 0, b = 0, a = 0 }
-    panel.borderColor = { r = 0, g = 0, b = 0, a = 0 }
-    function panel:prerender()
-        ISPanel.prerender(self)
-        self:setStencilRect(0, 0, self.width, self.height)
-    end
-    function panel:postrender()
-        self:clearStencilRect()
-    end
-    panel:setScrollChildren(true)
-    panel:initialise()
-    panel:instantiate()
-    parent:addChild(panel)
-    return panel
+    return PhobosLib.createScrollPanel(parent, x, y, w, h)
 end
 
 --- Create word-wrapped multi-line text as a series of ISLabels.

@@ -127,6 +127,14 @@ function screen.create(contentPanel, _params, _terminal)
     -- Header
     W.drawHeader(ctx, "UI_POS_MarketOverview_Title")
 
+    -- Scrollable content area (between header and footer)
+    local origPanel = contentPanel
+    local scrollH = contentPanel:getHeight() - ctx.y - ctx.btnH - 16
+    local scrollPanel = PhobosLib.createScrollPanel(
+        contentPanel, 0, ctx.y, contentPanel:getWidth(), scrollH)
+    ctx.panel = scrollPanel
+    ctx.y = 0
+
     -------------------------------------------------------
     -- Section A — Categories (paginated)
     -------------------------------------------------------
@@ -354,7 +362,8 @@ function screen.create(contentPanel, _params, _terminal)
         .. daysSinceTick, C.text)
     ctx.y = ctx.y + ctx.lineH
 
-    -- Footer
+    -- Footer (drawn on original content panel, outside scroll area)
+    ctx.panel = origPanel
     W.drawFooter(ctx)
 end
 
