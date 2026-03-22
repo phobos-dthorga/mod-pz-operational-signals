@@ -693,22 +693,9 @@ POS_Constants.VHS_CONFIDENCE_THRESHOLDS = {
     { threshold = POS_Constants.VHS_CONFIDENCE_MOD_REFURBISHED, result = POS_Constants.CONFIDENCE_MEDIUM },
 }
 
---- Microcassette: confMod >= MICROCASSETTE_CONFIDENCE_MOD -> high, else -> medium.
---- Default: high (when confMod exceeds all thresholds).
-POS_Constants.MICROCASSETTE_CONFIDENCE_THRESHOLDS = {
-    { threshold = POS_Constants.MICROCASSETTE_CONFIDENCE_MOD - 1,
-      result    = POS_Constants.CONFIDENCE_MEDIUM },
-}
-
---- Floppy: confMod >= FLOPPY_CONFIDENCE_MOD -> high,
----         confMod >= FLOPPY_WORN_CONFIDENCE_MOD -> medium, else -> low.
---- Default: high (when confMod exceeds all thresholds).
-POS_Constants.FLOPPY_CONFIDENCE_THRESHOLDS = {
-    { threshold = POS_Constants.FLOPPY_WORN_CONFIDENCE_MOD - 1,
-      result    = POS_Constants.CONFIDENCE_LOW },
-    { threshold = POS_Constants.FLOPPY_CONFIDENCE_MOD - 1,
-      result    = POS_Constants.CONFIDENCE_MEDIUM },
-}
+-- NOTE: MICROCASSETTE_CONFIDENCE_THRESHOLDS and FLOPPY_CONFIDENCE_THRESHOLDS
+-- are defined after their base constants (see below line ~835) to avoid
+-- forward-reference nil errors during Lua load.
 
 ---------------------------------------------------------------
 -- Persistence modData keys (operations / investments)
@@ -831,6 +818,23 @@ POS_Constants.MICROCASSETTE_CONFIDENCE_MOD         = 1000
 POS_Constants.MICROCASSETTE_REWOUND_CONFIDENCE_MOD = 500
 POS_Constants.FLOPPY_CONFIDENCE_MOD                = 2000
 POS_Constants.FLOPPY_WORN_CONFIDENCE_MOD           = 1000
+
+--- Microcassette confidence thresholds (must be after base constant definitions).
+--- confMod >= MICROCASSETTE_CONFIDENCE_MOD -> high, else -> medium.
+POS_Constants.MICROCASSETTE_CONFIDENCE_THRESHOLDS = {
+    { threshold = POS_Constants.MICROCASSETTE_CONFIDENCE_MOD - 1,
+      result    = POS_Constants.CONFIDENCE_MEDIUM },
+}
+
+--- Floppy confidence thresholds (must be after base constant definitions).
+--- confMod >= FLOPPY_CONFIDENCE_MOD -> high,
+--- confMod >= FLOPPY_WORN_CONFIDENCE_MOD -> medium, else -> low.
+POS_Constants.FLOPPY_CONFIDENCE_THRESHOLDS = {
+    { threshold = POS_Constants.FLOPPY_WORN_CONFIDENCE_MOD - 1,
+      result    = POS_Constants.CONFIDENCE_LOW },
+    { threshold = POS_Constants.FLOPPY_CONFIDENCE_MOD - 1,
+      result    = POS_Constants.CONFIDENCE_MEDIUM },
+}
 
 ---------------------------------------------------------------
 -- Data-Recorder modData keys
