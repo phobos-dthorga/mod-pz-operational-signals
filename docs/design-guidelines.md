@@ -2856,3 +2856,38 @@ POSnet underwent a sandbox option cleanup from 135 to approximately 96 options
 in v0.17.0, removing 19 unused options and 20 always-on feature toggles. This
 section codifies the principles that guided that cleanup so future development
 does not re-introduce the same bloat.
+
+---
+
+## 35. Item Discovery Mechanics
+
+### 35.1 Discovery Gate
+- Trade catalog items are hidden until discovered via observation records.
+- Discovery is per-player, stored in player ModData via `PhobosLib.trackDiscovery()`.
+- Selling is NEVER gated -- players always know what they own.
+
+### 35.2 Discovery Sources
+
+Table of discovery sources and their item counts per observation:
+
+| Source | Items/Observation | Quality | Notes |
+|---|---|---|---|
+| Ambient Intel | 2-5 | Low | Passive, requires terminal connection only |
+| Agent Observations | 3-8 | Medium | Living Market tick, archetype-weighted |
+| Passive Recon | 4-10 | Medium-High | Active equipment, SIGINT-scaled |
+| Camera Analysis | 5-12 | High | Requires camera workstation |
+
+### 35.3 Progressive Reveal
+- Trade catalog shows "X of Y items discovered" count.
+- Empty catalog shows "No items discovered yet. Listen to the network..."
+- PN notification on each new discovery.
+- Higher-quality sources discover more items faster.
+
+### 35.4 Anti-Patterns
+
+| Anti-Pattern | Why It's Wrong |
+|---|---|
+| Gating sell operations | Player knows what's in their inventory |
+| Instant full catalog | Removes progression incentive |
+| Discovery resets on load | Must persist in player ModData |
+| Category-level discovery | Discovery is per-item, not per-category |

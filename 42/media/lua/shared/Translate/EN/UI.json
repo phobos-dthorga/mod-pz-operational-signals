@@ -940,6 +940,9 @@
     "UI_POS_Trade_SellTotal": "Sell $%1",
     "UI_POS_Trade_CantAfford": "Insufficient funds",
     "UI_POS_Trade_NoStock": "Out of stock",
+    "UI_POS_Discovery_NewItem": "New item discovered",
+    "UI_POS_Trade_DiscoveryCount": "%1 of %2 items discovered",
+    "UI_POS_Trade_NoDiscoveries": "No items discovered yet. Listen to the network...",
     "UI_POS_Watchlist_History": "History",
 
     "UI_POS_Ambient_RadioChatter": "Radio chatter",

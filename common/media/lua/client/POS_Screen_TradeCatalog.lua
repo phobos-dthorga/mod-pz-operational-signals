@@ -92,8 +92,8 @@ local function renderItemList(ctx, W, C, params, player, balance)
     local emptyKey
     if mode == "buy" then
         items = POS_TradeService and POS_TradeService.getBuyableItems
-            and POS_TradeService.getBuyableItems(wsId, categoryId)
-        emptyKey = "UI_POS_Trade_NoItems"
+            and POS_TradeService.getBuyableItems(wsId, categoryId, player)
+        emptyKey = "UI_POS_Trade_NoDiscoveries"
     else
         items = POS_TradeService and POS_TradeService.getSellableItems
             and POS_TradeService.getSellableItems(wsId, categoryId, player)
@@ -105,6 +105,15 @@ local function renderItemList(ctx, W, C, params, player, balance)
             W.safeGetText(emptyKey), C.dim)
         ctx.y = ctx.y + ctx.lineH
         return
+    end
+
+    -- Discovery count label (buy mode only)
+    if mode == "buy" and items.totalCount then
+        local discoveryText = W.safeGetText("UI_POS_Trade_DiscoveryCount")
+        discoveryText = discoveryText:gsub("%%1", tostring(#items))
+        discoveryText = discoveryText:gsub("%%2", tostring(items.totalCount))
+        W.createLabel(ctx.panel, 8, ctx.y, discoveryText, C.dim)
+        ctx.y = ctx.y + ctx.lineH + 4
     end
 
     ctx.y = PhobosLib_Pagination.create(ctx.panel, {

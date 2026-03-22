@@ -24,6 +24,7 @@
 require "PhobosLib"
 require "POS_Constants"
 require "POS_MarketFileStore"
+require "POS_PlayerState"
 
 POS_MarketDatabase = {}
 
@@ -135,6 +136,23 @@ function POS_MarketDatabase.addRecord(record)
             record.categoryId, "", "", 0,
             POS_BasisPoints and POS_BasisPoints.toBps(record.price or 0) or 0,
             record.sourceTier or POS_Constants.SOURCE_TIER_FIELD)
+    end
+
+    -- Process item discoveries (if any)
+    if record.discoveredItems then
+        local player = getSpecificPlayer(0)
+        if player then
+            local currentDay = record.day or 0
+            for _, fullType in ipairs(record.discoveredItems) do
+                local isNew = POS_PlayerState.discoverItem(
+                    player, fullType, record.categoryId, currentDay)
+                if isNew then
+                    PhobosLib.notifyOrSay(player, "POS",
+                        PhobosLib.safeGetText("UI_POS_Discovery_NewItem") .. ": "
+                        .. PhobosLib.getItemDisplayName(fullType))
+                end
+            end
+        end
     end
 
     PhobosLib.debug("POS", _TAG, "[MarketDB] Added intel record: "

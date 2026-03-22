@@ -598,4 +598,15 @@ function POS_ItemPool.getCategoryForItem(fullType)
     return record and record.commodityCategory or nil
 end
 
+--- Select a random subset of items from a category pool.
+--- Lightweight wrapper for intel-driven item discovery.
+--- @param categoryId string Commodity category ID
+--- @param count number Number of items to select
+--- @return table[] Array of item records (may be shorter than count)
+function POS_ItemPool.selectRandomItems(categoryId, count)
+    local ok, items = PhobosLib.safecall(POS_ItemPool.getItemsForCategory, categoryId)
+    if not ok or not items then return {} end
+    return PhobosLib.selectRandomFromPool(items, count)
+end
+
 ensureInit = PhobosLib.lazyInit(POS_ItemPool.init)

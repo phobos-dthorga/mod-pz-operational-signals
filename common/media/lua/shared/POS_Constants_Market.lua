@@ -364,3 +364,17 @@ POS_Constants.AMBIENT_INTEL_PRICE_NOISE        = 0.25  -- ±25% price variance
 POS_Constants.AMBIENT_INTEL_MAX_RECORDS        = 50    -- max ambient records in database
 POS_Constants.AMBIENT_INTEL_SOURCE_PREFIX      = "ambient_"
 POS_Constants.AMBIENT_INTEL_HISTORY_SIZE       = 5     -- anti-repetition category history
+
+---------------------------------------------------------------
+-- Item discovery (intel-gated trade catalog)
+---------------------------------------------------------------
+
+POS_Constants.AMBIENT_INTEL_MIN_ITEMS  = 2
+POS_Constants.AMBIENT_INTEL_MAX_ITEMS  = 5
+POS_Constants.AGENT_OBS_MIN_ITEMS      = 3
+POS_Constants.AGENT_OBS_MAX_ITEMS      = 8
+POS_Constants.RECON_DISCOVER_MIN_ITEMS = 4
+POS_Constants.RECON_DISCOVER_MAX_ITEMS = 10
+POS_Constants.CAMERA_DISCOVER_MIN_ITEMS = 5
+POS_Constants.CAMERA_DISCOVER_MAX_ITEMS = 12
+POS_Constants.DISCOVERY_NAMESPACE      = "POSNET_Discoveries"

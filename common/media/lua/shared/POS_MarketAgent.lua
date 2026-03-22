@@ -25,6 +25,7 @@ require "PhobosLib"
 require "POS_Constants"
 require "POS_PriceEngine"
 require "POS_MarketDatabase"
+require "POS_ItemPool"
 
 POS_MarketAgent = POS_MarketAgent or {}
 
@@ -286,6 +287,15 @@ function POS_MarketAgent.generateObservations(agent, zoneState, currentDay)
                     day        = currentDay,
                     zoneId     = agent.zoneId,
                 }
+
+                -- Select random items for discovery
+                local selectedItems = POS_ItemPool.selectRandomItems(catId,
+                    ZombRand(POS_Constants.AGENT_OBS_MIN_ITEMS,
+                        POS_Constants.AGENT_OBS_MAX_ITEMS + 1))
+                record.discoveredItems = {}
+                for _, selItem in ipairs(selectedItems) do
+                    record.discoveredItems[#record.discoveredItems + 1] = selItem.fullType or selItem
+                end
 
                 local ok = POS_MarketDatabase.addRecord(record)
                 if ok then

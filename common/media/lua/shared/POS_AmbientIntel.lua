@@ -25,6 +25,7 @@ require "PhobosLib"
 require "POS_Constants"
 require "POS_MarketRegistry"
 require "POS_MarketDatabase"
+require "POS_ItemPool"
 require "POS_SandboxIntegration"
 
 POS_AmbientIntel = {}
@@ -238,6 +239,15 @@ function POS_AmbientIntel.onEveryOneMinute()
                 zoneId        = zoneId,
                 sourcePrefix  = POS_Constants.AMBIENT_INTEL_SOURCE_PREFIX,
             }
+
+            -- Select random items for discovery
+            local selectedItems = POS_ItemPool.selectRandomItems(catId,
+                ZombRand(POS_Constants.AMBIENT_INTEL_MIN_ITEMS,
+                    POS_Constants.AMBIENT_INTEL_MAX_ITEMS + 1))
+            record.discoveredItems = {}
+            for _, item in ipairs(selectedItems) do
+                record.discoveredItems[#record.discoveredItems + 1] = item.fullType or item
+            end
 
             -- Add to database
             PhobosLib.safecall(POS_MarketDatabase.addRecord, record)
