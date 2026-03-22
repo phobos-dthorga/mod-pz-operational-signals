@@ -264,6 +264,58 @@ jobs:
           print("No invalid prefixes found in JSON translation files.")
           PYEOF
 
+      - name: Constants field existence check
+        run: |
+          python3 <<'PYEOF'
+          import re, os, sys, glob
+
+          # Scan POS_Constants.lua for all defined fields
+          constants_file = "common/media/lua/shared/POS_Constants.lua"
+          if not os.path.isfile(constants_file):
+              print("No POS_Constants.lua found — skipping.")
+              sys.exit(0)
+
+          with open(constants_file) as f:
+              constants_text = f.read()
+
+          # Extract all assigned fields: POS_Constants.FIELD_NAME = ...
+          defined = set()
+          for m in re.finditer(r'POS_Constants\.(\w+)\s*=', constants_text):
+              defined.add(m.group(1))
+
+          print(f"Found {len(defined)} defined POS_Constants fields")
+
+          # Scan all Lua files for POS_Constants.FIELD_NAME references
+          lua_files = glob.glob("common/media/lua/**/*.lua", recursive=True)
+          referenced = {}  # field -> [(file, line_num)]
+
+          for lf in lua_files:
+              with open(lf) as f:
+                  for i, line in enumerate(f, 1):
+                      # Skip comments
+                      stripped = line.lstrip()
+                      if stripped.startswith("--"):
+                          continue
+                      for m in re.finditer(r'POS_Constants\.(\w+)', line):
+                          field = m.group(1)
+                          if field not in referenced:
+                              referenced[field] = []
+                          referenced[field].append((lf, i))
+
+          fail = False
+          for field, locations in sorted(referenced.items()):
+              if field not in defined:
+                  for lf, line_num in locations[:3]:
+                      print(f"::error file={lf},line={line_num}::POS_Constants.{field} is referenced but never defined")
+                  if len(locations) > 3:
+                      print(f"  ... and {len(locations) - 3} more references")
+                  fail = True
+
+          if fail:
+              sys.exit(1)
+          print(f"All {len(referenced)} referenced POS_Constants fields are defined.")
+          PYEOF
+
       - name: PZ API deny-list scan
         run: python3 .github/pz-api-denylist.py common/media/lua/
 
