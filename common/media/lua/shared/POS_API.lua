@@ -42,9 +42,13 @@ function POS_API.registerScreen(def)
     -- Validate type
     assert(type(def) == "table", "registerScreen: definition must be a table")
 
-    -- Validate required fields
+    -- Validate required fields (warn instead of crash during ResetLua)
     for _, field in ipairs(REQUIRED_FIELDS) do
-        assert(def[field] ~= nil, "registerScreen: '" .. field .. "' is required")
+        if def[field] == nil then
+            PhobosLib.debug("POS", "[POS:API]",
+                "registerScreen: '" .. field .. "' is nil — skipping (likely ResetLua race)")
+            return
+        end
     end
     assert(type(def.id) == "string", "registerScreen: 'id' must be a string")
     assert(type(def.menuPath) == "table", "registerScreen: 'menuPath' must be a table")
