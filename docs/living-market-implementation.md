@@ -41,9 +41,9 @@ Everything in this phase is fully implemented, tested, and live in the codebase.
 | `POS_EventSchema.lua` | Event definition files |
 | `POS_WholesalerSchema.lua` | Wholesaler definition files |
 
-19 definition files across 4 subdirectories (all built-in; `_template.lua` files never loaded):
+23 definition files across 4 subdirectories (all built-in; `_template.lua` files never loaded):
 
-- `Definitions/Archetypes/` — 3 definitions: `scavenger_trader`, `quartermaster`, `wholesaler` (+ `_template.lua`)
+- `Definitions/Archetypes/` — 7 definitions: `scavenger_trader`, `quartermaster`, `wholesaler`, `smuggler`, `military_logistician`, `speculator`, `specialist_crafter` (+ `_template.lua`)
 - `Definitions/Zones/` — 6 definitions: `muldraugh`, `west_point`, `riverside`, `louisville_edge`, `military_corridor`, `rural_east` (+ `_template.lua`)
 - `Definitions/Events/` — 6 definitions: `bulk_arrival`, `convoy_delay`, `theft_raid`, `controlled_release`, `strategic_withholding`, `requisition_diversion` (+ `_template.lua`)
 - `Definitions/Wholesalers/` — 8 definitions: `muldraugh_general`, `west_point_consolidated`, `riverside_supply`, `louisville_arms`, `louisville_medical`, `military_depot`, `military_field_hospital`, `rural_east_salvage` (+ `_template.lua`)
@@ -122,41 +122,40 @@ Phase 5.75 in `processDayTick()` calls `POS_MarketSimulation.tickSimulation(curr
 
 ---
 
-### Phase 2: Remaining Archetype Definitions (Not Started)
+### Phase 2: Archetype Definitions (Complete)
 
-4 of the 7 built-in archetype definitions are not yet written:
+All 7 built-in archetype definitions are now written and loaded via the data-pack architecture.
 
 | Archetype | File | Status |
 |---|---|---|
-| `scavenger_trader` | `Definitions/Archetypes/scavenger_trader.lua` | Complete |
-| `quartermaster` | `Definitions/Archetypes/quartermaster.lua` | Complete |
-| `wholesaler` | `Definitions/Archetypes/wholesaler.lua` | Complete |
-| `smuggler` | `Definitions/Archetypes/smuggler.lua` | Not started |
-| `military_logistician` | `Definitions/Archetypes/military_logistician.lua` | Not started |
-| `speculator` | `Definitions/Archetypes/speculator.lua` | Not started |
-| `specialist_crafter` | `Definitions/Archetypes/specialist_crafter.lua` | Not started |
+| `scavenger_trader` | `Definitions/Archetypes/scavenger_trader.lua` | ✅ Complete |
+| `quartermaster` | `Definitions/Archetypes/quartermaster.lua` | ✅ Complete |
+| `wholesaler` | `Definitions/Archetypes/wholesaler.lua` | ✅ Complete |
+| `smuggler` | `Definitions/Archetypes/smuggler.lua` | ✅ Complete |
+| `military_logistician` | `Definitions/Archetypes/military_logistician.lua` | ✅ Complete |
+| `speculator` | `Definitions/Archetypes/speculator.lua` | ✅ Complete |
+| `specialist_crafter` | `Definitions/Archetypes/specialist_crafter.lua` | ✅ Complete |
 
-These are pure data files — no engine changes needed. Tuning values are specified in `living-market-design.md` §4 and the category affinity table is in §5.
-
-**What this unlocks:** The engine already calls `POS_MarketAgent.getProfile()` and `POS_MarketAgent.getAffinityWeight()` for any registered archetype. Defining these 4 archetypes makes them available for agent creation. Their downstream influence profiles exist in `POS_WholesalerService.DOWNSTREAM_PROFILES` for `smuggler` and `speculator`, but the `military_logistician` and `specialist_crafter` profiles would need adding there too.
+Tuning values follow `living-market-design.md` §4 and the category affinity table in §5. All downstream influence profiles are present in `POS_WholesalerService.DOWNSTREAM_PROFILES`.
 
 ---
 
-### Phase 3: Signal Emission (Not Started)
+### Phase 3: Signal Emission (Partially Done)
 
-This is the most critical missing piece. Without it the simulation runs internally but produces no visible output — no intel, no market observations, no rumours. The tick is running but silent.
+**3A. Hard Signal Emission** — ✅ Complete
 
-**What needs to happen:**
+`POS_WholesalerService.emitSignals()` now generates observation records per category for each wholesaler during Phase 6 of `tickWholesaler()`. Implementation follows the Signal Emission Rules in `design-guidelines.md` §24.10:
 
-Phase 6 of `POS_WholesalerService.tickWholesaler()` currently logs a trace placeholder. It needs to emit observation packets that feed `POS_MarketDatabase` via `POS_MarketIngestion`.
+- Visibility gate: `PhobosLib.randFloat(0, 1) > wholesaler.visibility` skips high-secrecy wholesalers probabilistically
+- Price formula: `CATEGORY_BASE_PRICE[catId] * (1 + markupBias) * WHOLESALER_PRICE_MULTIPLIER[state] * (1 +/- SIGNAL_PRICE_NOISE)`
+- Stock bucketing via `PhobosLib.getQualityTier()` with `STOCK_LEVEL_TIERS` (abundant/moderate/low/scarce)
+- Confidence mapping via `PhobosLib.getQualityTier()` with `CONFIDENCE_TIERS` (high/medium/low)
+- Display names resolved via `PhobosLib.getRegistryDisplayName()` — all definitions have `displayNameKey`
+- Cross-mod base prices: `CATEGORY_BASE_PRICE` includes PCP (chemicals/agriculture/biofuel) and PIP (specimens/biohazard) categories
+- All observations tagged with `POS_Constants.SOURCE_TIER_BROADCAST`
+- Records injected via `POS_MarketIngestion.ingestObservation()`
 
-**Components:**
-
-**3A. Hard Signal Emission**
-- Convert wholesaler state to an observation record matching the existing schema (`market-exchange-design.md` §4)
-- Populate: `categoryId`, `source` (wholesaler name), `location` (zone display name), `price` (derived from zone baseline ± wholesaler's `markupBias` ± state modifier), `stock` (derived from `stockLevel` bucket), `recordedDay`, `confidence` (from `reliability`), `sourceTier` (`POS_Constants.SOURCE_TIER_BROADCAST`), `quality`
-- Gated by `visibility` — high-secrecy wholesalers emit fewer/weaker observations
-- Inject via `POS_MarketIngestion.ingestObservation()` (or equivalent server path)
+**Remaining components:**
 
 **3B. Soft Signal Emission (Rumours)**
 - Roll against `rumorRate` per tick; if triggered, generate a soft-signal bulletin
@@ -214,10 +213,9 @@ Agents have hidden-state meters (pressure, greed, exposure, surplus, trustShift)
 - The current `_spawnWholesalers()` only runs if the store is empty — this is correct, but there is no explicit validation that restored wholesaler data matches the current definition schema
 - Add a migration/revalidation pass on load: check `schemaVersion`, rebuild missing fields from current definition defaults
 
-**5B. Zone State Load**
-- Zone pressure snapshots in `WMD_MARKET_ZONES` are written but never explicitly read back into `_zoneStates` on load
-- `_ensureZoneState()` always starts fresh from the definition — it should check `WMD_MARKET_ZONES` first and restore if available
-- This means zone pressure is currently reset to 0 on every world load, even though wholesaler states are preserved
+**5B. Zone State Load** — ✅ Complete
+- `_ensureZoneState()` now checks `WMD_MARKET_ZONES` ModData first and restores saved zone state if available
+- Zone pressure snapshots survive world load/save cycles, consistent with wholesaler state persistence
 
 **5C. Save Migration Path**
 - When wholesaler or zone definition schemas evolve (new required fields, renamed fields), existing saves will have stale structures
@@ -299,9 +297,9 @@ Future connections (Phases 3–7):
 
 | Component | Complexity | Depends On | Suggested Order |
 |---|---|---|---|
-| Remaining archetype definitions (Phase 2) | Low — data files only | Nothing | 1 — quick wins, no engine risk |
-| Zone state load restoration (Phase 5B) | Low | Nothing new | 2 — silent bug fix |
-| Hard signal emission (Phase 3A) | Medium | Market ingestion path audit | 3 — core output mechanism |
+| ~~Remaining archetype definitions (Phase 2)~~ | ~~Low~~ | — | ✅ Complete |
+| ~~Zone state load restoration (Phase 5B)~~ | ~~Low~~ | — | ✅ Complete |
+| ~~Hard signal emission (Phase 3A)~~ | ~~Medium~~ | — | ✅ Complete |
 | PriceEngine pressure bias (Phase 3D) | Medium | Phase 3A schema work | 4 — makes prices respond to simulation |
 | Soft signal / rumour emission (Phase 3B) | Medium | Phase 3A done, note generator | 5 |
 | Per-agent observation generator (Phase 4A) | High | Phase 3A, archetype definitions | 6 |
@@ -315,7 +313,7 @@ Future connections (Phases 3–7):
 | Field notes from state transitions (Phase 7C) | Low | Phase 3 + POS_MarketNoteGenerator | 14 |
 | Camera/satellite intel tier (Phase 7D) | High | Camera/satellite systems | 15 |
 
-**Recommended starting point:** Phases 2 and 5B together are low-risk, high-value, and unblock everything downstream. Phase 3A (hard signal emission) is the single highest-leverage piece — once wholesalers emit observations into `POS_MarketDatabase`, the existing market screens immediately start showing simulation-driven data with zero UI work.
+**Current state:** Phases 2, 5B, and 3A are complete. Wholesalers now emit hard signal observations into `POS_MarketDatabase`, meaning the existing market screens show simulation-driven data. **Next recommended target:** Phase 3D (PriceEngine pressure bias) — this makes terminal prices respond to zone pressure, giving the Living Market its first player-visible economic effect beyond raw observations.
 
 ---
 
@@ -346,10 +344,10 @@ Future connections (Phases 3–7):
 | `Definitions/Archetypes/scavenger_trader.lua` | Complete | Phase 1 archetype: noisy, opportunistic, low stock |
 | `Definitions/Archetypes/quartermaster.lua` | Complete | Phase 1 archetype: stable anchor, medium stock, slow movement |
 | `Definitions/Archetypes/wholesaler.lua` | Complete | Phase 1 archetype: bulk supplier, regional backbone |
-| `Definitions/Archetypes/smuggler.lua` | Not started | Phase 2: high secrecy, contraband, confidence penalties |
-| `Definitions/Archetypes/military_logistician.lua` | Not started | Phase 2: dominates ammo/fuel/radio, high authority |
-| `Definitions/Archetypes/speculator.lua` | Not started | Phase 3: crisis hoarding, price spikes, use sparingly |
-| `Definitions/Archetypes/specialist_crafter.lua` | Not started | Phase 3: converts junk, buffers narrow categories |
+| `Definitions/Archetypes/smuggler.lua` | Complete | High secrecy, contraband, confidence penalties |
+| `Definitions/Archetypes/military_logistician.lua` | Complete | Dominates ammo/fuel/radio, high authority |
+| `Definitions/Archetypes/speculator.lua` | Complete | Crisis hoarding, price spikes, use sparingly |
+| `Definitions/Archetypes/specialist_crafter.lua` | Complete | Converts junk, buffers narrow categories |
 | `Definitions/Archetypes/_template.lua` | Complete | Reference template; `enabled = false` |
 
 ### Definition Files — Zones
@@ -409,9 +407,8 @@ Future connections (Phases 3–7):
 
 ## Known Gaps Summary
 
-1. **Zone state is not restored on load** — `_ensureZoneState()` ignores `WMD_MARKET_ZONES` and always starts fresh. Zone pressure resets to 0 every session despite wholesaler state surviving.
-2. **Signal emission is a placeholder** — the simulation runs but produces no observations, rumours, or intel. The market screens are unaffected by the simulation until Phase 3A is done.
-3. **4 archetype definitions are missing** — `smuggler`, `military_logistician`, `speculator`, `specialist_crafter` constants exist but definition files do not.
-4. **No downstream influence from `getDownstreamInfluence()`** — the function is implemented and returns correct data, but nothing reads it during observation generation (which doesn't exist yet).
-5. **PriceEngine is not connected** — zone pressure has no effect on price drift in the terminal.
-6. **No terminal UI** — the simulation is fully invisible to the player until Phase 6.
+1. **No downstream influence from `getDownstreamInfluence()`** — the function is implemented and returns correct data, but nothing reads it during observation generation (Phase 4).
+2. **PriceEngine is not connected** — zone pressure has no effect on price drift in the terminal.
+3. **No terminal UI** — the simulation is fully invisible to the player until Phase 6.
+4. **Soft signal / rumour emission not implemented** — Phase 3B. Hard signals flow but no rumour bulletins yet.
+5. **Save migration path not designed** — Phase 5C. Schema evolution strategy for wholesaler/zone saved state.

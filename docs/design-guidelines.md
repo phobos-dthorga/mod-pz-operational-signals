@@ -1501,6 +1501,66 @@ accessors, never hard-coded strings.
 - Speculators must be rare — too many makes the economy silly.
 - Old keys are preserved (not deleted) for backward compatibility.
 
+### 24.10 Signal Emission Rules
+
+Hard signal emission (`POS_WholesalerService.emitSignals()`) converts wholesaler
+runtime state into observation records that feed `POS_MarketDatabase`. The
+following rules govern how those records are produced.
+
+**Visibility gate** — Not every wholesaler emits every tick. High-secrecy
+wholesalers are filtered probabilistically:
+
+```lua
+if PhobosLib.randFloat(0, 1) > wholesaler.visibility then return end
+```
+
+A `visibility` of `1.0` means always visible; `0.3` means 70% of ticks are
+silent.
+
+**Price formula** — Observation prices are derived, never hardcoded:
+
+```
+price = CATEGORY_BASE_PRICE[catId]
+      * (1 + markupBias)
+      * WHOLESALER_PRICE_MULTIPLIER[state]
+      * (1 +/- SIGNAL_PRICE_NOISE)
+```
+
+- `CATEGORY_BASE_PRICE` is a constant table keyed by commodity category ID.
+  It includes cross-mod categories: PCP (chemicals, agriculture, biofuel) and
+  PIP (specimens, biohazard).
+- `markupBias` comes from the wholesaler definition.
+- `WHOLESALER_PRICE_MULTIPLIER` maps each of the 6 operational states to a
+  multiplier (e.g. Dumping < 1.0, Withholding > 1.0).
+- `SIGNAL_PRICE_NOISE` is a small constant (±%) applied via `randFloat` to
+  prevent identical prices across ticks.
+
+**Stock bucketing** — The `stockLevel` float is converted to a human-readable
+tier via `PhobosLib.getQualityTier()` using the `STOCK_LEVEL_TIERS` threshold
+table (abundant / moderate / low / scarce).
+
+**Confidence mapping** — Observation `confidence` is derived from the
+wholesaler's `reliability` field, bucketed via `PhobosLib.getQualityTier()`
+using `CONFIDENCE_TIERS` (high / medium / low).
+
+**Display names** — All emitted observations use
+`PhobosLib.getRegistryDisplayName()` (see §25.5) to resolve human-readable
+source and location strings. Every definition file MUST include a
+`displayNameKey` field pointing to a valid translation key.
+
+**Source tier** — All Living Market observations are tagged with
+`POS_Constants.SOURCE_TIER_BROADCAST`. This places them in the broadcast
+intelligence tier alongside satellite and relay data.
+
+**Anti-patterns:**
+
+- Never hardcode price values — always derive from `CATEGORY_BASE_PRICE` and
+  multipliers.
+- Never hardcode stock strings ("abundant", "scarce") — always bucket via
+  `PhobosLib.getQualityTier()` with the canonical `STOCK_LEVEL_TIERS` table.
+- Never bypass the visibility gate — even in tests, respect the probabilistic
+  filter to avoid unrealistic signal density.
+
 ---
 
 ## 25. Error Handling & Strict Mode
@@ -1559,6 +1619,7 @@ reimplement these locally — use the PhobosLib versions:
 | `PhobosLib.throttle(fn, intervalMinutes)` | Rate-limit an EveryOneMinute handler (see §27) |
 | `PhobosLib.formatPlayerLocation(player, opts)` | Combined "Street (Room)" location string (see §6.1) |
 | `PhobosLib.hasPower(square)` | Grid + generator + custom power check (see §5.5) |
+| `PhobosLib.getRegistryDisplayName(registry, id, fallback)` | Resolve a definition's `displayNameKey` via `getText()`, with fallback (see §26) |
 
 ### 25.6 Empty-Data Return Convention
 
