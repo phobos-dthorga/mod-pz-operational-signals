@@ -2630,3 +2630,69 @@ end
 | **Logic in definition files** | Definitions must be pure data (`return { ... }`) — functions in data files break schema validation and data-pack loading | Keep definitions declarative; use `conditions` for filtering and `{tokens}` for dynamic content |
 | **Hardcoded text in Lua** | Bypasses translation, condition filtering, and weighted selection | Put text variants in definition files; resolve at runtime |
 | **Skipping avoidRecent** | Players see the same rumour/note text repeatedly, breaking immersion | Always pair `pickWeighted` with `avoidRecent` for player-facing text |
+
+---
+
+## 32. Mission Content System
+
+Guidelines summary for compositional mission briefings and data-driven
+mission definitions. The full design lives at `docs/mission-system-design.md`.
+
+### 32.1 Compositional Briefings
+
+- Briefings are assembled from **5 sections**: title, situation, tasking,
+  constraints, and submission.
+- Each section resolves independently from weighted text pools via
+  `PhobosLib.pickWeighted()`.
+- Tokens (`{zoneName}`, `{rewardCash}`, etc.) are resolved via
+  `PhobosLib.resolveTokens()`.
+- Generated text is **persisted on the operation** — never regenerated from
+  schema.
+- Cross-ref: **§31 Text Compositor Patterns**.
+
+### 32.2 Mission Definitions
+
+- Schema-validated data files in `Definitions/Missions/*.lua`.
+- Follow **§26 Data-Pack Architecture** conventions.
+- Each definition specifies: category, difficulty range, location rules,
+  objective templates, briefing pool references.
+- Three initial categories: **recon**, **recovery**, **survey**.
+- Definitions are **declarative** — no functions, no logic.
+
+### 32.3 Text Pools
+
+- Shared text fragments in `Definitions/TextPools/*.lua`.
+- Entries have: `id`, `text`, `weight`, `conditions` (optional).
+- Conditions use `PhobosLib.conditionsPass()` for context-aware filtering.
+- Anti-repetition via `PhobosLib.avoidRecent()` with rolling history
+  (max 10 per section).
+
+### 32.4 Voice Packs (Optional)
+
+- Per-archetype text overrides for intro and closing sections.
+- Fallback chain: archetype-specific pool -> default pool (voice packs are
+  never required).
+- 7 potential voices matching existing agent archetypes.
+- Voice packs are **additive content** — the system works without any defined.
+
+### 32.5 Anti-Patterns
+
+| Anti-Pattern | Why It's Wrong |
+|---|---|
+| **NPC dependencies** | PZ B42 has no stable NPC API — all missions must be completable via world-object interaction only |
+| **Functions in definitions** | Definitions are declarative data; logic belongs in the resolver |
+| **Regenerating briefings** | Persisted text must never be regenerated from schema — breaks save compatibility |
+| **Monolithic briefing text** | Always use sections, never one giant string |
+| **Infinite item sources** | Recovery missions require items to physically exist in the world |
+| **Magic teleportation** | Player must physically travel to all objective locations |
+
+### 32.6 Implementation Reference
+
+| File | Purpose |
+|---|---|
+| `docs/mission-system-design.md` | Full design document |
+| `POS_MissionSchema.lua` | Mission definition schema |
+| `POS_TextPoolSchema.lua` | Text pool entry schema |
+| `POS_MissionBriefingResolver.lua` | Briefing assembly engine |
+| `Definitions/Missions/*.lua` | Mission data files |
+| `Definitions/TextPools/*.lua` | Shared text fragments |
