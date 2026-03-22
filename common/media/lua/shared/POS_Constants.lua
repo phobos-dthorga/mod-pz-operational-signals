@@ -260,6 +260,8 @@ POS_Constants.CATEGORY_PRICE_MULTIPLIERS = {
 POS_Constants.PRICE_SD_FACTOR_PER_SOURCE = 0.01
 POS_Constants.PRICE_SD_FACTOR_BASELINE   = 5
 POS_Constants.PRICE_SD_FACTOR_CLAMP      = 0.1
+POS_Constants.PRICE_ZONE_PRESSURE_WEIGHT = 0.05   -- pressure [-2,2] scaled by this → ±10% max
+POS_Constants.PRICE_ZONE_PRESSURE_CLAMP  = 0.10   -- absolute cap on zone pressure effect
 
 ---------------------------------------------------------------
 -- Exchange engine

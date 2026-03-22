@@ -108,7 +108,7 @@ end
 ---
 --- @param fullType   string   Full item type (e.g. "Base.Axe")
 --- @param categoryId string   Commodity category (e.g. "tools")
---- @param ctx        table|nil  { player, sourceTier, roomModifier }
+--- @param ctx        table|nil  { player, sourceTier, roomModifier, zoneId }
 --- @return number  Final price rounded to 2 decimal places
 function POS_PriceEngine.generatePrice(fullType, categoryId, ctx)
     local basePrice = POS_ItemPool.getBasePrice(fullType)
@@ -136,6 +136,25 @@ function POS_PriceEngine.generatePrice(fullType, categoryId, ctx)
                 math.min(POS_Constants.PRICE_SD_FACTOR_CLAMP,
                     (summary.sourceCount - POS_Constants.PRICE_SD_FACTOR_BASELINE)
                     * POS_Constants.PRICE_SD_FACTOR_PER_SOURCE))
+        end
+    end
+
+    -- Zone pressure bias from Living Market (additive to S/D factor)
+    if POS_Sandbox and POS_Sandbox.isLivingMarketEnabled
+            and POS_Sandbox.isLivingMarketEnabled() then
+        local zoneId = ctx and ctx.zoneId
+        if zoneId and POS_MarketSimulation
+                and POS_MarketSimulation.getZonePressure then
+            local ok, pressure = PhobosLib.safecall(
+                POS_MarketSimulation.getZonePressure, zoneId, categoryId)
+            if ok and pressure then
+                local pressureFactor = pressure
+                    * POS_Constants.PRICE_ZONE_PRESSURE_WEIGHT
+                pressureFactor = PhobosLib.clamp(pressureFactor,
+                    -POS_Constants.PRICE_ZONE_PRESSURE_CLAMP,
+                    POS_Constants.PRICE_ZONE_PRESSURE_CLAMP)
+                sdFactor = sdFactor + pressureFactor
+            end
         end
     end
 
