@@ -1786,6 +1786,39 @@ summaries alongside their standard intelligence output:
   Always use qualitative descriptors (e.g. "tightening", "oversupplied")
   resolved through the stock-tier bucketing system.
 
+### 24.14 Ambient Intelligence Rules
+
+Ambient intel provides a passive trickle of low-confidence market data when
+the player is connected to the POSnet network. It requires no equipment
+beyond a terminal connection.
+
+**Rules:**
+
+1. Ambient observations are always `CONFIDENCE_LOW` and `SOURCE_TIER_BROADCAST`
+   — they never produce high-quality data.
+2. Price noise is ±25% (`AMBIENT_INTEL_PRICE_NOISE`) — significantly less
+   accurate than field data (±10%) or agent data (±10–20%).
+3. Generation gated by active terminal connection
+   (`POS_ConnectionManager.isConnected()`).
+4. Interval configurable via sandbox (`POS.AmbientIntelInterval`, default 30
+   game-minutes).
+5. Volume: 1–3 observations per interval — a trickle, not a flood.
+6. Anti-repetition: `PhobosLib.avoidRecent()` prevents the same category
+   appearing consecutively.
+7. Max 50 ambient records in database — oldest pruned when exceeded.
+8. Source names drawn from flavour pool (8 translated keys) for variety.
+
+**Anti-patterns:**
+
+| Anti-Pattern | Why It's Wrong |
+|---|---|
+| High-confidence ambient data | Undermines the value of active recon equipment |
+| Large volume per tick | Drowns out player-collected intel |
+| No connection gate | Player should feel the difference between connected/disconnected |
+| Hardcoded source names | Source pool must be translatable and extensible |
+
+**Implementation reference:** `POS_AmbientIntel.lua`
+
 ---
 
 ## 25. Error Handling & Strict Mode

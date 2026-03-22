@@ -118,6 +118,7 @@ globals = {
     "POS_Screen_MarketSignals",
     "POS_Screen_Assignments",
     "POS_TradeService",
+    "POS_AmbientIntel",
 }
 
 read_globals = {

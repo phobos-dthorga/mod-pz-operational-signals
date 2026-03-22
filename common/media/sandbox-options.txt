@@ -1389,3 +1389,13 @@ option POS.TradeTerminalSIGINTReq
     page = POS_Sandbox,
     translation = POS_TradeTerminalSIGINTReq,
 }
+
+option POS.AmbientIntelInterval
+{
+    type = integer,
+    min = 10,
+    max = 120,
+    default = 30,
+    page = POS_Sandbox,
+    translation = POS_AmbientIntelInterval,
+}

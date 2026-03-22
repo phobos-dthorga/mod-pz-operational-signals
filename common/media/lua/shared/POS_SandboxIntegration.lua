@@ -759,3 +759,12 @@ end
 function POS_Sandbox.getTradeTerminalSIGINTReq()
     return PhobosLib.getSandboxVar("POS", "TradeTerminalSIGINTReq", POS_Constants.TRADE_SIGINT_REQ_DEFAULT)
 end
+
+---------------------------------------------------------------
+-- Ambient Intelligence
+---------------------------------------------------------------
+
+function POS_Sandbox.getAmbientIntelInterval()
+    return PhobosLib.getSandboxVar("POS", "AmbientIntelInterval",
+        POS_Constants.AMBIENT_INTEL_INTERVAL_DEFAULT)
+end

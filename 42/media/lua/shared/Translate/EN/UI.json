@@ -940,5 +940,14 @@
     "UI_POS_Trade_SellTotal": "Sell $%1",
     "UI_POS_Trade_CantAfford": "Insufficient funds",
     "UI_POS_Trade_NoStock": "Out of stock",
-    "UI_POS_Watchlist_History": "History"
+    "UI_POS_Watchlist_History": "History",
+
+    "UI_POS_Ambient_RadioChatter": "Radio chatter",
+    "UI_POS_Ambient_NetworkBulletin": "Network bulletin",
+    "UI_POS_Ambient_TraderGossip": "Trader gossip",
+    "UI_POS_Ambient_OverheardBroadcast": "Overheard broadcast",
+    "UI_POS_Ambient_SignalFragment": "Signal fragment",
+    "UI_POS_Ambient_StaticIntercept": "Static intercept",
+    "UI_POS_Ambient_FrequencyScan": "Frequency scan",
+    "UI_POS_Ambient_BandMonitor": "Band monitor"
 }

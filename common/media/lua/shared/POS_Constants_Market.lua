@@ -352,3 +352,15 @@ POS_Constants.CAMERA_WORKSTATION_SPRITES      = {
 POS_Constants.CAMERA_MEDIA_ROOM_TYPES         = {
     "tvstudio", "broadcast", "avroom",
 }
+
+---------------------------------------------------------------
+-- Ambient Intelligence (passive market data trickle)
+---------------------------------------------------------------
+
+POS_Constants.AMBIENT_INTEL_INTERVAL_DEFAULT   = 30    -- game minutes between ambient observations
+POS_Constants.AMBIENT_INTEL_MIN_OBS            = 1     -- minimum observations per interval
+POS_Constants.AMBIENT_INTEL_MAX_OBS            = 3     -- maximum observations per interval
+POS_Constants.AMBIENT_INTEL_PRICE_NOISE        = 0.25  -- ±25% price variance
+POS_Constants.AMBIENT_INTEL_MAX_RECORDS        = 50    -- max ambient records in database
+POS_Constants.AMBIENT_INTEL_SOURCE_PREFIX      = "ambient_"
+POS_Constants.AMBIENT_INTEL_HISTORY_SIZE       = 5     -- anti-repetition category history

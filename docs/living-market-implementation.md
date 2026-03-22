@@ -351,6 +351,14 @@ Active connections:
 
 **Current state:** All phases complete. Living Market Layer 0 is fully implemented, including the standalone trading system (Phase 8).
 
+**Ambient Market Intelligence** (added post-Phase 8): A passive data source
+(`POS_AmbientIntel.lua`) now complements the Living Market simulation by
+generating low-confidence market observations when the player is connected to
+a POSnet terminal. This provides a baseline trickle of market awareness
+without requiring any recon equipment, ensuring players always have some
+signal to act on while incentivising active collection for higher-quality
+data. See `design-guidelines.md` §24.14 for the full rule set.
+
 ---
 
 ## File Reference

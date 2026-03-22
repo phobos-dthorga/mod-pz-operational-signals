@@ -350,5 +350,8 @@
     "Sandbox_POS_BulkDiscountPercent": "Bulk Discount (%)",
     "Sandbox_POS_BulkDiscountPercent_tooltip": "Percentage discount applied to bulk purchases meeting the threshold. Default: 10%.",
     "Sandbox_POS_TradeTerminalSIGINTReq": "Trade Terminal SIGINT Requirement",
-    "Sandbox_POS_TradeTerminalSIGINTReq_tooltip": "Minimum SIGINT skill level required to access the Trade Terminal. Default: 1."
+    "Sandbox_POS_TradeTerminalSIGINTReq_tooltip": "Minimum SIGINT skill level required to access the Trade Terminal. Default: 1.",
+
+    "Sandbox_POS_AmbientIntelInterval": "Ambient Intel Interval",
+    "Sandbox_POS_AmbientIntelInterval_tooltip": "Minutes between passive market intelligence observations. Lower = more data but noisier. <BR> <BR> <INDENT:20> Range: 10-120. Default: 30."
 }
