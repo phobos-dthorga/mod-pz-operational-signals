@@ -2,6 +2,25 @@
 
 
 
+
+[h2]v0.16.0[/h2]
+[list]
+[*] standalone trading system + DT removal
+[*] (Fix) CI constants check scans all POS_Constants*.lua files
+[*] (Fix) wrap MarketFileStore read loop in safecall for corruption resilience
+[*] (Fix) move all file I/O to POSNET/ subdirectory to prevent Kahlua CTD
+[*] (Fix) split POS_Constants.lua into 6 domain files to fix Kahlua crash
+[*] (Fix) move confidence threshold tables after base constant definitions
+[*] (Fix) registerScreen gracefully skips nil fields during ResetLua
+[*] (Fix) add missing TRADE_STOCK_THRESHOLDS and constant aliases
+[*] add §30-31 trading/compositor rules, update interop matrix
+[*] migrate MarketFileStore from file I/O to world ModData
+[*] split recipes + complete callback delegation + luacheckrc
+[*] recipe callback helpers + strip diagnostics + docs §29
+[/list]
+
+[hr][/hr]
+
 [h2]v0.15.0 — POSnet v0.15.0[/h2]
 [list]
 [*] configurable economy tick interval (1-24 hours, default 24)
