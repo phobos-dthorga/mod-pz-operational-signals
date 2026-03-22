@@ -56,7 +56,17 @@ function POS_EconomyTick.processDayTick()
         or POS_Constants.ECONOMY_TICK_INTERVAL_HOURS_DEFAULT
     local intervalFraction = intervalHours / 24
     local lastTick = meta.lastProcessedTick or 0
-    if (worldTime - lastTick) < intervalFraction then return end
+
+    -- Sanity: reset if lastTick is in the future (corruption/time-travel)
+    if lastTick > worldTime then
+        PhobosLib.debug("POS", _TAG, "[EconomyTick] Resetting future lastProcessedTick="
+            .. tostring(lastTick) .. " (worldTime=" .. tostring(worldTime) .. ")")
+        lastTick = 0
+        meta.lastProcessedTick = 0
+    end
+
+    local delta = worldTime - lastTick
+    if delta < intervalFraction then return end
 
     -- Check sandbox toggle
     if POS_Sandbox and POS_Sandbox.getEconomyTickEnabled
