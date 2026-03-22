@@ -640,7 +640,7 @@ function POS_SatelliteService.checkWiringRequirements(player, wireCount)
             POS_Constants.SATELLITE_WIRING_TOOL_PLIERS,
         },
         minSkill  = POS_Constants.SATELLITE_WIRING_MIN_ELECTRICAL,
-        skillType = "Electrical",
+        skillType = "Electricity",
     })
 end
 
