@@ -1359,3 +1359,43 @@ option POS.MarketFileChunkSize
     page = POS_Sandbox,
     translation = POS_MarketFileChunkSize,
 }
+
+option POS.SellPriceRatio
+{
+    type = integer,
+    default = 65,
+    min = 10,
+    max = 100,
+    page = POS_Sandbox,
+    translation = POS_SellPriceRatio,
+}
+
+option POS.BulkDiscountThreshold
+{
+    type = integer,
+    default = 10,
+    min = 1,
+    max = 50,
+    page = POS_Sandbox,
+    translation = POS_BulkDiscountThreshold,
+}
+
+option POS.BulkDiscountPercent
+{
+    type = integer,
+    default = 10,
+    min = 0,
+    max = 50,
+    page = POS_Sandbox,
+    translation = POS_BulkDiscountPercent,
+}
+
+option POS.TradeTerminalSIGINTReq
+{
+    type = integer,
+    default = 1,
+    min = 0,
+    max = 10,
+    page = POS_Sandbox,
+    translation = POS_TradeTerminalSIGINTReq,
+}

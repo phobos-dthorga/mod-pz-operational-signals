@@ -46,7 +46,7 @@ function POS_EconomyTick.processDayTick()
     local currentDay = POS_WorldState.getWorldDay()
 
     -- Use monotonic world-age hours (integer, always increases)
-    -- Pattern proven by DynamicTrading — immune to float precision issues
+    -- Immune to float precision issues
     local gt = getGameTime and getGameTime()
     if not gt then return end
     local currentHour = math.floor(gt:getWorldAgeHours())

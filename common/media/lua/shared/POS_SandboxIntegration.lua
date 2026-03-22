@@ -740,3 +740,24 @@ function POS_Sandbox.getMarketFileChunkSize()
     return PhobosLib.getSandboxVar("POS", "MarketFileChunkSize",
         POS_Constants.MARKET_FILE_CHUNK_SIZE)
 end
+
+---------------------------------------------------------------
+-- Trade Terminal
+---------------------------------------------------------------
+
+function POS_Sandbox.getSellPriceRatio()
+    local raw = PhobosLib.getSandboxVar("POS", "SellPriceRatio", POS_Constants.TRADE_SELL_PRICE_RATIO_DEFAULT * 100)
+    return raw / 100
+end
+
+function POS_Sandbox.getBulkDiscountThreshold()
+    return PhobosLib.getSandboxVar("POS", "BulkDiscountThreshold", POS_Constants.TRADE_BULK_THRESHOLD_DEFAULT)
+end
+
+function POS_Sandbox.getBulkDiscountPercent()
+    return PhobosLib.getSandboxVar("POS", "BulkDiscountPercent", POS_Constants.TRADE_BULK_DISCOUNT_PCT_DEFAULT)
+end
+
+function POS_Sandbox.getTradeTerminalSIGINTReq()
+    return PhobosLib.getSandboxVar("POS", "TradeTerminalSIGINTReq", POS_Constants.TRADE_SIGINT_REQ_DEFAULT)
+end
