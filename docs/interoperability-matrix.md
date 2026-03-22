@@ -26,7 +26,7 @@ anti-patterns) are covered in `design-guidelines.md` §34.
 | Rumour System | soft-class market events | rumour bulletins, BBS entries | POSNET.Rumours | POS_WholesalerService | wholesaler event firing |
 | Recipe Callbacks | recipe items, player modData, sandbox options | field reports, market notes, media items | player modData (note content), item modData (media state) | POS_CraftHelpers | player crafts recipe |
 | Trade Service | wholesaler state, PriceEngine prices, ItemPool categories, player inventory/money | inventory changes, money changes, stock mutations, state transitions, PN notifications | POSNET.Wholesalers (stock), player inventory (items/money) | POS_MarketSimulation, PhobosNotifications | player trade action |
-| Ambient Intel | terminal connection, market categories, base prices | low-confidence observations, item discoveries | POS_MarketDatabase (world ModData) | POS_ConnectionManager, POS_MarketSimulation | EveryOneMinute (30 min interval) |
+| Ambient Intel | terminal connection, market categories, base prices | low-confidence observations, item discoveries, item-level price data (`record.items` + `record.discoveredItems`) | POS_MarketDatabase (world ModData) | POS_ConnectionManager, POS_MarketSimulation | EveryOneMinute (30 min interval) |
 | Discovery System | observation records with discoveredItems | player ModData discoveries, PN notifications | player ModData (POSNET_Discoveries) | POS_MarketDatabase, PhobosLib | observation addRecord |
 
 ---

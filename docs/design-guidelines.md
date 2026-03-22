@@ -2831,6 +2831,42 @@ implementation is `createTabbedView()` from `POS_TerminalWidgets`.
 | **Hub screens with content** | Hubs should be menu-only; mixing content with navigation confuses the player | Keep hub screens as pure menu builders; put content in leaf screens |
 | **Tabs that push to the navigation stack** | Pollutes the back-stack, breaks breadcrumbs | Tabs must use `replaceCurrent()`, never `navigateTo()` |
 
+### 33.6 Scroll Panel Pattern
+
+Screens with variable-height content that may exceed the terminal panel must
+wrap their content sections in `PhobosLib.createScrollPanel()`. The header and
+footer (Back button) stay **outside** the scroll area on the original
+`contentPanel`. This prevents content from overflowing the CRT bezel.
+
+```lua
+-- After header
+local scrollH = contentPanel:getHeight() - ctx.y - ctx.btnH - 16
+local scrollPanel = PhobosLib.createScrollPanel(
+    contentPanel, 0, ctx.y, contentPanel:getWidth(), scrollH)
+ctx.panel = scrollPanel
+ctx.y = 0
+-- ... all section content renders into scrollPanel ...
+-- Footer drawn on original contentPanel
+ctx.panel = origPanel
+W.drawFooter(ctx)
+```
+
+**Market Overview** uses this pattern — its zone pressure section grows with
+the number of Living Market zones.
+
+### 33.7 Cross-Screen Button Navigation
+
+When a screen offers buttons that navigate to related screens (e.g.,
+CommodityDetail → "Known Sellers" or "Price History"), the button handler must
+use `navigateTo()` with the **current consolidated screen ID**, not the
+pre-consolidation ID. After screen consolidation, the target screen IDs are:
+
+| Button Label | Target Screen Constant |
+|---|---|
+| Known Sellers | `SCREEN_CONTACTS` |
+| Price History | `SCREEN_WATCHLIST` |
+| View Items | `SCREEN_COMMODITY_ITEMS` |
+
 ---
 
 ## 34. Sandbox Option Hygiene
@@ -2905,13 +2941,28 @@ Table of discovery sources and their item counts per observation:
 | Passive Recon | 4-10 | Medium-High | Active equipment, SIGINT-scaled |
 | Camera Analysis | 5-12 | High | Requires camera workstation |
 
-### 35.3 Progressive Reveal
+### 35.3 Observation Record Dual-Population
+
+Discovery sources must populate **both** fields on each observation record:
+
+- `record.discoveredItems` — array of fullType strings. Consumed by
+  `POS_MarketDatabase.addRecord()` to trigger `POS_PlayerState.discoverItem()`.
+- `record.items` — array of `{ fullType, price }` tables. Stored on the
+  observation and returned by `POS_MarketDatabase.getItemRecords()` for the
+  View Items screen.
+
+Both `POS_AmbientIntel` and `POS_MarketAgent` build these arrays in a single
+loop over `POS_ItemPool.selectRandomItems()`.
+
+### 35.4 Progressive Reveal
 - Trade catalog shows "X of Y items discovered" count.
-- Empty catalog shows "No items discovered yet. Listen to the network..."
+- View Items (CommodityItems) screen shows "X of ~Y items discovered" counter.
+- Empty item list shows informative message: "No items discovered in this
+  category yet. Listen to the network to discover items..."
 - PN notification on each new discovery.
 - Higher-quality sources discover more items faster.
 
-### 35.4 Anti-Patterns
+### 35.5 Anti-Patterns
 
 | Anti-Pattern | Why It's Wrong |
 |---|---|
