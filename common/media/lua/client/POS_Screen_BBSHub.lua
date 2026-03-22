@@ -26,6 +26,7 @@ require "POS_ScreenManager"
 require "POS_TerminalWidgets"
 require "POS_OperationLog"
 require "POS_InvestmentLog"
+require "POS_RumourGenerator"
 require "POS_API"
 require "POS_MenuBuilder"
 

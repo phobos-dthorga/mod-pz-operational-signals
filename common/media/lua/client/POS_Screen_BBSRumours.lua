@@ -26,6 +26,7 @@ require "PhobosLib"
 require "POS_Constants"
 require "POS_ScreenManager"
 require "POS_TerminalWidgets"
+require "POS_RumourGenerator"
 require "PhobosLib_Pagination"
 require "POS_API"
 
