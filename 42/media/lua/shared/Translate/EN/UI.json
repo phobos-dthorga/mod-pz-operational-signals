@@ -886,7 +886,6 @@
     "UI_POS_WholesalerDir_Categories": "Specialises in: %1",
     "UI_POS_WholesalerDir_NoAccess": "No wholesaler contacts discovered.",
     "UI_POS_WholesalerDir_RequiresSIGINT": "Requires SIGINT Level 3",
-    "UI_POS_WholesalerDir_Title": "Wholesaler Directory",
     "UI_POS_WholesalerDir_UnknownContact": "Unknown Contact",
     "UI_POS_Zone_NoData": "No simulation data",
     "UI_POS_Zone_Overview": "Market Zones",
