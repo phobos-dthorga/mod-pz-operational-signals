@@ -103,3 +103,9 @@ end
 -- Register with Starlit TaskManager instead of manual OnTick counter
 local TaskManager = require("Starlit/TaskManager")
 TaskManager.repeatEveryTicks(doPositionSample, SAMPLE_INTERVAL_TICKS)
+-- Workaround: Starlit doesn't initialise offset on new repeat task arrays,
+-- causing __add nil crash at TaskManager.lua:233. Init to 0 ourselves.
+if TaskManager.repeatTasks[SAMPLE_INTERVAL_TICKS] then
+    TaskManager.repeatTasks[SAMPLE_INTERVAL_TICKS].offset =
+        TaskManager.repeatTasks[SAMPLE_INTERVAL_TICKS].offset or 0
+end
