@@ -228,7 +228,133 @@ selected agent detail (see §8 Unfinished Work below).
 
 ---
 
-## 9. Cross-References
+## 9. PhobosNotifications Integration Opportunities
+
+> **Current state**: All `notifyOrSay` calls in FreeAgentService use the
+> **broken shorthand** `notifyOrSay("POSnet", text, "info")` — passing a
+> string where `player` should be. This silently falls back to a garbled
+> `PhobosLib.say()` call or fails entirely when PN is installed. The correct
+> API is `notifyOrSay(player, { title, message, colour, channel, ... })`.
+> This same bug affects ContractService, EventService, and CommodityItems.
+
+### 9.1 Notification Opportunities (MEDIUM–HIGH benefit)
+
+The following agent lifecycle events should produce distinct PN toast
+notifications with appropriate colour presets, priorities, and channels.
+All should use the `"POSnet"` channel (registered via `PN_ChannelRegistry`)
+so players can mute agent updates if desired.
+
+| Event | Colour | Priority | Benefit | Rationale |
+|-------|--------|----------|---------|-----------|
+| **Agent deployed** | `info` | `normal` | HIGH | Confirms action taken; player needs to know the agent left |
+| **Agent in transit** | `info` | `low` | MEDIUM | Ambient awareness — the radio crackles with confirmation |
+| **Agent delayed** | `warning` | `normal` | HIGH | Player needs to know something went wrong; builds tension |
+| **Agent compromised** | `error` | `high` | HIGH | Critical — cargo/agent at risk. Player may want to recall. |
+| **Agent negotiating** | `info` | `low` | MEDIUM | Reassurance that the agent arrived safely |
+| **Agent completed** | `success` | `normal` | HIGH | Money credited! Player needs confirmation of settlement |
+| **Agent failed/lost** | `error` | `critical` | HIGH | Cargo gone, agent gone. Player must know immediately. |
+| **Agent recalled** | `warning` | `normal` | MEDIUM | Confirms recall action was processed |
+
+### 9.2 Suggested Implementation
+
+Replace the broken shorthand calls in `POS_FreeAgentService.lua` with
+proper PN-aware notifications:
+
+```lua
+-- Current (broken):
+PhobosLib.notifyOrSay("POSnet",
+    agent.agentName .. " deployed to " .. zoneId, "info")
+
+-- Fixed (PN-aware):
+PhobosLib.notifyOrSay(getPlayer(), {
+    title   = PhobosLib.safeGetText("UI_POS_FreeAgent_Deployed_Title"),
+    message = agent.agentName .. " deployed to " .. zoneName,
+    colour  = "info",
+    channel = POS_Constants.PN_CHANNEL_AGENTS,
+    icon    = POS_Constants.ICON_FREE_AGENT,
+})
+```
+
+### 9.3 Channel Registration
+
+POSnet should register a dedicated PN channel for agent updates so players
+can mute them independently of other POSnet notifications:
+
+```lua
+-- In POS_NotificationChannels.lua (or OnGameStart):
+if PN_ChannelRegistry then
+    PN_ChannelRegistry.register({
+        id          = POS_Constants.PN_CHANNEL_AGENTS,
+        name        = "POSnet Field Agents",
+        description = "Agent deployment, transit, and settlement updates",
+        defaultEnabled = true,
+    })
+end
+```
+
+Suggested channel IDs for POSnet (all MEDIUM+ benefit):
+
+| Channel ID | Covers | Benefit |
+|------------|--------|---------|
+| `"posnet_agents"` | Free agent state changes | HIGH — frequent, player may want to mute |
+| `"posnet_contracts"` | Contract accept/fulfil/expire/betray | HIGH — financial impact |
+| `"posnet_market"` | Market events, zone disruptions | MEDIUM — ambient awareness |
+| `"posnet_trade"` | Buy/sell confirmations | MEDIUM — transaction receipts |
+| `"posnet_intel"` | Item discoveries, ambient intel | MEDIUM — can be noisy |
+
+### 9.4 Priority Escalation Pattern
+
+Agent notifications should escalate priority based on state severity:
+
+| State | PN Priority | Rationale |
+|-------|-------------|-----------|
+| `drafted`, `assembling` | `low` | Routine confirmation |
+| `transit`, `negotiation` | `low` | Ambient progress |
+| `delayed` | `normal` | Something went wrong but recoverable |
+| `compromised` | `high` | Cargo at risk — player may want to intervene |
+| `settlement`, `completed` | `normal` | Financial impact — money credited |
+| `failed` | `critical` | Total loss — demands attention |
+
+### 9.5 Icon Opportunities
+
+Each archetype could use a distinct icon in PN toasts for visual
+differentiation. Currently POSnet has 40 custom icons; adding 5 archetype
+icons would make agent notifications instantly recognisable at a glance.
+
+| Archetype | Suggested Icon | Fantasy |
+|-----------|---------------|---------|
+| Runner | Backpack or running shoe | Speed and vulnerability |
+| Broker | Radio or ledger | Communication and deals |
+| Courier | Package or truck | Reliable transport |
+| Smuggler | Lockpick or mask | Subterfuge |
+| Contact | Handshake or Rolodex | Established relationships |
+
+### 9.6 Broader POSnet PN Fixes Required
+
+The broken shorthand pattern `notifyOrSay(string, string, string)` appears
+in **11 files** across POSnet (55 total call sites). These ALL need fixing
+to the proper opts-table signature. This is a **HIGH-priority bug** that
+affects every notification in POSnet when PN is installed:
+
+| File | Broken Calls | Fix Priority |
+|------|-------------|-------------|
+| `POS_FreeAgentService.lua` | 3 | HIGH (agent lifecycle) |
+| `POS_ContractService.lua` | 5 | HIGH (financial events) |
+| `POS_EventService.lua` | 1 | MEDIUM (market events) |
+| `POS_Screen_CommodityItems.lua` | 6 | HIGH (buy/sell receipts) |
+| `POS_Screen_Contracts.lua` | 2 | MEDIUM (error feedback) |
+| `POS_MarketDatabase.lua` | 1 | MEDIUM (item discovery) |
+
+Files already using the correct opts-table signature (no fix needed):
+`POS_DataRecorderService`, `POS_CameraCompileAction`,
+`POS_SatelliteBroadcastAction`, `POS_RecorderContextMenu`,
+`POS_Screen_DataManagement`, `POS_Screen_Markets`,
+`POS_TutorialService`, `POS_TradeService`, `POS_WatchlistService`,
+`POS_TerminalAnalysisAction`, `POS_SatelliteWiringAction`.
+
+---
+
+## 10. Cross-References
 
 | System | Integration Point | Status |
 |--------|------------------|--------|
@@ -241,6 +367,8 @@ selected agent detail (see §8 Unfinished Work below).
 | Starlit Events (§40) | 2 events registered | ✅ Done |
 | Three-Layer Selling (§42) | Phase 3 implementation | ✅ Core done |
 | Apocalypse Pricing (§39) | Agent cargo priced via item value registry | ✅ Indirect |
+| **PhobosNotifications** | **Toast notifications for all 8 state changes** | **⛔ Broken** (shorthand sig) |
+| **PN Channels** | **Dedicated `posnet_agents` channel for muting** | **❌ Not registered** |
 
 ---
 
@@ -279,14 +407,23 @@ RISK_THRESHOLD_MODERATE = (defined in constants)
 
 ---
 
-## 11. Suggested Next Steps (Priority Order)
+## 12. Suggested Next Steps (Priority Order)
 
-1. **Build the Deploy UI** — Without this, the system is untestable by
+1. **Fix notifyOrSay calls across POSnet** — 18 broken shorthand calls in
+   6 files. All must be converted to the opts-table signature. Without this,
+   PN toasts don't work at all for agents, contracts, or buy/sell. This is
+   the highest-priority fix because it affects every user-facing notification.
+2. **Register PN channels** — `posnet_agents`, `posnet_contracts`,
+   `posnet_market`, `posnet_trade`, `posnet_intel`. Lets players mute
+   categories independently. ~20 lines of code, HIGH benefit.
+3. **Build the Deploy UI** — Without this, the system is untestable by
    players. Add "Send Agent" button to Contract screen ContextPanel.
-2. **Wire agent cargo consumption** — Deploy should consume items from
+4. **Wire agent cargo consumption** — Deploy should consume items from
    inventory (use `PhobosLib.consumeItems`).
-3. **Wire contract settlement** — Agent completion should call
+5. **Wire contract settlement** — Agent completion should call
    `POS_ContractService.fulfil()` or a similar settlement path.
-4. **Expand ContextPanel** — Show full agent detail on selection.
-5. **Zone risk scaling** — Multiply archetype risk by zone volatility.
-6. **Partial cargo on recall** — Return items proportional to progress.
+6. **Expand ContextPanel** — Show full agent detail on selection.
+7. **Zone risk scaling** — Multiply archetype risk by zone volatility.
+8. **Partial cargo on recall** — Return items proportional to progress.
+9. **Archetype icons for PN toasts** — 5 custom icons for instant visual
+   differentiation of agent notifications.
