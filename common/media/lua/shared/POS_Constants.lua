@@ -62,6 +62,7 @@ POS_Constants.SCREEN_DELIVERIES  = "pos.bbs.deliveries"
 POS_Constants.SCREEN_NEGOTIATE   = "pos.negotiate"
 POS_Constants.SCREEN_BBS_RUMOURS = "pos.bbs.rumours"
 POS_Constants.SCREEN_STOCKMARKET = "pos.stockmarket"
+POS_Constants.SCREEN_DATA_RESET  = "pos.datareset"
 
 ---------------------------------------------------------------
 -- Mission type identifiers
