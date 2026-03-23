@@ -72,15 +72,11 @@ end
 -- Tick handler — samples player position every tick
 ---------------------------------------------------------------
 
---- Throttle counter — sample every 10 ticks (~6/sec) to reduce load.
-local tickCounter = 0
-local SAMPLE_INTERVAL = 10
+--- Sample interval in ticks (~3 samples/sec at 30 FPS).
+local SAMPLE_INTERVAL_TICKS = 10
 
-local function onTick()
-    tickCounter = tickCounter + 1
-    if tickCounter < SAMPLE_INTERVAL then return end
-    tickCounter = 0
-
+--- Position sampling function — called by Starlit TaskManager.
+local function doPositionSample()
     -- Skip if no active sessions
     local hasAny = false
     for _ in pairs(sessions) do hasAny = true; break end
@@ -104,4 +100,6 @@ local function onTick()
     end
 end
 
-Events.OnTick.Add(onTick)
+-- Register with Starlit TaskManager instead of manual OnTick counter
+local TaskManager = require("Starlit/TaskManager")
+TaskManager.repeatEveryTicks(doPositionSample, SAMPLE_INTERVAL_TICKS)

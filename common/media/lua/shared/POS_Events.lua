@@ -114,6 +114,18 @@ POS_Events.OnContractFulfilled = LuaEvent.new("POS.OnContractFulfilled")
 POS_Events.OnContractBetrayted = LuaEvent.new("POS.OnContractBetrayted")
 
 ---------------------------------------------------------------
+-- UI & Screen Events
+---------------------------------------------------------------
+
+--- Fired when any system needs the terminal screen to refresh.
+--- Payload: nil (no data; subscribers call refreshCurrentScreen)
+POS_Events.OnScreenRefreshRequested = LuaEvent.new("POS.OnScreenRefreshRequested")
+
+--- Fired when a quantity changes on a buy/sell screen (+/- buttons).
+--- Payload: { fullType = string, newQuantity = number }
+POS_Events.OnQuantityChanged = LuaEvent.new("POS.OnQuantityChanged")
+
+---------------------------------------------------------------
 -- UI & Background
 ---------------------------------------------------------------
 

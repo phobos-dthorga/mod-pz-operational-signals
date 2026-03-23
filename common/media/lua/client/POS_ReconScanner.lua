@@ -32,13 +32,10 @@ POS_ReconScanner = POS_ReconScanner or {}
 local _TAG = "[POS:ReconScan]"
 
 --- Scan interval in ticks (~3 seconds at 30 FPS).
-local SCAN_INTERVAL = 90
+local SCAN_INTERVAL_TICKS = 90
 
 --- Distance threshold for considering a player "at" the target building (tiles).
 local ROOM_ENTRY_THRESHOLD = 100
-
---- Tick counter.
-local tickCounter = 0
 
 --- Cached active recon operation (avoids scanning the full operation log
 --- ~120 times per minute when no recon is active).
@@ -137,11 +134,9 @@ end
 -- Tick handler
 ---------------------------------------------------------------
 
-local function onTick()
-    tickCounter = tickCounter + 1
-    if tickCounter < SCAN_INTERVAL then return end
-    tickCounter = 0
-
+--- Recon scan function called by Starlit TaskManager every SCAN_INTERVAL_TICKS.
+--- Checks if the player is in a target room with a camera and auto-captures.
+local function doReconScan()
     local player = getSpecificPlayer(0)
     if not player then return end
 
@@ -166,8 +161,14 @@ local function onTick()
 
     PhobosLib.debug("POS", _TAG, "[ReconScanner] Photograph captured for " .. recon.id)
 
-    -- Mark screen dirty
-    if POS_ScreenManager then POS_ScreenManager.markDirty() end
+    -- Emit screen invalidation event
+    if POS_Events and POS_Events.OnScreenRefreshRequested then
+        POS_Events.OnScreenRefreshRequested:trigger()
+    elseif POS_ScreenManager then
+        POS_ScreenManager.markDirty()
+    end
 end
 
-Events.OnTick.Add(onTick)
+-- Register with Starlit TaskManager instead of manual OnTick counter
+local TaskManager = require("Starlit/TaskManager")
+TaskManager.repeatEveryTicks(doReconScan, SCAN_INTERVAL_TICKS)
