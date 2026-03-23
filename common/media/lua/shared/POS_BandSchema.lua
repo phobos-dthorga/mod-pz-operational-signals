@@ -15,10 +15,11 @@
 --
 
 ---------------------------------------------------------------
--- Schema for data-driven mission definitions.
--- Each mission definition specifies categories, difficulty
--- ranges, briefing pool references, objectives, and reward
--- ranges.  See design-guidelines.md §32.
+-- Schema for radio band definitions.
+-- Each band represents a distinct POSnet frequency range
+-- that gates which missions, contracts, and intel are visible.
+-- Addon mods can register custom bands via the registry.
+-- See design-guidelines.md §45.
 ---------------------------------------------------------------
 
 return {
@@ -27,19 +28,11 @@ return {
         schemaVersion  = { type = "number", required = true },
         id             = { type = "string",  required = true },
         name           = { type = "string",  required = true },
+        displayNameKey = { type = "string",  required = true },
         description    = { type = "string",  default = "" },
-        category       = { type = "string",  required = true },
-        difficultyMin  = { type = "number",  min = 1, max = 5, default = 1 },
-        difficultyMax  = { type = "number",  min = 1, max = 5, default = 3 },
-        briefingPools  = { type = "table" },
-        objectives     = { type = "array" },
-        rewardMin      = { type = "number",  min = 0, default = 50 },
-        rewardMax      = { type = "number",  min = 0, default = 200 },
-        reputationMin  = { type = "number",  default = 5 },
-        reputationMax  = { type = "number",  default = 20 },
-        expiryDaysMin  = { type = "number",  min = 1, default = 3 },
-        expiryDaysMax  = { type = "number",  min = 1, default = 7 },
-        requiredBands  = { type = "array" },
+        azasBandType   = { type = "string",  required = true, enum = { "amateur", "tactical" } },
+        badgeLabel     = { type = "string",  default = "" },
+        sortOrder      = { type = "number",  default = 10 },
         enabled        = { type = "boolean", default = true },
     }
 }

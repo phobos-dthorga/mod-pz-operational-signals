@@ -631,7 +631,7 @@ screen.id        = "pos.bbs.assignments"
 screen.menuPath  = {"pos.bbs"}
 screen.titleKey  = "UI_POS_Assignments_Title"
 screen.sortOrder = 20
-screen.requires  = { connected = true, bands = {POS_Constants.AZAS_OPS_KEY} }
+screen.requires  = { connected = true }  -- No band gate per §21.5; missions filtered by active band instead
 
 --- Current filter state (persists across refreshes within session).
 local _activeCategory = "recon"
@@ -658,32 +658,52 @@ local function getFilteredMissions(category, status)
     local ok, allOps = PhobosLib.safecall(POS_OperationLog.getAll)
     if not ok or not allOps then return result end
 
+    -- Get active band for mission visibility filtering
+    local activeBand = nil
+    if POS_ConnectionManager and POS_ConnectionManager.getActiveBand then
+        local bandOk, band = PhobosLib.safecall(POS_ConnectionManager.getActiveBand)
+        if bandOk then activeBand = band end
+    end
+
     for _, op in ipairs(allOps) do
         -- Category filter
         local catMatch = (op.category == category)
         if not catMatch and op.definitionId then
-            -- Also check definition category
             local defCat = op.definitionId and string.match(op.definitionId, "^(%a+)_") or nil
             catMatch = (defCat == category)
         end
 
         if catMatch then
-            -- Status filter
-            local statusMatch = (status == "all")
-            if not statusMatch then
-                if status == "active" then
-                    statusMatch = (op.status == POS_Constants.STATUS_ACTIVE)
-                elseif status == "available" then
-                    statusMatch = (op.status == POS_Constants.STATUS_AVAILABLE)
-                elseif status == "completed" then
-                    statusMatch = (op.status == POS_Constants.STATUS_COMPLETED
-                        or op.status == POS_Constants.STATUS_FAILED
-                        or op.status == POS_Constants.STATUS_EXPIRED)
+            -- Band filter: skip missions whose requiredBands don't include active band
+            local bandMatch = true
+            if activeBand and op.requiredBands then
+                bandMatch = false
+                for _, b in ipairs(op.requiredBands) do
+                    if b == activeBand then
+                        bandMatch = true
+                        break
+                    end
                 end
             end
 
-            if statusMatch then
-                result[#result + 1] = op
+            if bandMatch then
+                -- Status filter
+                local statusMatch = (status == "all")
+                if not statusMatch then
+                    if status == "active" then
+                        statusMatch = (op.status == POS_Constants.STATUS_ACTIVE)
+                    elseif status == "available" then
+                        statusMatch = (op.status == POS_Constants.STATUS_AVAILABLE)
+                    elseif status == "completed" then
+                        statusMatch = (op.status == POS_Constants.STATUS_COMPLETED
+                            or op.status == POS_Constants.STATUS_FAILED
+                            or op.status == POS_Constants.STATUS_EXPIRED)
+                    end
+                end
+
+                if statusMatch then
+                    result[#result + 1] = op
+                end
             end
         end
     end

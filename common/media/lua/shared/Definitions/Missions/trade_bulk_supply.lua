@@ -23,4 +23,5 @@ return {
     reputationMax = 12,
     expiryDaysMin = 5,
     expiryDaysMax = 10,
+    requiredBands = { "POSnet_Operations" },
 }

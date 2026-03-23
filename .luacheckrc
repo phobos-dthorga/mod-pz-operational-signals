@@ -78,6 +78,7 @@ globals = {
     "POS_CrossModMarkets",
     "POS_Events",
     "POS_EventService",
+    "POS_BandRegistry",
     "POS_SignalPanel",
     "POS_MissionBriefingResolver",
     "POS_VoicePackRegistry",

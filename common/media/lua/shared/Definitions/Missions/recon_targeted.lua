@@ -24,4 +24,5 @@ return {
     reputationMax = 20,
     expiryDaysMin = 3,
     expiryDaysMax = 7,
+    requiredBands = { "POSnet_Tactical" },
 }
