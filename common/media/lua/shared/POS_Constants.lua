@@ -126,7 +126,7 @@ POS_Constants.POWER_CHECK_INTERVAL   = 60
 -- Terminal UI layout
 ---------------------------------------------------------------
 
-POS_Constants.UI_NAV_PANEL_WIDTH            = 180
+-- SIGNAL_PANEL_WIDTH will be set when §9 SignalPanel is implemented
 POS_Constants.UI_CONTEXT_PANEL_WIDTH        = 200
 POS_Constants.UI_CONTEXT_COLLAPSE_THRESHOLD = 900
 POS_Constants.UI_SCREEN_PADDING             = 8

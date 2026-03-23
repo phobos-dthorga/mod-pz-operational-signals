@@ -8,7 +8,7 @@ POSnet uses a three-layer persistence model. Each layer has a distinct scope, au
 |-------|-------|----------|-----------|
 | 1. World ModData | Shared economy state | PZ world save (engine-managed) | Server-only writes |
 | 2. Player ModData | Per-character scalar state (rep, cash, prefs) | PZ player save (engine-managed) | Server validates, client reads |
-| 3. Event Logs | Historical append-only records | `<Zomboid>/Lua/POSNET/` on disk | Server-only writes, disposable |
+| 3. Event Logs | Historical append-only records | World ModData (`POSNET.EventLog`) | Server-only writes, disposable |
 
 ---
 
@@ -26,6 +26,10 @@ Primary authoritative store for the shared economy. All connected players see th
 | `POSNET.Meta` | Schema version, migration flags, feature toggles |
 | `POSNET.Buildings` | Discovered building cache (id, coords, roomDef, zone) |
 | `POSNET.Mailboxes` | Discovered mailbox cache (id, coords, paired building) |
+| `POSNET.MarketData` | Market observations and ambient intel records |
+| `POSNET.EventLog` | Event logs (economy/stocks/recon per-day) + snapshots |
+| `POSNET.BuildingCache` | Building discovery cache (array of {x, y, rooms}) |
+| `POSNET.MailboxCache` | Mailbox discovery cache (array of {x, y}) |
 
 ### Storage Location
 
@@ -78,47 +82,44 @@ Old `.dat` files in `Zomboid/Lua/POSNET/` are safely ignored.
 
 ---
 
-## Layer 3: Event Logs
+## Layer 3: Event Logs (World ModData)
 
-Historical append-only records stored outside modData. Intended for debugging, admin auditing, and optional analytics. The economy does not depend on these files -- if deleted, the economy continues from Layer 1 state.
+Historical append-only records stored in world ModData under `POSNET.EventLog`.
+Intended for debugging, admin auditing, and optional analytics. The economy
+does not depend on these logs — if cleared, the economy continues from Layer 1
+state.
 
-### Location
+> **Migration note**: Event logs were previously stored as flat files in
+> `Zomboid/Lua/POSNET/`. This caused silent Kahlua JVM crashes because PZ
+> scans and compiles all files in that directory. All file I/O has been
+> eliminated — POSnet has **zero** `getFileWriter`/`getFileReader` calls.
+> Building and mailbox caches also moved to world ModData (`POSNET.BuildingCache`,
+> `POSNET.MailboxCache`). Old files in `Zomboid/Lua/POSNET/` can be safely deleted.
 
+### ModData Structure
+
+```lua
+POSNET.EventLog = {
+    logs = {
+        ["economy_day821"] = "day|system|...\nday|system|...\n",
+        ["stocks_day821"]  = "...",
+        ["recon_day821"]   = "...",
+    },
+    snapshots = {
+        ["economy"]  = "header\n---\ndata\n",
+        ["exchange"] = "...",
+    },
+}
 ```
-<Zomboid user folder>/Lua/POSNET/
-```
-
-### File Structure
-
-```
-POSNET/
-  events/
-    economy/<day>.log
-    stocks/<day>.log
-    recon/<day>.log
-  snapshots/
-    economy_latest.txt
-    exchange_latest.txt
-```
-
-### Discovery Cache Files (flat, Zomboid/Lua/ directory)
-
-| File | Format | Contents | Writer |
-|------|--------|----------|--------|
-| `POSNET_buildings.dat` | Pipe-delimited (`x|y|room1,room2,...`) | Building discovery cache | Server/SP |
-| `POSNET_mailboxes.dat` | Pipe-delimited (`x|y`) | Mailbox discovery cache | Server/SP |
-
-These files are populated during initial scan, passive scanning, and migrated from ModData on first load after the externalization update. They are disposable -- if deleted, caches rebuild through natural exploration.
 
 ### Event Format
 
-Pipe-delimited text, one line per event:
+Pipe-delimited text, one line per event (newline-delimited within each
+ModData string value):
 
 ```
 day|system|eventType|entityId|regionId|actorId|qty|unitPriceBps|cause|version
 ```
-
-Fields:
 
 | Field | Type | Description |
 |-------|------|-------------|
@@ -133,22 +134,13 @@ Fields:
 | `cause` | string | Causal reason code |
 | `version` | integer | Schema version for forward compatibility |
 
-### Snapshot Format
-
-Header line followed by `---` separator followed by data rows:
-
-```
-snapshot_type|day|generated_at|version
----
-<data rows in format specific to snapshot type>
-```
-
 ### Retention
 
 - Sandbox-configurable via `EventLogRetentionDays`
 - Default: 30 days, range: 7-90
-- Older log files are purged during the daily economy tick
+- Older log keys are deleted (not truncated) during the daily economy tick
 - Server-only writes, append-only
+- Uses `PhobosLib.getWorldModDataTable()` for access
 
 ---
 
@@ -291,4 +283,4 @@ Wear further reduces confidence at -100 BPS per wear point. When wear reaches 10
 | Binary formats | Not human-readable, not debuggable, unnecessary for the data sizes involved. |
 | Per-player market state copies | Violates single-source-of-truth. Market state lives in world ModData only. |
 | Unbounded arrays | Guaranteed save bloat over long-running servers. Every array must have a cap. |
-| `getFileWriter()` for economy database | Economy state belongs in world ModData (engine-managed, save-consistent). File I/O is reserved for disposable/supplementary data (event logs, player file store, discovery caches). |
+| `getFileWriter()` / `getFileReader()` anywhere | PZ compiles all files in `Zomboid/Lua/`; data files cause silent JVM crashes. All persistence must use ModData exclusively. Zero file I/O in POSnet. |

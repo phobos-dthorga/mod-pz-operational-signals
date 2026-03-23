@@ -673,85 +673,73 @@ Third-party POSnet terminal screens **must**:
 
 ### 9.1 Three-Column Architecture
 
-The terminal window uses a 3-column layout:
+The terminal window uses a 3-column layout following a **perception →
+interaction → action** triad:
 
 ```
 POSnetWindow
- ├── NavPanel      (left,  fixed 180px)
- ├── ContentPanel  (center, flex width)
- └── ContextPanel  (right, fixed 200px, collapsible)
+ ├── SignalPanel   (left,  fixed ~180px)   "The world speaks"
+ ├── ContentPanel  (center, flex width)    "I observe and choose"
+ └── ContextPanel  (right, fixed ~200px)   "I act upon it"
 ```
 
-- **NavPanel** — persistent navigation sidebar showing signal strength indicator,
-  connected band, and registry-driven menu items. Highlights the current screen.
-- **ContentPanel** — the main screen area where all screen widgets render
-  (existing behavior, unchanged).
-- **ContextPanel** — context-sensitive detail inspector populated by the current
-  screen's `getContextData()` callback.
+- **SignalPanel** (left) — passive intelligence feed. Read-only, constantly
+  updating, requires no interaction. Shows what the world is doing.
+- **ContentPanel** (center) — the main screen area where all screen widgets
+  render. Where the player reads, selects, and navigates.
+- **ContextPanel** (right) — context-sensitive action and insight layer.
+  Adapts based on what is selected in the center panel.
 
-### 9.2 Panel Clipping (Mandatory)
+> **Implementation status**: SignalPanel and ContextPanel are planned; the
+> current build uses ContentPanel only. See v1 targets below.
 
-All three panels use **stencil clipping** to prevent content from bleeding
-into adjacent panels. This is enforced at panel creation time via
-`setStencilRect()` / `clearStencilRect()` in the panel's `prerender` /
-`postrender` hooks.
+### 9.2 SignalPanel — Passive World Awareness (Left)
 
-**Content bleed-over between panels is never acceptable.** If content is too
-wide for its panel, it must be clipped (truncated) — not allowed to overflow
-into neighboring panels. Clipping is always preferred over overflow.
+The left panel should **never feel "opened"** — it should feel alive. Its
+role is ambient perception: what the world whispers to the player right now.
 
-This applies to:
-- Labels that exceed panel width
-- Buttons wider than their parent panel
-- Wrapped text that miscalculates available width
-- Any widget added to a panel
+**Content (v1 target):**
 
-### 9.3 Panel Constants
+1. **Signal feed** — last 5 intercepted events (ambient intel, passive recon
+   results, market chatter snippets, NPC trade rumours)
+2. **Network status** — connected devices (satellite, antennas, terminal),
+   signal strength, band availability, power consumption
+3. **World-state alerts** — price spikes, supply shortages, unusual signal
+   clusters, military band activity
+4. **Background processes** — "Scanning...", "Decoding...", "Processing VHS
+   data..." with progress indicators
 
-All panel dimensions are named constants in `POS_TerminalUI.lua`:
+**Design principles:**
+- No interaction required — purely read-only
+- Always updating — refreshes on relevant POS.Events (see §40)
+- Low cognitive load — concise, scannable, never overwhelming
+- Alive, not static — this panel is the mod thinking in the background
 
-| Constant | Value | Description |
-|----------|-------|-------------|
-| `NAV_PANEL_WIDTH` | 180 | Fixed width of the navigation sidebar |
-| `CONTEXT_PANEL_WIDTH` | 200 | Fixed width of the context panel |
-| `CONTEXT_COLLAPSE_THRESHOLD` | 900 | Window width below which context hides |
-| `PANEL_GAP` | 4 | Gap between adjacent panels |
+### 9.3 ContextPanel — Player Agency & Action (Right)
 
-**Never hardcode panel widths.** Always reference the constants.
+The right panel is about **control, intent, and consequence**. It adapts to
+whatever is selected in the center panel.
 
-### 9.4 Responsive Collapse
+**Content (v1 target):**
 
-- **Full mode** (window width >= 900px): All 3 panels visible.
-- **Compact mode** (window width < 900px): NavPanel + ContentPanel only.
-- The `contentPanel:getWidth()` changes dynamically — screens already use
-  relative sizing via `ctx.pw` from `initLayout()`, so no screen changes needed.
-- NavPanel never collapses (always visible when enabled).
+1. **Context actions** — buttons that change based on selection:
+   "Initiate Trade", "Analyze Data", "Broadcast Offer", "Link Device"
+2. **Deep info card** — commodity breakdown (supply/demand, volatility),
+   device stats (range, power draw), signal metadata (origin, strength)
+3. **Active task list** — execution queue with progress and time remaining:
+   "Scanning (2m remaining)", "Decoding tape..."
+4. **Modifiers** (future) — scan power boost, bandwidth allocation, trade
+   aggressiveness
 
-### 9.5 Sandbox Toggle
+**Design principles:**
+- Only appears when relevant — empty/hidden when nothing is selected
+- Actionable — every element has a purpose
+- High information density — concise key-value pairs, not verbose text
 
-Both side panels can be disabled by the player:
-- `EnableNavPanel` (default: true)
-- `EnableContextPanel` (default: true)
-
-When both are disabled, the terminal reverts to a single full-width content
-panel (original behavior).
-
-### 9.6 NavPanel Contents
-
-The NavPanel is rendered by `POS_NavPanel.render()` and shows:
-
-1. **Signal strength** — colour-coded bar + percentage (red/yellow/green/bright)
-2. **Connected band** — amateur/tactical/etc.
-3. **Separator**
-4. **Menu items** — from `POS_MenuBuilder.buildMenu({"pos.main"}, ...)`, with
-   the current screen highlighted via `>` prefix and bright colour.
-
-NavPanel re-renders on every screen transition and refresh cycle.
-
-### 9.7 ContextPanel and `getContextData()` Provider API
+### 9.4 `getContextData()` Provider API
 
 Each screen can optionally define `getContextData(params)` that returns
-structured data for the context panel:
+structured data for the ContextPanel:
 
 ```lua
 screen.getContextData = function(params)
@@ -766,29 +754,58 @@ screen.getContextData = function(params)
 end
 ```
 
-**Item types:**
-
 | Type | Fields | Description |
 |------|--------|-------------|
 | `header` | `text` (translation key) | Bright section title |
-| `kv` | `key` (translation key), `value`, `colour` (optional) | Key-value pair |
+| `kv` | `key`, `value`, `colour?` | Key-value pair |
 | `separator` | — | Dim horizontal line |
-| `bar` | `key` (translation key), `value` (0-100), `colour` (optional) | Text progress bar |
+| `bar` | `key`, `value` (0-100), `colour?` | Text progress bar |
 
-**Colour** values reference `POS_TerminalWidgets.COLOURS` keys by name
-(e.g. `"success"`, `"warn"`, `"error"`, `"text"`).
+Screens without `getContextData` leave the ContextPanel empty.
 
-Screens without `getContextData` leave the context panel empty.
+### 9.5 Panel Constants
+
+All panel dimensions are named constants in `POS_TerminalUI.lua`:
+
+| Constant | Value | Description |
+|----------|-------|-------------|
+| `SIGNAL_PANEL_WIDTH` | 180 | Fixed width of the signal feed panel |
+| `CONTEXT_PANEL_WIDTH` | 200 | Fixed width of the context panel |
+| `CONTEXT_COLLAPSE_THRESHOLD` | 900 | Window width below which ContextPanel hides |
+| `PANEL_GAP` | 4 | Gap between adjacent panels |
+
+**Never hardcode panel widths.** Always reference the constants.
+
+### 9.6 Responsive Collapse
+
+- **Full mode** (window width >= 900px): All 3 panels visible.
+- **Compact mode** (window width < 900px): SignalPanel + ContentPanel only
+  (ContextPanel collapses).
+- ContentPanel width adapts dynamically — screens use relative sizing via
+  `ctx.pw` from `initLayout()`.
+
+### 9.7 Event-Driven Panel Binding
+
+When the Starlit LuaEvent integration (§40) is implemented, panels will
+subscribe to POS.Events:
+
+- **SignalPanel** subscribes to: `OnMarketSnapshotUpdated`,
+  `OnSignalStateChanged`, `OnConnectionStateChanged`,
+  `OnScreenInvalidationRequested`
+- **ContextPanel** subscribes to: selection change events from the center
+  panel, `OnTradeCompleted`, `OnMissionGenerated`
+
+This enables loose coupling between panels — the center panel never directly
+calls the side panels; it emits events and they react.
 
 ### 9.8 Content That Does NOT Belong in Side Panels
-
-Per the design philosophy (terminal, not dashboard):
 
 - **No persistent player HUD** (money, reputation, stats) — POSnet is a
   terminal application, not a character screen.
 - **No mini-maps** — the `[MAP]` button opens the PZ world map directly.
-- **No mission spam lists** — mission lists belong in the content panel
-  with proper pagination.
+- **No mirroring** — side panels must never duplicate center panel content.
+- **No mandatory interaction** — side panels augment, never gate.
+- **No button overload** — side panels are concise, not cluttered.
 
 ### 9.9 Vertical Design Awareness
 
@@ -800,6 +817,16 @@ of vertical space (~4% at default 1170px). Usable content height is ~1122px
   `PhobosLib_Pagination`'s `maxHeight` option.
 - Headers + footers + breadcrumbs should not exceed ~6 lines combined.
 - Screens should test at the minimum window height (780px, ~36 usable lines).
+
+### 9.10 Anti-Patterns
+
+| Anti-Pattern | Why It's Wrong |
+|---|---|
+| Mirroring same info across panels | Wastes space, confuses the triad |
+| Making side panels mandatory to use | Augment, never gate |
+| Overloading side panels with buttons | High density ≠ cluttered |
+| Static side panels with no "life" | Panels must feel alive and responsive |
+| Direct cross-calls between panels | Use events (§40) for loose coupling |
 
 ---
 
@@ -2703,6 +2730,10 @@ end
 
 ## 32. Mission Content System
 
+> **Status**: Future — not yet implemented. Current missions use hardcoded
+> templates in `POS_MissionTemplates.lua`. The compositional briefing
+> pipeline described below is a design target, not current reality.
+
 Guidelines summary for compositional mission briefings and data-driven
 mission definitions. The full design lives at `docs/mission-system-design.md`.
 
@@ -2778,18 +2809,32 @@ load while preserving all functionality.
 ```
 Main Menu (pos.main)
  ├── BBS Hub (pos.bbs)
- │    ├── Investments         (pos.bbs.investments)
- │    └── Assignments         (pos.bbs.assignments)      — tabbed: Operations + Deliveries
+ │    ├── Bulletin Board        (pos.bbs.board)
+ │    │    └── Post Detail      (pos.bbs.post)            [programmatic]
+ │    ├── Investments           (pos.bbs.investments)
+ │    └── Assignments           (pos.bbs.assignments)      — tabbed: Operations + Deliveries
+ │         └── Negotiate        (pos.bbs.negotiate)        [programmatic]
  ├── Markets Hub (pos.markets)
- │    ├── Market Overview     (pos.markets.overview)      — intel summary + commodities + zone data
- │    ├── Known Contacts      (pos.markets.contacts)      — traders + wholesalers + trade entry
- │    ├── Market Signals      (pos.markets.signals)       — event log + rumours
- │    ├── Watchlist           (pos.markets.watchlist)      — includes price ledger data
- │    ├── Market Reports      (pos.markets.reports)
- │    └── Trade Catalog       (pos.markets.trade)         — inline confirm flow
- ├── Settings                 (pos.settings)
- └── [Placeholders: IRC, Journal, Profile, Stockmarket]
+ │    ├── Market Overview       (pos.markets.overview)      — intel + commodities + zone data
+ │    │    ├── Commodity Detail  (pos.markets.commodity)    [drill-down]
+ │    │    └── Commodity Items   (pos.markets.items)        [drill-down]
+ │    ├── Known Contacts        (pos.markets.contacts)      — traders + wholesalers + trade entry
+ │    ├── Market Signals        (pos.markets.signals)       — event log + rumours
+ │    ├── Watchlist             (pos.markets.watchlist)      — includes price ledger data
+ │    ├── Market Reports        (pos.markets.reports)
+ │    └── Trade Catalog         (pos.markets.trade)
+ │         └── Trade Receipt    (pos.markets.receipt)       [programmatic]
+ ├── Stockmarket                (pos.stockmarket)
+ ├── Data Management            (pos.data)                  [debug only]
+ │    ├── Analysis              (pos.data.analysis)
+ │    └── Data Reset            (pos.data.reset)            [debug only]
+ └── Settings                   (pos.settings)              [placeholder]
 ```
+
+Screens marked `[programmatic]` are navigated to by code (button callbacks,
+trade completion) rather than appearing in hub menus. Screens marked
+`[drill-down]` are sub-views navigated from parent screen selections.
+Screens marked `[debug only]` require debug logging to be enabled.
 
 ### 33.2 Hub-Screen Navigation Pattern
 
@@ -2805,7 +2850,7 @@ group related screens and keep the Main Menu uncluttered.
 
 Screens that consolidate multiple former screens use **tabs** to switch
 between logical views without adding navigation depth. The canonical
-implementation is `createTabbedView()` from `POS_TerminalWidgets`.
+implementation is `PhobosLib.createTabbedView()`.
 
 - **Assignments** uses tabs for Operations and Deliveries.
 - Tabs are rendered as inline toggle buttons at the top of the content area.
@@ -2821,7 +2866,7 @@ implementation is `createTabbedView()` from `POS_TerminalWidgets`.
 | Event Log + Market Rumours (BBS Rumours) | Market Signals (`pos.markets.signals`) | Merged event + rumour feed |
 | Operations + Deliveries | Assignments (`pos.bbs.assignments`) | Tabbed view |
 | Price Ledger | Watchlist (`pos.markets.watchlist`) | Ledger data absorbed into watchlist |
-| Trade Confirm + Trade Receipt | Trade Catalog (`pos.markets.trade`) | Inline confirm/receipt flow |
+| Trade Confirm + Trade Receipt | Trade Catalog (`pos.markets.trade`) + Trade Receipt (`pos.markets.receipt`) | Receipt is a separate programmatic screen navigated after trade completion |
 
 ### 33.5 Anti-Patterns
 
@@ -3137,7 +3182,25 @@ if POS_ItemValueRegistry then
 end
 ```
 
-### 39.6 Anti-Patterns
+### 39.6 Registry API Reference
+
+**Module**: `POS_ItemValueRegistry.lua`
+
+| Function | Returns | Description |
+|----------|---------|-------------|
+| `init()` | — | Load schema, create registry, load all definition files, build O(1) index |
+| `getOverride(fullType)` | `{basePrice, isLuxury}` or `nil` | Hot-path lookup by PZ fullType |
+| `isLuxury(fullType)` | `boolean` | Convenience check for luxury flag |
+| `getRegistry()` | registry instance | Expose registry for addon mods |
+| `registerOverrides(entries)` | — | Bulk-register from array of `{id, basePrice, ...}` |
+
+**Schema**: `POS_ItemValueSchema.lua` — fields: `schemaVersion`, `id` (fullType),
+`basePrice` (min 0.01), `isLuxury` (default false), `reason` (default "").
+
+**Definition files**: `Definitions/ItemValues/*.lua` — each returns
+`{ schemaVersion, entries = { ... } }`. 11 built-in files + template.
+
+### 39.7 Anti-Patterns
 
 | Anti-Pattern | Why It's Wrong |
 |---|---|
@@ -3239,3 +3302,57 @@ Benefits:
 | Exposing Starlit types in POSnet's public API | Wrap behind POS_Events; don't leak dependency |
 | Using TaskManager for persistence | It's for runtime orchestration, not save state |
 | Adopting Starlit "devotionally" | Surgical adoption of proven modules only |
+
+---
+
+## 41. Ambient Intelligence System
+
+### 41.1 Overview
+
+The ambient intel system (`POS_AmbientIntel.lua`) provides passive "word of
+mouth" market observations without requiring active recon or data recording.
+When the terminal is connected, the player periodically receives gossip-style
+market snippets from the network — simulating background chatter that any
+connected operator would naturally overhear.
+
+### 41.2 Architecture
+
+- **Module**: `POS_AmbientIntel.lua` (shared)
+- **Event**: `Events.EveryOneMinute` — checks interval counter
+- **Interval**: Sandbox option `POS.AmbientIntelInterval` (10-120 min, default 30)
+- **Max records**: 50 ambient records cap (rolling)
+- **Authority**: Server/SP only (guarded by `isAuthority()`)
+
+### 41.3 Observation Generation
+
+Each ambient tick:
+1. Select 1-3 random commodity categories (weighted by market registry)
+2. For each category, select 2-5 random items via `POS_ItemPool.selectRandomItems()`
+3. Generate observation with: category, source name, stock level, price (±25% noise)
+4. Populate `discoveredItems` array (feeds item discovery system, §35)
+5. Store via `POS_MarketDatabase.addRecord()`
+6. Notify player via PhobosNotifications (if installed)
+
+### 41.4 Flavour Sources
+
+Ambient observations are attributed to 8 randomised source names (e.g.
+"word of mouth", "network chatter", "overheard broadcast") to create
+narrative variety. Sources are cosmetic — they don't affect data quality.
+
+### 41.5 Integration Points
+
+- **Item Discovery (§35)**: Each ambient record carries `discoveredItems`,
+  progressively revealing the trade catalog
+- **Market Database**: Records feed into category summaries, price history,
+  and the Market Overview screen
+- **Living Market (§24)**: Ambient intel supplements (not replaces) agent
+  observations — provides a baseline data flow even without active recon
+
+### 41.6 Anti-Patterns
+
+| Anti-Pattern | Why It's Wrong |
+|---|---|
+| Generating ambient data on the client | Authority must be server/SP only |
+| Making ambient data high-confidence | It's gossip — should be noisy (±25%) |
+| Replacing active recon with ambient | Ambient supplements; active recon produces better data |
+| Generating ambient when not connected | Terminal connection is the prerequisite |
