@@ -3146,3 +3146,96 @@ end
 | Luxury items at fixed price everywhere | Zone context matters — urban vs rural |
 | Overriding at selection time | Override at indexing time for consistency |
 | Per-item files for overrides | 200+ files is unwieldy; use entries arrays |
+
+---
+
+## 40. Starlit Library Integration (Roadmap)
+
+> **Status**: Planned — not yet implemented. Dependency not yet added.
+
+POSnet will adopt three modules from the **Starlit** utility library as a
+servant-library for orchestration and events. Starlit is a dependency-style
+mod (required via `mod.info`), not copied into the mod.
+
+### 40.1 Adoption Scope
+
+| Module | Purpose | POSnet Use Case | Priority |
+|--------|---------|-----------------|----------|
+| **LuaEvent** | Object-based custom event bus | Internal decoupling — subsystems publish events instead of direct cross-calls | **High** |
+| **TaskManager** | Tick-spread scheduling and task chains | Passive recon, staged analysis, chunked processing, cooldown orchestration | **High** |
+| **Time** | Game/real-time conversion and duration formatting | Report freshness, mission expiry, investment maturity, cooldown display | **Medium** |
+
+### 40.2 Explicitly Out of Scope
+
+| Module | Status | Reason |
+|--------|--------|--------|
+| InventoryUI | **Deprecated** | Removed in recent Starlit updates |
+| PZEvents | **Deprecated** | Removed in recent Starlit updates |
+| Reflection | **Deprecated** | Removed; fragile across game updates |
+| TimedActionUtils | Available | PhobosLib.WorldAction already covers this |
+
+Starlit must **never** be used to replace:
+- POSnet's screen stack / navigation / registry architecture
+- Core persistence and save format (ModData-based)
+- Pricing engine or market simulation internals
+
+### 40.3 POS.Events Namespace (Planned)
+
+When LuaEvent is adopted, POSnet will expose a thin event surface:
+
+```
+POS.Events.OnConnectionStateChanged  -- radio link up/down
+POS.Events.OnBandChanged             -- tactical ↔ operations
+POS.Events.OnChunkRecorded           -- data recorder wrote chunk
+POS.Events.OnRecorderStatusChanged   -- media inserted/ejected/full
+POS.Events.OnIntelCompiled           -- camera compilation complete
+POS.Events.OnMarketSnapshotUpdated   -- new observation ingested
+POS.Events.OnStockTickClosed         -- daily market tick complete
+POS.Events.OnMissionGenerated        -- new assignment available
+POS.Events.OnTradeCompleted          -- buy/sell transaction done
+POS.Events.OnScreenInvalidationRequested  -- UI refresh trigger
+```
+
+Benefits:
+- Tutorial system subscribes without polluting services
+- UI screens refresh only when relevant data changes
+- Third-party mods gain clean integration points
+- Logging/debugging attached orthogonally
+
+### 40.4 TaskManager Use Cases (Planned)
+
+| Task | Current Approach | TaskManager Replacement |
+|------|-----------------|------------------------|
+| Passive recon pulse | EveryOneMinute + counter | Scheduled task with configurable interval |
+| Terminal analysis | Instant function call | Multi-tick staged pipeline: scan → process → finalise → notify |
+| Economy tick | EveryOneMinute + day check | Daily scheduled task with tick-spreading |
+| Ambient intel | EveryOneMinute + interval | Scheduled background task |
+| Chunked file writes | PhobosLib_ChunkedWriter | TaskManager coroutine chain |
+
+### 40.5 Implementation Phases
+
+**Phase 1** (highest value):
+1. Add Starlit as `require:` dependency in `mod.info`
+2. Create `POS_Events.lua` wrapping Starlit LuaEvent
+3. Wire first 3-4 events (OnMarketSnapshotUpdated, OnConnectionStateChanged, OnScreenInvalidationRequested)
+4. Migrate UI refresh from direct calls to event subscriptions
+
+**Phase 2** (orchestration):
+5. Introduce TaskManager for passive recon pipeline
+6. Convert terminal analysis to staged multi-tick task
+7. Move economy tick to TaskManager scheduling
+
+**Phase 3** (polish):
+8. Adopt Time module for player-facing duration/freshness text
+9. Replace ad-hoc time formatting across screens
+
+### 40.6 Anti-Patterns
+
+| Anti-Pattern | Why It's Wrong |
+|---|---|
+| Making Starlit the backbone of POSnet | It's a servant-library, not the throne |
+| Replacing screen registry with Starlit | POSnet's screen stack is already mature |
+| Using deprecated modules (InventoryUI, PZEvents, Reflection) | Removed or fragile across PZ updates |
+| Exposing Starlit types in POSnet's public API | Wrap behind POS_Events; don't leak dependency |
+| Using TaskManager for persistence | It's for runtime orchestration, not save state |
+| Adopting Starlit "devotionally" | Surgical adoption of proven modules only |
