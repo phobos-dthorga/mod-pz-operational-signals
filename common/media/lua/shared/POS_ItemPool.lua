@@ -247,7 +247,9 @@ local SUB_CATEGORY_DEFS = {
 -- Base price multipliers per category
 ---------------------------------------------------------------
 
-local CATEGORY_PRICE_MULTIPLIERS = POS_Constants.CATEGORY_PRICE_MULTIPLIERS
+-- NOTE: Do NOT capture POS_Constants.CATEGORY_PRICE_MULTIPLIERS at load time.
+-- POS_Constants_Market.lua may not have loaded yet (load order is alphabetical).
+-- Resolve at call time inside calculateBasePrice() instead.
 
 ---------------------------------------------------------------
 -- Internal helpers
@@ -348,7 +350,8 @@ end
 --- @return number
 local function calculateBasePrice(itemWeight, categoryId, hasCondition)
     local w = itemWeight or 1.0
-    local catMult = CATEGORY_PRICE_MULTIPLIERS[categoryId] or 1.0
+    local mults = POS_Constants.CATEGORY_PRICE_MULTIPLIERS
+    local catMult = (mults and mults[categoryId]) or 1.0
     local condMult = hasCondition and POS_Constants.ITEM_POOL_CONDITION_MULTIPLIER or 1.0
     return math.max(
         POS_Constants.ITEM_POOL_MIN_BASE_PRICE,
@@ -609,4 +612,10 @@ function POS_ItemPool.selectRandomItems(categoryId, count)
     return PhobosLib.selectRandomFromPool(items, count)
 end
 
-ensureInit = PhobosLib.lazyInit(POS_ItemPool.init)
+-- Use direct guard instead of lazyInit — allows retry if init() fails
+-- partway (e.g. due to load order issues with POS_Constants split files).
+ensureInit = function()
+    if not initialised then
+        POS_ItemPool.init()
+    end
+end
