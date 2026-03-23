@@ -40,6 +40,34 @@ POS_Constants.AGENT_ARCHETYPE_SPECIALIST_CRAFTER   = "specialist_crafter"
 --- See POS_MarketAgent.lua and POS_ArchetypeSchema.lua.
 
 ---------------------------------------------------------------
+-- Living Market: Zone Agent Composition
+-- Defines which archetypes spawn per zone based on population.
+-- See living-market-design.md § Regional Composition Examples.
+---------------------------------------------------------------
+
+POS_Constants.ZONE_AGENT_COMPOSITION = {
+    sparse = {
+        { archetype = "scavenger_trader", count = 2 },
+        { archetype = "quartermaster",    count = 1 },
+        { archetype = "specialist_crafter", count = 1 },
+    },
+    medium = {
+        { archetype = "scavenger_trader", count = 1 },
+        { archetype = "quartermaster",    count = 1 },
+        { archetype = "wholesaler",       count = 1 },
+        { archetype = "smuggler",         count = 1 },
+        { archetype = "specialist_crafter", count = 1 },
+    },
+    dense = {
+        { archetype = "wholesaler",            count = 2 },
+        { archetype = "quartermaster",         count = 2 },
+        { archetype = "smuggler",              count = 2 },
+        { archetype = "speculator",            count = 1 },
+        { archetype = "military_logistician",  count = 1 },
+    },
+}
+
+---------------------------------------------------------------
 -- Living Market: Wholesaler Operational States
 ---------------------------------------------------------------
 

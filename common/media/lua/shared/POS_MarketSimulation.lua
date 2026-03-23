@@ -232,10 +232,13 @@ function POS_MarketSimulation.init()
         tag      = "[POS:Wholesaler:Loader]",
     })
 
-    -- Pre-create zone states
+    -- Pre-create zone states and populate agents
     for _, zoneId in ipairs(POS_Constants.MARKET_ZONES) do
         _ensureZoneState(zoneId)
     end
+
+    -- Populate agents for each zone based on zone population tier
+    POS_MarketSimulation._populateZoneAgents()
 
     -- Share zone registry with WholesalerService for display name resolution
     POS_WholesalerService._setZoneRegistry(_zoneRegistry)
@@ -277,6 +280,57 @@ function POS_MarketSimulation.registerAgent(agent)
     _agents[agent.id] = agent
     PhobosLib.debug("POS", _TAG, "Registered agent: " .. agent.id
         .. " (" .. tostring(agent.archetype) .. ") in zone " .. tostring(agent.zoneId))
+end
+
+--- Populate agents for all zones based on zone population tier.
+--- Uses ZONE_AGENT_COMPOSITION constants. Skips zones that
+--- already have agents (idempotent for save reload).
+function POS_MarketSimulation._populateZoneAgents()
+    local composition = POS_Constants.ZONE_AGENT_COMPOSITION
+    if not composition then
+        PhobosLib.warn("POS", _TAG, "ZONE_AGENT_COMPOSITION not defined")
+        return
+    end
+
+    local totalCreated = 0
+    for _, zoneId in ipairs(POS_Constants.MARKET_ZONES) do
+        -- Skip if zone already has agents
+        local existing = POS_MarketSimulation.getAgentsForZone(zoneId)
+        if #existing > 0 then
+            PhobosLib.debug("POS", _TAG,
+                "Zone " .. zoneId .. " already has " .. #existing .. " agents, skipping")
+        else
+            -- Determine population tier from zone definition
+            local zoneDef = _zoneRegistry:get(zoneId)
+            local pop = zoneDef and zoneDef.population or "medium"
+            local slots = composition[pop]
+            if not slots then
+                PhobosLib.warn("POS", _TAG,
+                    "No composition for population tier: " .. tostring(pop))
+                slots = composition["medium"] or {}
+            end
+
+            -- Create agents for each slot
+            for _, slot in ipairs(slots) do
+                for i = 1, (slot.count or 1) do
+                    local agentId = zoneId .. "_" .. slot.archetype .. "_" .. tostring(i)
+                    -- Use archetype display name from definition, not translation key
+                    local archetypeDef = POS_MarketAgent.getRegistry():get(slot.archetype)
+                    local displayName = archetypeDef and archetypeDef.name or slot.archetype
+                    local agent = POS_MarketAgent.createAgent(
+                        agentId, slot.archetype, zoneId, displayName)
+                    if agent then
+                        POS_MarketSimulation.registerAgent(agent)
+                        totalCreated = totalCreated + 1
+                    end
+                end
+            end
+        end
+    end
+
+    PhobosLib.debug("POS", _TAG,
+        "Populated " .. totalCreated .. " agents across "
+        .. #POS_Constants.MARKET_ZONES .. " zones")
 end
 
 --- Get all agents belonging to a specific market zone.

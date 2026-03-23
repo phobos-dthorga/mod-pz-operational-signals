@@ -76,11 +76,15 @@ function POS_MissionBriefingResolver.init()
         "Definitions/TextPools/submissions_common",
     }
 
-    -- Load voice packs
+    -- Load voice packs (all 7 archetypes)
     local voicePaths = {
+        "Definitions/TextPools/voice_scavenger",
+        "Definitions/TextPools/voice_quartermaster",
+        "Definitions/TextPools/voice_wholesaler",
         "Definitions/TextPools/voice_smuggler",
         "Definitions/TextPools/voice_military",
         "Definitions/TextPools/voice_trader",
+        "Definitions/TextPools/voice_speculator",
     }
 
     for _, path in ipairs(paths) do

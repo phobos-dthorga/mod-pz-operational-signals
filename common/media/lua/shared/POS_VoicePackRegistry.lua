@@ -93,18 +93,40 @@ function POS_VoicePackRegistry.initBuiltIn()
     if _builtInRegistered then return end
     _builtInRegistered = true
 
-    -- Smuggler archetype uses shadier language for situations
+    -- All 7 archetypes have distinct voices for situation descriptions.
+    -- Each voice pack overrides the "situation" section of mission/contract
+    -- briefings when that archetype is the sponsor.
+
+    POS_VoicePackRegistry.registerPack("scavenger_trader", {
+        situation  = "voice_scavenger_situations",
+    })
+
+    POS_VoicePackRegistry.registerPack("quartermaster", {
+        situation  = "voice_quartermaster_situations",
+    })
+
+    POS_VoicePackRegistry.registerPack("wholesaler", {
+        situation  = "voice_wholesaler_situations",
+    })
+
     POS_VoicePackRegistry.registerPack("smuggler", {
         situation  = "voice_smuggler_situations",
     })
 
-    -- Military logistics uses formal/terse language
     POS_VoicePackRegistry.registerPack("military_logistics", {
         situation  = "voice_military_situations",
     })
 
-    -- Baseline trader uses mercantile language
     POS_VoicePackRegistry.registerPack("baseline_trader", {
         situation  = "voice_trader_situations",
+    })
+
+    POS_VoicePackRegistry.registerPack("speculator", {
+        situation  = "voice_speculator_situations",
+    })
+
+    POS_VoicePackRegistry.registerPack("specialist_crafter", {
+        -- Specialist crafter uses common pool (no distinct voice yet)
+        -- Future: add voice_crafter_situations for technical/workshop tone
     })
 end
