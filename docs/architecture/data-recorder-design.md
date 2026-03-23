@@ -881,7 +881,7 @@ Exactly as the PDF recommended:
 
 ### 15.2 Specifications
 
-Consistent with existing POSnet icon pipeline (`docs/passive-recon-design.md`
+Consistent with existing POSnet icon pipeline (`docs/architecture/passive-recon-design.md`
 Section 10):
 
 - **Dimensions**: 128x128 pixels, RGBA PNG

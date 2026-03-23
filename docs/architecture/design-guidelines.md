@@ -1226,7 +1226,7 @@ must do the same.
 ## 18. Release & Tagging Doctrine
 
 All Phobos PZ mods follow the release architecture defined in
-[`docs/release-architecture.md`](release-architecture.md).
+[`docs/architecture/release-architecture.md`](release-architecture.md).
 
 ### Key Rules
 
@@ -1491,7 +1491,7 @@ architecture described below.
 
 ## 24. Living Market & Autonomous Economy
 
-> Full design: `docs/living-market-design.md`
+> Full design: `docs/architecture/living-market-design.md`
 
 ### 24.1 Layer 0 Principle
 
@@ -2390,7 +2390,7 @@ Reference: `POS_DataSourceRegistry` already implements this pattern with
 ### 28.3 Payload Shape Documentation
 
 Every cross-system data structure must have its canonical shape documented. See
-`docs/interoperability-matrix.md` for the authoritative payload reference. When
+`docs/architecture/interoperability-matrix.md` for the authoritative payload reference. When
 adding a new payload type, document it in the matrix before implementing
 consumers.
 
@@ -2414,7 +2414,7 @@ Every new subsystem must answer these questions in its design phase:
 7. **What systems should react to its outputs?** — List downstream consumers that need to update when this subsystem's state changes. This drives refresh propagation and future event wiring.
 
 Document the answers in the subsystem's module header comment or in
-`docs/interoperability-matrix.md`.
+`docs/architecture/interoperability-matrix.md`.
 
 ### 28.5 Cross-System Call Discipline
 
@@ -2738,7 +2738,7 @@ end
 > voice packs for archetype-specific language (smuggler, military, trader).
 
 Guidelines summary for compositional mission briefings and data-driven
-mission definitions. The full design lives at `docs/mission-system-design.md`.
+mission definitions. The full design lives at `docs/architecture/mission-system-design.md`.
 
 ### 32.1 Compositional Briefings
 
@@ -2792,7 +2792,7 @@ mission definitions. The full design lives at `docs/mission-system-design.md`.
 
 | File | Purpose |
 |---|---|
-| `docs/mission-system-design.md` | Full design document |
+| `docs/architecture/mission-system-design.md` | Full design document |
 | `POS_MissionSchema.lua` | Mission definition schema |
 | `POS_TextPoolSchema.lua` | Text pool entry schema |
 | `POS_MissionBriefingResolver.lua` | Briefing assembly engine |
@@ -3028,7 +3028,7 @@ loop over `POS_ItemPool.selectRandomItems()`.
 
 Not every PZ item is tradeable. The item pool applies a two-layer exclusion
 filter (DisplayCategory blacklist + name pattern blacklist) before indexing.
-See `docs/item-pool-curation.md` for the full exclusion list and rationale.
+See `docs/architecture/item-pool-curation.md` for the full exclusion list and rationale.
 
 ### 36.2 Constants Location
 
