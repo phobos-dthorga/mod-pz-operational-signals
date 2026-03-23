@@ -62,6 +62,9 @@ end
 --- Content padding inside the screen area.
 local SCREEN_PAD = POS_Constants.UI_SCREEN_PADDING
 
+--- Signal feed panel width (left panel, fixed).
+local SIGNAL_PANEL_WIDTH = POS_Constants.UI_SIGNAL_PANEL_WIDTH
+
 --- Context detail panel width (right panel, fixed).
 local CONTEXT_PANEL_WIDTH = POS_Constants.UI_CONTEXT_PANEL_WIDTH
 
@@ -116,8 +119,9 @@ end
 -- Panel layout
 ---------------------------------------------------------------
 
---- Reposition nav, content, and context panels within the content area.
+--- Reposition signal, content, and context panels within the content area.
 --- Called every prerender() to handle window resize.
+--- Layout: [SignalPanel | ContentPanel | ContextPanel]
 function POS_TerminalUI:repositionPanels()
     local sx, sy, sw, sh = self:getScreenRect()
     local pad = SCREEN_PAD
@@ -125,10 +129,21 @@ function POS_TerminalUI:repositionPanels()
     local innerY = sy + pad
     local innerW = sw - pad * 2
     local innerH = sh - pad * 2
+    local isReady = self.terminalState == "ready"
 
     local showContext = (self.width >= CONTEXT_COLLAPSE_THRESHOLD)
 
-    -- ContextPanel (right, fixed width, collapsible)
+    -- SignalPanel (left, fixed width, always visible when ready)
+    local sigW = SIGNAL_PANEL_WIDTH
+    if self.signalPanel then
+        self.signalPanel:setX(innerX)
+        self.signalPanel:setY(innerY)
+        self.signalPanel:setWidth(sigW)
+        self.signalPanel:setHeight(innerH)
+        self.signalPanel:setVisible(isReady)
+    end
+
+    -- ContextPanel (right, fixed width, collapsible below threshold)
     local ctxW = showContext and CONTEXT_PANEL_WIDTH or 0
     if self.contextPanel then
         if showContext then
@@ -137,13 +152,13 @@ function POS_TerminalUI:repositionPanels()
             self.contextPanel:setWidth(ctxW)
             self.contextPanel:setHeight(innerH)
         end
-        self.contextPanel:setVisible(showContext and self.terminalState == "ready")
+        self.contextPanel:setVisible(showContext and isReady)
     end
 
-    -- ContentPanel (flex width, no nav panel offset)
+    -- ContentPanel (center, flex width between signal and context panels)
     if self.contentPanel then
-        local contentX = innerX
-        local contentW = innerW
+        local contentX = innerX + sigW + PANEL_GAP
+        local contentW = innerW - sigW - PANEL_GAP
         if showContext then
             contentW = contentW - ctxW - PANEL_GAP
         end
@@ -221,9 +236,11 @@ function POS_TerminalUI:createChildren()
 
     self.contentPanel = createPanel(self, sx + pad, sy + pad, sw - pad * 2, sh - pad * 2)
 
-    -- NavPanel removed — breadcrumb navigation provides context
+    -- SignalPanel (left sidebar — passive world awareness)
+    self.signalPanel = createPanel(self, 0, 0, SIGNAL_PANEL_WIDTH, 100)
+    self.signalPanel:setVisible(false)
 
-    -- ContextPanel (right sidebar)
+    -- ContextPanel (right sidebar — context actions & insight)
     self.contextPanel = createPanel(self, 0, 0, CONTEXT_PANEL_WIDTH, 100)
     self.contextPanel:setVisible(false)
 
@@ -344,8 +361,8 @@ function POS_TerminalUI:render()
     if self.contentPanel then
         self.contentPanel:setVisible(isReady)
     end
-    if self.navPanel then
-        self.navPanel:setVisible(isReady and self.navPanel:isVisible())
+    if self.signalPanel then
+        self.signalPanel:setVisible(isReady)
     end
     if self.contextPanel then
         self.contextPanel:setVisible(isReady and self.contextPanel:isVisible())

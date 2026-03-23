@@ -62,12 +62,12 @@ end
 -- Internal helpers
 ---------------------------------------------------------------
 
---- Refresh navigation and context side panels.
+--- Refresh all side panels (signal feed + context actions).
 local function refreshSidePanels()
     local terminal = POS_TerminalUI and POS_TerminalUI.instance
     if not terminal then return end
-    if terminal.navPanel and terminal.navPanel:isVisible() and POS_NavPanel then
-        PhobosLib.safecall(POS_NavPanel.render, terminal.navPanel, terminal)
+    if terminal.signalPanel and terminal.signalPanel:isVisible() and POS_SignalPanel then
+        PhobosLib.safecall(POS_SignalPanel.render, terminal.signalPanel, terminal)
     end
     if terminal.contextPanel and terminal.contextPanel:isVisible() and POS_ContextPanel then
         PhobosLib.safecall(POS_ContextPanel.render, terminal.contextPanel, terminal)

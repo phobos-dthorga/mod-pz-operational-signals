@@ -77,6 +77,7 @@ globals = {
     "POS_MarketBroadcaster",
     "POS_CrossModMarkets",
     "POS_Events",
+    "POS_SignalPanel",
     "POS_TradeService",
     "POS_ItemPool",
     "POS_ItemValueRegistry",
