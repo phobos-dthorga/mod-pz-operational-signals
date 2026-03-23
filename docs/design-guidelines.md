@@ -3076,3 +3076,73 @@ register after the built-in default has loaded.
 | Hardcoding boot text in POS_TerminalUI | Not customisable by servers/addons |
 | Token resolution at file-load time | Connection info not available yet |
 | Fixed boot duration | Different text lengths need different timing |
+
+---
+
+## 39. Apocalypse Economy Pricing
+
+### 39.1 Principle
+
+Item base prices reflect **apocalyptic survival value**, not pre-apocalypse
+retail price or PZ item weight. A seed packet weighing 0.02 kg is worth $20
+because it represents an entire future food supply chain. A gold bar weighing
+16 kg is worth $12 because you can't eat it.
+
+### 39.2 Item Value Override System
+
+Curated per-item base prices live in `Definitions/ItemValues/*.lua` using the
+standard data-pack pattern (schema + registry + definition files). Each file
+returns `{ schemaVersion, entries = { ... } }` where each entry has:
+
+- `id` — PZ fullType (e.g. `"Base.Generator"`)
+- `basePrice` — absolute base price in dollars (replaces weight formula)
+- `isLuxury` — if true, price is scaled by zone `luxuryDemand`
+- `reason` — audit trail / documentation
+
+Override lookup is O(1) via `POS_ItemValueRegistry.getOverride(fullType)`.
+
+### 39.3 Category Multipliers
+
+Items **without** an override still use the weight-based formula, but category
+multipliers are tuned for apocalyptic priorities. See
+`POS_Constants_Market.CATEGORY_PRICE_MULTIPLIERS`. Literature is 2.0x because
+skill books are irreplaceable survival knowledge.
+
+### 39.4 Luxury Zone Scaling
+
+Items flagged `isLuxury = true` have their final price multiplied by the
+zone's `luxuryDemand` field (defined in zone definition files). Urban zones
+inflate luxury prices; rural zones deflate them. When Living Market is
+disabled, the multiplier defaults to 1.0.
+
+| Zone | luxuryDemand | Effect on $12 gold bar |
+|------|-------------|------------------------|
+| Louisville Edge | 2.5 | $30.00 |
+| West Point | 1.5 | $18.00 |
+| Riverside | 1.2 | $14.40 |
+| Muldraugh | 0.5 | $6.00 |
+| Military Corridor | 0.3 | $3.60 |
+| Rural East | 0.3 | $3.60 |
+
+### 39.5 Addon Extensibility
+
+Addon mods register overrides at runtime:
+
+```lua
+if POS_ItemValueRegistry then
+    POS_ItemValueRegistry.registerOverrides({
+        { id = "MyMod.SuperMedicine", basePrice = 150.00,
+          reason = "Custom rare medicine" },
+    })
+end
+```
+
+### 39.6 Anti-Patterns
+
+| Anti-Pattern | Why It's Wrong |
+|---|---|
+| Using PZ weight as a proxy for value | Seeds = 0.02 kg but $20 survival value |
+| Uniform category multipliers | Fuel ≠ miscellaneous in an apocalypse |
+| Luxury items at fixed price everywhere | Zone context matters — urban vs rural |
+| Overriding at selection time | Override at indexing time for consistency |
+| Per-item files for overrides | 200+ files is unwieldy; use entries arrays |

@@ -14,14 +14,25 @@
 -- \________________________________________________________________________/
 --
 
+---------------------------------------------------------------
+-- Schema for per-item base price overrides.
+-- Each entry represents a single PZ item whose base price
+-- should be set to a curated value rather than the default
+-- weight-based formula.
+--
+-- id        = PZ fullType (e.g. "Base.Generator")
+-- basePrice = absolute base price in dollars
+-- isLuxury  = if true, price is scaled by zone luxuryDemand
+-- reason    = audit trail / documentation
+---------------------------------------------------------------
+
 return {
     schemaVersion = 1,
-    id = "muldraugh",
-    name = "Muldraugh",
-    displayNameKey = "UI_POS_Zone_Muldraugh",
-    description = "Small rural town with limited trade infrastructure.",
-    baseVolatility = 0.25,
-    population = "sparse",
-    adjacentZones = { "west_point", "rural_east" },
-    luxuryDemand = 0.5,   -- rural, gold is near-useless
+    fields = {
+        schemaVersion = { type = "number", required = true },
+        id            = { type = "string",  required = true },
+        basePrice     = { type = "number",  required = true, min = 0.01 },
+        isLuxury      = { type = "boolean", default = false },
+        reason        = { type = "string",  default = "" },
+    }
 }

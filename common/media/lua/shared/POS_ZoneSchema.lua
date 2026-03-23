@@ -24,6 +24,7 @@ return {
         baseVolatility = { type = "number", min = 0, max = 2, default = 0.20 },
         population     = { type = "string", default = "medium", enum = { "sparse", "medium", "dense" } },
         adjacentZones  = { type = "array" },
+        luxuryDemand   = { type = "number", min = 0, max = 5, default = 1.0 },
         enabled        = { type = "boolean", default = true },
     }
 }

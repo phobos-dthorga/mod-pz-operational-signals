@@ -23,4 +23,5 @@ return {
     baseVolatility = 0.22,
     population = "sparse",
     adjacentZones = { "muldraugh", "military_corridor" },
+    luxuryDemand = 0.3,   -- deep rural, no luxury demand
 }

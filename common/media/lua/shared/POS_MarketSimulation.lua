@@ -324,6 +324,16 @@ function POS_MarketSimulation.getZonePressure(zoneId, categoryId)
         POS_Constants.SIMULATION_PRESSURE_CLAMP_MAX)
 end
 
+--- Get the luxury demand multiplier for a zone.
+--- Used by POS_PriceEngine to scale luxury item prices.
+--- @param zoneId string  Zone key
+--- @return number        Luxury demand multiplier (default 1.0)
+function POS_MarketSimulation.getZoneLuxuryDemand(zoneId)
+    if not _zoneRegistry then return 1.0 end
+    local def = _zoneRegistry:get(zoneId)
+    return def and def.luxuryDemand or 1.0
+end
+
 ---------------------------------------------------------------
 -- Wholesaler lifecycle management
 ---------------------------------------------------------------

@@ -168,11 +168,33 @@ function POS_PriceEngine.generatePrice(fullType, categoryId, ctx)
     local doubleVariance = variancePct * 2 + 1
     local variance = ((ZombRand(doubleVariance) - variancePct) / 100) * repMult
 
+    -- Luxury zone scaling (Living Market integration)
+    -- Items flagged isLuxury in the item value registry have their
+    -- price scaled by the zone's luxuryDemand.  Urban zones (Louisville
+    -- = 2.5x) inflate luxury prices; rural zones (Muldraugh = 0.5x)
+    -- deflate them.  When Living Market is disabled, luxuryMult stays 1.0.
+    local luxuryMult = 1.0
+    if POS_Sandbox and POS_Sandbox.isLivingMarketEnabled
+            and POS_Sandbox.isLivingMarketEnabled() then
+        local record = POS_ItemPool.getRecord and POS_ItemPool.getRecord(fullType)
+        if record and record.isLuxury then
+            local zoneId = ctx and ctx.zoneId
+            if zoneId and POS_MarketSimulation
+                    and POS_MarketSimulation.getZoneLuxuryDemand then
+                local ok, demand = PhobosLib.safecall(
+                    POS_MarketSimulation.getZoneLuxuryDemand, zoneId)
+                if ok and demand then
+                    luxuryMult = demand
+                end
+            end
+        end
+    end
+
     -- Room modifier (optional, e.g. proximity to certain rooms)
     local roomMod = (ctx and ctx.roomModifier) or 0
 
     -- Final calculation
-    local price = basePrice * volatility * (1 + drift) * (1 + sdFactor) * (1 + variance + roomMod)
+    local price = basePrice * volatility * luxuryMult * (1 + drift) * (1 + sdFactor) * (1 + variance + roomMod)
     price = math.max(POS_Constants.PRICE_MIN_OUTPUT, price)
 
     -- Round to 2 decimal places

@@ -346,17 +346,32 @@ end
 --- Calculate the base price for an item record.
 --- @param itemWeight number
 --- @param categoryId string
+--- @param fullType string
 --- @param hasCondition boolean
---- @return number
-local function calculateBasePrice(itemWeight, categoryId, hasCondition)
+--- @return number basePrice
+--- @return boolean isLuxury
+local function calculateBasePrice(fullType, itemWeight, categoryId, hasCondition)
+    local condMult = hasCondition and POS_Constants.ITEM_POOL_CONDITION_MULTIPLIER or 1.0
+
+    -- Check curated override registry first (O(1) lookup)
+    if POS_ItemValueRegistry then
+        local override = POS_ItemValueRegistry.getOverride(fullType)
+        if override then
+            local price = math.max(
+                POS_Constants.ITEM_POOL_MIN_BASE_PRICE,
+                override.basePrice * condMult)
+            return price, override.isLuxury or false
+        end
+    end
+
+    -- Fallback: weight-based formula with apocalypse-tuned category multipliers
     local w = itemWeight or 1.0
     local mults = POS_Constants.CATEGORY_PRICE_MULTIPLIERS
     local catMult = (mults and mults[categoryId]) or 1.0
-    local condMult = hasCondition and POS_Constants.ITEM_POOL_CONDITION_MULTIPLIER or 1.0
     return math.max(
         POS_Constants.ITEM_POOL_MIN_BASE_PRICE,
         w * POS_Constants.ITEM_POOL_WEIGHT_MULTIPLIER * catMult * condMult
-    )
+    ), false
 end
 
 --- Insert an item record into the appropriate pool tables.
@@ -391,6 +406,12 @@ local ensureInit  -- forward declaration; assigned after init() below
 --- Safe to call multiple times; subsequent calls are no-ops.
 function POS_ItemPool.init()
     if initialised then return end
+
+    -- Load curated item value overrides before the ScriptManager scan
+    -- so that calculateBasePrice() can use them during indexing.
+    if POS_ItemValueRegistry then
+        POS_ItemValueRegistry.init()
+    end
 
     local sm = ScriptManager.instance
     if not sm then return end
@@ -439,7 +460,7 @@ function POS_ItemPool.init()
                     local categoryId = resolveCommodityCategory(displayCat, fullType)
                     local subCatId   = resolveSubCategory(fullType, displayCat, categoryId, isPerishable)
                     local hasCondition = condMax and condMax > 0
-                    local basePrice  = calculateBasePrice(itemWeight, categoryId, hasCondition)
+                    local basePrice, isLuxury = calculateBasePrice(fullType, itemWeight, categoryId, hasCondition)
 
                     local record = {
                         fullType         = fullType,
@@ -449,6 +470,7 @@ function POS_ItemPool.init()
                         weight           = itemWeight,
                         conditionMax     = condMax,
                         basePrice        = basePrice,
+                        isLuxury         = isLuxury,
                     }
 
                     indexItem(record)
@@ -561,6 +583,15 @@ function POS_ItemPool.getBasePrice(fullType)
     ensureInit()
     local record = itemIndex[fullType]
     return record and record.basePrice or nil
+end
+
+--- Retrieve the full item record for a given fullType.
+--- Used by PriceEngine for luxury zone scaling.
+--- @param fullType string
+--- @return table|nil  Record with basePrice, isLuxury, commodityCategory, etc.
+function POS_ItemPool.getRecord(fullType)
+    ensureInit()
+    return itemIndex[fullType]
 end
 
 --- Manually register (or override) an item in the pool.

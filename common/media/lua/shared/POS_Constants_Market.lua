@@ -224,18 +224,21 @@ POS_Constants.SOURCE_TIER_WEIGHT_DEFAULT   = 0.85
 -- Category price multipliers (item pool base pricing)
 ---------------------------------------------------------------
 
+-- Multipliers reflect apocalyptic economy where survival goods dominate
+-- and pre-apocalypse luxuries collapse. Literature stays high because
+-- skill books and recipe books are irreplaceable survival knowledge.
 POS_Constants.CATEGORY_PRICE_MULTIPLIERS = {
-    fuel          = 1.5,
-    medicine      = 1.3,
-    food          = 0.8,
-    ammunition    = 1.4,
-    tools         = 1.0,
-    radio         = 1.2,
-    survival      = 0.9,
-    weapons       = 1.3,
-    clothing      = 0.6,
-    literature    = 0.4,
-    miscellaneous = 0.3,
+    fuel          = 3.0,    -- irreplaceable energy: generators, vehicles, heating
+    ammunition    = 2.8,    -- finite supply, each round matters
+    medicine      = 2.5,    -- no hospitals, antibiotics are gold
+    weapons       = 2.2,    -- defence is paramount
+    literature    = 2.0,    -- knowledge is survival: skill books, recipe books
+    radio         = 1.8,    -- communication = coordination
+    survival      = 1.6,    -- water/camping gear essential
+    tools         = 1.5,    -- build, repair, survive
+    food          = 1.4,    -- caloric necessity
+    clothing      = 0.8,    -- weather/armour protection
+    miscellaneous = 0.2,    -- decorative junk worth even less
 }
 
 ---------------------------------------------------------------

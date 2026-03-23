@@ -23,4 +23,5 @@ return {
     baseVolatility = 0.18,
     population = "dense",
     adjacentZones = { "west_point", "louisville_edge" },
+    luxuryDemand = 1.2,   -- larger settlement, some luxury trade
 }
