@@ -3340,6 +3340,25 @@ Benefits:
 | Using TaskManager for persistence | It's for runtime orchestration, not save state |
 | Adopting Starlit "devotionally" | Surgical adoption of proven modules only |
 
+### 40.7 Known Workaround: TaskManager Offset Initialisation
+
+Starlit's `TaskManager.repeatEveryTicks()` does not initialise the
+`tasks.offset` field on newly created repeat task arrays. This causes
+`__add not defined for operands` at `TaskManager.lua:233` when
+`offset + amount` is evaluated with nil offset.
+
+**Workaround**: After every `repeatEveryTicks()` call, immediately set:
+
+```lua
+local tasks = TaskManager.repeatTasks[INTERVAL]
+if tasks then tasks.offset = tasks.offset or 0 end
+```
+
+This is safe — offset is a cursor into the task distribution array
+and `0` is the correct initial value. Applied in POS_ReconScanner
+and POS_PathTracker. If Starlit fixes this upstream, the workaround
+becomes a no-op (`or 0` short-circuits when offset already exists).
+
 ---
 
 ## 41. Ambient Intelligence System
