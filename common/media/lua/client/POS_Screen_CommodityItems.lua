@@ -113,6 +113,63 @@ local function executeBuyAction(fullType, categoryId, qty, avgPrice)
 end
 
 ---------------------------------------------------------------
+-- Sell handler — offload surplus into the market
+---------------------------------------------------------------
+
+local function executeSellAction(fullType, categoryId, qty)
+    local player = getPlayer()
+    if not player then return end
+
+    -- Calculate sell price (discounted from buy price — you're desperate)
+    local sellPrice = POS_TradeService and POS_TradeService.computeSellPrice
+        and POS_TradeService.computeSellPrice(fullType, categoryId, qty) or 0
+    if sellPrice <= 0 then
+        if PhobosLib.notifyOrSay then
+            PhobosLib.notifyOrSay("POSnet",
+                PhobosLib.safeGetText("UI_POS_Trade_Err_NoPrice"), "error")
+        end
+        return
+    end
+
+    -- Execute sell via TradeService (validates inventory, consumes items, grants money)
+    local ok, result = PhobosLib.safecall(
+        POS_TradeService.executeSell, player, fullType, qty, categoryId)
+
+    if ok and result then
+        local displayName = getItemDisplayName(fullType) or fullType
+        if PhobosLib.notifyOrSay then
+            PhobosLib.notifyOrSay("POSnet",
+                "Sold " .. tostring(qty) .. "x " .. displayName
+                .. " for $" .. string.format("%.2f", sellPrice),
+                "success")
+        end
+
+        -- Emit trade event (Starlit)
+        if POS_Events and POS_Events.OnTradeCompleted then
+            POS_Events.OnTradeCompleted:trigger({
+                type = "sell",
+                fullType = fullType,
+                quantity = qty,
+                totalCost = sellPrice,
+                categoryId = categoryId,
+            })
+        end
+    else
+        if PhobosLib.notifyOrSay then
+            PhobosLib.notifyOrSay("POSnet",
+                tostring(result) or PhobosLib.safeGetText("UI_POS_Trade_Err_SellFailed"),
+                "error")
+        end
+    end
+
+    _quantities[fullType] = 1
+    POS_ScreenManager.refreshCurrentScreen()
+end
+
+--- Current trade mode: "buy" or "sell"
+local _tradeMode = "buy"
+
+---------------------------------------------------------------
 -- Screen creation
 ---------------------------------------------------------------
 
@@ -131,6 +188,9 @@ function screen.create(contentPanel, params, _terminal)
         return
     end
 
+    -- Resolve trade mode from params
+    _tradeMode = (params and params.tradeMode) or _tradeMode or "buy"
+
     -- Category label
     local catDef = POS_MarketRegistry.getCategory(categoryId)
     local catLabel = catDef and W.safeGetText(catDef.labelKey) or categoryId
@@ -138,6 +198,30 @@ function screen.create(contentPanel, params, _terminal)
     W.drawHeader(ctx, "UI_POS_Market_CommodityItems")
     W.createLabel(ctx.panel, 0, ctx.y, catLabel, C.textBright)
     ctx.y = ctx.y + ctx.lineH
+
+    -- Buy/Sell mode toggle — survivor offloading surplus or acquiring supplies
+    local buyLabel = PhobosLib.safeGetText("UI_POS_Trade_ModeBuy")
+    local sellLabel = PhobosLib.safeGetText("UI_POS_Trade_ModeSell")
+    local toggleW = math.floor(ctx.panel:getWidth() / 2) - 4
+    if _tradeMode == "buy" then
+        W.createLabel(ctx.panel, 4, ctx.y + 2, "> " .. buyLabel, C.textBright)
+        W.createButton(ctx.panel, toggleW + 8, ctx.y, toggleW, ctx.btnH,
+            sellLabel, nil, function()
+                _tradeMode = "sell"
+                POS_ScreenManager.replaceCurrent(screen.id,
+                    { categoryId = categoryId, tradeMode = "sell" })
+            end)
+    else
+        W.createButton(ctx.panel, 0, ctx.y, toggleW, ctx.btnH,
+            buyLabel, nil, function()
+                _tradeMode = "buy"
+                POS_ScreenManager.replaceCurrent(screen.id,
+                    { categoryId = categoryId, tradeMode = "buy" })
+            end)
+        W.createLabel(ctx.panel, toggleW + 12, ctx.y + 2,
+            "> " .. sellLabel, C.textBright)
+    end
+    ctx.y = ctx.y + ctx.btnH + 4
 
     -- Player balance
     local player = getPlayer()
