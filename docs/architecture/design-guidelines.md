@@ -289,13 +289,18 @@ cost to terminal usage and giving the shutdown action meaningful purpose.
   its own drain to avoid stacking. If POSnet's rate is higher, it
   replaces the existing drain.
 
-### 5.4 Signal Strength Mission Influence (Future)
+### 5.4 Signal Strength Mission Influence
 
-Radio signal strength should influence mission generation parameters:
-- Lower signal = shorter mission range (closer targets)
-- Higher signal = longer range, better rewards
-- Signal quality affects the "clarity" of mission briefings
-- Gated by `SignalAffectsMissionRange` sandbox toggle (placeholder, not yet wired)
+> **Status**: Implemented. Reward scaling + difficulty cap + briefing garble.
+
+Radio signal strength influences mission generation:
+- **Difficulty cap**: weak signal can only receive simple missions (25% signal
+  = max difficulty 2; 50% = 3; 75% = 4; 100% = all)
+- **Briefing garble**: below `SIGNAL_GARBLE_THRESHOLD` (80%), words are
+  randomly replaced with static fragments (`"...static..."`, `"[garbled]"`,
+  `"--bzzt--"`). Intensity scales inversely with signal.
+- **Reward scaling**: already existed via `POS_RewardCalculator.scaleReward()`
+- Gated by `POS_Sandbox.isSignalAffectsMissionRange()`
 
 ### 5.6 Satellite Wiring Connection
 
@@ -2845,22 +2850,26 @@ Main Menu (pos.main)
  ├── BBS Hub (pos.bbs)
  │    ├── Bulletin Board        (pos.bbs.board)
  │    │    └── Post Detail      (pos.bbs.post)            [programmatic]
+ │    ├── Incoming Requests     (pos.bbs.contracts)        — sell-side contracts (unified list + badges)
+ │    ├── Assignments           (pos.bbs.assignments)      — dual tabs: category × status
+ │    │    └── Negotiate        (pos.bbs.negotiate)        [programmatic]
+ │    ├── Field Agents          (pos.bbs.agents)           — dual tabs: archetype × status
  │    ├── Investments           (pos.bbs.investments)
- │    └── Assignments           (pos.bbs.assignments)      — tabbed: Operations + Deliveries
- │         └── Negotiate        (pos.bbs.negotiate)        [programmatic]
+ │    └── Intelligence Analysis (pos.data.analysis)
  ├── Markets Hub (pos.markets)
  │    ├── Market Overview       (pos.markets.overview)      — intel + commodities + zone data
  │    │    ├── Commodity Detail  (pos.markets.commodity)    [drill-down]
- │    │    └── Commodity Items   (pos.markets.items)        [drill-down]
- │    ├── Known Contacts        (pos.markets.contacts)      — traders + wholesalers + trade entry
- │    ├── Market Signals        (pos.markets.signals)       — event log + rumours
- │    ├── Watchlist             (pos.markets.watchlist)      — includes price ledger data
+ │    │    └── Commodity Items   (pos.markets.items)        [drill-down, buy/sell toggle]
+ │    ├── Known Contacts        (pos.markets.contacts)      — traders + wholesalers
+ │    ├── Market Signals        (pos.markets.signals)       — hard events + soft rumours
+ │    ├── Supply Network Dir    (pos.markets.directory)     — dual tabs: zone × state
+ │    ├── Zone Overview         (pos.markets.zones)         — pressure bars + events
+ │    ├── Watchlist             (pos.markets.watchlist)
  │    ├── Market Reports        (pos.markets.reports)
  │    └── Trade Catalog         (pos.markets.trade)
  │         └── Trade Receipt    (pos.markets.receipt)       [programmatic]
  ├── Stockmarket                (pos.stockmarket)
  ├── Data Management            (pos.data)                  [debug only]
- │    ├── Analysis              (pos.data.analysis)
  │    └── Data Reset            (pos.data.reset)            [debug only]
  └── Settings                   (pos.settings)              [placeholder]
 ```
@@ -3430,8 +3439,9 @@ narrative variety. Sources are cosmetic — they don't affect data quality.
 
 ## 42. Three-Layer Selling System
 
-> **Status**: Phase 1 (Contracts) implemented. Phase 2 (Spot Sell) partial.
-> Phase 3 (Free Agents) planned.
+> **Status**: All three phases implemented. Phase 1 (Contracts),
+> Phase 2 (Spot Sell on CommodityItems), Phase 3 (Free Agents —
+> `POS_FreeAgentService.lua` + `POS_Screen_FreeAgents.lua`).
 
 ### 42.1 Design Principle
 
@@ -3538,3 +3548,110 @@ inventory check (owned/needed), and action buttons (Accept/Fulfil/Abandon).
 | Contracts as separate economy | Fulfilment must affect zone pressure and wholesaler stock |
 | Omniscient betrayal warning | Risk indicator shows LOW/MODERATE/HIGH, not exact % |
 | Instant settlement | Items consumed → money credited is atomic, but the world impact (pressure relief) should propagate through the next economy tick |
+
+---
+
+## 45. Band Registry System
+
+> **Status**: Implemented. 2 built-in bands, addon-extensible.
+
+### 45.1 Overview
+
+Radio bands gate **mission content visibility**, not screen access (§21.5).
+Each band represents a distinct frequency range with its own mission pool.
+Addon mods can register custom bands.
+
+### 45.2 Built-In Bands
+
+| Band ID | Badge | Type | Content |
+|---------|-------|------|---------|
+| `POSnet_Operations` | OPS | amateur | Civilian: delivery, trade, basic recon |
+| `POSnet_Tactical` | TAC | tactical | Military: SIGINT, recovery, night ops |
+
+### 45.3 Schema
+
+`POS_BandSchema.lua`: id, name, displayNameKey, azasBandType (amateur/tactical),
+badgeLabel, sortOrder, enabled.
+
+### 45.4 Mission Filtering
+
+Each mission definition has an optional `requiredBands` array. When set,
+the mission only appears in the Assignments screen when the player's active
+band matches one of the listed bands. When nil, visible on all bands.
+
+### 45.5 Addon Extensibility
+
+```lua
+POS_BandRegistry.getRegistry():register({
+    schemaVersion = 1,
+    id = "MedicalEmergency",
+    name = "Medical Emergency Band",
+    displayNameKey = "UI_MyMod_Band_Medical",
+    azasBandType = "amateur",
+    badgeLabel = "MED",
+    sortOrder = 3,
+})
+```
+
+### 45.6 Anti-Patterns
+
+| Anti-Pattern | Why It's Wrong |
+|---|---|
+| Hardcoding band IDs in screens | Use POS_BandRegistry.get() |
+| Gating screens by band | Gate content (missions), not access (screens) |
+| Bands as SIGINT gates | Bands are frequency context, not skill gates |
+
+---
+
+## 46. Free Agent Operations
+
+> **Status**: Implemented. Schema, service, screen, economy tick.
+
+### 46.1 Overview
+
+Free agents are NPCs (runners, brokers, couriers, smugglers) sent into
+zombie territory to execute trade operations autonomously. The player
+deploys an agent, then monitors progress through the signal feed and
+terminal screen — waiting by the radio.
+
+### 46.2 State Machine
+
+```
+drafted → assembling → transit → negotiation → settlement → completed
+                          ↓           ↓
+                       delayed    compromised → failed
+```
+
+Each economy tick advances agents probabilistically via
+`POS_FreeAgentService.tick()`. Not every tick produces a state change —
+agents progress at realistic speeds with risk of delay or loss.
+
+### 46.3 Agent Archetypes
+
+| Archetype | Commission | Risk | Speed | Fantasy |
+|-----------|-----------|------|-------|---------|
+| Runner | 5% | 20% | 2d | Kid with a bike and a death wish |
+| Broker | 15% | 5% | 5d | Smooth-talker with a ham radio |
+| Courier | 10% | 10% | 3d | Ex-military professionals |
+| Smuggler | 20% | 25% | 4d | Operates outside the law |
+| Contact | 8% | 3% | 6d | Established wholesaler route |
+
+### 46.4 Screen
+
+Dual tab bars: [All|Runner|Broker|Courier|Smuggler] × [Active|Completed|Failed].
+Each row shows: agent name, state badge, zone, cargo, ETA, risk, commission.
+Active agents have a [Recall] button (abort mission, no payout).
+
+### 46.5 Settlement
+
+On completion: player receives `payout × (1 - commissionRate)`.
+On failure: cargo is lost, agent is gone, no payout.
+
+### 46.6 Anti-Patterns
+
+| Anti-Pattern | Why It's Wrong |
+|---|---|
+| Deterministic state transitions | Probabilistic feels real; waiting by the radio IS the gameplay |
+| Invisible agents | Signal feed must show updates; this is a radio game |
+| Risk-free agents | Loss must be possible or the system has no tension |
+| Instant settlement | Agents take days; patience is the cost of delegation |
