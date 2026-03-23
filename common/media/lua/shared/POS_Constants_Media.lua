@@ -102,6 +102,15 @@ POS_Constants.INTEL_VISIT_KEY_PREFIX      = "POS_IntelVisit_"
 POS_Constants.INTEL_CLEANUP_MULTIPLIER    = 2
 
 ---------------------------------------------------------------
+-- Market recon repeat visit discount
+-- A survivor who knows the layout works faster the second time.
+---------------------------------------------------------------
+
+POS_Constants.MARKET_REPEAT_DISCOUNT_PCT  = 0.50  -- 50% faster on repeat visit
+POS_Constants.MARKET_REPEAT_WINDOW_DAYS   = 7     -- discount expires after 7 days
+POS_Constants.MD_MARKET_REVISIT_TRACKER   = "POS_RevisitTracker"
+
+---------------------------------------------------------------
 -- VHS tape event log linking
 ---------------------------------------------------------------
 

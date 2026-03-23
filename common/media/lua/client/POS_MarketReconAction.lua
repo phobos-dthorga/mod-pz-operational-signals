@@ -89,11 +89,27 @@ function POS_MarketReconAction:new(player, categoryId, location)
     o.paper = nil
     o.writingTool = nil
 
-    -- Check for repeat visit discount
+    -- Check for repeat visit discount — a survivor who knows
+    -- the layout of a building works faster the second time.
     local actionTime = POS_Sandbox and POS_Sandbox.getMarketNoteActionTime
         and POS_Sandbox.getMarketNoteActionTime()
         or POS_Constants.MARKET_NOTE_ACTION_TIME
-    -- TODO: check modData for repeat visit and apply discount
+
+    -- Check if player has visited this room before (within the discount window).
+    -- Visit timestamps are stored at perform() in player:getModData()[visitKey].
+    local sq = player and player:getCurrentSquare()
+    local visitKey = POS_MarketReconAction.getVisitKey(sq)
+    if visitKey and player then
+        local modData = player:getModData()
+        local lastDay = modData and modData[visitKey]
+        if lastDay and type(lastDay) == "number" then
+            local day = getGameTime() and getGameTime():getNightsSurvived() or 0
+            if (day - lastDay) <= POS_Constants.MARKET_REPEAT_WINDOW_DAYS then
+                actionTime = math.floor(actionTime
+                    * (1.0 - POS_Constants.MARKET_REPEAT_DISCOUNT_PCT))
+            end
+        end
+    end
     o.maxTime = actionTime
 
     return o
