@@ -39,7 +39,8 @@ return {
         reputationMax  = { type = "number",  default = 20 },
         expiryDaysMin  = { type = "number",  min = 1, default = 3 },
         expiryDaysMax  = { type = "number",  min = 1, default = 7 },
-        requiredBands  = { type = "array" },
-        enabled        = { type = "boolean", default = true },
+        requiredBands      = { type = "array" },
+        crossModRequires   = { type = "string", default = "" },
+        enabled            = { type = "boolean", default = true },
     }
 }

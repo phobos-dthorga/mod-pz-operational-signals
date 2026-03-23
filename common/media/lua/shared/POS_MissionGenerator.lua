@@ -132,6 +132,12 @@ local BUILTIN_PATHS = {
     "Definitions/Missions/survey_infrastructure",
 }
 
+--- Cross-mod mission paths — only loaded when the dependent mod is active.
+local CROSSMOD_MISSIONS = {
+    { path = "Definitions/Missions/crossmod_chem_supply",          modId = "PhobosChemistryPathways" },
+    { path = "Definitions/Missions/crossmod_specimen_collection",  modId = "PhobosIndustrialPathology" },
+}
+
 function POS_MissionGenerator.init()
     if _initialised then return end
     _initialised = true
@@ -151,6 +157,19 @@ function POS_MissionGenerator.init()
             _missionRegistry:register(data)
         else
             PhobosLib.warn("POS", _TAG, "Failed to load mission definition: " .. tostring(path))
+        end
+    end
+
+    -- Load cross-mod missions (only when dependent mod is active)
+    local activeMods = getActivatedMods()
+    for _, cm in ipairs(CROSSMOD_MISSIONS) do
+        if activeMods and activeMods:contains(cm.modId) then
+            local cmOk, cmData = pcall(require, cm.path)
+            if cmOk and type(cmData) == "table" then
+                _missionRegistry:register(cmData)
+                PhobosLib.debug("POS", _TAG,
+                    "Cross-mod mission loaded: " .. cm.path .. " (" .. cm.modId .. ")")
+            end
         end
     end
 
