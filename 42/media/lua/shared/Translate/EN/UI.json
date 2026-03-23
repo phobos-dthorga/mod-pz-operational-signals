@@ -993,5 +993,17 @@
     "UI_POS_Signal_Alert_Shortage": "Supply shortage: {category}",
     "UI_POS_Signal_Alert_Signal": "Unusual signal detected",
     "UI_POS_Band_Tactical": "Tactical",
-    "UI_POS_Band_Operations": "Operations"
+    "UI_POS_Band_Operations": "Operations",
+
+    "UI_POS_Mission_Briefing_Title": "MISSION BRIEFING",
+    "UI_POS_Mission_Section_Title": "TITLE",
+    "UI_POS_Mission_Section_Situation": "SITUATION",
+    "UI_POS_Mission_Section_Tasking": "TASKING",
+    "UI_POS_Mission_Section_Constraints": "CONSTRAINTS",
+    "UI_POS_Mission_Section_Submission": "SUBMISSION",
+    "UI_POS_Mission_Difficulty_1": "Routine",
+    "UI_POS_Mission_Difficulty_2": "Standard",
+    "UI_POS_Mission_Difficulty_3": "Demanding",
+    "UI_POS_Mission_Difficulty_4": "Critical",
+    "UI_POS_Mission_Difficulty_5": "Extreme"
 }

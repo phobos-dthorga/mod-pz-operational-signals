@@ -1,0 +1,27 @@
+return {
+    schemaVersion = 1,
+    id = "recon_targeted",
+    name = "Targeted Site Investigation",
+    description = "Investigate a specific building or site for market intelligence.",
+    category = "recon",
+    difficultyMin = 2,
+    difficultyMax = 4,
+    briefingPools = {
+        title      = "titles_common",
+        situation  = "situations_common",
+        tasking    = "taskings_common",
+        constraints = "constraints_common",
+        submission = "submissions_common",
+    },
+    objectives = {
+        { type = "visit",  description = "Visit the target location" },
+        { type = "survey", description = "Conduct detailed site survey" },
+        { type = "report", description = "Submit findings via terminal" },
+    },
+    rewardMin = 80,
+    rewardMax = 250,
+    reputationMin = 5,
+    reputationMax = 20,
+    expiryDaysMin = 3,
+    expiryDaysMax = 7,
+}

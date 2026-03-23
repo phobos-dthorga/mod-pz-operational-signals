@@ -1,0 +1,26 @@
+return {
+    schemaVersion = 1,
+    id = "recon_basic",
+    name = "Basic Field Reconnaissance",
+    description = "Gather general market intelligence from a zone.",
+    category = "recon",
+    difficultyMin = 1,
+    difficultyMax = 2,
+    briefingPools = {
+        title      = "titles_common",
+        situation  = "situations_common",
+        tasking    = "taskings_common",
+        constraints = "constraints_common",
+        submission = "submissions_common",
+    },
+    objectives = {
+        { type = "survey", description = "Survey the designated zone" },
+        { type = "report", description = "Submit findings via terminal" },
+    },
+    rewardMin = 40,
+    rewardMax = 120,
+    reputationMin = 3,
+    reputationMax = 10,
+    expiryDaysMin = 5,
+    expiryDaysMax = 10,
+}

@@ -141,6 +141,20 @@ POS_Constants.ALERT_FEED_MAX_ENTRIES    = 10
 POS_Constants.PROCESS_FEED_MAX_ENTRIES  = 5
 
 ---------------------------------------------------------------
+-- Mission text compositor (§32)
+---------------------------------------------------------------
+
+POS_Constants.MISSION_BRIEFING_SECTIONS = {
+    "title", "situation", "tasking", "constraints", "submission",
+}
+POS_Constants.MISSION_HISTORY_MAX_SIZE          = 10
+POS_Constants.MISSION_MIN_DIFFICULTY            = 1
+POS_Constants.MISSION_MAX_DIFFICULTY            = 5
+POS_Constants.MISSION_VOICE_OVERRIDE_SECTIONS   = { "situation", "submission" }
+POS_Constants.ALERT_FEED_MAX_ENTRIES    = 10
+POS_Constants.PROCESS_FEED_MAX_ENTRIES  = 5
+
+---------------------------------------------------------------
 -- Terminal frame geometry (telnet-style header + status bar)
 ---------------------------------------------------------------
 

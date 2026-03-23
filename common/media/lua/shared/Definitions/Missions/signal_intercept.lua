@@ -1,0 +1,28 @@
+return {
+    schemaVersion = 1,
+    id = "signal_intercept",
+    name = "Signal Intercept Operation",
+    description = "Monitor a frequency band for actionable intelligence.",
+    category = "sigint",
+    difficultyMin = 3,
+    difficultyMax = 5,
+    briefingPools = {
+        title      = "titles_common",
+        situation  = "situations_common",
+        tasking    = "taskings_common",
+        constraints = "constraints_common",
+        submission = "submissions_common",
+    },
+    objectives = {
+        { type = "monitor",  description = "Establish monitoring on target frequency" },
+        { type = "intercept", description = "Log intercepted transmissions" },
+        { type = "analyse",  description = "Analyse captured traffic" },
+        { type = "report",   description = "Submit analysis via terminal" },
+    },
+    rewardMin = 150,
+    rewardMax = 500,
+    reputationMin = 10,
+    reputationMax = 30,
+    expiryDaysMin = 3,
+    expiryDaysMax = 6,
+}

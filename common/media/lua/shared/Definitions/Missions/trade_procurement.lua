@@ -1,0 +1,26 @@
+return {
+    schemaVersion = 1,
+    id = "trade_procurement",
+    name = "Commodity Procurement",
+    description = "Acquire specific commodities from market sources.",
+    category = "trade",
+    difficultyMin = 2,
+    difficultyMax = 4,
+    briefingPools = {
+        title      = "titles_common",
+        situation  = "situations_common",
+        tasking    = "taskings_common",
+        constraints = "constraints_common",
+        submission = "submissions_common",
+    },
+    objectives = {
+        { type = "acquire", description = "Source the requested commodities" },
+        { type = "report",  description = "Confirm acquisition via terminal" },
+    },
+    rewardMin = 100,
+    rewardMax = 350,
+    reputationMin = 8,
+    reputationMax = 25,
+    expiryDaysMin = 4,
+    expiryDaysMax = 8,
+}

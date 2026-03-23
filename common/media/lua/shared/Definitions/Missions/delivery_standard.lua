@@ -1,0 +1,27 @@
+return {
+    schemaVersion = 1,
+    id = "delivery_standard",
+    name = "Standard Courier Delivery",
+    description = "Transport goods between locations.",
+    category = "delivery",
+    difficultyMin = 1,
+    difficultyMax = 3,
+    briefingPools = {
+        title      = "titles_common",
+        situation  = "situations_common",
+        tasking    = "taskings_common",
+        constraints = "constraints_common",
+        submission = "submissions_common",
+    },
+    objectives = {
+        { type = "pickup",  description = "Collect the cargo" },
+        { type = "deliver", description = "Deliver to the drop-off point" },
+        { type = "confirm", description = "Confirm delivery via terminal" },
+    },
+    rewardMin = 60,
+    rewardMax = 180,
+    reputationMin = 4,
+    reputationMax = 12,
+    expiryDaysMin = 3,
+    expiryDaysMax = 5,
+}
