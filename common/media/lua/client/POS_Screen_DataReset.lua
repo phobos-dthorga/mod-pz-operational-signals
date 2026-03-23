@@ -92,9 +92,9 @@ local function showConfirmationDialog(terminal)
     local btnH = 30
     local cancelBtn = ISButton:new(w / 2 - btnW - 15, h - btnH - 20, btnW, btnH,
         PhobosLib.safeGetText("UI_POS_DataReset_Cancel"), modal,
-        function(self)
-            self.parent:setVisible(false)
-            self.parent:removeFromUIManager()
+        function()
+            modal:setVisible(false)
+            modal:removeFromUIManager()
         end)
     cancelBtn:initialise()
     cancelBtn:instantiate()
@@ -105,13 +105,13 @@ local function showConfirmationDialog(terminal)
     -- Confirm button
     local confirmBtn = ISButton:new(w / 2 + 15, h - btnH - 20, btnW, btnH,
         PhobosLib.safeGetText("UI_POS_DataReset_Confirm"), modal,
-        function(self)
+        function()
             local p = getSpecificPlayer(0)
             local wc, pc = POS_DataResetService.resetAll(p)
             PhobosLib.debug("POS", "DataReset", "Reset complete: " .. tostring(wc) .. " world, " .. tostring(pc) .. " player keys")
 
-            self.parent:setVisible(false)
-            self.parent:removeFromUIManager()
+            modal:setVisible(false)
+            modal:removeFromUIManager()
 
             -- Navigate back to main menu after reset
             if POS_ScreenManager then
