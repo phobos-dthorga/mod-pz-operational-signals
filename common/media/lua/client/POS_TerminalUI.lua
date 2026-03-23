@@ -62,12 +62,6 @@ end
 --- Content padding inside the screen area.
 local SCREEN_PAD = POS_Constants.UI_SCREEN_PADDING
 
---- Signal feed panel width (left panel, fixed).
-local SIGNAL_PANEL_WIDTH = POS_Constants.UI_SIGNAL_PANEL_WIDTH
-
---- Context detail panel width (right panel, fixed).
-local CONTEXT_PANEL_WIDTH = POS_Constants.UI_CONTEXT_PANEL_WIDTH
-
 --- Minimum window width before context panel auto-collapses.
 local CONTEXT_COLLAPSE_THRESHOLD = POS_Constants.UI_CONTEXT_COLLAPSE_THRESHOLD
 
@@ -133,8 +127,10 @@ function POS_TerminalUI:repositionPanels()
 
     local showContext = (self.width >= CONTEXT_COLLAPSE_THRESHOLD)
 
-    -- SignalPanel (left, fixed width, always visible when ready)
-    local sigW = SIGNAL_PANEL_WIDTH
+    -- SignalPanel (left, percentage-based width with minimum)
+    local sigW = math.max(
+        math.floor(self.width * POS_Constants.UI_SIGNAL_PANEL_WIDTH_PCT),
+        POS_Constants.UI_SIGNAL_PANEL_MIN_WIDTH)
     if self.signalPanel then
         self.signalPanel:setX(innerX)
         self.signalPanel:setY(innerY)
@@ -143,8 +139,10 @@ function POS_TerminalUI:repositionPanels()
         self.signalPanel:setVisible(isReady)
     end
 
-    -- ContextPanel (right, fixed width, collapsible below threshold)
-    local ctxW = showContext and CONTEXT_PANEL_WIDTH or 0
+    -- ContextPanel (right, percentage-based width, collapsible below threshold)
+    local ctxW = showContext and math.max(
+        math.floor(self.width * POS_Constants.UI_CONTEXT_PANEL_WIDTH_PCT),
+        POS_Constants.UI_CONTEXT_PANEL_MIN_WIDTH) or 0
     if self.contextPanel then
         if showContext then
             self.contextPanel:setX(innerX + innerW - ctxW)

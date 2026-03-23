@@ -194,7 +194,7 @@ function screen.create(contentPanel, _params, _terminal)
                     -- Disabled trade button
                     local btn = W.createButton(parent, rx, ry + itemY,
                         rw, ctx.btnH,
-                        W.safeGetText("UI_POS_Contacts_TradeBlocked"),
+                        W.safeGetText("UI_POS_Contacts_Blocked"),
                         nil, nil)
                     if btn and btn.setEnable then
                         btn:setEnable(false)

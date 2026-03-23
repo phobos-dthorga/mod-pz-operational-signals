@@ -325,6 +325,7 @@
     "UI_POS_Contacts_UnknownContact": "Unknown Contact",
     "UI_POS_Contacts_Trade": "Trade",
     "UI_POS_Contacts_Blocked": "Not Trading",
+    "UI_POS_Contacts_StateUnknown": "Status Unknown",
     "UI_POS_MarketSignals_Title": "Market Signals",
     "UI_POS_MarketSignals_NoSignals": "No market signals recorded.",
     "UI_POS_MarketSignals_Hard": "HARD",

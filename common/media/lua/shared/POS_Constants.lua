@@ -128,9 +128,11 @@ POS_Constants.POWER_CHECK_INTERVAL   = 60
 
 POS_Constants.TERMINAL_DEFAULT_WIDTH_PCT    = 0.75  -- 75% of screen width
 POS_Constants.TERMINAL_DEFAULT_HEIGHT_PCT   = 0.75  -- 75% of screen height
-POS_Constants.UI_SIGNAL_PANEL_WIDTH         = 180
-POS_Constants.UI_CONTEXT_PANEL_WIDTH        = 200
-POS_Constants.UI_CONTEXT_COLLAPSE_THRESHOLD = 900
+POS_Constants.UI_SIGNAL_PANEL_WIDTH_PCT     = 0.20  -- 20% of terminal width
+POS_Constants.UI_CONTEXT_PANEL_WIDTH_PCT    = 0.20  -- 20% of terminal width
+POS_Constants.UI_SIGNAL_PANEL_MIN_WIDTH     = 160   -- minimum px width
+POS_Constants.UI_CONTEXT_PANEL_MIN_WIDTH    = 180   -- minimum px width
+POS_Constants.UI_CONTEXT_COLLAPSE_THRESHOLD = 700   -- collapse context panel below this terminal width
 POS_Constants.UI_SCREEN_PADDING             = 8
 POS_Constants.UI_PANEL_GAP                  = 4
 
