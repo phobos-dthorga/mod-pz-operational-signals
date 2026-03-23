@@ -235,11 +235,17 @@ function POS_TerminalUI:createChildren()
     self.contentPanel = createPanel(self, sx + pad, sy + pad, sw - pad * 2, sh - pad * 2)
 
     -- SignalPanel (left sidebar — passive world awareness)
-    self.signalPanel = createPanel(self, 0, 0, SIGNAL_PANEL_WIDTH, 100)
+    local initSigW = math.max(
+        math.floor(self.width * POS_Constants.UI_SIGNAL_PANEL_WIDTH_PCT),
+        POS_Constants.UI_SIGNAL_PANEL_MIN_WIDTH)
+    self.signalPanel = createPanel(self, 0, 0, initSigW, 100)
     self.signalPanel:setVisible(false)
 
     -- ContextPanel (right sidebar — context actions & insight)
-    self.contextPanel = createPanel(self, 0, 0, CONTEXT_PANEL_WIDTH, 100)
+    local initCtxW = math.max(
+        math.floor(self.width * POS_Constants.UI_CONTEXT_PANEL_WIDTH_PCT),
+        POS_Constants.UI_CONTEXT_PANEL_MIN_WIDTH)
+    self.contextPanel = createPanel(self, 0, 0, initCtxW, 100)
     self.contextPanel:setVisible(false)
 
     -- Register ESC key listener (closure captures self)
