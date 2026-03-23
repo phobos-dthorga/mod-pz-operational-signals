@@ -60,6 +60,11 @@ POS_Events.OnMarketSnapshotUpdated = LuaEvent.new("POS.OnMarketSnapshotUpdated")
 --- Payload: { day = number }
 POS_Events.OnStockTickClosed = LuaEvent.new("POS.OnStockTickClosed")
 
+--- Fired when a market event fires in a zone (bulk arrival, convoy delay, etc.).
+--- Payload: { eventId = string, zoneId = string, signalClass = string,
+---            pressure = number, categories = table }
+POS_Events.OnMarketEvent = LuaEvent.new("POS.OnMarketEvent")
+
 --- Fired when a buy/sell trade transaction completes.
 --- Payload: { fullType = string, quantity = number, totalPrice = number, isBuy = boolean }
 POS_Events.OnTradeCompleted = LuaEvent.new("POS.OnTradeCompleted")

@@ -119,6 +119,18 @@ POS_Constants.SIGNAL_CLASS_SOFT       = "soft"
 POS_Constants.SIGNAL_CLASS_STRUCTURAL = "structural"
 
 ---------------------------------------------------------------
+-- Living Market: Event Service
+---------------------------------------------------------------
+
+POS_Constants.EVENT_PROBABILITY_MULTIPLIER  = 1.0   -- sandbox-scalable
+POS_Constants.EVENT_MAX_ACTIVE_PER_ZONE     = 3
+POS_Constants.EVENT_COOLDOWN_DAYS           = 2     -- min days between events per zone
+POS_Constants.EVENT_DEFAULT_DURATION_DAYS   = 3
+POS_Constants.EVENT_MAX_RECENT              = 30    -- rolling recent events log cap
+POS_Constants.EVENT_PRESSURE_CLAMP_MIN      = -1.0
+POS_Constants.EVENT_PRESSURE_CLAMP_MAX      = 1.0
+
+---------------------------------------------------------------
 -- Living Market: Simulation Defaults
 ---------------------------------------------------------------
 

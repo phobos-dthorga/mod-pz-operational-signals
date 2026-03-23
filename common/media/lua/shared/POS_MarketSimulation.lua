@@ -571,6 +571,23 @@ function POS_MarketSimulation.tickSimulation(currentDay)
         end
     end
 
+    -- Phase 5: Market event generation (probability-based)
+    if POS_EventService then
+        local eventsFired = 0
+        POS_EventService.purgeExpired(currentDay)
+        for _, zoneId in ipairs(POS_Constants.MARKET_ZONES) do
+            local firedOk, firedCount = PhobosLib.safecall(
+                POS_EventService.rollEventsForZone, _eventRegistry, zoneId, currentDay)
+            if firedOk and type(firedCount) == "number" then
+                eventsFired = eventsFired + firedCount
+            end
+        end
+        if eventsFired > 0 then
+            PhobosLib.debug("POS", _TAG,
+                "tickSimulation Phase 5: fired " .. eventsFired .. " market events")
+        end
+    end
+
     -- Hybrid persistence: save zone states to ModData
     local ok, POS_WorldState = PhobosLib.safecall(require, "POS_WorldState")
     if ok and POS_WorldState and POS_WorldState.getMarketZones then
