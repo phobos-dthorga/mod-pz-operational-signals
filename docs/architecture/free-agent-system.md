@@ -1,20 +1,44 @@
 # Free Agent System — Architecture & Implementation Guide
 
-> **Design reference**: `design-guidelines.md` §46
-> **Part of**: Three-Layer Selling System (§42, Phase 3)
+> **Design reference**: `design-guidelines.md` §46, §47
+> **Role**: POSnet's field-operations actor layer (not merely selling Phase 3)
 > **Dependencies**: PhobosLib (ModData, safecall, randFloat, clamp, notifyOrSay), Starlit (POS_Events)
+> **Cross-references**: §42 Three-Layer Selling, §43 Contracts, §9 Panel Architecture,
+> §24 Living Market, §21 SIGINT, §39 Apocalypse Pricing, §40 Starlit, §45 Band Registry
 
 ---
 
 ## 1. What It Is
 
-The Free Agent System is Phase 3 of the Three-Layer Selling System (§42).
-It lets the player delegate trade operations to NPC runners, brokers, couriers,
-and smugglers. The player deploys an agent from the terminal, then waits
-by the radio as the agent progresses through a probabilistic state machine.
+The Free Agent System is POSnet's **field-operations actor layer** — named
+NPCs that the player dispatches into zombie territory to execute operations
+on their behalf. While it originated as Phase 3 of the Three-Layer Selling
+System (§42), the system is designed as a general-purpose operations
+substrate that can serve:
 
-**Fantasy**: "You send someone into the wasteland. You wait. The radio
-crackles. Sometimes they come back."
+- Contract fulfilment (sell-side logistics)
+- Commodity sale runs (spot selling)
+- Black-market smuggling (grey-market contracts)
+- Wholesaler/contact procurement (buy-side delegation)
+- Recon couriering (intel delivery between terminals)
+- Signal relay or data handoff jobs (future)
+
+**Fantasy**: "You send someone into the wasteland. You wait by the radio.
+The static crackles. Sometimes they come back. Sometimes they don't."
+
+### 1.1 Design Pillars
+
+1. **Observability first** — If the player can't see the system working
+   through the signal feed and terminal, it has failed. Agents are not
+   background automation; they are radio drama.
+2. **Cargo and money are sacred** — Item movement and money movement must
+   have hard invariants. No fuzzy handwaving about "where did the items go."
+3. **Zone risk is central** — Agent risk is not a flat archetype scalar.
+   It is a function of archetype baseline, zone volatility, market
+   disruption, signal quality, and intel freshness.
+4. **Signal infrastructure matters** — The radio layer (§5) is not just
+   flavour. Poor signal degrades telemetry, worsens recall success, and
+   limits intervention options.
 
 ---
 
@@ -66,9 +90,138 @@ Each economy tick, `resolveNextState()` checks:
 6. `compromised` has 30% fail, 40% recover, 30% stay (each tick)
 7. `settlement` always advances to `completed` (auto)
 
+### 3.3 State Machine Expansion Path (Future)
+
+The current 9-state machine covers the conceptual ground. When gameplay
+demands it (e.g. partial-success recall requiring "which leg" the agent
+is on), the following expansion stages are available:
+
+```
+sourcing/pickup → outbound transit → arrival/market access →
+negotiation/execution → return transit → settlement/handoff
+```
+
+This split would enable:
+- Partial success modelling (recall during return = cargo retained)
+- Archetype specialisation per stage (runners excel at transit, brokers at negotiation)
+- More granular signal-feed radio drama
+
+**Deferred until**: the Deploy UI exists and real players provide feedback
+on whether the current granularity feels sufficient.
+
 ---
 
-## 4. Archetype Tuning
+## 4. Hard Invariants
+
+These rules are non-negotiable. They protect the integrity of the economy
+and prevent exploits, duplication, and authority confusion — especially
+important for future MP support.
+
+### 4.1 Cargo Movement
+
+| Rule | Detail |
+|------|--------|
+| **Deploy consumes immediately** | `PhobosLib.consumeItems()` removes cargo from player inventory at deployment time. No "promise to deliver later." |
+| **Provenance is explicit** | Every agent record stores `cargoSourceType` (player_inventory / faction_depot / world_stash) and `cargoSourceOwnerId`. |
+| **Recall returns proportionally** | Recalled agents return a percentage of cargo based on progress: `drafted/assembling` = 100%, `transit` = 75%, `negotiation+` = 50%, `compromised` = 0%. |
+| **Failure = total loss** | Failed/compromised-to-failed agents lose all cargo. This is the risk the player accepted. |
+
+### 4.2 Money Movement
+
+| Rule | Detail |
+|------|--------|
+| **Settlement is the only credit point** | Money is only added to the player when `state == COMPLETED`. No partial payouts on recall. |
+| **Commission is deducted atomically** | `netPayout = settlementPayout × (1 - commissionRate)` — single operation, no intermediate state. |
+| **Contract linkage is mandatory** | If an agent is fulfilling a contract, completion must call `POS_ContractService.settleViaAgent()` (or equivalent). The contract and agent settle in the same transaction. |
+
+### 4.3 Ownership (MP-Ready)
+
+| Rule | Detail |
+|------|--------|
+| **Every record has an owner scope** | `ownerScopeType` (player / faction / public_system) + `ownerScopeId` on all operational records. |
+| **Only owner scope can act** | Recall, cancel, and settlement require matching ownership. Faction officers can act on faction-owned agents. |
+| **World owns truth** | The authoritative data store is world-scoped ModData. Ownership tags filter access, not storage location. |
+| **Single settlement authority** | Only the server/SP authority settles outcomes and credits funds. Idempotent — reprocessing the same completion must not duplicate money or items. |
+
+---
+
+## 5. Three-Layer Observability
+
+If the player can't see the system working, it has failed. Agent
+observability is not a UI enhancement — it is a core requirement.
+
+### 5.1 Strategic Visibility (before deployment)
+
+What the player sees when deciding whether to send an agent:
+- Chosen archetype with commission/risk/speed tradeoffs
+- Destination zone with current volatility and pressure
+- Cargo manifest and expected payout
+- Calculated risk: `archetype_baseline × zone_volatility × disruption × signal_penalty`
+- Expected ETA range
+- Reason for using this agent vs. manual fulfilment
+
+### 5.2 Operational Visibility (during mission)
+
+What the player sees while waiting by the radio:
+- State badge updates in the SignalPanel intel stream (§9.2)
+- PN toast notifications per state change (§9 PN Integration)
+- ContextPanel detail when agent is selected: current state, zone,
+  last contact time, ETA countdown, risk level, cargo status
+- Delay/compromise cause text from text pools (voice-pack-aware)
+- Signal quality indicator (degraded telemetry at low signal)
+
+### 5.3 Forensic Visibility (after completion)
+
+What the player sees in the history tab:
+- Full state transition log with timestamps
+- Settlement breakdown (payout, commission, net)
+- Cargo manifest (what was sent, what was delivered/lost)
+- Failure cause (compromised → failed, recalled, expired)
+- Agent success rate (if persistent agent roster is implemented)
+
+---
+
+## 6. Risk Model
+
+Agent risk is not a flat archetype scalar. The full risk formula:
+
+```
+finalRisk = archetypeBaseline
+          × zoneVolatility
+          × (1 + marketDisruption)
+          × signalPenalty
+          × intelFreshnessMod
+```
+
+Where:
+- `archetypeBaseline` = `FREE_AGENT_RISK_LEVELS[archetype]` (0.03–0.25)
+- `zoneVolatility` = `zoneDef.baseVolatility` (0.15–0.30)
+- `marketDisruption` = current zone pressure / max pressure (0–1)
+- `signalPenalty` = `1.0 + (1.0 - signalStrength) × 0.5` (poor signal = +50% risk)
+- `intelFreshnessMod` = stale zone intel increases risk (placeholder, future)
+
+> **Current state**: Only `archetypeBaseline` is wired. Zone volatility,
+> disruption, signal, and intel are documented but not yet integrated.
+
+---
+
+## 7. Signal Infrastructure Integration
+
+The radio layer is not just flavour for agents — it has mechanical effects:
+
+| Signal Quality | Telemetry | Recall Success | Intervention |
+|---------------|-----------|----------------|-------------|
+| 80-100% | Full state updates | 95% success | Mid-run rerouting possible (future) |
+| 50-79% | Delayed updates (1 tick lag) | 75% success | Recall only |
+| 25-49% | Sporadic updates | 50% success | Recall with 50% cargo loss |
+| <25% | "Last contact X days ago" | 25% success | No intervention possible |
+
+> **Current state**: Not yet wired. Signal quality is available via
+> `POS_ConnectionManager.getSignalStrength()` but agents don't read it.
+
+---
+
+## 8. Archetype Tuning
 
 All values sourced from `POS_Constants` — no magic numbers.
 
@@ -407,7 +560,117 @@ RISK_THRESHOLD_MODERATE = (defined in constants)
 
 ---
 
-## 12. Suggested Next Steps (Priority Order)
+## 12. Multiplayer Ownership Model
+
+> **Status**: Design only — not yet implemented. Documented early because
+> the schema shape depends on ownership decisions.
+
+### 12.1 Principle
+
+POSnet MP uses a **hybrid model**: the world owns the simulation, players
+and factions own operational rights, and intelligence moves from private
+to shared to public by deliberate publication.
+
+**One sentence**: "Single server-owned data model with explicit ownership
+scopes, where the world owns truth, players/factions own operational
+rights, and intelligence can move from private to shared to public."
+
+### 12.2 Four Ownership Classes
+
+| Class | Examples | Persistence |
+|-------|----------|-------------|
+| **World-owned** | Economy state, market prices, zone volatility, global event logs, building caches, broadcast intel | World ModData |
+| **Player-owned** | Cash, reputation, watchlists, draft jobs, personal agent roster, private intel | Player ModData |
+| **Faction-owned** | Shared depots, faction contracts, shared agents, faction treasury, relay permissions | World ModData (tagged) |
+| **Lease/claim-owned** | Terminal operator, relay maintainer, satellite installation | World ModData (tagged) |
+
+### 12.3 Ownership Scope Fields
+
+Every operational record (agent, contract, shipment, compiled intel) carries:
+
+```lua
+ownerScopeType    -- "player" | "faction" | "public_system"
+ownerScopeId      -- steam ID or faction ID
+createdByPlayerId -- who initiated the action
+visibility        -- "private" | "faction" | "public"
+terminalId        -- which terminal originated this
+```
+
+### 12.4 Cargo Provenance
+
+Every deployable operation records where items came from:
+
+```lua
+cargoSourceType   -- "player_inventory" | "faction_depot" | "world_stash"
+cargoSourceOwnerId
+reservedItems     -- items locked on dispatch
+consumedItems     -- items removed on dispatch
+salvagePolicy     -- rules for partial return on recall/failure
+```
+
+### 12.5 Free Agents in MP
+
+- Default to **player-owned** dispatch from personal terminal
+- Faction terminal/depot prompts for personal vs faction dispatch
+- Only owner scope can recall/cancel
+- Faction officers can intervene on faction-owned agents
+- Public visibility only if deliberately rebroadcast into signal feed
+
+### 12.6 Contracts in MP
+
+Three layers:
+1. **Public board contracts** — visible to all who can receive that feed
+2. **Claimed contracts** — temporarily reserved to player/faction
+3. **Private execution records** — working state after claim
+
+Claiming converts a public offer into a scoped operational record. The
+offer remains visible as "TAKEN" on the board.
+
+### 12.7 Intel in MP
+
+Three publication tiers:
+1. **Raw private intel** — player records VHS/scanner data, kept private
+2. **Compiled scoped intel** — processed at terminal, shared with faction
+3. **Broadcast public intel** — published to the POSnet network
+
+This makes espionage, resale, and intelligence asymmetry possible later.
+
+### 12.8 Implementation Phases
+
+| Phase | Scope | When |
+|-------|-------|------|
+| 1. Ownership tags | Add scope fields to all records, filter UI | Before MP beta |
+| 2. Action permissions | Only correct scope can recall/cancel/settle | MP alpha |
+| 3. Inventory provenance | Reserve/consume cargo correctly, salvage rules | MP alpha |
+| 4. Scoped intel | Private → faction → public pipeline | MP beta |
+| 5. Claimable infrastructure | Terminals, relays, dishes, shared depots | MP release |
+
+### 12.9 Vanilla Faction Integration
+
+PZ Build 42 has built-in factions via the `Faction` Java class. POSnet
+should lean on vanilla factions for membership/role queries rather than
+building a parallel system. A thin adapter layer maps vanilla faction
+roles to POSnet permission levels:
+
+| Vanilla Role | POSnet Permission |
+|-------------|-------------------|
+| Owner | Full control (dispatch, recall, settle, manage infrastructure) |
+| Officer | Dispatch + recall faction-owned agents, spend treasury |
+| Member | View faction operations, contribute cargo |
+
+### 12.10 Anti-Grief Rules
+
+| Rule | Detail |
+|------|--------|
+| Reservation before execution | Goods locked immediately on dispatch |
+| Single settlement authority | Only server settles and credits funds |
+| Idempotent completion | Reprocessing same completion must not duplicate money/items |
+| Lease timeout | Abandoned infrastructure decays to neutral after sandbox-configurable days |
+| Audit trail | Append-only operational log: who created, claimed, changed state, got paid |
+
+---
+
+## 13. Suggested Next Steps (Priority Order)
 
 1. **Fix notifyOrSay calls across POSnet** — 18 broken shorthand calls in
    6 files. All must be converted to the opts-table signature. Without this,

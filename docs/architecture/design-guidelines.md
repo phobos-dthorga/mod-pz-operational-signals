@@ -3655,3 +3655,58 @@ On failure: cargo is lost, agent is gone, no payout.
 | Invisible agents | Signal feed must show updates; this is a radio game |
 | Risk-free agents | Loss must be possible or the system has no tension |
 | Instant settlement | Agents take days; patience is the cost of delegation |
+
+---
+
+## 47. Operations Actor Architecture
+
+> **Status**: Design document. Reframes Free Agents from "selling Phase 3"
+> to POSnet's general-purpose field-operations actor layer.
+> See `docs/architecture/free-agent-system.md` for full detail.
+
+### 47.1 Principle
+
+Free agents are not merely trade delegates. They are **operational assets**
+— the player's extension into the world when the terminal can't reach.
+The same actor framework serves contracts, procurement, smuggling, recon
+couriering, signal relay, and data handoff. "Send someone out, wait by the
+radio" is the universal POSnet experience at the tactical layer.
+
+### 47.2 Design Pillars
+
+1. **Observability first** — strategic (pre-deploy), operational (in-flight),
+   forensic (post-completion). Three layers, all visible through terminal UI.
+2. **Cargo and money are sacred** — hard invariants for item consumption,
+   provenance tracking, settlement authority, and salvage rules.
+3. **Zone risk is central** — `finalRisk = archetype × zone × disruption ×
+   signal × intel`. Not a flat scalar.
+4. **Signal infrastructure matters** — poor signal degrades telemetry,
+   reduces recall success, limits intervention options.
+
+### 47.3 Hard Invariants
+
+- Deploy consumes cargo immediately (`PhobosLib.consumeItems`)
+- Settlement is the only money credit point
+- Commission is deducted atomically
+- Contract-linked runs settle through the same authority as manual fulfilment
+- Every record carries ownership scope (player/faction/public)
+- Only owner scope can recall/cancel/settle
+
+### 47.4 MP Ownership Model
+
+Hybrid: world owns simulation, players/factions own operational rights.
+Single server-owned data store with ownership scope tags. Five
+implementation phases (tags → permissions → provenance → intel → infra).
+Vanilla PZ factions mapped to POSnet permission levels (owner/officer/member).
+See `free-agent-system.md` §12 for full detail.
+
+### 47.5 Anti-Patterns
+
+| Anti-Pattern | Why It's Wrong |
+|---|---|
+| Treating agents as "selling Phase 3 only" | They are a general operations substrate |
+| Flat risk per archetype | Risk must incorporate zone, disruption, signal, intel |
+| Black-box agents | Observability is a core requirement, not a UI enhancement |
+| Fuzzy cargo provenance | "Where did the items go?" must always be answerable |
+| Per-player isolated data stores in MP | Kills the shared-world radio fantasy |
+| Bolting MP ownership on later | Schema shape depends on ownership decisions |
