@@ -264,6 +264,36 @@ jobs:
           print("No invalid prefixes found in JSON translation files.")
           PYEOF
 
+      - name: Duplicate JSON key detection
+        run: |
+          python3 <<'PYEOF'
+          import json, sys, os, glob
+
+          fail = False
+          for f in glob.glob("42/media/lua/shared/Translate/EN/*.json"):
+              with open(f) as fh:
+                  content = fh.read()
+              # json.loads with object_pairs_hook to detect duplicates
+              keys = []
+              dupes = []
+              def detect_dupes(pairs):
+                  d = {}
+                  for k, v in pairs:
+                      if k in d:
+                          dupes.append(k)
+                      d[k] = v
+                  return d
+              json.loads(content, object_pairs_hook=detect_dupes)
+              if dupes:
+                  for k in dupes:
+                      print(f"::error file={f}::Duplicate JSON key: '{k}'")
+                  fail = True
+
+          if fail:
+              sys.exit(1)
+          print("No duplicate JSON keys found in translation files.")
+          PYEOF
+
       - name: Constants field existence check
         run: |
           python3 <<'PYEOF'
