@@ -1027,8 +1027,6 @@
 
     "UI_POS_Assignments_NoneInCategory": "No missions in this category.",
     "UI_POS_Assignments_NoneWithStatus": "No missions with this status.",
-    "UI_POS_Mission_Category_recovery": "Recovery",
-    "UI_POS_Mission_Category_survey": "Survey",
 
     "UI_POS_Event_BulkArrival": "Bulk Arrival",
     "UI_POS_Event_ConvoyDelay": "Convoy Delay",
