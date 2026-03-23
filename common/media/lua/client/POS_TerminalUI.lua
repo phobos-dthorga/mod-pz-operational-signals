@@ -604,10 +604,10 @@ function POS_TerminalUI.open(radioName, frequency, portablePC, signalStrength, b
 
     local sw = getCore():getScreenWidth()
     local sh = getCore():getScreenHeight()
-    local w = 1080
-    local h = 1170
-    local x = (sw - w) / 2
-    local y = (sh - h) / 2
+    local w = math.floor(sw * POS_Constants.TERMINAL_DEFAULT_WIDTH_PCT)
+    local h = math.floor(sh * POS_Constants.TERMINAL_DEFAULT_HEIGHT_PCT)
+    local x = math.floor((sw - w) / 2)
+    local y = math.floor((sh - h) / 2)
 
     -- Reset boot data so tokens are resolved with fresh connection info
     bootData = nil

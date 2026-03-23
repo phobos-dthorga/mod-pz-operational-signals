@@ -330,6 +330,8 @@
     "UI_POS_MarketSignals_Hard": "HARD",
     "UI_POS_MarketSignals_Soft": "SOFT",
     "UI_POS_MarketSignals_Structural": "STRUCT",
+    "UI_POS_MarketSignals_Day": "Day %1",
+    "UI_POS_MarketSignals_Impact": "Impact",
     "UI_POS_MarketSignals_DaysLeft": "%1d left",
     "UI_POS_Assignments_Title": "Assignments",
     "UI_POS_Assignments_Active": "Active",

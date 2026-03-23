@@ -126,6 +126,8 @@ POS_Constants.POWER_CHECK_INTERVAL   = 60
 -- Terminal UI layout
 ---------------------------------------------------------------
 
+POS_Constants.TERMINAL_DEFAULT_WIDTH_PCT    = 0.75  -- 75% of screen width
+POS_Constants.TERMINAL_DEFAULT_HEIGHT_PCT   = 0.75  -- 75% of screen height
 POS_Constants.UI_SIGNAL_PANEL_WIDTH         = 180
 POS_Constants.UI_CONTEXT_PANEL_WIDTH        = 200
 POS_Constants.UI_CONTEXT_COLLAPSE_THRESHOLD = 900

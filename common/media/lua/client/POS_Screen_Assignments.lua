@@ -648,7 +648,7 @@ local STATUS_BADGES = {
 }
 
 --- Status filter tabs.
-local STATUS_FILTERS = { "all", "active", "available", "completed" }
+local STATUS_FILTERS = { "all", "active", "available", "done" }
 
 --- Get missions filtered by category and status.
 local function getFilteredMissions(category, status)
@@ -694,7 +694,7 @@ local function getFilteredMissions(category, status)
                         statusMatch = (op.status == POS_Constants.STATUS_ACTIVE)
                     elseif status == "available" then
                         statusMatch = (op.status == POS_Constants.STATUS_AVAILABLE)
-                    elseif status == "completed" then
+                    elseif status == "done" then
                         statusMatch = (op.status == POS_Constants.STATUS_COMPLETED
                             or op.status == POS_Constants.STATUS_FAILED
                             or op.status == POS_Constants.STATUS_EXPIRED)
