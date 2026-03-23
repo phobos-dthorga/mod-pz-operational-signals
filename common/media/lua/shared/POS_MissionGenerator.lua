@@ -26,11 +26,35 @@
 ---------------------------------------------------------------
 
 require "PhobosLib"
+require "PhobosLib_Address"
 require "POS_Constants"
 
 POS_MissionGenerator = {}
 
 local _TAG = "[POS:MissionGen]"
+
+--- Resolve a human-readable target name from a random building
+--- in the player's discovered building cache.
+--- Falls back to "target site" if no buildings or no address data.
+---@param player IsoPlayer
+---@return string
+function POS_MissionGenerator._resolveTargetName(player)
+    if not POS_BuildingCache then return "target site" end
+    local cache = POS_BuildingCache.getCache()
+    if not cache or #cache == 0 then return "target site" end
+
+    local bldg = cache[ZombRand(#cache) + 1]
+    if not bldg or not bldg.x or not bldg.y then return "target site" end
+
+    -- Use pre-computed address if available
+    if bldg.addressStr then return bldg.addressStr end
+
+    -- Resolve on the fly
+    local addr = PhobosLib_Address.resolveAddress(bldg.x, bldg.y)
+    if addr then return PhobosLib_Address.formatAddress(addr) end
+
+    return "target site"
+end
 
 ---------------------------------------------------------------
 -- Internal state
@@ -129,7 +153,7 @@ local function buildContext(player, definition, difficulty, zoneId, archetypeId)
         zoneName       = zoneName,
         category       = categoryName,
         difficulty     = difficulty,
-        targetName     = "target site",   -- placeholder — future: resolve from building cache
+        targetName     = POS_MissionGenerator._resolveTargetName(player),
         rewardCash     = rewardCash,
         deadlineDay    = day + expiryDays,
         sponsorName    = sponsorName,

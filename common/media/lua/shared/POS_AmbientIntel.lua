@@ -225,6 +225,14 @@ function POS_AmbientIntel.onEveryOneMinute()
                 zoneId = pickRandom(zones)
             end
 
+            -- Resolve location context from player position
+            local locationName = nil
+            local player = getPlayer()
+            if player and PhobosLib_Address and PhobosLib_Address.getNearestStreet then
+                locationName = PhobosLib_Address.getNearestStreet(
+                    player:getX(), player:getY())
+            end
+
             -- Build record
             local record = {
                 id = POS_Constants.AMBIENT_INTEL_SOURCE_PREFIX
@@ -238,6 +246,7 @@ function POS_AmbientIntel.onEveryOneMinute()
                 day           = currentDay,
                 zoneId        = zoneId,
                 sourcePrefix  = POS_Constants.AMBIENT_INTEL_SOURCE_PREFIX,
+                locationName  = locationName,
             }
 
             -- Select random items for discovery

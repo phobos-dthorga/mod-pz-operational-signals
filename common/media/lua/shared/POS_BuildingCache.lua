@@ -87,10 +87,20 @@ function POS_BuildingCache.addToCache(x, y, rooms)
         end
     end
 
-    table.insert(cache, { x = x, y = y, rooms = rooms })
+    -- Pre-compute street address at discovery time (once, not per render)
+    local addressStr = nil
+    if PhobosLib_Address and PhobosLib_Address.resolveAddress then
+        local addr = PhobosLib_Address.resolveAddress(x, y)
+        if addr then
+            addressStr = PhobosLib_Address.formatAddress(addr)
+        end
+    end
 
+    table.insert(cache, { x = x, y = y, rooms = rooms, addressStr = addressStr })
+
+    local locationLabel = addressStr or (math.floor(x) .. ", " .. math.floor(y))
     PhobosLib.debug("POS", _TAG, "[BuildingCache] Discovered building at "
-        .. math.floor(x) .. ", " .. math.floor(y)
+        .. locationLabel
         .. " (" .. table.concat(rooms, ", ") .. ")"
         .. " — total: " .. #cache)
 

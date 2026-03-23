@@ -95,6 +95,14 @@ function POS_DeliveryGenerator.generate(player)
                 pickupY = pair.pickup.y,
                 dropoffX = pair.dropoff.x,
                 dropoffY = pair.dropoff.y,
+                pickupAddress = PhobosLib_Address
+                    and PhobosLib_Address.formatAddress(
+                        PhobosLib_Address.resolveAddress(pair.pickup.x, pair.pickup.y))
+                    or nil,
+                dropoffAddress = PhobosLib_Address
+                    and PhobosLib_Address.formatAddress(
+                        PhobosLib_Address.resolveAddress(pair.dropoff.x, pair.dropoff.y))
+                    or nil,
                 pickedUp = false,
                 completed = false,
             },

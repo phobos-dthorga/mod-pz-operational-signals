@@ -338,6 +338,18 @@ using `PhobosLib_Address.resolveAddress()`. Raw coordinates are the
 fallback if street resolution fails (e.g. modded maps without
 `streets.xml`).
 
+PhobosLib_Address uses a three-tier data fallback:
+1. **PhobosLib_StreetData** — 1,087 hardcoded Knox County street segments
+   (Muldraugh, Riverside, Rosewood, West Point, Louisville, March Ridge,
+   Ekron, Brandenburg, rural roads, railroads, highways). Primary source.
+2. **streets.xml** — parsed from all loaded map directories. Catches
+   mod-added map packs (Raven Creek, Greenport, etc.) automatically.
+3. **Raw coordinates** — `"x, y"` when no data covers the area.
+
+`POS_BuildingCache` pre-computes street addresses at discovery time
+(`entry.addressStr`). Modules should prefer `bldg.addressStr` over
+calling `resolveAddress()` repeatedly at render time.
+
 For **player-facing location strings** that combine street address and room
 name (e.g. "Rosewood Ave (Kitchen)"), use
 `PhobosLib.formatPlayerLocation(player, opts)` instead of manually

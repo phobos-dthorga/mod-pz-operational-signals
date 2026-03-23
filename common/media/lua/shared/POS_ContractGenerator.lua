@@ -31,11 +31,33 @@
 ---------------------------------------------------------------
 
 require "PhobosLib"
+require "PhobosLib_Address"
 require "POS_Constants"
 
 POS_ContractGenerator = {}
 
 local _TAG = "[POS:ContractGen]"
+
+--- Resolve a location name for a zone by picking a random building
+--- from the cache within that zone's approximate area.
+--- Falls back to zone ID string.
+---@param zoneId string|nil
+---@return string|nil
+function POS_ContractGenerator._resolveZoneLocation(zoneId)
+    if not zoneId then return nil end
+    if not POS_BuildingCache then return zoneId end
+    local cache = POS_BuildingCache.getCache()
+    if not cache or #cache == 0 then return zoneId end
+
+    -- Pick a random building and resolve its street
+    local bldg = cache[ZombRand(#cache) + 1]
+    if bldg and bldg.addressStr then return bldg.addressStr end
+    if bldg and bldg.x and bldg.y then
+        local street = PhobosLib_Address.getNearestStreet(bldg.x, bldg.y)
+        if street then return street end
+    end
+    return zoneId
+end
 
 ---------------------------------------------------------------
 -- Internal state
@@ -215,6 +237,7 @@ local function buildContract(definition, categoryId, zoneId)
         resolvedPayout   = payout,
         deadlineDay      = day + deadlineDays,
         briefing         = briefing,
+        locationName     = POS_ContractGenerator._resolveZoneLocation(zoneId),
     }
 end
 
