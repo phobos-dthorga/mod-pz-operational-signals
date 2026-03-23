@@ -3248,10 +3248,10 @@ end
 
 ## 40. Starlit Library Integration (Roadmap)
 
-> **Status**: Phase 1 implemented. Starlit dependency added, `POS_Events.lua`
-> wraps 12 named LuaEvent instances. Event emitters wired in AmbientIntel,
-> MarketDatabase, EconomyTick, MissionGenerator. SignalPanel subscribes
-> for real-time intel feed updates. Phases 2-3 (TaskManager, Time) pending.
+> **Status**: Phase 1-2 implemented. Starlit LuaEvent for 15+ named events.
+> Starlit TaskManager replaces manual tick counters (ReconScanner,
+> PathTracker). OnScreenRefreshRequested + OnQuantityChanged for reactive
+> UI. Phase 3 (Time utilities) available but not yet adopted.
 
 POSnet will adopt three modules from the **Starlit** utility library as a
 servant-library for orchestration and events. Starlit is a dependency-style
