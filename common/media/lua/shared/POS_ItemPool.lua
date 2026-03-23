@@ -46,32 +46,45 @@ local function getCategoryWeight(categoryId)
 end
 
 local DISPLAY_CATEGORY_MAP = {
+    -- medicine (clean supplies only — Wound/Bandage are blood-soaked states)
     FirstAid            = "medicine",
-    Wound               = "medicine",
-    Bandage             = "medicine",
+    -- food
     Food                = "food",
     Cooking             = "food",
     CookingWeapon       = "food",
+    -- ammunition
     Ammo                = "ammunition",
     Explosives          = "ammunition",
     WeaponPart          = "ammunition",
+    -- tools
     Tool                = "tools",
     ToolWeapon          = "tools",
     Material            = "tools",
     RecipeResource      = "tools",
     VehicleMaintenance  = "tools",
     Gardening           = "tools",
+    Household           = "tools",
+    Paint               = "tools",
+    Security            = "tools",
+    -- radio / electronics
     Electronics         = "radio",
     Communications      = "radio",
     LightSource         = "radio",
+    -- survival
     Camping             = "survival",
     Fishing             = "survival",
     Trapping            = "survival",
     WaterContainer      = "survival",
+    Bag                 = "survival",
+    FireSource          = "survival",
+    Water               = "survival",
+    -- weapons
     Weapon              = "weapons",
     WeaponCrafted       = "weapons",
+    -- clothing
     Clothing            = "clothing",
     ProtectiveGear      = "clothing",
+    -- literature
     Literature          = "literature",
     SkillBook           = "literature",
     Cartography         = "literature",
@@ -132,22 +145,9 @@ local SUB_CATEGORY_DEFS = {
         displayCategories = { "FirstAid" },
         namePatterns = nil,
     },
-    {
-        id = "bandages",
-        parentCategory = "medicine",
-        labelKey = "UI_POS_SubCat_Bandages",
-        weight = 1.0,
-        displayCategories = { "Bandage" },
-        namePatterns = nil,
-    },
-    {
-        id = "wound_care",
-        parentCategory = "medicine",
-        labelKey = "UI_POS_SubCat_WoundCare",
-        weight = 0.8,
-        displayCategories = { "Wound" },
-        namePatterns = nil,
-    },
+    -- NOTE: "bandages" and "wound_care" sub-categories removed — their
+    -- DisplayCategories (Bandage, Wound) are blood-soaked body states,
+    -- not tradeable items. Clean bandages use DisplayCategory "FirstAid".
     -- food
     {
         id = "canned_food",
@@ -247,7 +247,9 @@ local SUB_CATEGORY_DEFS = {
 -- Base price multipliers per category
 ---------------------------------------------------------------
 
-local CATEGORY_PRICE_MULTIPLIERS = POS_Constants.CATEGORY_PRICE_MULTIPLIERS
+-- NOTE: Do NOT capture POS_Constants.CATEGORY_PRICE_MULTIPLIERS at load time.
+-- POS_Constants_Market.lua may not have loaded yet (load order is alphabetical).
+-- Resolve at call time inside calculateBasePrice() instead.
 
 ---------------------------------------------------------------
 -- Internal helpers
@@ -344,16 +346,32 @@ end
 --- Calculate the base price for an item record.
 --- @param itemWeight number
 --- @param categoryId string
+--- @param fullType string
 --- @param hasCondition boolean
---- @return number
-local function calculateBasePrice(itemWeight, categoryId, hasCondition)
-    local w = itemWeight or 1.0
-    local catMult = CATEGORY_PRICE_MULTIPLIERS[categoryId] or 1.0
+--- @return number basePrice
+--- @return boolean isLuxury
+local function calculateBasePrice(fullType, itemWeight, categoryId, hasCondition)
     local condMult = hasCondition and POS_Constants.ITEM_POOL_CONDITION_MULTIPLIER or 1.0
+
+    -- Check curated override registry first (O(1) lookup)
+    if POS_ItemValueRegistry then
+        local override = POS_ItemValueRegistry.getOverride(fullType)
+        if override then
+            local price = math.max(
+                POS_Constants.ITEM_POOL_MIN_BASE_PRICE,
+                override.basePrice * condMult)
+            return price, override.isLuxury or false
+        end
+    end
+
+    -- Fallback: weight-based formula with apocalypse-tuned category multipliers
+    local w = itemWeight or 1.0
+    local mults = POS_Constants.CATEGORY_PRICE_MULTIPLIERS
+    local catMult = (mults and mults[categoryId]) or 1.0
     return math.max(
         POS_Constants.ITEM_POOL_MIN_BASE_PRICE,
         w * POS_Constants.ITEM_POOL_WEIGHT_MULTIPLIER * catMult * condMult
-    )
+    ), false
 end
 
 --- Insert an item record into the appropriate pool tables.
@@ -389,6 +407,12 @@ local ensureInit  -- forward declaration; assigned after init() below
 function POS_ItemPool.init()
     if initialised then return end
 
+    -- Load curated item value overrides before the ScriptManager scan
+    -- so that calculateBasePrice() can use them during indexing.
+    if POS_ItemValueRegistry then
+        POS_ItemValueRegistry.init()
+    end
+
     local sm = ScriptManager.instance
     if not sm then return end
 
@@ -407,34 +431,60 @@ function POS_ItemPool.init()
             else
                 local fullType    = script:getFullName()
                 local displayCat  = script:getDisplayCategory()
-                local itemWeight  = script:getActualWeight()
-                local condMax     = script:getConditionMax()
-                local daysFresh   = script:getDaysFresh()
-                local daysRotten  = script:getDaysTotallyRotten()
-                local isPerishable = (daysFresh and daysFresh > 0)
-                    or (daysRotten and daysRotten > 0)
 
-                local categoryId = resolveCommodityCategory(displayCat, fullType)
-                local subCatId   = resolveSubCategory(fullType, displayCat, categoryId, isPerishable)
-                local hasCondition = condMax and condMax > 0
-                local basePrice  = calculateBasePrice(itemWeight, categoryId, hasCondition)
+                -- ── Curation filter ──────────────────────────
+                -- Skip items whose DisplayCategory is blacklisted
+                local excluded = false
+                local excludedCats = POS_Constants.ITEM_POOL_EXCLUDED_CATEGORIES
+                if excludedCats and displayCat and excludedCats[displayCat] then
+                    excluded = true
+                end
+                -- Skip items matching blacklisted name patterns
+                if not excluded and POS_Constants.ITEM_POOL_EXCLUDED_PATTERNS then
+                    for _, pat in ipairs(POS_Constants.ITEM_POOL_EXCLUDED_PATTERNS) do
+                        if string.find(fullType, pat, 1, true) then
+                            excluded = true
+                            break
+                        end
+                    end
+                end
 
-                local record = {
-                    fullType         = fullType,
-                    displayCategory  = displayCat,
-                    commodityCategory = categoryId,
-                    subCategory      = subCatId,
-                    weight           = itemWeight,
-                    conditionMax     = condMax,
-                    basePrice        = basePrice,
-                }
+                if not excluded then
+                    local itemWeight  = script:getActualWeight()
+                    local condMax     = script:getConditionMax()
+                    local daysFresh   = script:getDaysFresh()
+                    local daysRotten  = script:getDaysTotallyRotten()
+                    local isPerishable = (daysFresh and daysFresh > 0)
+                        or (daysRotten and daysRotten > 0)
 
-                indexItem(record)
+                    local categoryId = resolveCommodityCategory(displayCat, fullType)
+                    local subCatId   = resolveSubCategory(fullType, displayCat, categoryId, isPerishable)
+                    local hasCondition = condMax and condMax > 0
+                    local basePrice, isLuxury = calculateBasePrice(fullType, itemWeight, categoryId, hasCondition)
+
+                    local record = {
+                        fullType         = fullType,
+                        displayCategory  = displayCat,
+                        commodityCategory = categoryId,
+                        subCategory      = subCatId,
+                        weight           = itemWeight,
+                        conditionMax     = condMax,
+                        basePrice        = basePrice,
+                        isLuxury         = isLuxury,
+                    }
+
+                    indexItem(record)
+                end
             end
         end
     end
 
     initialised = true
+
+    -- Log pool statistics for diagnostics
+    local totalIndexed = 0
+    for _, items in pairs(pool) do totalIndexed = totalIndexed + #items end
+    PhobosLib.debug("POS", "ItemPool", "Initialised: " .. tostring(totalIndexed) .. " items indexed from ScriptManager")
 end
 
 --- Return all item records for a given commodity category.
@@ -535,6 +585,15 @@ function POS_ItemPool.getBasePrice(fullType)
     return record and record.basePrice or nil
 end
 
+--- Retrieve the full item record for a given fullType.
+--- Used by PriceEngine for luxury zone scaling.
+--- @param fullType string
+--- @return table|nil  Record with basePrice, isLuxury, commodityCategory, etc.
+function POS_ItemPool.getRecord(fullType)
+    ensureInit()
+    return itemIndex[fullType]
+end
+
 --- Manually register (or override) an item in the pool.
 --- Useful for cross-mod items that are not in the vanilla script database.
 --- @param fullType string
@@ -609,4 +668,10 @@ function POS_ItemPool.selectRandomItems(categoryId, count)
     return PhobosLib.selectRandomFromPool(items, count)
 end
 
-ensureInit = PhobosLib.lazyInit(POS_ItemPool.init)
+-- Use direct guard instead of lazyInit — allows retry if init() fails
+-- partway (e.g. due to load order issues with POS_Constants split files).
+ensureInit = function()
+    if not initialised then
+        POS_ItemPool.init()
+    end
+end

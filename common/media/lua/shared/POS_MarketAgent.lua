@@ -293,8 +293,14 @@ function POS_MarketAgent.generateObservations(agent, zoneState, currentDay)
                     ZombRand(POS_Constants.AGENT_OBS_MIN_ITEMS,
                         POS_Constants.AGENT_OBS_MAX_ITEMS + 1))
                 record.discoveredItems = {}
+                record.items = {}
                 for _, selItem in ipairs(selectedItems) do
-                    record.discoveredItems[#record.discoveredItems + 1] = selItem.fullType or selItem
+                    local ft = selItem.fullType or selItem
+                    record.discoveredItems[#record.discoveredItems + 1] = ft
+                    record.items[#record.items + 1] = {
+                        fullType = ft,
+                        price = price,
+                    }
                 end
 
                 local ok = POS_MarketDatabase.addRecord(record)

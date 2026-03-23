@@ -2,7 +2,7 @@
 
 **Branch**: `dev/data-recorder` (future)
 **Date**: 2026-03-20
-**Status**: Design phase — implementation not started
+**Status**: Service scaffolded (`POS_TerminalAnalysisService.lua` + `POS_Screen_Analysis.lua` exist). Tier II pipeline integration with camera workstation (Tier III) and satellite broadcast (Tier IV) not yet connected.
 **Prerequisites**: Data-Recorder system implemented (see `data-recorder-design.md`),
 SIGINT skill registered (see `sigint-skill-design.md`)
 

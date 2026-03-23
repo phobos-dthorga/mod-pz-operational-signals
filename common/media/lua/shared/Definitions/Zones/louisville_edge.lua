@@ -23,4 +23,5 @@ return {
     baseVolatility = 0.30,
     population = "dense",
     adjacentZones = { "west_point", "riverside", "military_corridor" },
+    luxuryDemand = 2.5,   -- urban fringe, pre-apocalypse wealth
 }

@@ -23,4 +23,5 @@ return {
     baseVolatility = 0.20,
     population = "medium",
     adjacentZones = { "muldraugh", "riverside", "louisville_edge" },
+    luxuryDemand = 1.5,   -- small town, some demand
 }

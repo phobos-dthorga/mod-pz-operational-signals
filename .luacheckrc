@@ -78,6 +78,7 @@ globals = {
     "POS_CrossModMarkets",
     "POS_TradeService",
     "POS_ItemPool",
+    "POS_ItemValueRegistry",
     "POS_PriceEngine",
     "POS_WorldState",
     "POS_PlayerState",

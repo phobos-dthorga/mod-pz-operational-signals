@@ -136,7 +136,7 @@ function screen.create(contentPanel, params, _terminal)
     W.createButton(ctx.panel, ctx.btnX, ctx.y, ctx.btnW, ctx.btnH,
         "[1] " .. W.safeGetText("UI_POS_Market_KnownSellers"), nil,
         function()
-            POS_ScreenManager.navigateTo(POS_Constants.SCREEN_TRADERS,
+            POS_ScreenManager.navigateTo(POS_Constants.SCREEN_CONTACTS,
                 { filterCategory = catId })
         end)
     ctx.y = ctx.y + ctx.btnH + 4
@@ -145,7 +145,7 @@ function screen.create(contentPanel, params, _terminal)
     W.createButton(ctx.panel, ctx.btnX, ctx.y, ctx.btnW, ctx.btnH,
         "[2] " .. W.safeGetText("UI_POS_Market_PriceHistory"), nil,
         function()
-            POS_ScreenManager.navigateTo(POS_Constants.SCREEN_LEDGER,
+            POS_ScreenManager.navigateTo(POS_Constants.SCREEN_WATCHLIST,
                 { categoryId = catId })
         end)
     ctx.y = ctx.y + ctx.btnH + 4

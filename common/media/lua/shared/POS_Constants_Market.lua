@@ -127,6 +127,69 @@ POS_Constants.ITEM_POOL_WEIGHT_MULTIPLIER    = 2.0
 POS_Constants.ITEM_POOL_CONDITION_MULTIPLIER = 1.5
 
 ---------------------------------------------------------------
+-- Item pool curation: excluded DisplayCategories
+-- Items with these DisplayCategories are NEVER included in
+-- the tradeable item pool. See docs/item-pool-curation.md.
+---------------------------------------------------------------
+
+POS_Constants.ITEM_POOL_EXCLUDED_CATEGORIES = {
+    -- Zombie / body damage textures
+    ["ZedDmg"]       = true,   -- zombie damage clothing overlays
+    ["Wound"]        = true,   -- blood-soaked bandage body states
+    ["Bandage"]      = true,   -- blood-soaked bandage variants
+    ["Corpse"]       = true,   -- body part items
+    ["AnimalPart"]   = true,   -- skulls, organs, sinew
+    -- Character cosmetics / body slots
+    ["MaleBody"]     = true,
+    ["Ears"]         = true,
+    ["Tail"]         = true,
+    ["Appearance"]   = true,   -- cosmetic character presets
+    -- Debug / internal
+    ["Hidden"]       = true,
+    ["Bug"]          = true,
+    -- Non-inventory world objects
+    ["Furniture"]    = true,   -- world fixtures
+    ["Container"]    = true,   -- structural containers
+    -- Explicitly valueless
+    ["Junk"]         = true,
+    ["Memento"]      = true,   -- character-bound keepsakes
+    ["Generic"]      = true,
+    -- Animal / live entities
+    ["Animal"]       = true,
+    -- Animal corpse categories
+    ["Raccoon"]      = true,
+    ["Fox"]          = true,
+    ["Duck"]         = true,
+    ["Bunny"]        = true,
+    ["Spider"]       = true,
+    ["Mole"]         = true,
+    ["Hedgehog"]     = true,
+    ["Goblin"]       = true,
+    ["Eye"]          = true,
+    ["Badger"]       = true,
+    ["Bear"]         = true,
+    ["Beaver"]       = true,
+    ["Dog"]          = true,
+    ["Frog"]         = true,
+    ["Squirrel"]     = true,
+}
+
+---------------------------------------------------------------
+-- Item pool curation: excluded name patterns
+-- Items matching ANY of these plain-text patterns are excluded
+-- even if their DisplayCategory is otherwise whitelisted.
+-- See docs/item-pool-curation.md.
+---------------------------------------------------------------
+
+POS_Constants.ITEM_POOL_EXCLUDED_PATTERNS = {
+    "_Blood",       -- blood-soaked variants (e.g. Bandage_Abdomen_Blood)
+    "ZedDmg_",      -- zombie damage prefix (belt-and-suspenders)
+    "Wound_",       -- wound state prefix
+    "Corpse",       -- any corpse-related item
+    "_Broken",      -- broken item variants
+}
+
+---------------------------------------------------------------
 -- Price engine constants
 ---------------------------------------------------------------
 
@@ -161,18 +224,21 @@ POS_Constants.SOURCE_TIER_WEIGHT_DEFAULT   = 0.85
 -- Category price multipliers (item pool base pricing)
 ---------------------------------------------------------------
 
+-- Multipliers reflect apocalyptic economy where survival goods dominate
+-- and pre-apocalypse luxuries collapse. Literature stays high because
+-- skill books and recipe books are irreplaceable survival knowledge.
 POS_Constants.CATEGORY_PRICE_MULTIPLIERS = {
-    fuel          = 1.5,
-    medicine      = 1.3,
-    food          = 0.8,
-    ammunition    = 1.4,
-    tools         = 1.0,
-    radio         = 1.2,
-    survival      = 0.9,
-    weapons       = 1.3,
-    clothing      = 0.6,
-    literature    = 0.4,
-    miscellaneous = 0.3,
+    fuel          = 3.0,    -- irreplaceable energy: generators, vehicles, heating
+    ammunition    = 2.8,    -- finite supply, each round matters
+    medicine      = 2.5,    -- no hospitals, antibiotics are gold
+    weapons       = 2.2,    -- defence is paramount
+    literature    = 2.0,    -- knowledge is survival: skill books, recipe books
+    radio         = 1.8,    -- communication = coordination
+    survival      = 1.6,    -- water/camping gear essential
+    tools         = 1.5,    -- build, repair, survive
+    food          = 1.4,    -- caloric necessity
+    clothing      = 0.8,    -- weather/armour protection
+    miscellaneous = 0.2,    -- decorative junk worth even less
 }
 
 ---------------------------------------------------------------

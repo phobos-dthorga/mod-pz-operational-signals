@@ -421,6 +421,9 @@
     "UI_POS_Market_ViewItems": "View Items",
     "UI_POS_Market_CommodityItems": "COMMODITY ITEMS",
     "UI_POS_Market_NoItems": "No item data available for this category.",
+    "UI_POS_Market_NoItemsYet": "No items discovered in this category yet.",
+    "UI_POS_Market_NoItemsHint": "Listen to the network to discover items...",
+    "UI_POS_Market_ItemsDiscovered": "items discovered",
     "UI_POS_Market_ItemCount": "Items",
     "UI_POS_Market_ItemObservations": "observations",
     "UI_POS_Market_ItemLastSeen": "Last seen day",
@@ -952,5 +955,18 @@
     "UI_POS_Ambient_SignalFragment": "Signal fragment",
     "UI_POS_Ambient_StaticIntercept": "Static intercept",
     "UI_POS_Ambient_FrequencyScan": "Frequency scan",
-    "UI_POS_Ambient_BandMonitor": "Band monitor"
+    "UI_POS_Ambient_BandMonitor": "Band monitor",
+
+    "UI_POS_DataReset_Title": "Data Reset",
+    "UI_POS_DataReset_Warning": "WARNING: This tool permanently erases all POSnet data.",
+    "UI_POS_DataReset_Desc": "All market observations, operations, investments, watchlists,",
+    "UI_POS_DataReset_Desc2": "discovered items, SIGINT progress, and world economy state will be lost.",
+    "UI_POS_DataReset_Button": "Reset All POSnet Data",
+    "UI_POS_DataReset_Note": "This screen is only visible with debug logging enabled.",
+    "UI_POS_DataReset_ConfirmTitle": "CONFIRM DATA RESET",
+    "UI_POS_DataReset_ConfirmBody": "This action CANNOT be undone.",
+    "UI_POS_DataReset_ConfirmBody2": "All POSnet world and player data will be permanently erased.",
+    "UI_POS_DataReset_ConfirmBody3": "The terminal will return to the main menu after reset.",
+    "UI_POS_DataReset_Cancel": "Cancel",
+    "UI_POS_DataReset_Confirm": "Confirm Reset"
 }

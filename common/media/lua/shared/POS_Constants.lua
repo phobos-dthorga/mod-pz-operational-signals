@@ -62,6 +62,7 @@ POS_Constants.SCREEN_DELIVERIES  = "pos.bbs.deliveries"
 POS_Constants.SCREEN_NEGOTIATE   = "pos.negotiate"
 POS_Constants.SCREEN_BBS_RUMOURS = "pos.bbs.rumours"
 POS_Constants.SCREEN_STOCKMARKET = "pos.stockmarket"
+POS_Constants.SCREEN_DATA_RESET  = "pos.datareset"
 
 ---------------------------------------------------------------
 -- Mission type identifiers
@@ -125,20 +126,18 @@ POS_Constants.POWER_CHECK_INTERVAL   = 60
 -- Terminal UI layout
 ---------------------------------------------------------------
 
-POS_Constants.UI_NAV_PANEL_WIDTH            = 180
+-- SIGNAL_PANEL_WIDTH will be set when §9 SignalPanel is implemented
 POS_Constants.UI_CONTEXT_PANEL_WIDTH        = 200
 POS_Constants.UI_CONTEXT_COLLAPSE_THRESHOLD = 900
 POS_Constants.UI_SCREEN_PADDING             = 8
 POS_Constants.UI_PANEL_GAP                  = 4
 
 ---------------------------------------------------------------
--- CRT bezel insets (proportion of terminal dimensions)
+-- Terminal frame geometry (telnet-style header + status bar)
 ---------------------------------------------------------------
 
-POS_Constants.BEZEL_INSET_LEFT   = 0.15
-POS_Constants.BEZEL_INSET_RIGHT  = 0.15
-POS_Constants.BEZEL_INSET_TOP    = 0.13
-POS_Constants.BEZEL_INSET_BOTTOM = 0.30
+POS_Constants.HEADER_BAR_HEIGHT  = 24
+POS_Constants.STATUS_BAR_HEIGHT  = 24
 
 ---------------------------------------------------------------
 -- Boot sequence timing
@@ -228,8 +227,9 @@ POS_Constants.BPS_DIVISOR = 10000
 -- Event log paths and format
 ---------------------------------------------------------------
 
-POS_Constants.EVENT_LOG_DIR          = "POSNET/events/"
-POS_Constants.EVENT_SNAPSHOT_DIR     = "POSNET/snapshots/"
+-- DEPRECATED: Event logs now stored in world ModData (POSNET.EventLog)
+-- POS_Constants.EVENT_LOG_DIR       = "POSNET/events/"
+-- POS_Constants.EVENT_SNAPSHOT_DIR  = "POSNET/snapshots/"
 POS_Constants.EVENT_LOG_SEPARATOR    = "|"
 POS_Constants.EVENT_LOG_VERSION      = 1
 POS_Constants.EVENT_LOG_PURGE_BUFFER = 5
@@ -297,14 +297,11 @@ POS_Constants.RADIO_BROADCAST_QUALITY_TIER4   = 90
 
 POS_Constants.DANGER_CHECK_RADIUS = 15
 
----------------------------------------------------------------
--- External cache file paths (flat, Zomboid/Lua/ directory)
----------------------------------------------------------------
-
-POS_Constants.CACHE_FILE_BUILDINGS  = "POSNET/buildings.dat"
-POS_Constants.CACHE_FILE_MAILBOXES  = "POSNET/mailboxes.dat"
-POS_Constants.CACHE_FILE_SEPARATOR  = "|"
-POS_Constants.CACHE_FILE_ROOM_SEP   = ","
+-- DEPRECATED: Caches now stored in world ModData (POSNET.BuildingCache, POSNET.MailboxCache)
+-- POS_Constants.CACHE_FILE_BUILDINGS  = "POSNET/buildings.dat"
+-- POS_Constants.CACHE_FILE_MAILBOXES  = "POSNET/mailboxes.dat"
+-- POS_Constants.CACHE_FILE_SEPARATOR  = "|"
+-- POS_Constants.CACHE_FILE_ROOM_SEP   = ","
 
 ---------------------------------------------------------------
 -- Operation statuses

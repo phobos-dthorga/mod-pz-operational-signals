@@ -16,12 +16,12 @@
 
 return {
     schemaVersion = 1,
-    id = "muldraugh",
-    name = "Muldraugh",
-    displayNameKey = "UI_POS_Zone_Muldraugh",
-    description = "Small rural town with limited trade infrastructure.",
-    baseVolatility = 0.25,
-    population = "sparse",
-    adjacentZones = { "west_point", "rural_east" },
-    luxuryDemand = 0.5,   -- rural, gold is near-useless
+    fields = {
+        schemaVersion    = { type = "number", required = true },
+        id               = { type = "string", required = true },
+        systemName       = { type = "string", default = "POSNET BBS" },
+        postBootPauseSec = { type = "number", min = 0, max = 5, default = 1.0 },
+        durationSeconds  = { type = "number", min = 5, max = 120, default = 15 },
+        lines            = { type = "array",  required = true },
+    }
 }

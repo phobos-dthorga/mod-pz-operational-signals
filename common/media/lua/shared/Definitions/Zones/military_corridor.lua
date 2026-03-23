@@ -23,4 +23,5 @@ return {
     baseVolatility = 0.15,
     population = "sparse",
     adjacentZones = { "louisville_edge", "rural_east" },
+    luxuryDemand = 0.3,   -- military cares about gear, not gold
 }
