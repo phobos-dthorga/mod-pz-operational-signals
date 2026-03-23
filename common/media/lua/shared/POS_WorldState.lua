@@ -97,98 +97,74 @@ end
 ---------------------------------------------------------------
 
 --- Save the building discovery cache to an external flat file.
---- Only the server/SP authority writes cache files.
+--- Save building discovery cache to world ModData.
+--- Only the server/SP authority writes cache data.
 function POS_WorldState.saveBuildingCache()
     if not POS_WorldState.isAuthority() then return end
     local buildings = POS_WorldState.getBuildings()
     if not buildings or not buildings.entries then return end
 
-    local writer = getFileWriter(POS_Constants.CACHE_FILE_BUILDINGS, false, false)
-    if not writer then
-        PhobosLib.debug("POS", _TAG, "[WorldState] Failed to open building cache for writing")
-        return
+    local cache = PhobosLib.getWorldModDataTable("POSNET", "BuildingCache")
+    -- Clear and repopulate (ModData tables can't be replaced wholesale)
+    for k in pairs(cache) do cache[k] = nil end
+    for i, entry in ipairs(buildings.entries) do
+        cache[i] = {
+            x = entry.x,
+            y = entry.y,
+            rooms = entry.rooms or {},
+        }
     end
-
-    for _, entry in ipairs(buildings.entries) do
-        local rooms = ""
-        if entry.rooms then
-            rooms = table.concat(entry.rooms, POS_Constants.CACHE_FILE_ROOM_SEP)
-        end
-        writer:writeln(tostring(entry.x) .. POS_Constants.CACHE_FILE_SEPARATOR
-            .. tostring(entry.y) .. POS_Constants.CACHE_FILE_SEPARATOR .. rooms)
-    end
-    writer:close()
     PhobosLib.debug("POS", _TAG, "[WorldState] Building cache saved: " .. tostring(#buildings.entries) .. " entries")
 end
 
---- Load the building discovery cache from an external flat file.
----@return table|nil Array of { x, y, rooms } entries, or nil if file not found
+--- Load building discovery cache from world ModData.
+---@return table|nil Array of { x, y, rooms } entries, or nil if empty
 function POS_WorldState.loadBuildingCache()
-    local reader = getFileReader(POS_Constants.CACHE_FILE_BUILDINGS, false)
-    if not reader then return nil end
-
+    local cache = PhobosLib.getWorldModDataTable("POSNET", "BuildingCache")
     local entries = {}
-    local line = reader:readLine()
-    while line do
-        local parts = PhobosLib.split(line, POS_Constants.CACHE_FILE_SEPARATOR)
-        if parts and #parts >= 2 then
-            local x = tonumber(parts[1])
-            local y = tonumber(parts[2])
-            local rooms = {}
-            if parts[3] and parts[3] ~= "" then
-                rooms = PhobosLib.split(parts[3], POS_Constants.CACHE_FILE_ROOM_SEP)
-            end
-            if x and y then
-                table.insert(entries, { x = x, y = y, rooms = rooms })
-            end
+    for _, entry in pairs(cache) do
+        if type(entry) == "table" and entry.x and entry.y then
+            entries[#entries + 1] = {
+                x = tonumber(entry.x),
+                y = tonumber(entry.y),
+                rooms = entry.rooms or {},
+            }
         end
-        line = reader:readLine()
     end
-    reader:close()
+    if #entries == 0 then return nil end
     PhobosLib.debug("POS", _TAG, "[WorldState] Building cache loaded: " .. tostring(#entries) .. " entries")
     return entries
 end
 
---- Save the mailbox discovery cache to an external flat file.
+--- Save mailbox discovery cache to world ModData.
 function POS_WorldState.saveMailboxCache()
     if not POS_WorldState.isAuthority() then return end
     local mailboxes = POS_WorldState.getMailboxes()
     if not mailboxes or not mailboxes.entries then return end
 
-    local writer = getFileWriter(POS_Constants.CACHE_FILE_MAILBOXES, false, false)
-    if not writer then
-        PhobosLib.debug("POS", _TAG, "[WorldState] Failed to open mailbox cache for writing")
-        return
+    local cache = PhobosLib.getWorldModDataTable("POSNET", "MailboxCache")
+    -- Clear and repopulate
+    for k in pairs(cache) do cache[k] = nil end
+    for i, entry in ipairs(mailboxes.entries) do
+        cache[i] = { x = entry.x, y = entry.y }
     end
-
-    for _, entry in ipairs(mailboxes.entries) do
-        writer:writeln(tostring(entry.x) .. POS_Constants.CACHE_FILE_SEPARATOR
-            .. tostring(entry.y))
-    end
-    writer:close()
     PhobosLib.debug("POS", _TAG, "[WorldState] Mailbox cache saved: " .. tostring(#mailboxes.entries) .. " entries")
 end
 
---- Load the mailbox discovery cache from an external flat file.
----@return table|nil Array of { x, y } entries, or nil if file not found
+--- Load mailbox discovery cache from world ModData.
+---@return table|nil Array of { x, y } entries, or nil if empty
 function POS_WorldState.loadMailboxCache()
-    local reader = getFileReader(POS_Constants.CACHE_FILE_MAILBOXES, false)
-    if not reader then return nil end
-
+    local cache = PhobosLib.getWorldModDataTable("POSNET", "MailboxCache")
     local entries = {}
-    local line = reader:readLine()
-    while line do
-        local parts = PhobosLib.split(line, POS_Constants.CACHE_FILE_SEPARATOR)
-        if parts and #parts >= 2 then
-            local x = tonumber(parts[1])
-            local y = tonumber(parts[2])
-            if x and y then
-                table.insert(entries, { x = x, y = y })
-            end
+    for _, entry in pairs(cache) do
+        if type(entry) == "table" and entry.x and entry.y then
+            entries[#entries + 1] = {
+                x = tonumber(entry.x),
+                y = tonumber(entry.y),
+            }
         end
-        line = reader:readLine()
     end
-    reader:close()
+    if #entries == 0 then return nil end
     PhobosLib.debug("POS", _TAG, "[WorldState] Mailbox cache loaded: " .. tostring(#entries) .. " entries")
     return entries
 end

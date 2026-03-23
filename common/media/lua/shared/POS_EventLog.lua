@@ -16,49 +16,60 @@
 
 ---------------------------------------------------------------
 -- POS_EventLog.lua
--- Append-only event logs and snapshot read/write via PZ's
--- getFileWriter() / getFileReader() API.
+-- Append-only event logs and snapshot read/write via world
+-- ModData (auto-persisted with save).  No file I/O.
 -- Server-only writes; clients may read snapshots.
+--
+-- ModData layout under POSNET.EventLog:
+--   logs = { ["economy_day821"] = "line1\nline2\n", ... }
+--   snapshots = { ["economy"] = "header\n---\ndata\n", ... }
 ---------------------------------------------------------------
 
 require "POS_Constants"
+require "PhobosLib"
 
 POS_EventLog = {}
 
-local _TAG = "[POS:EventLog]"
-
-local LOG_DIR      = POS_Constants.EVENT_LOG_DIR          -- "POSNET/events/"
-local SNAPSHOT_DIR = POS_Constants.EVENT_SNAPSHOT_DIR      -- "POSNET/snapshots/"
-local FIELD_SEP    = POS_Constants.EVENT_LOG_SEPARATOR     -- "|"
-local LOG_VERSION  = POS_Constants.EVENT_LOG_VERSION       -- 1
+local _TAG       = "[POS:EventLog]"
+local _NAMESPACE = "POSNET"
+local _LOG_KEY   = "EventLog"
+local FIELD_SEP  = POS_Constants.EVENT_LOG_SEPARATOR     -- "|"
+local LOG_VERSION = POS_Constants.EVENT_LOG_VERSION       -- 1
 
 ---------------------------------------------------------------
--- Path helpers
+-- Internal helpers
 ---------------------------------------------------------------
 
---- Get the log file path for a given system and day.
---- Uses POSNET/ subdirectory to avoid Kahlua compilation of data files.
-function POS_EventLog.getLogPath(system, day)
-    return "POSNET/" .. system .. "_day" .. tostring(day) .. ".log"
+--- Get the logs sub-table from world ModData.
+local function getLogStore()
+    local el = PhobosLib.getWorldModDataTable(_NAMESPACE, _LOG_KEY)
+    if not el.logs then el.logs = {} end
+    return el.logs
+end
+
+--- Get the snapshots sub-table from world ModData.
+local function getSnapshotStore()
+    local el = PhobosLib.getWorldModDataTable(_NAMESPACE, _LOG_KEY)
+    if not el.snapshots then el.snapshots = {} end
+    return el.snapshots
+end
+
+--- Build the ModData key for a system+day log.
+function POS_EventLog.getLogKey(system, day)
+    return system .. "_day" .. tostring(day)
 end
 
 ---------------------------------------------------------------
 -- Append
 ---------------------------------------------------------------
 
---- Append a single event record to the appropriate log file.
+--- Append a single event record to the appropriate log.
 --- Server-only. Guarded internally.
 function POS_EventLog.append(system, eventType, entityId, regionId, actorId, qty, priceBps, cause)
     if not POS_WorldState or not POS_WorldState.isAuthority() then return false end
 
     local day = POS_WorldState.getWorldDay()
-    local path = POS_EventLog.getLogPath(system, day)
-
-    local writer = getFileWriter(path, true, false)
-    if not writer then
-        PhobosLib.debug("POS", _TAG, "[EventLog] Failed to open writer: " .. tostring(path))
-        return false
-    end
+    local key = POS_EventLog.getLogKey(system, day)
 
     local line = table.concat({
         tostring(day),
@@ -73,8 +84,13 @@ function POS_EventLog.append(system, eventType, entityId, regionId, actorId, qty
         tostring(LOG_VERSION),
     }, FIELD_SEP)
 
-    writer:write(line .. "\n")
-    writer:close()
+    local logs = getLogStore()
+    local existing = logs[key]
+    if existing and type(existing) == "string" then
+        logs[key] = existing .. line .. "\n"
+    else
+        logs[key] = line .. "\n"
+    end
     return true
 end
 
@@ -82,48 +98,38 @@ end
 -- Snapshots
 ---------------------------------------------------------------
 
---- Write a snapshot file for fast reload.
+--- Write a snapshot for fast reload.
 --- Server-only.
 function POS_EventLog.writeSnapshot(snapshotType, headerLine, dataLines)
     if not POS_WorldState or not POS_WorldState.isAuthority() then return false end
 
-    local path = "POSNET/snapshot_" .. snapshotType .. ".txt"
-    local writer = getFileWriter(path, false, false)  -- overwrite
-    if not writer then
-        PhobosLib.debug("POS", _TAG, "[EventLog] Failed to open snapshot writer: " .. tostring(path))
-        return false
+    local content = headerLine .. "\n---\n"
+    for i = 1, #dataLines do
+        content = content .. dataLines[i] .. "\n"
     end
 
-    writer:write(headerLine .. "\n")
-    writer:write("---\n")
-    for i = 1, #dataLines do
-        writer:write(dataLines[i] .. "\n")
-    end
-    writer:close()
+    local snapshots = getSnapshotStore()
+    snapshots[snapshotType] = content
     return true
 end
 
---- Read a snapshot file. Returns header string and data array, or nil.
+--- Read a snapshot. Returns header string and data array, or nil.
 function POS_EventLog.readSnapshot(snapshotType)
-    local path = "POSNET/snapshot_" .. snapshotType .. ".txt"
-    local reader = getFileReader(path, false)
-    if not reader then return nil, nil end
+    local snapshots = getSnapshotStore()
+    local content = snapshots[snapshotType]
+    if not content or type(content) ~= "string" then return nil, nil end
 
-    local headerLine = reader:readLine()
-    local separator = reader:readLine()  -- "---"
+    local lines = PhobosLib.split(content, "\n")
+    if #lines < 2 then return nil, nil end
 
-    if not headerLine or not separator then
-        reader:close()
-        return nil, nil
-    end
-
+    local headerLine = lines[1]
+    -- lines[2] is "---" separator
     local dataLines = {}
-    local line = reader:readLine()
-    while line do
-        dataLines[#dataLines + 1] = line
-        line = reader:readLine()
+    for i = 3, #lines do
+        if lines[i] and lines[i] ~= "" then
+            dataLines[#dataLines + 1] = lines[i]
+        end
     end
-    reader:close()
 
     return headerLine, dataLines
 end
@@ -132,13 +138,11 @@ end
 -- Purge
 ---------------------------------------------------------------
 
---- Purge event log files older than maxAgeDays.
---- Server-only.
+--- Purge event logs older than maxAgeDays.
+--- Server-only. Cleaner than file truncation — just deletes keys.
 function POS_EventLog.purgeOldLogs(maxAgeDays)
     if not POS_WorldState or not POS_WorldState.isAuthority() then return 0 end
-    -- Note: PZ's Lua sandbox does not provide directory listing.
-    -- Purging is best-effort: we track the current day and delete known
-    -- old files by constructing their expected paths.
+
     local currentDay = POS_WorldState.getWorldDay()
     local systems = {
         POS_Constants.EVENT_SYSTEM_ECONOMY,
@@ -146,20 +150,21 @@ function POS_EventLog.purgeOldLogs(maxAgeDays)
         POS_Constants.EVENT_SYSTEM_RECON,
     }
     local purged = 0
+    local logs = getLogStore()
 
     for _, system in ipairs(systems) do
         for day = math.max(0, currentDay - maxAgeDays - POS_Constants.EVENT_LOG_PURGE_BUFFER),
                   math.max(0, currentDay - maxAgeDays) do
-            -- We cannot delete files in PZ Lua, but we can overwrite them empty
-            local path = POS_EventLog.getLogPath(system, day)
-            local writer = getFileWriter(path, false, false)
-            if writer then
-                writer:write("")  -- truncate
-                writer:close()
+            local key = POS_EventLog.getLogKey(system, day)
+            if logs[key] then
+                logs[key] = nil
                 purged = purged + 1
             end
         end
     end
 
+    if purged > 0 then
+        PhobosLib.debug("POS", _TAG, "Purged " .. purged .. " old log entries")
+    end
     return purged
 end

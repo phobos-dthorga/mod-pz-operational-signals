@@ -35,6 +35,7 @@ local _TAG = "DataReset"
 ---------------------------------------------------------------
 
 local WORLD_KEYS = {
+    "POSNET",                          -- EventLog, BuildingCache, MailboxCache
     POS_Constants.WMD_WORLD,
     POS_Constants.WMD_EXCHANGE,
     POS_Constants.WMD_WHOLESALERS,

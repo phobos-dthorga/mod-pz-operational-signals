@@ -227,8 +227,9 @@ POS_Constants.BPS_DIVISOR = 10000
 -- Event log paths and format
 ---------------------------------------------------------------
 
-POS_Constants.EVENT_LOG_DIR          = "POSNET/events/"
-POS_Constants.EVENT_SNAPSHOT_DIR     = "POSNET/snapshots/"
+-- DEPRECATED: Event logs now stored in world ModData (POSNET.EventLog)
+-- POS_Constants.EVENT_LOG_DIR       = "POSNET/events/"
+-- POS_Constants.EVENT_SNAPSHOT_DIR  = "POSNET/snapshots/"
 POS_Constants.EVENT_LOG_SEPARATOR    = "|"
 POS_Constants.EVENT_LOG_VERSION      = 1
 POS_Constants.EVENT_LOG_PURGE_BUFFER = 5
@@ -296,14 +297,11 @@ POS_Constants.RADIO_BROADCAST_QUALITY_TIER4   = 90
 
 POS_Constants.DANGER_CHECK_RADIUS = 15
 
----------------------------------------------------------------
--- External cache file paths (flat, Zomboid/Lua/ directory)
----------------------------------------------------------------
-
-POS_Constants.CACHE_FILE_BUILDINGS  = "POSNET/buildings.dat"
-POS_Constants.CACHE_FILE_MAILBOXES  = "POSNET/mailboxes.dat"
-POS_Constants.CACHE_FILE_SEPARATOR  = "|"
-POS_Constants.CACHE_FILE_ROOM_SEP   = ","
+-- DEPRECATED: Caches now stored in world ModData (POSNET.BuildingCache, POSNET.MailboxCache)
+-- POS_Constants.CACHE_FILE_BUILDINGS  = "POSNET/buildings.dat"
+-- POS_Constants.CACHE_FILE_MAILBOXES  = "POSNET/mailboxes.dat"
+-- POS_Constants.CACHE_FILE_SEPARATOR  = "|"
+-- POS_Constants.CACHE_FILE_ROOM_SEP   = ","
 
 ---------------------------------------------------------------
 -- Operation statuses
