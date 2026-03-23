@@ -690,8 +690,10 @@ POSnetWindow
 - **ContextPanel** (right) — context-sensitive action and insight layer.
   Adapts based on what is selected in the center panel.
 
-> **Implementation status**: SignalPanel and ContextPanel are planned; the
-> current build uses ContentPanel only. See v1 targets below.
+> **Implementation status**: All three panels are implemented.
+> SignalPanel (`POS_SignalPanel.lua`), ContentPanel, and ContextPanel
+> (`POS_ContextPanel.lua`) are live with event-driven updates via
+> `POS_Events` (Starlit LuaEvent).
 
 ### 9.2 SignalPanel — Passive World Awareness (Left)
 
@@ -2730,9 +2732,10 @@ end
 
 ## 32. Mission Content System
 
-> **Status**: Future — not yet implemented. Current missions use hardcoded
-> templates in `POS_MissionTemplates.lua`. The compositional briefing
-> pipeline described below is a design target, not current reality.
+> **Status**: Implemented. The 8-step compositor pipeline lives in
+> `POS_MissionBriefingResolver.lua`. Mission definitions in
+> `Definitions/Missions/`, text pools in `Definitions/TextPools/`,
+> voice packs for archetype-specific language (smuggler, military, trader).
 
 Guidelines summary for compositional mission briefings and data-driven
 mission definitions. The full design lives at `docs/mission-system-design.md`.
@@ -3214,7 +3217,10 @@ end
 
 ## 40. Starlit Library Integration (Roadmap)
 
-> **Status**: Planned — not yet implemented. Dependency not yet added.
+> **Status**: Phase 1 implemented. Starlit dependency added, `POS_Events.lua`
+> wraps 12 named LuaEvent instances. Event emitters wired in AmbientIntel,
+> MarketDatabase, EconomyTick, MissionGenerator. SignalPanel subscribes
+> for real-time intel feed updates. Phases 2-3 (TaskManager, Time) pending.
 
 POSnet will adopt three modules from the **Starlit** utility library as a
 servant-library for orchestration and events. Starlit is a dependency-style
