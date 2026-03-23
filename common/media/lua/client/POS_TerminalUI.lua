@@ -31,6 +31,7 @@ require "ISUI/ISPanel"
 require "POS_ScreenManager"
 require "POS_TerminalWidgets"
 require "POS_TerminalTheme"
+require "POS_BootSequence"
 
 POS_TerminalUI = ISCollapsableWindow:derive("POS_TerminalUI")
 
@@ -74,73 +75,34 @@ local CONTEXT_COLLAPSE_THRESHOLD = POS_Constants.UI_CONTEXT_COLLAPSE_THRESHOLD
 local PANEL_GAP = POS_Constants.UI_PANEL_GAP
 
 ---------------------------------------------------------------
--- Boot sequence
+-- Boot sequence (loaded from Definitions/BootSequence/)
 ---------------------------------------------------------------
 
-local BOOT_TEXT = [[Phoenix BIOS Version 4.03
-Copyright (C) 1985-1992 Phoenix Technologies Ltd.
-All Rights Reserved
+--- Boot data resolved per-open from POS_BootSequence.getBootData().
+--- Fields: lines (string[]), totalChars (int), charsPerFrame (float),
+--- pauseFrames (int). Populated in initBootData().
+local bootData = nil
 
-CPU: 80486DX @ 33 MHz
-Base Memory: 640K
-Extended Memory: 15360K
-
-Detecting IDE Drives...
-Primary Master: CONNER CP-30174
-Primary Slave: None
-
-Initializing Floppy Drive A: 1.44MB 3.5"
-
-Memory Test: 16384K OK
-
-Starting MS-DOS...
-
-MS-DOS Version 6.00
-(C)Copyright Microsoft Corp 1981-1993.
-
-HIMEM is testing extended memory...done.
-Loading HIMEM.SYS
-Loading EMM386.EXE
-Expanded Memory Manager installed.
-
-BUFFERS=30
-FILES=40
-LASTDRIVE=Z
-
-Loading device drivers...
-
-ANSI.SYS installed
-MOUSE.COM installed
-
-Initializing network services...
-
-Loading packet driver...
-COM1: Radio Interface Detected
-Establishing link...
-
-C:\>]]
-
---- Split boot text into lines at load time.
-local BOOT_LINES = {}
-for line in BOOT_TEXT:gmatch("[^\n]+") do
-    table.insert(BOOT_LINES, line)
-end
-
---- Total character count (including newline as 1 char between lines).
-local BOOT_TOTAL_CHARS = 0
-for i, line in ipairs(BOOT_LINES) do
-    BOOT_TOTAL_CHARS = BOOT_TOTAL_CHARS + #line
-    if i < #BOOT_LINES then
-        BOOT_TOTAL_CHARS = BOOT_TOTAL_CHARS + 1  -- newline
+--- Compute boot timing from resolved boot data.
+---@param terminal table POS_TerminalUI instance
+local function initBootData(terminal)
+    local bd = POS_BootSequence.getBootData(terminal)
+    local lines = bd.lines or { "System ready." }
+    local totalChars = 0
+    for i, line in ipairs(lines) do
+        totalChars = totalChars + #line
+        if i < #lines then totalChars = totalChars + 1 end  -- newline
     end
+    local duration = bd.durationSeconds or 15
+    local fps = POS_Constants.BOOT_TARGET_FPS or 60
+    bootData = {
+        lines         = lines,
+        totalChars    = totalChars,
+        charsPerFrame = totalChars / (duration * fps),
+        pauseFrames   = math.floor((bd.postBootPauseSec or 1.0) * fps),
+        systemName    = bd.systemName or "POSNET BBS",
+    }
 end
-
---- Base reveal rate: chars per frame at 1x game speed.
---- ~720 chars over 30 seconds at 60fps = 0.4 chars/frame.
-local BASE_CHARS_PER_FRAME = BOOT_TOTAL_CHARS / (POS_Constants.BOOT_DURATION_SECONDS * POS_Constants.BOOT_TARGET_FPS)
-
---- Pause frames after boot text finishes (1 second).
-local BOOT_PAUSE_FRAMES = POS_Constants.BOOT_PAUSE_FRAMES
 
 ---------------------------------------------------------------
 -- Screen rect helper
@@ -522,21 +484,22 @@ end
 
 --- Advance boot character reveal and render the boot text.
 function POS_TerminalUI:renderBoot()
+    if not bootData then initBootData(self) end
+
     -- Advance character reveal
     if self.bootPauseCountdown < 0 then
-        -- Still revealing characters
         local speed = 1.0
         local gt = getGameTime()
         if gt and gt.getMultiplier then
             speed = gt:getMultiplier()
         end
-        self.bootAccumulator = self.bootAccumulator + (BASE_CHARS_PER_FRAME * speed)
+        self.bootAccumulator = self.bootAccumulator + (bootData.charsPerFrame * speed)
         local chars = math.floor(self.bootAccumulator)
         self.bootAccumulator = self.bootAccumulator - chars
-        self.bootCharIndex = math.min(self.bootCharIndex + chars, BOOT_TOTAL_CHARS)
+        self.bootCharIndex = math.min(self.bootCharIndex + chars, bootData.totalChars)
 
-        if self.bootCharIndex >= BOOT_TOTAL_CHARS then
-            self.bootPauseCountdown = BOOT_PAUSE_FRAMES
+        if self.bootCharIndex >= bootData.totalChars then
+            self.bootPauseCountdown = bootData.pauseFrames
         end
     else
         -- Post-reveal pause with blinking cursor
@@ -559,17 +522,15 @@ function POS_TerminalUI:renderBoot()
     local charsSoFar = 0
     local renderedLines = {}
 
-    for i, line in ipairs(BOOT_LINES) do
+    for i, line in ipairs(bootData.lines) do
         local lineStart = charsSoFar
         local lineEnd = charsSoFar + #line
 
         if self.bootCharIndex <= lineStart then
             break  -- haven't reached this line yet
         elseif self.bootCharIndex >= lineEnd then
-            -- Full line visible
             table.insert(renderedLines, line)
         else
-            -- Partial line (currently being typed)
             local partial = self.bootCharIndex - lineStart
             table.insert(renderedLines, string.sub(line, 1, partial))
         end
@@ -651,6 +612,9 @@ function POS_TerminalUI.open(radioName, frequency, portablePC, signalStrength, b
     local h = 1170
     local x = (sw - w) / 2
     local y = (sh - h) / 2
+
+    -- Reset boot data so tokens are resolved with fresh connection info
+    bootData = nil
 
     local ui = POS_TerminalUI:new(x, y, w, h)
     ui.radioName = radioName or "Radio"
