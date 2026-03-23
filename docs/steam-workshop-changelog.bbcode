@@ -4,6 +4,43 @@
 
 
 
+
+[h2]v0.18.0[/h2]
+[list]
+[*] Mission Text Compositor — data-driven briefing generation (§32)
+[*] ContextPanel — add action + progress item types, fix bar builder ref
+[*] implement SignalPanel — left sidebar passive intel feed (§9.2)
+[*] Starlit LuaEvent integration — POS_Events namespace + emitters
+[*] apocalypse-adjusted item pricing with curated value overrides
+[*] dynamic boot sequence from definition files
+[*] replace CRT bezel with telnet-style header + status bar frame
+[*] data reset developer tool — wipe all POSnet data from save
+[*] item pool curation — two-layer filter removes ~1,140 junk items
+[*] informative empty state + discovery counter on View Items
+[*] (Fix) remove duplicate UI_POS_Band_Tactical/Operations translation keys
+[*] (Fix) remove stale NAV_PANEL_WIDTH reference from TerminalUI
+[*] (Fix) DataReset modal button callbacks crash on self.parent nil
+[*] (Fix) stale gmd variable in InvestmentResolver payout delivery
+[*] (Fix) migrate all file I/O to world ModData — eliminate Zomboid/Lua/POSNET/
+[*] (Fix) render crash from missing border alpha + data reset nav + remove nav panel
+[*] (Fix) Data Reset screen not appearing — wrong callback name
+[*] (Fix) ItemPool crash from load-order constant capture + lazyInit no-retry
+[*] (Fix) AmbientIntel init never registered EveryOneMinute handler
+[*] (Fix) View Items empty state, dead buttons, Market Overview overflow
+[*] restructure into guides/ + architecture/ for audience separation
+[*] update §9, §32, §40 status banners to reflect implementation
+[*] comprehensive audit remediation — §9 rewrite, §33 update, §41 new
+[*] add §40 Starlit Library integration roadmap
+[*] update design guidelines for telnet frame + boot sequence
+[*] document scroll panel pattern, dual-population, button redirects
+[*] consolidate documentation — merge 3 files, inline 2 tables
+[*] add duplicate JSON key detection for all translation files
+[*] replace all ModData.getOrCreate with PhobosLib world ModData helpers
+[*] update theme, constants, and widgets for telnet frame
+[/list]
+
+[hr][/hr]
+
 [h2]v0.17.0 — Screen Consolidation & Item Discovery[/h2]
 [list]
 [*] item discovery via ambient intel — progressive trade catalog
