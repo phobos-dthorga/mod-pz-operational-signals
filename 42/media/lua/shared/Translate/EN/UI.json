@@ -1007,10 +1007,26 @@
     "UI_POS_Mission_Difficulty_4": "Critical",
     "UI_POS_Mission_Difficulty_5": "Extreme",
 
-    "UI_POS_Mission_Category_recon": "Reconnaissance",
+    "UI_POS_Mission_Category_recon": "Recon",
     "UI_POS_Mission_Category_delivery": "Delivery",
     "UI_POS_Mission_Category_trade": "Trade",
-    "UI_POS_Mission_Category_sigint": "Signal Intelligence",
+    "UI_POS_Mission_Category_sigint": "SIGINT",
+    "UI_POS_Mission_Category_recovery": "Recovery",
+    "UI_POS_Mission_Category_survey": "Survey",
+
+    "UI_POS_Assignments_FilterAll": "All",
+    "UI_POS_Assignments_FilterActive": "Active",
+    "UI_POS_Assignments_FilterAvailable": "Available",
+    "UI_POS_Assignments_FilterDone": "Done",
+
+    "UI_POS_Mission_Status_available": "AVAILABLE",
+    "UI_POS_Mission_Status_active": "ACTIVE",
+    "UI_POS_Mission_Status_completed": "DONE",
+    "UI_POS_Mission_Status_failed": "FAILED",
+    "UI_POS_Mission_Status_expired": "EXPIRED",
+
+    "UI_POS_Assignments_NoneInCategory": "No missions in this category.",
+    "UI_POS_Assignments_NoneWithStatus": "No missions with this status.",
     "UI_POS_Mission_Category_recovery": "Recovery",
     "UI_POS_Mission_Category_survey": "Survey",
 

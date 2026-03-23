@@ -623,7 +623,7 @@ local function renderHistoryTab(contentPanel, startY)
 end
 
 ---------------------------------------------------------------
--- Screen definition
+-- Screen definition — dual tab bar (category × status)
 ---------------------------------------------------------------
 
 local screen = {}
@@ -633,15 +633,135 @@ screen.titleKey  = "UI_POS_Assignments_Title"
 screen.sortOrder = 20
 screen.requires  = { connected = true, bands = {POS_Constants.AZAS_OPS_KEY} }
 
---- Stored reference to the tabbed view controller for cleanup.
-local _tabbedController = nil
+--- Current filter state (persists across refreshes within session).
+local _activeCategory = "recon"
+local _activeStatus   = "all"
+local _selectedMissionId = nil
+
+--- Status badges with colour mapping.
+local STATUS_BADGES = {
+    [POS_Constants.MISSION_STATUS_AVAILABLE] = { text = "UI_POS_Mission_Status_available", colour = "textBright" },
+    [POS_Constants.MISSION_STATUS_ACTIVE]    = { text = "UI_POS_Mission_Status_active",    colour = "warning" },
+    [POS_Constants.MISSION_STATUS_COMPLETED] = { text = "UI_POS_Mission_Status_completed", colour = "success" },
+    [POS_Constants.MISSION_STATUS_FAILED]    = { text = "UI_POS_Mission_Status_failed",    colour = "error" },
+    [POS_Constants.MISSION_STATUS_EXPIRED]   = { text = "UI_POS_Mission_Status_expired",   colour = "dim" },
+}
+
+--- Status filter tabs.
+local STATUS_FILTERS = { "all", "active", "available", "completed" }
+
+--- Get missions filtered by category and status.
+local function getFilteredMissions(category, status)
+    local result = {}
+    if not POS_OperationLog or not POS_OperationLog.getAll then return result end
+
+    local ok, allOps = PhobosLib.safecall(POS_OperationLog.getAll)
+    if not ok or not allOps then return result end
+
+    for _, op in ipairs(allOps) do
+        -- Category filter
+        local catMatch = (op.category == category)
+        if not catMatch and op.definitionId then
+            -- Also check definition category
+            local defCat = op.definitionId and string.match(op.definitionId, "^(%a+)_") or nil
+            catMatch = (defCat == category)
+        end
+
+        if catMatch then
+            -- Status filter
+            local statusMatch = (status == "all")
+            if not statusMatch then
+                if status == "active" then
+                    statusMatch = (op.status == POS_Constants.STATUS_ACTIVE)
+                elseif status == "available" then
+                    statusMatch = (op.status == POS_Constants.STATUS_AVAILABLE)
+                elseif status == "completed" then
+                    statusMatch = (op.status == POS_Constants.STATUS_COMPLETED
+                        or op.status == POS_Constants.STATUS_FAILED
+                        or op.status == POS_Constants.STATUS_EXPIRED)
+                end
+            end
+
+            if statusMatch then
+                result[#result + 1] = op
+            end
+        end
+    end
+
+    return result
+end
+
+--- Render a single mission row.
+local function renderMissionRow(ctx, op, parent, rx, ry, rw, _idx)
+    local W = POS_TerminalWidgets
+    local C = W.COLOURS
+
+    local badge = STATUS_BADGES[op.status] or STATUS_BADGES[POS_Constants.MISSION_STATUS_AVAILABLE]
+    local badgeText = PhobosLib.safeGetText(badge.text)
+    local badgeColour = C[badge.colour] or C.text
+
+    -- Row 1: [STATUS] Mission name
+    local title = (op.briefing and op.briefing.title) or op.name or op.id
+    W.createLabel(parent, rx, ry,
+        "[" .. badgeText .. "] " .. title, badgeColour)
+    ry = ry + ctx.lineH
+
+    -- Row 2: Difficulty + days + reward
+    local diffKey = "UI_POS_Mission_Difficulty_" .. tostring(op.difficulty or 1)
+    local diffLabel = PhobosLib.safeGetText(diffKey)
+    local day = getGameTime() and getGameTime():getNightsSurvived() or 0
+    local daysLeft = (op.expiryDay or 0) - day
+    local reward = op.rewardCash or op.estimatedReward or 0
+
+    local detailStr = diffLabel
+    if op.status == POS_Constants.STATUS_ACTIVE
+            or op.status == POS_Constants.STATUS_AVAILABLE then
+        if daysLeft > 0 then
+            detailStr = detailStr .. " | " .. tostring(daysLeft) .. " days"
+        elseif daysLeft == 0 then
+            detailStr = detailStr .. " | DUE TODAY"
+        end
+    end
+    detailStr = detailStr .. " | $" .. string.format("%.0f", reward)
+
+    W.createLabel(parent, rx + 8, ry, detailStr, C.dim)
+    ry = ry + ctx.lineH
+
+    -- Row 3: Location (if available)
+    local locationStr = nil
+    local obj = op.objectives and op.objectives[1]
+    if obj and obj.targetBuildingX and obj.targetBuildingY then
+        locationStr = formatLocation(obj.targetBuildingX, obj.targetBuildingY)
+    end
+    if locationStr then
+        W.createLabel(parent, rx + 8, ry, locationStr, C.dim)
+        ry = ry + ctx.lineH
+    end
+
+    -- View Details button
+    local opId = op.id
+    local isSelected = (_selectedMissionId == opId)
+    W.createButton(parent, rx, ry, rw, ctx.btnH,
+        isSelected and "> SELECTED" or PhobosLib.safeGetText("UI_POS_Screen_ViewDetails"),
+        nil,
+        function()
+            _selectedMissionId = opId
+            POS_ScreenManager.refreshCurrentScreen()
+        end)
+    ry = ry + ctx.btnH + 4
+
+    return ry - (ctx.lineH * 2 + (locationStr and ctx.lineH or 0) + ctx.btnH + 4)
+end
 
 function screen.create(contentPanel, _params, _terminal)
     local W = POS_TerminalWidgets
     local C = W.COLOURS
     local ctx = W.initLayout(contentPanel)
 
-    -- Header
+    -- Resolve state from params
+    _activeCategory = (_params and _params.category) or _activeCategory or "recon"
+    _activeStatus   = (_params and _params.status)   or _activeStatus   or "all"
+
     W.drawHeader(ctx, "UI_POS_Assignments_Title")
 
     -- Player reputation + tier
@@ -658,44 +778,103 @@ function screen.create(contentPanel, _params, _terminal)
         C.text)
     ctx.y = ctx.y + ctx.lineH + 4
 
-    -- Determine initial tab from params
-    local initialTab = (_params and _params.activeTab) or "active"
+    -- ── Tab Row 1: Category ──────────────────────────────────
+    local categories = POS_Constants.MISSION_CATEGORIES
+    local catTabW = math.floor(ctx.panel:getWidth() / #categories) - 2
+    local catTabX = 0
+    for _, catId in ipairs(categories) do
+        local label = PhobosLib.safeGetText("UI_POS_Mission_Category_" .. catId)
+        if _activeCategory == catId then
+            W.createLabel(ctx.panel, catTabX + 4, ctx.y + 2,
+                "> " .. label, C.textBright)
+        else
+            local cId = catId
+            W.createButton(ctx.panel, catTabX, ctx.y, catTabW, ctx.btnH,
+                label, nil,
+                function()
+                    _activeCategory = cId
+                    _selectedMissionId = nil
+                    POS_ScreenManager.replaceCurrent(screen.id,
+                        { category = cId, status = _activeStatus })
+                end)
+        end
+        catTabX = catTabX + catTabW + 2
+    end
+    ctx.y = ctx.y + ctx.btnH + 4
 
-    -- Create tabbed view
-    _tabbedController = PhobosLib.createTabbedView(ctx.panel, {
-        {
-            id       = "active",
-            labelKey = "UI_POS_Assignments_Active",
-            renderFn = renderActiveTab,
-        },
-        {
-            id       = "available",
-            labelKey = "UI_POS_Assignments_Available",
-            renderFn = renderAvailableTab,
-        },
-        {
-            id       = "history",
-            labelKey = "UI_POS_Assignments_History",
-            renderFn = renderHistoryTab,
-        },
-    }, {
-        x         = 0,
-        y         = ctx.y,
-        width     = ctx.panel:getWidth(),
-        height    = ctx.panel:getHeight() - ctx.y,
-        activeTab = initialTab,
-        colours   = {
-            active   = C.textBright,
-            inactive = C.dim,
-        },
-    })
+    -- ── Tab Row 2: Status ────────────────────────────────────
+    local statusTabW = math.floor(ctx.panel:getWidth() / #STATUS_FILTERS) - 2
+    local statusTabX = 0
+    for _, statusId in ipairs(STATUS_FILTERS) do
+        local label = PhobosLib.safeGetText("UI_POS_Assignments_Filter"
+            .. statusId:sub(1,1):upper() .. statusId:sub(2))
+        if _activeStatus == statusId then
+            W.createLabel(ctx.panel, statusTabX + 4, ctx.y + 2,
+                "> " .. label, C.textBright)
+        else
+            local sId = statusId
+            W.createButton(ctx.panel, statusTabX, ctx.y, statusTabW, ctx.btnH,
+                label, nil,
+                function()
+                    _activeStatus = sId
+                    _selectedMissionId = nil
+                    POS_ScreenManager.replaceCurrent(screen.id,
+                        { category = _activeCategory, status = sId })
+                end)
+        end
+        statusTabX = statusTabX + statusTabW + 2
+    end
+    ctx.y = ctx.y + ctx.btnH + 4
+
+    W.createSeparator(ctx.panel, 0, ctx.y, 50, "-")
+    ctx.y = ctx.y + ctx.lineH
+
+    -- ── Filtered mission list ────────────────────────────────
+    local missions = getFilteredMissions(_activeCategory, _activeStatus)
+
+    if #missions == 0 then
+        local emptyKey = _activeStatus == "all"
+            and "UI_POS_Assignments_NoneInCategory"
+            or "UI_POS_Assignments_NoneWithStatus"
+        W.createLabel(ctx.panel, 8, ctx.y,
+            PhobosLib.safeGetText(emptyKey), C.dim)
+        ctx.y = ctx.y + ctx.lineH
+    else
+        local currentPage = (_params and _params.missionPage) or 1
+        local catCopy = _activeCategory
+        local statusCopy = _activeStatus
+
+        ctx.y = PhobosLib_Pagination.create(ctx.panel, {
+            items = missions,
+            pageSize = POS_Constants.MISSION_PAGE_SIZE,
+            currentPage = currentPage,
+            x = 0,
+            y = ctx.y,
+            width = ctx.panel:getWidth(),
+            colours = {
+                text = C.text, dim = C.dim,
+                bgDark = C.bgDark, bgHover = C.bgHover,
+                border = C.border,
+            },
+            renderItem = function(parent, rx, ry, rw, item, idx)
+                local startY = ry
+                ry = renderMissionRow(ctx, item, parent, rx, ry, rw, idx)
+                return ry - startY
+            end,
+            onPageChange = function(newPage)
+                POS_ScreenManager.replaceCurrent(screen.id, {
+                    category = catCopy, status = statusCopy,
+                    missionPage = newPage,
+                })
+            end,
+        })
+    end
+
+    W.drawFooter(ctx)
 end
 
 function screen.destroy()
-    if _tabbedController then
-        _tabbedController.destroy()
-        _tabbedController = nil
-    end
+    _selectedMissionId = nil
     POS_TerminalWidgets.defaultDestroy()
 end
 
@@ -703,27 +882,97 @@ function screen.refresh(params)
     POS_TerminalWidgets.dynamicRefresh(screen, params)
 end
 
+--- ContextPanel: selected mission detail.
 screen.getContextData = function(_params)
     local data = {}
 
-    -- Count active assignments
-    local activeCount = 0
-    if getActiveRecon() then activeCount = activeCount + 1 end
-    if getActiveDelivery() then activeCount = activeCount + 1 end
-
-    -- Count available assignments
-    local availCount = 0
-    if POS_OperationLog and POS_OperationLog.getByStatus then
-        local avail = POS_OperationLog.getByStatus(POS_Constants.STATUS_AVAILABLE)
-        if avail then availCount = #avail end
+    if not _selectedMissionId then
+        -- Summary counts by category
+        for _, catId in ipairs(POS_Constants.MISSION_CATEGORIES) do
+            local all = getFilteredMissions(catId, "all")
+            if #all > 0 then
+                local active = 0
+                for _, op in ipairs(all) do
+                    if op.status == POS_Constants.STATUS_ACTIVE then
+                        active = active + 1
+                    end
+                end
+                local label = PhobosLib.safeGetText("UI_POS_Mission_Category_" .. catId)
+                table.insert(data, { type = "kv", key = label,
+                    value = tostring(#all) .. " (" .. active .. " active)" })
+            end
+        end
+        if #data == 0 then
+            table.insert(data, { type = "kv", key = "UI_POS_Screen_Hint",
+                value = "Select a mission for details" })
+        end
+        return data
     end
 
-    if activeCount > 0 or availCount > 0 then
-        table.insert(data, { type = "kv", key = "UI_POS_Assignments_Active",
-            value = tostring(activeCount) })
-        table.insert(data, { type = "kv", key = "UI_POS_Assignments_Available",
-            value = tostring(availCount) })
+    -- Find the selected mission
+    local mission = nil
+    if POS_OperationLog and POS_OperationLog.get then
+        local ok, op = PhobosLib.safecall(POS_OperationLog.get, _selectedMissionId)
+        if ok then mission = op end
     end
+
+    if not mission then
+        table.insert(data, { type = "kv", key = "Error",
+            value = "Mission not found" })
+        return data
+    end
+
+    -- Header
+    local badge = STATUS_BADGES[mission.status]
+        or STATUS_BADGES[POS_Constants.MISSION_STATUS_AVAILABLE]
+    table.insert(data, { type = "header",
+        text = "[" .. PhobosLib.safeGetText(badge.text) .. "]" })
+
+    -- Mission title
+    local title = (mission.briefing and mission.briefing.title) or mission.name or mission.id
+    table.insert(data, { type = "kv", key = "Mission", value = title })
+
+    -- Category
+    table.insert(data, { type = "kv", key = "Category",
+        value = PhobosLib.safeGetText("UI_POS_Mission_Category_" .. (mission.category or "recon")) })
+
+    -- Difficulty
+    local diffKey = "UI_POS_Mission_Difficulty_" .. tostring(mission.difficulty or 1)
+    table.insert(data, { type = "kv", key = "Difficulty",
+        value = PhobosLib.safeGetText(diffKey) })
+
+    -- Deadline
+    local day = getGameTime() and getGameTime():getNightsSurvived() or 0
+    local daysLeft = (mission.expiryDay or 0) - day
+    local dlColour = daysLeft <= 1 and "error" or (daysLeft <= 3 and "warning" or nil)
+    table.insert(data, { type = "kv", key = "Deadline",
+        value = tostring(daysLeft) .. " days", colour = dlColour })
+
+    -- Reward
+    local reward = mission.rewardCash or mission.estimatedReward or 0
+    table.insert(data, { type = "kv", key = "Reward",
+        value = "$" .. string.format("%.0f", reward) })
+
+    -- Objectives
+    if mission.objectives and #mission.objectives > 0 then
+        table.insert(data, { type = "separator" })
+        table.insert(data, { type = "header", text = "OBJECTIVES" })
+        for _, obj in ipairs(mission.objectives) do
+            local icon = obj.completed and "[x]" or "[ ]"
+            table.insert(data, { type = "kv", key = icon,
+                value = obj.description or obj.type or "?" })
+        end
+    end
+
+    -- Briefing situation preview
+    if mission.briefing and mission.briefing.situation
+            and mission.briefing.situation ~= "" then
+        table.insert(data, { type = "separator" })
+        local sit = mission.briefing.situation
+        if #sit > 80 then sit = string.sub(sit, 1, 77) .. "..." end
+        table.insert(data, { type = "kv", key = "", value = sit })
+    end
+
     return data
 end
 

@@ -151,8 +151,22 @@ POS_Constants.MISSION_HISTORY_MAX_SIZE          = 10
 POS_Constants.MISSION_MIN_DIFFICULTY            = 1
 POS_Constants.MISSION_MAX_DIFFICULTY            = 5
 POS_Constants.MISSION_VOICE_OVERRIDE_SECTIONS   = { "situation", "submission" }
-POS_Constants.ALERT_FEED_MAX_ENTRIES    = 10
-POS_Constants.PROCESS_FEED_MAX_ENTRIES  = 5
+
+---------------------------------------------------------------
+-- Mission categories & statuses
+---------------------------------------------------------------
+
+POS_Constants.MISSION_CATEGORIES = {
+    "recon", "delivery", "trade", "sigint", "recovery", "survey",
+}
+
+POS_Constants.MISSION_STATUS_AVAILABLE = "available"
+POS_Constants.MISSION_STATUS_ACTIVE    = "active"
+POS_Constants.MISSION_STATUS_COMPLETED = "completed"
+POS_Constants.MISSION_STATUS_FAILED    = "failed"
+POS_Constants.MISSION_STATUS_EXPIRED   = "expired"
+
+POS_Constants.MISSION_PAGE_SIZE = 5
 
 ---------------------------------------------------------------
 -- Contract system (§43)
