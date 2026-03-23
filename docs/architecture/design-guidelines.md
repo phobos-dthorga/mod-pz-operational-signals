@@ -3605,7 +3605,9 @@ POS_BandRegistry.getRegistry():register({
 
 ## 46. Free Agent Operations
 
-> **Status**: Implemented. Schema, service, screen, economy tick.
+> **Status**: Fully playable. Schema, service, screen, economy tick,
+> Deploy UI (archetype picker), cargo consumption on deploy, contract
+> settlement on completion, PN channel integration (5 channels).
 
 ### 46.1 Overview
 
@@ -3647,7 +3649,41 @@ Active agents have a [Recall] button (abort mission, no payout).
 On completion: player receives `payout × (1 - commissionRate)`.
 On failure: cargo is lost, agent is gone, no payout.
 
-### 46.6 Anti-Patterns
+### 46.7 Deploy UI Architecture
+
+Contract ContextPanel → [Send Agent] → `pos.bbs.agents.deploy` screen:
+
+1. Contract summary (kind, item×qty, payout)
+2. Archetype selector (5 buttons with commission/risk/ETA per row)
+3. Cost preview (cargo consumed + commission deducted + net payout)
+4. Inventory check (owned/needed with colour feedback)
+5. [Confirm Deployment] → `POS_FreeAgentService.deploy()` → cargo consumed
+   atomically → agent appears in Field Agents screen
+
+The archetype selector uses named constants (`POS_Constants.FREE_AGENT_ARCHETYPE_*`)
+and translation keys (`UI_POS_FreeAgent_Archetype_*`). All labels use
+`PhobosLib.safeGetText()`. No magic strings.
+
+### 46.8 PhobosNotifications Integration
+
+5 PN channels registered via `POS_NotificationChannels.lua`:
+
+| Channel | Constant | Content |
+|---------|----------|---------|
+| `posnet_agents` | `PN_CHANNEL_AGENTS` | Agent deploy/state/recall |
+| `posnet_contracts` | `PN_CHANNEL_CONTRACTS` | Contract accept/fulfil/expire/betray |
+| `posnet_market` | `PN_CHANNEL_MARKET` | Market events, zone disruptions |
+| `posnet_trade` | `PN_CHANNEL_TRADE` | Buy/sell confirmations |
+| `posnet_intel` | `PN_CHANNEL_INTEL` | Item discoveries |
+
+Priority escalation for agents: `drafted/assembling` = low,
+`transit/negotiation` = low, `delayed` = normal, `compromised` = high,
+`completed` = normal, `failed` = critical.
+
+All `notifyOrSay` calls use the correct opts-table signature with
+`PhobosLib.safecall` wrapper for resilience.
+
+### 46.9 Anti-Patterns
 
 | Anti-Pattern | Why It's Wrong |
 |---|---|

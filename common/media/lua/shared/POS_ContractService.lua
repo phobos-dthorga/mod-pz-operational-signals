@@ -362,6 +362,42 @@ function POS_ContractService.abandon(contractId)
 end
 
 ---------------------------------------------------------------
+-- Lifecycle: Agent-delegated settlement (§4.2 hard invariant)
+---------------------------------------------------------------
+
+--- Settle a contract that was fulfilled by a free agent.
+--- Skips cargo consumption (agent consumed cargo on deploy).
+--- Awards reputation and logs history.
+---@param contractId string
+---@param agentId string
+---@return boolean
+function POS_ContractService.settleViaAgent(contractId, agentId)
+    local store = getContractStore()
+    local c = store[contractId]
+    if not c then return false end
+    if c.status ~= POS_Constants.CONTRACT_STATUS_ACCEPTED then return false end
+
+    local day = getGameTime() and getGameTime():getNightsSurvived() or 0
+    c.status = POS_Constants.CONTRACT_STATUS_SETTLED
+    c.settledDay = day
+    c.settledByAgent = agentId
+    saveContractStore(store)
+
+    PhobosLib.debug("POS", _TAG,
+        "Contract settled via agent: " .. contractId .. " (agent: " .. agentId .. ")")
+
+    -- Emit Starlit event
+    if POS_Events and POS_Events.OnContractFulfilled then
+        POS_Events.OnContractFulfilled:trigger({
+            contractId = contractId,
+            settledByAgent = agentId,
+        })
+    end
+
+    return true
+end
+
+---------------------------------------------------------------
 -- Lifecycle: Expiry check (called from economy tick)
 ---------------------------------------------------------------
 

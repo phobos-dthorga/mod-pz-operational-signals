@@ -419,6 +419,22 @@ screen.getContextData = function(_params)
                 POS_ScreenManager.refreshCurrentScreen()
             end,
         })
+        -- Send Agent button — delegates contract fulfilment to a free agent
+        table.insert(data, { type = "separator" })
+        local activeAgents = POS_FreeAgentService and POS_FreeAgentService.getActive
+            and POS_FreeAgentService.getActive() or {}
+        local canDeploy = #activeAgents < POS_Constants.FREE_AGENT_MAX_ACTIVE
+        table.insert(data, {
+            type = "action",
+            text = "UI_POS_FreeAgent_Deploy",
+            enabled = canDeploy,
+            tooltip = not canDeploy
+                and PhobosLib.safeGetText("UI_POS_AgentDeploy_NoSlots") or nil,
+            callback = function()
+                POS_ScreenManager.navigateTo(POS_Constants.SCREEN_AGENT_DEPLOY,
+                    { contractId = cId })
+            end,
+        })
     end
 
     return data

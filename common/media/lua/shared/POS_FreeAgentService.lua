@@ -177,7 +177,17 @@ function POS_FreeAgentService.deploy(contractId, archetype, zoneId,
         end
     end
     if activeCount >= POS_Constants.FREE_AGENT_MAX_ACTIVE then
-        return nil
+        return nil, PhobosLib.safeGetText("UI_POS_AgentDeploy_NoSlots")
+    end
+
+    -- Consume cargo from player inventory (hard invariant §4.1)
+    local player = getPlayer()
+    if player and cargoFullType and cargoFullType ~= "" and cargoQuantity > 0 then
+        local consumed = PhobosLib.safecall(
+            PhobosLib.consumeItems, player, cargoFullType, cargoQuantity)
+        if not consumed then
+            return nil, PhobosLib.safeGetText("UI_POS_AgentDeploy_InsufficientCargo")
+        end
     end
 
     local day = getGameTime() and getGameTime():getNightsSurvived() or 0
@@ -202,6 +212,9 @@ function POS_FreeAgentService.deploy(contractId, archetype, zoneId,
         settlementPayout = payout or 0,
         riskLevel      = POS_Constants.FREE_AGENT_RISK_LEVELS[archetype]
             or POS_Constants.FREE_AGENT_DEFAULT_RISK,
+        -- Cargo provenance (hard invariant §4.1)
+        cargoSourceType    = "player_inventory",
+        cargoSourceOwnerId = player and player:getUsername() or "",
     }
 
     store.agents[#store.agents + 1] = agent
@@ -259,6 +272,14 @@ function POS_FreeAgentService.tick(currentDay)
                     PhobosLib.debug("POS", _TAG,
                         "Settlement: $" .. string.format("%.2f", netPayout)
                         .. " (commission: $" .. string.format("%.2f", commission) .. ")")
+
+                    -- Settle linked contract (hard invariant §4.2)
+                    if agent.contractId and agent.contractId ~= "" then
+                        if POS_ContractService and POS_ContractService.settleViaAgent then
+                            PhobosLib.safecall(POS_ContractService.settleViaAgent,
+                                agent.contractId, agent.id)
+                        end
+                    end
                 end
 
                 -- Handle failure — cargo lost
