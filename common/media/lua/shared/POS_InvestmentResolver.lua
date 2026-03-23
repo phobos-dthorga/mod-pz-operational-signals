@@ -195,7 +195,8 @@ function POS_InvestmentResolver.deliverPendingPayouts(player)
     end
 
     -- Clear delivered payouts
-    gmd.entries = {}
+    local md = PhobosLib.getWorldModData(key)
+    md.entries = {}
 end
 
 ---------------------------------------------------------------
