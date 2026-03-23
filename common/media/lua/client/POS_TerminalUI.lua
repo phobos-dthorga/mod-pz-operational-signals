@@ -129,19 +129,7 @@ function POS_TerminalUI:repositionPanels()
     local innerW = sw - pad * 2
     local innerH = sh - pad * 2
 
-    local showNav = true
     local showContext = (self.width >= CONTEXT_COLLAPSE_THRESHOLD)
-
-    -- NavPanel (left, fixed width)
-    if self.navPanel then
-        if showNav then
-            self.navPanel:setX(innerX)
-            self.navPanel:setY(innerY)
-            self.navPanel:setWidth(NAV_PANEL_WIDTH)
-            self.navPanel:setHeight(innerH)
-        end
-        self.navPanel:setVisible(showNav and self.terminalState == "ready")
-    end
 
     -- ContextPanel (right, fixed width, collapsible)
     local ctxW = showContext and CONTEXT_PANEL_WIDTH or 0
@@ -155,14 +143,10 @@ function POS_TerminalUI:repositionPanels()
         self.contextPanel:setVisible(showContext and self.terminalState == "ready")
     end
 
-    -- ContentPanel (center, flex width)
+    -- ContentPanel (flex width, no nav panel offset)
     if self.contentPanel then
         local contentX = innerX
         local contentW = innerW
-        if showNav then
-            contentX = contentX + NAV_PANEL_WIDTH + PANEL_GAP
-            contentW = contentW - NAV_PANEL_WIDTH - PANEL_GAP
-        end
         if showContext then
             contentW = contentW - ctxW - PANEL_GAP
         end
@@ -240,9 +224,7 @@ function POS_TerminalUI:createChildren()
 
     self.contentPanel = createPanel(self, sx + pad, sy + pad, sw - pad * 2, sh - pad * 2)
 
-    -- NavPanel (left sidebar)
-    self.navPanel = createPanel(self, 0, 0, NAV_PANEL_WIDTH, 100)
-    self.navPanel:setVisible(false)
+    -- NavPanel removed — breadcrumb navigation provides context
 
     -- ContextPanel (right sidebar)
     self.contextPanel = createPanel(self, 0, 0, CONTEXT_PANEL_WIDTH, 100)

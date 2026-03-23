@@ -114,8 +114,8 @@ local function showConfirmationDialog(terminal)
             self.parent:removeFromUIManager()
 
             -- Navigate back to main menu after reset
-            if terminal and terminal.navigateTo then
-                terminal:navigateTo(POS_Constants.SCREEN_MAIN_MENU)
+            if POS_ScreenManager then
+                POS_ScreenManager.navigateTo(POS_Constants.SCREEN_MAIN_MENU)
             end
         end)
     confirmBtn:initialise()
