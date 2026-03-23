@@ -992,8 +992,6 @@
     "UI_POS_Signal_Alert_PriceSpike": "Price spike: {category}",
     "UI_POS_Signal_Alert_Shortage": "Supply shortage: {category}",
     "UI_POS_Signal_Alert_Signal": "Unusual signal detected",
-    "UI_POS_Band_Tactical": "Tactical",
-    "UI_POS_Band_Operations": "Operations",
 
     "UI_POS_Mission_Briefing_Title": "MISSION BRIEFING",
     "UI_POS_Mission_Section_Title": "TITLE",
