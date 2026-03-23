@@ -1,0 +1,27 @@
+return {
+    schemaVersion = 1,
+    id = "recon_zone_survey",
+    name = "Zone Survey",
+    description = "Broad reconnaissance sweep across a market zone.",
+    category = "recon",
+    difficultyMin = 1,
+    difficultyMax = 3,
+    briefingPools = {
+        title      = "titles_common",
+        situation  = "situations_common",
+        tasking    = "taskings_common",
+        constraints = "constraints_common",
+        submission = "submissions_common",
+    },
+    objectives = {
+        { type = "survey", description = "Survey multiple buildings in the zone" },
+        { type = "survey", description = "Record commodity availability at each site" },
+        { type = "report", description = "Compile and submit findings via terminal" },
+    },
+    rewardMin = 60,
+    rewardMax = 180,
+    reputationMin = 5,
+    reputationMax = 15,
+    expiryDaysMin = 5,
+    expiryDaysMax = 10,
+}

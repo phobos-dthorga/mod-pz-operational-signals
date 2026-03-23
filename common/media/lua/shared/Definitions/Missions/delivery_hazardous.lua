@@ -1,0 +1,27 @@
+return {
+    schemaVersion = 1,
+    id = "delivery_hazardous",
+    name = "Hazardous Route Delivery",
+    description = "Transport through dangerous territory with elevated threat.",
+    category = "delivery",
+    difficultyMin = 4,
+    difficultyMax = 5,
+    briefingPools = {
+        title      = "titles_common",
+        situation  = "situations_common",
+        tasking    = "taskings_common",
+        constraints = "constraints_common",
+        submission = "submissions_common",
+    },
+    objectives = {
+        { type = "pickup",  description = "Collect the cargo from secure location" },
+        { type = "deliver", description = "Navigate through hostile territory to drop-off" },
+        { type = "confirm", description = "Confirm safe delivery via terminal" },
+    },
+    rewardMin = 200,
+    rewardMax = 500,
+    reputationMin = 12,
+    reputationMax = 30,
+    expiryDaysMin = 2,
+    expiryDaysMax = 4,
+}

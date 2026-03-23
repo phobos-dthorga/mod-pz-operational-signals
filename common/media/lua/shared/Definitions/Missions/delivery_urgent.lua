@@ -1,0 +1,27 @@
+return {
+    schemaVersion = 1,
+    id = "delivery_urgent",
+    name = "Urgent Courier",
+    description = "Time-critical delivery with a tight deadline.",
+    category = "delivery",
+    difficultyMin = 3,
+    difficultyMax = 5,
+    briefingPools = {
+        title      = "titles_common",
+        situation  = "situations_common",
+        tasking    = "taskings_common",
+        constraints = "constraints_common",
+        submission = "submissions_common",
+    },
+    objectives = {
+        { type = "pickup",  description = "Collect the urgent cargo" },
+        { type = "deliver", description = "Rush delivery to the drop-off point" },
+        { type = "confirm", description = "Confirm delivery via terminal" },
+    },
+    rewardMin = 150,
+    rewardMax = 400,
+    reputationMin = 10,
+    reputationMax = 25,
+    expiryDaysMin = 1,
+    expiryDaysMax = 3,
+}

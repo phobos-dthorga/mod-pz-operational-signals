@@ -1,0 +1,27 @@
+return {
+    schemaVersion = 1,
+    id = "trade_arbitrage",
+    name = "Price Arbitrage",
+    description = "Exploit regional price differences for profit.",
+    category = "trade",
+    difficultyMin = 2,
+    difficultyMax = 4,
+    briefingPools = {
+        title      = "titles_common",
+        situation  = "situations_common",
+        tasking    = "taskings_common",
+        constraints = "constraints_common",
+        submission = "submissions_common",
+    },
+    objectives = {
+        { type = "survey",  description = "Verify pricing data in source zone" },
+        { type = "acquire", description = "Purchase commodities at source prices" },
+        { type = "report",  description = "Report price differential via terminal" },
+    },
+    rewardMin = 80,
+    rewardMax = 280,
+    reputationMin = 6,
+    reputationMax = 20,
+    expiryDaysMin = 4,
+    expiryDaysMax = 8,
+}

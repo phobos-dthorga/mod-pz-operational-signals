@@ -68,11 +68,27 @@ local _initialised = false
 ---------------------------------------------------------------
 
 local BUILTIN_PATHS = {
+    -- Reconnaissance
     "Definitions/Missions/recon_basic",
     "Definitions/Missions/recon_targeted",
+    "Definitions/Missions/recon_zone_survey",
+    "Definitions/Missions/recon_night_ops",
+    -- Delivery
     "Definitions/Missions/delivery_standard",
+    "Definitions/Missions/delivery_urgent",
+    "Definitions/Missions/delivery_hazardous",
+    -- Trade
     "Definitions/Missions/trade_procurement",
+    "Definitions/Missions/trade_arbitrage",
+    "Definitions/Missions/trade_bulk_supply",
+    -- SIGINT
     "Definitions/Missions/signal_intercept",
+    "Definitions/Missions/sigint_deep_scan",
+    -- Recovery
+    "Definitions/Missions/recovery_salvage",
+    "Definitions/Missions/recovery_cache",
+    -- Survey
+    "Definitions/Missions/survey_infrastructure",
 }
 
 function POS_MissionGenerator.init()

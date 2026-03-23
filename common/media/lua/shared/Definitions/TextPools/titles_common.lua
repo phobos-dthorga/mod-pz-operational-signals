@@ -28,5 +28,18 @@ return {
         { id = "title_critical_01",  text = "CRITICAL: {category} Emergency",         weight = 3, conditions = { minDifficulty = 5 } },
         { id = "title_targeted_01",  text = "Targeted Recon: {targetName}",           weight = 8 },
         { id = "title_targeted_02",  text = "Site Investigation: {targetName}",       weight = 8 },
+        -- Recovery missions
+        { id = "title_salvage_01",   text = "Salvage Op: {zoneName}",                weight = 8, conditions = { category = "recovery" } },
+        { id = "title_salvage_02",   text = "Cache Recovery: {targetName}",           weight = 8, conditions = { category = "recovery" } },
+        { id = "title_salvage_03",   text = "Asset Recovery: {zoneName} Sector",      weight = 6, conditions = { category = "recovery" } },
+        -- Survey missions
+        { id = "title_survey_01",    text = "Infrastructure Survey: {targetName}",    weight = 8, conditions = { category = "survey" } },
+        { id = "title_survey_02",    text = "Facility Assessment: {zoneName}",        weight = 8, conditions = { category = "survey" } },
+        -- Night operations
+        { id = "title_night_01",     text = "NIGHT OPS: {zoneName} Sector",           weight = 6, conditions = { minDifficulty = 3 } },
+        { id = "title_night_02",     text = "Covert Sweep: {zoneName}",               weight = 6, conditions = { minDifficulty = 3 } },
+        -- Bulk/arbitrage
+        { id = "title_bulk_01",      text = "Bulk Procurement: {category}",            weight = 6, conditions = { category = "trade" } },
+        { id = "title_arb_01",       text = "Price Arbitrage: {category} — {zoneName}", weight = 6, conditions = { category = "trade" } },
     },
 }

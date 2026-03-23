@@ -1,0 +1,26 @@
+return {
+    schemaVersion = 1,
+    id = "trade_bulk_supply",
+    name = "Bulk Supply Run",
+    description = "Large quantity procurement at reduced per-unit margins.",
+    category = "trade",
+    difficultyMin = 1,
+    difficultyMax = 3,
+    briefingPools = {
+        title      = "titles_common",
+        situation  = "situations_common",
+        tasking    = "taskings_common",
+        constraints = "constraints_common",
+        submission = "submissions_common",
+    },
+    objectives = {
+        { type = "acquire", description = "Source bulk commodities from available suppliers" },
+        { type = "report",  description = "Confirm acquisition quantities via terminal" },
+    },
+    rewardMin = 60,
+    rewardMax = 200,
+    reputationMin = 4,
+    reputationMax = 12,
+    expiryDaysMin = 5,
+    expiryDaysMax = 10,
+}

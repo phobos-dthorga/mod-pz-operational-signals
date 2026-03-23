@@ -1,0 +1,28 @@
+return {
+    schemaVersion = 1,
+    id = "survey_infrastructure",
+    name = "Infrastructure Assessment",
+    description = "Assess the condition and utility of buildings or facilities.",
+    category = "survey",
+    difficultyMin = 2,
+    difficultyMax = 4,
+    briefingPools = {
+        title      = "titles_common",
+        situation  = "situations_common",
+        tasking    = "taskings_common",
+        constraints = "constraints_common",
+        submission = "submissions_common",
+    },
+    objectives = {
+        { type = "visit",   description = "Visit the target facility" },
+        { type = "survey",  description = "Assess structural condition and utilities" },
+        { type = "survey",  description = "Document any salvageable resources" },
+        { type = "report",  description = "Submit assessment via terminal" },
+    },
+    rewardMin = 80,
+    rewardMax = 250,
+    reputationMin = 6,
+    reputationMax = 18,
+    expiryDaysMin = 4,
+    expiryDaysMax = 8,
+}

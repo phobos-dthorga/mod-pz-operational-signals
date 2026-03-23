@@ -1,0 +1,27 @@
+return {
+    schemaVersion = 1,
+    id = "recovery_salvage",
+    name = "Salvage Operation",
+    description = "Retrieve valuable items from a dangerous location.",
+    category = "recovery",
+    difficultyMin = 2,
+    difficultyMax = 4,
+    briefingPools = {
+        title      = "titles_common",
+        situation  = "situations_common",
+        tasking    = "taskings_common",
+        constraints = "constraints_common",
+        submission = "submissions_common",
+    },
+    objectives = {
+        { type = "visit",    description = "Reach the salvage site" },
+        { type = "acquire",  description = "Recover the designated items" },
+        { type = "report",   description = "Confirm recovery via terminal" },
+    },
+    rewardMin = 100,
+    rewardMax = 300,
+    reputationMin = 8,
+    reputationMax = 20,
+    expiryDaysMin = 3,
+    expiryDaysMax = 7,
+}

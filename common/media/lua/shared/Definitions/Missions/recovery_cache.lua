@@ -1,0 +1,28 @@
+return {
+    schemaVersion = 1,
+    id = "recovery_cache",
+    name = "Cache Recovery",
+    description = "Locate and recover a hidden supply cache.",
+    category = "recovery",
+    difficultyMin = 3,
+    difficultyMax = 5,
+    briefingPools = {
+        title      = "titles_common",
+        situation  = "situations_common",
+        tasking    = "taskings_common",
+        constraints = "constraints_common",
+        submission = "submissions_common",
+    },
+    objectives = {
+        { type = "visit",    description = "Navigate to the cache location" },
+        { type = "survey",   description = "Locate the hidden cache" },
+        { type = "acquire",  description = "Extract cache contents" },
+        { type = "report",   description = "Report findings via terminal" },
+    },
+    rewardMin = 150,
+    rewardMax = 450,
+    reputationMin = 10,
+    reputationMax = 30,
+    expiryDaysMin = 3,
+    expiryDaysMax = 6,
+}

@@ -1,0 +1,27 @@
+return {
+    schemaVersion = 1,
+    id = "recon_night_ops",
+    name = "Night Reconnaissance",
+    description = "Covert reconnaissance under cover of darkness.",
+    category = "recon",
+    difficultyMin = 3,
+    difficultyMax = 5,
+    briefingPools = {
+        title      = "titles_common",
+        situation  = "situations_common",
+        tasking    = "taskings_common",
+        constraints = "constraints_common",
+        submission = "submissions_common",
+    },
+    objectives = {
+        { type = "survey", description = "Conduct surveillance after nightfall" },
+        { type = "survey", description = "Document observed activity" },
+        { type = "report", description = "Submit findings via terminal" },
+    },
+    rewardMin = 120,
+    rewardMax = 350,
+    reputationMin = 8,
+    reputationMax = 25,
+    expiryDaysMin = 3,
+    expiryDaysMax = 5,
+}
