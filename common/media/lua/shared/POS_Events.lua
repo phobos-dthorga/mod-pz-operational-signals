@@ -28,7 +28,7 @@
 -- See design-guidelines.md §40 for integration roadmap.
 ---------------------------------------------------------------
 
-local LuaEvent = require("Starlit/Events")
+local LuaEvent = require("Starlit/LuaEvent")
 
 POS_Events = {}
 
