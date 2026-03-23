@@ -343,11 +343,9 @@ function POS_TerminalUI:prerender()
     self:drawRect(sx, sy, sw, sh,
         TERM.bg.a, TERM.bg.r, TERM.bg.g, TERM.bg.b)
 
-    -- Draw header bar background (slightly brighter than content)
-    local hdrR = TERM.bg.r + 0.02
-    local hdrG = TERM.bg.g + 0.02
-    local hdrB = TERM.bg.b + 0.02
-    self:drawRect(0, 0, self.width, HEADER_HEIGHT, TERM.bg.a, hdrR, hdrG, hdrB)
+    -- Draw header bar background
+    local hdr = TERM.headerBg or TERM.bg
+    self:drawRect(0, 0, self.width, HEADER_HEIGHT, hdr.a or TERM.bg.a, hdr.r, hdr.g, hdr.b)
 
     -- Header bottom border
     self:drawRect(0, HEADER_HEIGHT - 1, self.width, 1,
@@ -420,10 +418,8 @@ function POS_TerminalUI:render()
 
     -- Draw status bar background
     local statusY = self.height - STATUS_BAR_HEIGHT
-    local hdrR = TERM.bg.r + 0.02
-    local hdrG = TERM.bg.g + 0.02
-    local hdrB = TERM.bg.b + 0.02
-    self:drawRect(0, statusY, self.width, STATUS_BAR_HEIGHT, TERM.bg.a, hdrR, hdrG, hdrB)
+    local sbar = TERM.statusBg or TERM.bg
+    self:drawRect(0, statusY, self.width, STATUS_BAR_HEIGHT, sbar.a or TERM.bg.a, sbar.r, sbar.g, sbar.b)
 
     -- Status bar top border
     self:drawRect(0, statusY, self.width, 1,

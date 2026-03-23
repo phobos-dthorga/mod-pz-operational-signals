@@ -191,7 +191,7 @@ function POS_TerminalWidgets.createScrollList(parent, x, y, w, h)
     return list
 end
 
---- Create a stencil-clipped scrolling ISPanel.
+--- Create a scrolling ISPanel.
 --- Content taller than the panel height scrolls with mouse wheel.
 --- @param parent any ISPanel parent
 --- @param x number X position

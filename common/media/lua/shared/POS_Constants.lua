@@ -133,13 +133,11 @@ POS_Constants.UI_SCREEN_PADDING             = 8
 POS_Constants.UI_PANEL_GAP                  = 4
 
 ---------------------------------------------------------------
--- CRT bezel insets (proportion of terminal dimensions)
+-- Terminal frame geometry (telnet-style header + status bar)
 ---------------------------------------------------------------
 
-POS_Constants.BEZEL_INSET_LEFT   = 0.15
-POS_Constants.BEZEL_INSET_RIGHT  = 0.15
-POS_Constants.BEZEL_INSET_TOP    = 0.13
-POS_Constants.BEZEL_INSET_BOTTOM = 0.30
+POS_Constants.HEADER_BAR_HEIGHT  = 24
+POS_Constants.STATUS_BAR_HEIGHT  = 24
 
 ---------------------------------------------------------------
 -- Boot sequence timing
