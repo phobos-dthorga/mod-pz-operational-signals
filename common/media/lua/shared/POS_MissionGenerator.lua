@@ -56,6 +56,47 @@ function POS_MissionGenerator._resolveTargetName(player)
     return "target site"
 end
 
+--- Garble a briefing table to simulate radio signal degradation.
+--- Words are randomly replaced with static fragments based on
+--- signal quality. At 80%+ signal, briefings are clear. At 50%,
+--- occasional words drop out. At 25%, heavy corruption. Below
+--- minimum threshold, the briefing is barely readable — just
+--- fragments of a desperate transmission breaking through static.
+---@param briefing table Map of sectionName → text
+---@param signalStrength number 0.0–1.0
+---@return table Garbled briefing (new table, original unmodified)
+function POS_MissionGenerator._garbleBriefing(briefing, signalStrength)
+    if not briefing then return {} end
+
+    -- Static fragments — the sound of a dying radio
+    local STATIC = POS_Constants.SIGNAL_GARBLE_FRAGMENTS
+
+    -- Garble probability per word: inversely proportional to signal
+    -- At 80% signal: 5% of words garbled. At 50%: 25%. At 25%: 50%.
+    local garblePct = PhobosLib.clamp(
+        (POS_Constants.SIGNAL_GARBLE_THRESHOLD - signalStrength)
+        / POS_Constants.SIGNAL_GARBLE_THRESHOLD,
+        0, POS_Constants.SIGNAL_GARBLE_MAX_PCT)
+
+    local garbled = {}
+    for section, text in pairs(briefing) do
+        if type(text) == "string" and #text > 0 then
+            local words = {}
+            for word in text:gmatch("%S+") do
+                if PhobosLib.randFloat(0, 1) < garblePct then
+                    words[#words + 1] = STATIC[ZombRand(#STATIC) + 1]
+                else
+                    words[#words + 1] = word
+                end
+            end
+            garbled[section] = table.concat(words, " ")
+        else
+            garbled[section] = text
+        end
+    end
+    return garbled
+end
+
 ---------------------------------------------------------------
 -- Internal state
 ---------------------------------------------------------------
@@ -198,15 +239,43 @@ function POS_MissionGenerator.generate(player, targetDifficulty, targetCategory,
     if not player then return nil end
     if not _missionRegistry then return nil end
 
+    -- Resolve current signal strength for mission quality gating.
+    -- Weak signal = static drowns out complex briefings; only simple
+    -- missions come through clearly enough to act on.
+    local signalStrength = 1.0
+    local signalAffects = POS_Sandbox and POS_Sandbox.isSignalAffectsMissionRange
+        and POS_Sandbox.isSignalAffectsMissionRange()
+    if signalAffects then
+        local connOk, connMgr = PhobosLib.safecall(require, "POS_ConnectionManager")
+        if connOk and connMgr and connMgr.getSignalStrength then
+            local sigOk, sig = PhobosLib.safecall(connMgr.getSignalStrength)
+            if sigOk and type(sig) == "number" then
+                signalStrength = sig
+            end
+        end
+    end
+
+    -- Signal-based difficulty cap: at 25% signal, max difficulty = 2;
+    -- at 50% = 3; at 75% = 4; at 100% = 5. Below minimum threshold,
+    -- only difficulty 1 missions come through.
+    local signalDiffCap = POS_Constants.MISSION_MAX_DIFFICULTY
+    if signalAffects and signalStrength < 1.0 then
+        signalDiffCap = PhobosLib.clamp(
+            math.floor(signalStrength * POS_Constants.MISSION_MAX_DIFFICULTY) + 1,
+            POS_Constants.MISSION_MIN_DIFFICULTY,
+            POS_Constants.MISSION_MAX_DIFFICULTY)
+    end
+
     -- Select a mission definition
     local all = _missionRegistry:getAll()
     local candidates = {}
     for _, def in ipairs(all) do
         if def.enabled ~= false then
-            -- Filter by difficulty range
+            -- Filter by difficulty range (capped by signal strength)
+            local maxDiff = math.min(def.difficultyMax or 5, signalDiffCap)
             local diff = targetDifficulty or (POS_Constants.MISSION_MIN_DIFFICULTY
-                + ZombRand(POS_Constants.MISSION_MAX_DIFFICULTY - POS_Constants.MISSION_MIN_DIFFICULTY + 1))
-            if diff >= (def.difficultyMin or 1) and diff <= (def.difficultyMax or 5) then
+                + ZombRand(maxDiff - POS_Constants.MISSION_MIN_DIFFICULTY + 1))
+            if diff >= (def.difficultyMin or 1) and diff <= maxDiff then
                 -- Filter by category if specified
                 if not targetCategory or def.category == targetCategory then
                     candidates[#candidates + 1] = { def = def, difficulty = diff }
@@ -244,6 +313,15 @@ function POS_MissionGenerator.generate(player, targetDifficulty, targetCategory,
             definition, context, archetypeId)
     end
 
+    -- Signal degradation: garble briefing text at low signal.
+    -- At 100% signal: perfect clarity. At 50%: occasional static.
+    -- At 25%: heavy corruption. Below minimum: barely readable.
+    -- This makes weak-signal missions feel like intercepted radio
+    -- transmissions breaking up through static.
+    if signalAffects and signalStrength < POS_Constants.SIGNAL_GARBLE_THRESHOLD then
+        briefing = POS_MissionGenerator._garbleBriefing(briefing, signalStrength)
+    end
+
     -- Build operation data
     local day = getGameTime() and getGameTime():getNightsSurvived() or 0
     local operation = {
@@ -257,9 +335,11 @@ function POS_MissionGenerator.generate(player, targetDifficulty, targetCategory,
         rewardCash   = context._rewardCash,
         zoneId       = zoneId,
         archetypeId  = archetypeId,
-        briefing     = briefing,
-        textMeta     = textMeta,
-        objectives   = {},
+        briefing       = briefing,
+        textMeta       = textMeta,
+        signalQuality  = signalStrength,
+        requiredBands  = definition.requiredBands,
+        objectives     = {},
     }
 
     -- Clone objectives from definition with token resolution

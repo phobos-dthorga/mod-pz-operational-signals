@@ -157,6 +157,26 @@ POS_Constants.MISSION_MAX_DIFFICULTY            = 5
 POS_Constants.MISSION_VOICE_OVERRIDE_SECTIONS   = { "situation", "submission" }
 
 ---------------------------------------------------------------
+-- Signal-based mission degradation (§5.4)
+-- Simulates radio transmissions breaking up through static.
+---------------------------------------------------------------
+
+POS_Constants.SIGNAL_GARBLE_THRESHOLD  = 0.80  -- below this, briefings start garbling
+POS_Constants.SIGNAL_GARBLE_MAX_PCT    = 0.60  -- max proportion of words replaced
+POS_Constants.SIGNAL_GARBLE_FRAGMENTS  = {
+    "...static...",
+    "---",
+    "[garbled]",
+    "~*~",
+    "...",
+    "[inaudible]",
+    "--bzzt--",
+    "[break]",
+    "~crackle~",
+    "[lost]",
+}
+
+---------------------------------------------------------------
 -- Mission categories & statuses
 ---------------------------------------------------------------
 
