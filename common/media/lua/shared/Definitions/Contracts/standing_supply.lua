@@ -1,0 +1,25 @@
+return {
+    schemaVersion = 1,
+    id = "standing_supply",
+    name = "Standing Supply Order",
+    description = "Recurring supply request. Lower margins but stable demand.",
+    kind = "standing",
+    categoryId = "",  -- resolved: food, fuel, medicine (essentials)
+    quantityMin = 10,
+    quantityMax = 40,
+    payMultiplierMin = 0.8,
+    payMultiplierMax = 1.1,
+    deadlineDaysMin = 7,
+    deadlineDaysMax = 14,
+    urgency = 1,
+    sigintRequired = 2,
+    reputationMin = 10,
+    archetypeId = "wholesaler",
+    betrayalChance = 0,
+    briefingPools = {
+        title     = "contract_titles_standing",
+        situation = "contract_situations_standing",
+        tasking   = "contract_taskings_standing",
+        submission = "contract_submissions_common",
+    },
+}

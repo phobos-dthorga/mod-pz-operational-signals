@@ -1,0 +1,25 @@
+return {
+    schemaVersion = 1,
+    id = "military_requisition",
+    name = "Military Requisition",
+    description = "Official supply requisition. Strict specifications, good pay, gated access.",
+    kind = "military",
+    categoryId = "",  -- resolved: ammunition, weapons, medicine, fuel
+    quantityMin = 5,
+    quantityMax = 30,
+    payMultiplierMin = 1.4,
+    payMultiplierMax = 1.8,
+    deadlineDaysMin = 4,
+    deadlineDaysMax = 8,
+    urgency = 3,
+    sigintRequired = 5,
+    reputationMin = 20,
+    archetypeId = "military_logistician",
+    betrayalChance = 0,
+    briefingPools = {
+        title     = "contract_titles_military",
+        situation = "contract_situations_military",
+        tasking   = "contract_taskings_military",
+        submission = "contract_submissions_military",
+    },
+}

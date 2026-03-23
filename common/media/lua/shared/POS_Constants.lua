@@ -155,6 +155,27 @@ POS_Constants.ALERT_FEED_MAX_ENTRIES    = 10
 POS_Constants.PROCESS_FEED_MAX_ENTRIES  = 5
 
 ---------------------------------------------------------------
+-- Contract system (§43)
+---------------------------------------------------------------
+
+POS_Constants.CONTRACT_BRIEFING_SECTIONS = {
+    "title", "situation", "tasking", "submission",
+}
+POS_Constants.CONTRACT_MAX_ACTIVE          = 3
+POS_Constants.CONTRACT_MAX_AVAILABLE       = 8
+POS_Constants.CONTRACT_HISTORY_MAX_SIZE    = 15
+POS_Constants.CONTRACT_GENERATION_PRESSURE_THRESHOLD = 0.5
+POS_Constants.CONTRACT_GENERATION_COOLDOWN_DAYS      = 1
+
+POS_Constants.CONTRACT_STATUS_POSTED       = "posted"
+POS_Constants.CONTRACT_STATUS_ACCEPTED     = "accepted"
+POS_Constants.CONTRACT_STATUS_FULFILLED    = "fulfilled"
+POS_Constants.CONTRACT_STATUS_SETTLED      = "settled"
+POS_Constants.CONTRACT_STATUS_EXPIRED      = "expired"
+POS_Constants.CONTRACT_STATUS_FAILED       = "failed"
+POS_Constants.CONTRACT_STATUS_BETRAYED     = "betrayed"
+
+---------------------------------------------------------------
 -- Terminal frame geometry (telnet-style header + status bar)
 ---------------------------------------------------------------
 

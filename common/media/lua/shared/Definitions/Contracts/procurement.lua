@@ -1,0 +1,25 @@
+return {
+    schemaVersion = 1,
+    id = "procurement_general",
+    name = "Supply Procurement",
+    description = "Standard supply request from a settlement or outpost.",
+    kind = "procurement",
+    categoryId = "",  -- resolved at generation time from shortage data
+    quantityMin = 5,
+    quantityMax = 25,
+    payMultiplierMin = 1.0,
+    payMultiplierMax = 1.3,
+    deadlineDaysMin = 5,
+    deadlineDaysMax = 10,
+    urgency = 2,
+    sigintRequired = 1,
+    reputationMin = 0,
+    archetypeId = "baseline_trader",
+    betrayalChance = 0,
+    briefingPools = {
+        title     = "contract_titles_procurement",
+        situation = "contract_situations_procurement",
+        tasking   = "contract_taskings_procurement",
+        submission = "contract_submissions_common",
+    },
+}

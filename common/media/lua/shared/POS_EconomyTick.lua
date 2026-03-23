@@ -136,6 +136,16 @@ function POS_EconomyTick.processDayTick()
 
     PhobosLib.debug("POS", _TAG, "[EconomyTick] Day " .. tostring(currentDay) .. " complete")
 
+    -- Generate sell-side contracts from world shortages (§43)
+    if POS_ContractGenerator and POS_ContractGenerator.generateFromWorldState then
+        PhobosLib.safecall(POS_ContractGenerator.generateFromWorldState)
+    end
+
+    -- Check contract expiry
+    if POS_ContractService and POS_ContractService.checkExpiry then
+        PhobosLib.safecall(POS_ContractService.checkExpiry)
+    end
+
     -- Emit event for SignalPanel and other subscribers
     if POS_Events and POS_Events.OnStockTickClosed then
         POS_Events.OnStockTickClosed:trigger({ day = currentDay })

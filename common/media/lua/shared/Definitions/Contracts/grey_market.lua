@@ -1,0 +1,25 @@
+return {
+    schemaVersion = 1,
+    id = "grey_market",
+    name = "Off-the-Books Deal",
+    description = "Cash only. No questions asked. Higher betrayal risk.",
+    kind = "grey_market",
+    categoryId = "",  -- resolved: ammunition, weapons, medicine, luxury
+    quantityMin = 2,
+    quantityMax = 10,
+    payMultiplierMin = 1.3,
+    payMultiplierMax = 2.0,
+    deadlineDaysMin = 3,
+    deadlineDaysMax = 5,
+    urgency = 3,
+    sigintRequired = 3,
+    reputationMin = 0,
+    archetypeId = "smuggler",
+    betrayalChance = 0.15,
+    briefingPools = {
+        title     = "contract_titles_grey",
+        situation = "contract_situations_grey",
+        tasking   = "contract_taskings_grey",
+        submission = "contract_submissions_grey",
+    },
+}

@@ -1,0 +1,25 @@
+return {
+    schemaVersion = 1,
+    id = "arbitrage_regional",
+    name = "Regional Arbitrage",
+    description = "Exploit price difference between zones. Buy low here, sell high there.",
+    kind = "arbitrage",
+    categoryId = "",  -- resolved: any category with significant zone price spread
+    quantityMin = 5,
+    quantityMax = 20,
+    payMultiplierMin = 1.2,
+    payMultiplierMax = 1.8,
+    deadlineDaysMin = 4,
+    deadlineDaysMax = 7,
+    urgency = 2,
+    sigintRequired = 4,
+    reputationMin = 15,
+    archetypeId = "speculator",
+    betrayalChance = 0.05,
+    briefingPools = {
+        title     = "contract_titles_arbitrage",
+        situation = "contract_situations_arbitrage",
+        tasking   = "contract_taskings_arbitrage",
+        submission = "contract_submissions_common",
+    },
+}

@@ -89,6 +89,26 @@ POS_Events.OnMissionGenerated = LuaEvent.new("POS.OnMissionGenerated")
 POS_Events.OnMissionCompleted = LuaEvent.new("POS.OnMissionCompleted")
 
 ---------------------------------------------------------------
+-- Contracts (§43)
+---------------------------------------------------------------
+
+--- Fired when a new sell-side contract is posted (available).
+--- Payload: { contractId = string, kind = string }
+POS_Events.OnContractPosted = LuaEvent.new("POS.OnContractPosted")
+
+--- Fired when a player accepts a contract.
+--- Payload: { contractId = string }
+POS_Events.OnContractAccepted = LuaEvent.new("POS.OnContractAccepted")
+
+--- Fired when a contract is fulfilled and settled.
+--- Payload: { contractId = string, fullType = string, quantity = number, payout = number }
+POS_Events.OnContractFulfilled = LuaEvent.new("POS.OnContractFulfilled")
+
+--- Fired when a grey-market contract results in betrayal.
+--- Payload: { contractId = string }
+POS_Events.OnContractBetrayted = LuaEvent.new("POS.OnContractBetrayted")
+
+---------------------------------------------------------------
 -- UI & Background
 ---------------------------------------------------------------
 
