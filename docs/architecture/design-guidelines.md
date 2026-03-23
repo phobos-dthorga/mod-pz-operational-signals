@@ -3362,3 +3362,116 @@ narrative variety. Sources are cosmetic — they don't affect data quality.
 | Making ambient data high-confidence | It's gossip — should be noisy (±25%) |
 | Replacing active recon with ambient | Ambient supplements; active recon produces better data |
 | Generating ambient when not connected | Terminal connection is the prerequisite |
+
+---
+
+## 42. Three-Layer Selling System
+
+> **Status**: Phase 1 (Contracts) implemented. Phase 2 (Spot Sell) partial.
+> Phase 3 (Free Agents) planned.
+
+### 42.1 Design Principle
+
+"Buying is convenience. Selling is intelligence."
+
+Selling is **demand-led**, not inventory-led. The world asks the player to
+sell — through desperate radio pleas, military requisitions, and shadowy
+back-channel deals. The player's information quality (SIGINT, recon data)
+determines which opportunities they discover and how good the terms are.
+
+### 42.2 Three Layers
+
+| Layer | Description | Available | Fantasy |
+|-------|-------------|-----------|---------|
+| Spot selling | Offload surplus to a contact | Early game | Scavenger trading junk |
+| Contracts | World-originated demand orders | Mid game | Field operative supplying outposts |
+| Free agents | Delegate to runners/brokers | Late game | Signals commander running logistics |
+
+### 42.3 Progression Arc
+
+Spot selling is the floor. Contracts are the main progression path. Free
+agents are the automation/scale layer. Without contracts, free agents become
+"automate sell button." With contracts, they become meaningful operators.
+
+### 42.4 Anti-Patterns
+
+| Anti-Pattern | Why It's Wrong |
+|---|---|
+| Mirror-image of buying | Selling should be demand-driven, not browse-driven |
+| Vendor trash disposal | Present as offloading surplus into a live market |
+| Separate economy from Living Market | Contract fulfilment must affect zone pressure |
+| Black-box free agents | Players must see agents working through the signal feed |
+
+---
+
+## 43. Contract System
+
+> **Status**: Implemented. Schema, service, generator, text pools, screen.
+> See `POS_ContractService.lua`, `POS_ContractGenerator.lua`.
+
+### 43.1 Contract Kinds
+
+| Kind | Description | Pay | Risk | SIGINT Gate |
+|------|-------------|-----|------|-------------|
+| `procurement` | Standard supply request | 1.0-1.3x | None | 1 |
+| `urgent` | Emergency shortage — premium, tight deadline | 1.5-2.5x | None | 2 |
+| `standing` | Recurring supply — lower margins, stable | 0.8-1.1x | None | 2 |
+| `grey_market` | Off-the-books deal — betrayal risk | 1.3-2.0x | 15% | 3 |
+| `military` | Official requisition — strict specs | 1.4-1.8x | None | 5 |
+| `arbitrage` | Regional price arbitrage | 1.2-1.8x | 5% | 4 |
+
+### 43.2 Lifecycle
+
+```
+posted → accepted → fulfilled → settled
+posted → expired (deadline passed, unaccepted)
+accepted → failed (deadline passed)
+accepted → betrayed (grey market — items consumed, no payment)
+```
+
+### 43.3 Generation Rules
+
+Contracts spawn from the economy tick when zone pressure exceeds
+`CONTRACT_GENERATION_PRESSURE_THRESHOLD` (0.5). One contract per zone per
+tick. Maximum 8 available contracts at any time. Cooldown: 1 day between
+generations. Requires Living Market enabled.
+
+### 43.4 Pricing (Bid Model)
+
+```
+payout = avgCategoryBasePrice × quantity × payMultiplier
+```
+
+Where `payMultiplier` is rolled between definition's `payMultiplierMin` and
+`payMultiplierMax`. Urgent contracts pay more because people are desperate.
+Standing orders pay less because the demand is predictable.
+
+### 43.5 Betrayal Mechanic
+
+Grey-market contracts have a `betrayalChance` (default 15%). On fulfilment,
+the system rolls against this chance. If betrayed: items are consumed but no
+payment is received. The buyer vanishes. The player learns to be more
+careful about who they deal with.
+
+### 43.6 Briefing Text
+
+Contract briefings use the Mission Briefing Resolver (§32) with contract-
+specific text pools. Voice pack overrides apply per archetype sponsor:
+smuggler contracts sound shadowy, military contracts sound formal, etc.
+
+### 43.7 ContextPanel Integration
+
+When a contract is selected in the list, the ContextPanel (right sidebar)
+shows full detail: buyer archetype, item needed, quantity, payout, deadline
+countdown, urgency, risk indicator, SIGINT requirement, briefing preview,
+inventory check (owned/needed), and action buttons (Accept/Fulfil/Abandon).
+
+### 43.8 Anti-Patterns
+
+| Anti-Pattern | Why It's Wrong |
+|---|---|
+| Player-originated contracts | That's Phase 3 (free agents). Contracts are world-originated. |
+| Flat inverse of buy price | Use bid model with urgency, shortage, archetype modifiers |
+| Contracts as separate economy | Fulfilment must affect zone pressure and wholesaler stock |
+| Omniscient betrayal warning | Risk indicator shows LOW/MODERATE/HIGH, not exact % |
+| Instant settlement | Items consumed → money credited is atomic, but the world impact (pressure relief) should propagate through the next economy tick |

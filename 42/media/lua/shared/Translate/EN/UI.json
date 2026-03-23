@@ -1044,5 +1044,7 @@
     "UI_POS_Contract_SIGINTReq": "Requires SIGINT Level %1.",
     "UI_POS_Contract_DaysLeft": "%1 days remaining",
     "UI_POS_Contract_Overdue": "OVERDUE",
-    "UI_POS_Contract_ItemsNeeded": "%1/%2 in inventory"
+    "UI_POS_Contract_ItemsNeeded": "%1/%2 in inventory",
+    "UI_POS_Screen_ViewDetails": "View Details",
+    "UI_POS_Screen_Hint": "Hint"
 }
