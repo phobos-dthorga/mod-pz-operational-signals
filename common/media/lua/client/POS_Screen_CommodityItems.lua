@@ -61,11 +61,12 @@ local function executeBuyAction(fullType, categoryId, qty, avgPrice)
     -- Check balance
     local balance = POS_TradeService.getPlayerBalance(player)
     if balance < totalCost then
-        if PhobosLib.notifyOrSay then
-            PhobosLib.notifyOrSay("POSnet",
-                PhobosLib.safeGetText("UI_POS_Trade_Err_NoMoney"),
-                "error")
-        end
+        PhobosLib.safecall(PhobosLib.notifyOrSay, player, {
+            title   = "POSnet",
+            message = PhobosLib.safeGetText("UI_POS_Trade_Err_NoMoney"),
+            colour  = "error",
+            channel = POS_Constants.PN_CHANNEL_TRADE,
+        })
         return
     end
 
@@ -87,12 +88,14 @@ local function executeBuyAction(fullType, categoryId, qty, avgPrice)
 
     -- Success notification
     local displayName = getItemDisplayName(fullType) or fullType
-    if PhobosLib.notifyOrSay then
-        PhobosLib.notifyOrSay("POSnet",
-            "Purchased " .. tostring(qty) .. "x " .. displayName
-            .. " for $" .. string.format("%.2f", totalCost),
-            "success")
-    end
+    PhobosLib.safecall(PhobosLib.notifyOrSay, player, {
+        title   = "POSnet",
+        message = PhobosLib.safeGetText("UI_POS_Trade_Purchased")
+            .. ": " .. tostring(qty) .. "x " .. displayName
+            .. " — $" .. string.format("%.2f", totalCost),
+        colour  = "success",
+        channel = POS_Constants.PN_CHANNEL_TRADE,
+    })
 
     -- Emit trade event (Starlit)
     if POS_Events and POS_Events.OnTradeCompleted then
@@ -124,10 +127,12 @@ local function executeSellAction(fullType, categoryId, qty)
     local sellPrice = POS_TradeService and POS_TradeService.computeSellPrice
         and POS_TradeService.computeSellPrice(fullType, categoryId, qty) or 0
     if sellPrice <= 0 then
-        if PhobosLib.notifyOrSay then
-            PhobosLib.notifyOrSay("POSnet",
-                PhobosLib.safeGetText("UI_POS_Trade_Err_NoPrice"), "error")
-        end
+        PhobosLib.safecall(PhobosLib.notifyOrSay, player, {
+            title   = "POSnet",
+            message = PhobosLib.safeGetText("UI_POS_Trade_Err_NoPrice"),
+            colour  = "error",
+            channel = POS_Constants.PN_CHANNEL_TRADE,
+        })
         return
     end
 
@@ -137,12 +142,14 @@ local function executeSellAction(fullType, categoryId, qty)
 
     if ok and result then
         local displayName = getItemDisplayName(fullType) or fullType
-        if PhobosLib.notifyOrSay then
-            PhobosLib.notifyOrSay("POSnet",
-                "Sold " .. tostring(qty) .. "x " .. displayName
-                .. " for $" .. string.format("%.2f", sellPrice),
-                "success")
-        end
+        PhobosLib.safecall(PhobosLib.notifyOrSay, player, {
+            title   = "POSnet",
+            message = PhobosLib.safeGetText("UI_POS_Trade_Sold")
+                .. ": " .. tostring(qty) .. "x " .. displayName
+                .. " — $" .. string.format("%.2f", sellPrice),
+            colour  = "success",
+            channel = POS_Constants.PN_CHANNEL_TRADE,
+        })
 
         -- Emit trade event (Starlit)
         if POS_Events and POS_Events.OnTradeCompleted then
@@ -155,11 +162,12 @@ local function executeSellAction(fullType, categoryId, qty)
             })
         end
     else
-        if PhobosLib.notifyOrSay then
-            PhobosLib.notifyOrSay("POSnet",
-                tostring(result) or PhobosLib.safeGetText("UI_POS_Trade_Err_SellFailed"),
-                "error")
-        end
+        PhobosLib.safecall(PhobosLib.notifyOrSay, player, {
+            title   = "POSnet",
+            message = tostring(result) or PhobosLib.safeGetText("UI_POS_Trade_Err_SellFailed"),
+            colour  = "error",
+            channel = POS_Constants.PN_CHANNEL_TRADE,
+        })
     end
 
     _quantities[fullType] = 1

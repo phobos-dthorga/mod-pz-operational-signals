@@ -381,9 +381,12 @@ screen.getContextData = function(_params)
                 if ok then
                     POS_ScreenManager.refreshCurrentScreen()
                 else
-                    if PhobosLib.notifyOrSay then
-                        PhobosLib.notifyOrSay("POSnet", err or "Cannot accept", "error")
-                    end
+                    PhobosLib.safecall(PhobosLib.notifyOrSay, getPlayer(), {
+                        title   = "POSnet",
+                        message = err or PhobosLib.safeGetText("UI_POS_Contract_Err_Accept"),
+                        colour  = "error",
+                        channel = POS_Constants.PN_CHANNEL_CONTRACTS,
+                    })
                 end
             end,
         })
@@ -398,9 +401,12 @@ screen.getContextData = function(_params)
                     _selectedContractId = nil
                     POS_ScreenManager.refreshCurrentScreen()
                 else
-                    if PhobosLib.notifyOrSay then
-                        PhobosLib.notifyOrSay("POSnet", err or "Cannot fulfil", "error")
-                    end
+                    PhobosLib.safecall(PhobosLib.notifyOrSay, getPlayer(), {
+                        title   = "POSnet",
+                        message = err or PhobosLib.safeGetText("UI_POS_Contract_Err_Fulfil"),
+                        colour  = "error",
+                        channel = POS_Constants.PN_CHANNEL_CONTRACTS,
+                    })
                 end
             end,
         })

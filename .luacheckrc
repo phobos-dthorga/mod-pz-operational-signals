@@ -82,6 +82,8 @@ globals = {
     "POS_FreeAgentService",
     "POS_SignalPanel",
     "POS_MissionBriefingResolver",
+    "POS_NotificationChannels",
+    "PN_ChannelRegistry",
     "POS_VoicePackRegistry",
     "POS_TextPoolSchema",
     "POS_MissionSchema",

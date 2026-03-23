@@ -119,11 +119,13 @@ function POS_EventService.fireEvent(eventDef, zoneId, currentDay)
     end
 
     -- Toast notification via PhobosNotifications
-    if PhobosLib.notifyOrSay then
-        local eventName = PhobosLib.safeGetText(eventRecord.displayNameKey) or eventDef.id
-        PhobosLib.notifyOrSay("POSnet",
-            eventName .. " in " .. zoneId, "warning")
-    end
+    local eventName = PhobosLib.safeGetText(eventRecord.displayNameKey) or eventDef.id
+    PhobosLib.safecall(PhobosLib.notifyOrSay, getPlayer(), {
+        title   = "POSnet",
+        message = eventName .. " in " .. zoneId,
+        colour  = "warning",
+        channel = POS_Constants.PN_CHANNEL_MARKET,
+    })
 
     -- Emit Starlit event (deferred processing)
     if POS_Events and POS_Events.OnMarketEvent then

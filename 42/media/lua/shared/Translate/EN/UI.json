@@ -1120,5 +1120,26 @@
     "UI_POS_Contract_Overdue": "OVERDUE",
     "UI_POS_Contract_ItemsNeeded": "%1/%2 in inventory",
     "UI_POS_Screen_ViewDetails": "View Details",
-    "UI_POS_Screen_Hint": "Hint"
+    "UI_POS_Screen_Hint": "Hint",
+
+    "UI_POS_Contract_Accepted": "Contract accepted",
+    "UI_POS_Contract_Betrayed_Msg": "Contact vanished with your goods. Contract betrayed.",
+    "UI_POS_Contract_Fulfilled_Msg": "Contract fulfilled",
+    "UI_POS_Contract_Abandoned_Msg": "Contract abandoned.",
+    "UI_POS_Contract_Expired_Msg": "Contract deadline passed. Contract failed.",
+    "UI_POS_Contract_Err_Accept": "Cannot accept contract.",
+    "UI_POS_Contract_Err_Fulfil": "Cannot fulfil contract.",
+    "UI_POS_Trade_Purchased": "Purchased",
+    "UI_POS_Trade_Sold": "Sold",
+
+    "UI_POS_AgentDeploy_Title": "Deploy Field Agent",
+    "UI_POS_AgentDeploy_SelectArchetype": "Select Agent Type",
+    "UI_POS_AgentDeploy_CargoCost": "Cargo Required",
+    "UI_POS_AgentDeploy_Commission": "Commission",
+    "UI_POS_AgentDeploy_EstimatedTime": "Estimated Time",
+    "UI_POS_AgentDeploy_Risk": "Risk Level",
+    "UI_POS_AgentDeploy_Confirm": "Confirm Deployment",
+    "UI_POS_AgentDeploy_NoSlots": "Maximum active agents reached (%1/%2)",
+    "UI_POS_AgentDeploy_InsufficientCargo": "Insufficient cargo in inventory.",
+    "UI_POS_AgentDeploy_Success": "Agent deployed successfully."
 }

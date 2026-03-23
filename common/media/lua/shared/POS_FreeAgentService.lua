@@ -218,10 +218,12 @@ function POS_FreeAgentService.deploy(contractId, archetype, zoneId,
     end
 
     -- Signal feed notification
-    if PhobosLib.notifyOrSay then
-        PhobosLib.notifyOrSay("POSnet",
-            agent.agentName .. " deployed to " .. zoneId, "info")
-    end
+    PhobosLib.safecall(PhobosLib.notifyOrSay, getPlayer(), {
+        title   = "POSnet",
+        message = agent.agentName .. " deployed to " .. zoneId,
+        colour  = "info",
+        channel = POS_Constants.PN_CHANNEL_AGENTS,
+    })
 
     return agent
 end
@@ -276,11 +278,21 @@ function POS_FreeAgentService.tick(currentDay)
                 end
 
                 -- Signal feed update
-                if PhobosLib.notifyOrSay then
-                    local stateLabel = PhobosLib.safeGetText("UI_POS_FreeAgent_State_" .. nextState)
-                    PhobosLib.notifyOrSay("POSnet",
-                        agent.agentName .. ": " .. stateLabel, "info")
-                end
+                local stateLabel = PhobosLib.safeGetText("UI_POS_FreeAgent_State_" .. nextState)
+                local stateColour = (nextState == STATE.FAILED or nextState == STATE.COMPROMISED)
+                    and "error"
+                    or ((nextState == STATE.DELAYED) and "warning"
+                    or ((nextState == STATE.COMPLETED) and "success" or "info"))
+                local statePriority = (nextState == STATE.FAILED) and "critical"
+                    or ((nextState == STATE.COMPROMISED) and "high"
+                    or ((nextState == STATE.COMPLETED or nextState == STATE.DELAYED) and "normal" or "low"))
+                PhobosLib.safecall(PhobosLib.notifyOrSay, getPlayer(), {
+                    title    = "POSnet",
+                    message  = agent.agentName .. ": " .. stateLabel,
+                    colour   = stateColour,
+                    priority = statePriority,
+                    channel  = POS_Constants.PN_CHANNEL_AGENTS,
+                })
             end
         end
     end
@@ -345,10 +357,12 @@ function POS_FreeAgentService.recall(agentId)
             a.lastStateDay = getGameTime() and getGameTime():getNightsSurvived() or 0
             saveAgentStore(store)
 
-            if PhobosLib.notifyOrSay then
-                PhobosLib.notifyOrSay("POSnet",
-                    a.agentName .. " recalled. Mission aborted.", "warning")
-            end
+            PhobosLib.safecall(PhobosLib.notifyOrSay, getPlayer(), {
+                title   = "POSnet",
+                message = a.agentName .. " recalled. Mission aborted.",
+                colour  = "warning",
+                channel = POS_Constants.PN_CHANNEL_AGENTS,
+            })
             return true
         end
     end

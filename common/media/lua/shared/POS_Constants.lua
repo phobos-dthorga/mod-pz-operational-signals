@@ -279,6 +279,16 @@ POS_Constants.FREE_AGENT_ESTIMATED_DAYS = {
 }
 
 ---------------------------------------------------------------
+-- PhobosNotifications channel IDs (§46.8)
+---------------------------------------------------------------
+
+POS_Constants.PN_CHANNEL_AGENTS    = "posnet_agents"
+POS_Constants.PN_CHANNEL_CONTRACTS = "posnet_contracts"
+POS_Constants.PN_CHANNEL_MARKET    = "posnet_market"
+POS_Constants.PN_CHANNEL_TRADE     = "posnet_trade"
+POS_Constants.PN_CHANNEL_INTEL     = "posnet_intel"
+
+---------------------------------------------------------------
 -- Mission categories & statuses
 ---------------------------------------------------------------
 

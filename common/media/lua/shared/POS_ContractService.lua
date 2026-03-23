@@ -201,11 +201,13 @@ function POS_ContractService.accept(contractId)
     end
 
     -- Notification
-    if PhobosLib.notifyOrSay then
-        PhobosLib.notifyOrSay("POSnet",
-            "Contract accepted: " .. (c.briefing and c.briefing.title or c.kind),
-            "info")
-    end
+    PhobosLib.safecall(PhobosLib.notifyOrSay, getPlayer(), {
+        title   = "POSnet",
+        message = PhobosLib.safeGetText("UI_POS_Contract_Accepted")
+            .. ": " .. (c.briefing and c.briefing.title or c.kind),
+        colour  = "info",
+        channel = POS_Constants.PN_CHANNEL_CONTRACTS,
+    })
 
     return true
 end
@@ -254,11 +256,13 @@ function POS_ContractService.fulfil(contractId)
             c.settledDay = getGameTime() and getGameTime():getNightsSurvived() or 0
             saveContractStore(store)
 
-            if PhobosLib.notifyOrSay then
-                PhobosLib.notifyOrSay("POSnet",
-                    "Contact vanished with your goods. Contract betrayed.",
-                    "error")
-            end
+            PhobosLib.safecall(PhobosLib.notifyOrSay, getPlayer(), {
+                title    = "POSnet",
+                message  = PhobosLib.safeGetText("UI_POS_Contract_Betrayed_Msg"),
+                colour   = "error",
+                priority = "critical",
+                channel  = POS_Constants.PN_CHANNEL_CONTRACTS,
+            })
 
             if POS_Events and POS_Events.OnContractBetrayted then
                 POS_Events.OnContractBetrayted:trigger({ contractId = contractId })
@@ -292,13 +296,15 @@ function POS_ContractService.fulfil(contractId)
         "Fulfilled contract: " .. contractId .. " — $" .. tostring(payout))
 
     -- Notification
-    if PhobosLib.notifyOrSay then
-        local displayName = PhobosLib.getItemDisplayName(fullType) or fullType
-        PhobosLib.notifyOrSay("POSnet",
-            "Delivered " .. tostring(qty) .. "x " .. displayName
-            .. " — received $" .. string.format("%.2f", payout),
-            "success")
-    end
+    local displayName = PhobosLib.getItemDisplayName(fullType) or fullType
+    PhobosLib.safecall(PhobosLib.notifyOrSay, getPlayer(), {
+        title   = "POSnet",
+        message = PhobosLib.safeGetText("UI_POS_Contract_Fulfilled_Msg")
+            .. ": " .. tostring(qty) .. "x " .. displayName
+            .. " — $" .. string.format("%.2f", payout),
+        colour  = "success",
+        channel = POS_Constants.PN_CHANNEL_CONTRACTS,
+    })
 
     -- Emit events
     if POS_Events and POS_Events.OnContractFulfilled then
@@ -345,9 +351,12 @@ function POS_ContractService.abandon(contractId)
 
     PhobosLib.debug("POS", _TAG, "Abandoned contract: " .. contractId)
 
-    if PhobosLib.notifyOrSay then
-        PhobosLib.notifyOrSay("POSnet", "Contract abandoned.", "warning")
-    end
+    PhobosLib.safecall(PhobosLib.notifyOrSay, getPlayer(), {
+        title   = "POSnet",
+        message = PhobosLib.safeGetText("UI_POS_Contract_Abandoned_Msg"),
+        colour  = "warning",
+        channel = POS_Constants.PN_CHANNEL_CONTRACTS,
+    })
 
     return true
 end
@@ -376,11 +385,12 @@ function POS_ContractService.checkExpiry()
                 changed = true
                 PhobosLib.debug("POS", _TAG, "Contract failed (deadline): " .. id)
 
-                if PhobosLib.notifyOrSay then
-                    PhobosLib.notifyOrSay("POSnet",
-                        "Contract deadline passed. Contract failed.",
-                        "error")
-                end
+                PhobosLib.safecall(PhobosLib.notifyOrSay, getPlayer(), {
+                    title   = "POSnet",
+                    message = PhobosLib.safeGetText("UI_POS_Contract_Expired_Msg"),
+                    colour  = "error",
+                    channel = POS_Constants.PN_CHANNEL_CONTRACTS,
+                })
             end
         end
     end

@@ -147,9 +147,13 @@ function POS_MarketDatabase.addRecord(record)
                 local isNew = POS_PlayerState.discoverItem(
                     player, fullType, record.categoryId, currentDay)
                 if isNew then
-                    PhobosLib.notifyOrSay(player, "POS",
-                        PhobosLib.safeGetText("UI_POS_Discovery_NewItem") .. ": "
-                        .. PhobosLib.getItemDisplayName(fullType))
+                    PhobosLib.safecall(PhobosLib.notifyOrSay, player, {
+                        title   = "POSnet",
+                        message = PhobosLib.safeGetText("UI_POS_Discovery_NewItem")
+                            .. ": " .. (PhobosLib.getItemDisplayName(fullType) or fullType),
+                        colour  = "info",
+                        channel = POS_Constants.PN_CHANNEL_INTEL,
+                    })
                     if POS_Events and POS_Events.OnItemDiscovered then
                         POS_Events.OnItemDiscovered:trigger({
                             fullType = fullType,
