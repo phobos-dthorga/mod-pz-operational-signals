@@ -128,56 +128,51 @@ local function showConfirmationDialog(terminal)
 end
 
 ---------------------------------------------------------------
--- Screen render
+-- Screen create / destroy
 ---------------------------------------------------------------
 
-screen.render = function(terminal, parentPanel)
-    local COLOURS = POS_TerminalWidgets.COLOURS
-    local y = 10
-    local padX = 15
+function screen.create(contentPanel, _params, terminal)
+    local W = POS_TerminalWidgets
+    local C = W.COLOURS
+    local ctx = W.initLayout(contentPanel)
 
     -- Header
-    local headerText = PhobosLib.safeGetText("UI_POS_DataReset_Title")
-    POS_TerminalWidgets.addSectionHeader(parentPanel, headerText, padX, y, COLOURS.red)
-    y = y + 30
+    W.drawHeader(ctx, "UI_POS_DataReset_Title")
 
     -- Warning text
-    local warningText = PhobosLib.safeGetText("UI_POS_DataReset_Warning")
-    local warningLabel = ISLabel:new(padX, y, 18, warningText, 1.0, 0.4, 0.4, 1.0, UIFont.Small, false)
-    parentPanel:addChild(warningLabel)
-    y = y + 25
+    W.createLabel(ctx.panel, 0, ctx.y,
+        W.safeGetText("UI_POS_DataReset_Warning"), C.error)
+    ctx.y = ctx.y + ctx.lineH
 
-    local descText = PhobosLib.safeGetText("UI_POS_DataReset_Desc")
-    local descLabel = ISLabel:new(padX, y, 18, descText, 0.7, 0.7, 0.7, 1.0, UIFont.Small, false)
-    parentPanel:addChild(descLabel)
-    y = y + 25
+    W.createLabel(ctx.panel, 0, ctx.y,
+        W.safeGetText("UI_POS_DataReset_Desc"), C.dim)
+    ctx.y = ctx.y + ctx.lineH
 
-    local desc2Text = PhobosLib.safeGetText("UI_POS_DataReset_Desc2")
-    local desc2Label = ISLabel:new(padX, y, 18, desc2Text, 0.7, 0.7, 0.7, 1.0, UIFont.Small, false)
-    parentPanel:addChild(desc2Label)
-    y = y + 40
+    W.createLabel(ctx.panel, 0, ctx.y,
+        W.safeGetText("UI_POS_DataReset_Desc2"), C.dim)
+    ctx.y = ctx.y + ctx.lineH + 8
 
     -- Reset button
-    local btnW = 250
-    local btnH = 30
-    local btnX = (parentPanel:getWidth() - btnW) / 2
-    local resetBtn = ISButton:new(btnX, y, btnW, btnH,
-        PhobosLib.safeGetText("UI_POS_DataReset_Button"), parentPanel,
+    W.createButton(ctx.panel, ctx.btnX, ctx.y, ctx.btnW, ctx.btnH,
+        "[1] " .. W.safeGetText("UI_POS_DataReset_Button"), nil,
         function()
             showConfirmationDialog(terminal)
         end)
-    resetBtn:initialise()
-    resetBtn:instantiate()
-    resetBtn.backgroundColor = {r = 0.4, g = 0.1, b = 0.1, a = 0.9}
-    resetBtn.borderColor = {r = 1.0, g = 0.2, b = 0.2, a = 1.0}
-    parentPanel:addChild(resetBtn)
-
-    y = y + btnH + 20
+    ctx.y = ctx.y + ctx.btnH + 8
 
     -- Developer note
-    local noteText = PhobosLib.safeGetText("UI_POS_DataReset_Note")
-    local noteLabel = ISLabel:new(padX, y, 18, noteText, 0.5, 0.5, 0.5, 1.0, UIFont.Small, false)
-    parentPanel:addChild(noteLabel)
+    W.createLabel(ctx.panel, 0, ctx.y,
+        W.safeGetText("UI_POS_DataReset_Note"), C.disabled)
+    ctx.y = ctx.y + ctx.lineH
+
+    -- Footer
+    W.drawFooter(ctx)
+end
+
+screen.destroy = POS_TerminalWidgets.defaultDestroy
+
+function screen.refresh(_params)
+    -- Static screen — no dynamic data
 end
 
 ---------------------------------------------------------------
