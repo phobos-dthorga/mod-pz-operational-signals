@@ -72,11 +72,20 @@ end
 -- Tick handler — samples player position every tick
 ---------------------------------------------------------------
 
---- Sample interval in ticks (~3 samples/sec at 30 FPS).
-local SAMPLE_INTERVAL_TICKS = 10
+-- NOTE: Starlit TaskManager.repeatEveryTicks() is NOT usable here.
+-- Starlit uses table.newarray() (KahluaArray) which only accepts integer
+-- keys, but then tries to set .offset (string key) on it — crashes with
+-- "Invalid table key: offset" or "__add not defined for operands".
+-- See design-guidelines.md §40.7. Reverted to manual tick counter.
 
---- Position sampling function — called by Starlit TaskManager.
-local function doPositionSample()
+local SAMPLE_INTERVAL = 10
+local _tickCounter = 0
+
+local function onTick()
+    _tickCounter = _tickCounter + 1
+    if _tickCounter < SAMPLE_INTERVAL then return end
+    _tickCounter = 0
+
     -- Skip if no active sessions
     local hasAny = false
     for _ in pairs(sessions) do hasAny = true; break end
@@ -100,12 +109,4 @@ local function doPositionSample()
     end
 end
 
--- Register with Starlit TaskManager instead of manual OnTick counter
-local TaskManager = require("Starlit/TaskManager")
-TaskManager.repeatEveryTicks(doPositionSample, SAMPLE_INTERVAL_TICKS)
--- Workaround: Starlit doesn't initialise offset on new repeat task arrays,
--- causing __add nil crash at TaskManager.lua:233. Init to 0 ourselves.
-if TaskManager.repeatTasks[SAMPLE_INTERVAL_TICKS] then
-    TaskManager.repeatTasks[SAMPLE_INTERVAL_TICKS].offset =
-        TaskManager.repeatTasks[SAMPLE_INTERVAL_TICKS].offset or 0
-end
+Events.OnTick.Add(onTick)

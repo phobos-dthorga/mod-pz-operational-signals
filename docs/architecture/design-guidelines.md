@@ -3248,10 +3248,10 @@ end
 
 ## 40. Starlit Library Integration (Roadmap)
 
-> **Status**: Phase 1-2 implemented. Starlit LuaEvent for 15+ named events.
-> Starlit TaskManager replaces manual tick counters (ReconScanner,
-> PathTracker). OnScreenRefreshRequested + OnQuantityChanged for reactive
-> UI. Phase 3 (Time utilities) available but not yet adopted.
+> **Status**: Phase 1 (LuaEvent) implemented — 15+ named events via
+> `POS_Events.lua`. Phase 2 (TaskManager) **blocked** by KahluaArray bug
+> (see §40.7). Reverted to manual tick counters. Phase 3 (Time) not yet
+> adopted.
 
 POSnet will adopt three modules from the **Starlit** utility library as a
 servant-library for orchestration and events. Starlit is a dependency-style
@@ -3340,24 +3340,37 @@ Benefits:
 | Using TaskManager for persistence | It's for runtime orchestration, not save state |
 | Adopting Starlit "devotionally" | Surgical adoption of proven modules only |
 
-### 40.7 Known Workaround: TaskManager Offset Initialisation
+### 40.7 TaskManager — Blocked by KahluaArray Bug
 
-Starlit's `TaskManager.repeatEveryTicks()` does not initialise the
-`tasks.offset` field on newly created repeat task arrays. This causes
-`__add not defined for operands` at `TaskManager.lua:233` when
-`offset + amount` is evaluated with nil offset.
+**Do NOT use `TaskManager.repeatEveryTicks()` in POSnet.**
 
-**Workaround**: After every `repeatEveryTicks()` call, immediately set:
+Starlit's `repeatEveryTicks()` creates the task array via
+`table.newarray()`, which produces a Java-backed `KahluaArray`.
+KahluaArray only accepts **integer keys**. Starlit then tries to set
+`.offset` (a **string key**) on it at line 249, causing:
 
-```lua
-local tasks = TaskManager.repeatTasks[INTERVAL]
-if tasks then tasks.offset = tasks.offset or 0 end
+```
+java.lang.RuntimeException: Invalid table key: offset
+    at KahluaArray.rawset(KahluaArray.java:156)
 ```
 
-This is safe — offset is a cursor into the task distribution array
-and `0` is the correct initial value. Applied in POS_ReconScanner
-and POS_PathTracker. If Starlit fixes this upstream, the workaround
-becomes a no-op (`or 0` short-circuits when offset already exists).
+Without `.offset`, the update loop at line 233 does `offset + amount`
+with nil offset, causing a secondary crash:
+
+```
+__add not defined for operands
+```
+
+This is an **internal Starlit inconsistency** — `table.newarray()` and
+string-keyed `.offset` are mutually incompatible in Kahlua Lua 5.1.
+
+**Status**: Reverted to manual tick counters in POS_ReconScanner and
+POS_PathTracker. TaskManager adoption is blocked until Starlit
+replaces `table.newarray()` with a regular Lua table in
+`repeatEveryTicks()`.
+
+**Starlit LuaEvent is unaffected** and remains in active use (15+ named
+events via `POS_Events.lua`).
 
 ---
 

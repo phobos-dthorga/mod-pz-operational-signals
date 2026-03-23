@@ -134,9 +134,19 @@ end
 -- Tick handler
 ---------------------------------------------------------------
 
---- Recon scan function called by Starlit TaskManager every SCAN_INTERVAL_TICKS.
---- Checks if the player is in a target room with a camera and auto-captures.
-local function doReconScan()
+-- NOTE: Starlit TaskManager.repeatEveryTicks() is NOT usable here.
+-- Starlit uses table.newarray() (KahluaArray) which only accepts integer
+-- keys, but then tries to set .offset (string key) on it — crashes with
+-- "Invalid table key: offset" or "__add not defined for operands".
+-- See design-guidelines.md §40.7. Reverted to manual tick counter.
+
+local _tickCounter = 0
+
+local function onTick()
+    _tickCounter = _tickCounter + 1
+    if _tickCounter < SCAN_INTERVAL_TICKS then return end
+    _tickCounter = 0
+
     local player = getSpecificPlayer(0)
     if not player then return end
 
@@ -161,20 +171,8 @@ local function doReconScan()
 
     PhobosLib.debug("POS", _TAG, "[ReconScanner] Photograph captured for " .. recon.id)
 
-    -- Emit screen invalidation event
-    if POS_Events and POS_Events.OnScreenRefreshRequested then
-        POS_Events.OnScreenRefreshRequested:trigger()
-    elseif POS_ScreenManager then
-        POS_ScreenManager.markDirty()
-    end
+    -- Mark screen dirty
+    if POS_ScreenManager then POS_ScreenManager.markDirty() end
 end
 
--- Register with Starlit TaskManager instead of manual OnTick counter
-local TaskManager = require("Starlit/TaskManager")
-TaskManager.repeatEveryTicks(doReconScan, SCAN_INTERVAL_TICKS)
--- Workaround: Starlit doesn't initialise offset on new repeat task arrays,
--- causing __add nil crash at TaskManager.lua:233. Init to 0 ourselves.
-if TaskManager.repeatTasks[SCAN_INTERVAL_TICKS] then
-    TaskManager.repeatTasks[SCAN_INTERVAL_TICKS].offset =
-        TaskManager.repeatTasks[SCAN_INTERVAL_TICKS].offset or 0
-end
+Events.OnTick.Add(onTick)
