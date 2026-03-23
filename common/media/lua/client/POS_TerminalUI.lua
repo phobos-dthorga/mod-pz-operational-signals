@@ -16,13 +16,13 @@
 
 ---------------------------------------------------------------
 -- POS_TerminalUI.lua
--- Retro early-90s computer terminal UI for POSnet.
+-- Telnet-style terminal UI for POSnet.
 --
--- Hosts the CRT-style window with a generated bezel texture,
--- scanline effect, and phosphor glow. Content rendering is
--- delegated to POS_ScreenManager which drives a multi-screen
--- BBS state machine. On first open per world-load, plays a
--- DOS-style boot sequence.
+-- Hosts a clean terminal window with header bar, content area,
+-- status bar, and subtle scanline/glow effects. Content
+-- rendering is delegated to POS_ScreenManager which drives a
+-- multi-screen BBS state machine. On first open per world-load,
+-- plays a DOS-style boot sequence.
 ---------------------------------------------------------------
 
 require "PhobosLib"
@@ -30,6 +30,7 @@ require "POS_Constants"
 require "ISUI/ISPanel"
 require "POS_ScreenManager"
 require "POS_TerminalWidgets"
+require "POS_TerminalTheme"
 
 POS_TerminalUI = ISCollapsableWindow:derive("POS_TerminalUI")
 
@@ -38,40 +39,16 @@ local _TAG = "[POS:TerminalUI]"
 --- Singleton instance reference.
 POS_TerminalUI.instance = nil
 
---- Session boot flag — boot plays once per world-load.
+--- Session boot flag -- boot plays once per world-load.
 local hasBootedThisSession = false
 
---- Terminal colour scheme.
-local TERM = {
-    bg      = { r = 0.05, g = 0.08, b = 0.05, a = 0.95 },
-    text    = { r = 0.20, g = 0.90, b = 0.20 },
-    dim     = { r = 0.12, g = 0.50, b = 0.12 },
-    header  = { r = 0.30, g = 1.00, b = 0.30 },
-    warn    = { r = 0.90, g = 0.80, b = 0.10 },
-    err     = { r = 0.90, g = 0.25, b = 0.20 },
-    border  = { r = 0.15, g = 0.40, b = 0.15, a = 1.0 },
-    scan    = { r = 0.10, g = 0.20, b = 0.10, a = 0.15 },
-    glow    = { r = 0.05, g = 0.15, b = 0.05, a = 0.08 },
-}
+--- Terminal colour scheme (resolved from theme in createChildren).
+local TERM = nil
 
---- CRT bezel texture (lazy-loaded, cached by PZ engine).
-local CRT_BEZEL = nil
-local function getCRTBezel()
-    if not CRT_BEZEL then
-        CRT_BEZEL = getTexture("media/textures/POSnet_CRT_Bezel.png")
-    end
-    return CRT_BEZEL
-end
-
---- Bezel screen area inset percentages.
---- These define where the monitor's "screen" sits within the bezel texture.
---- Values measured from the generated CRT bezel image.
-local BEZEL = {
-    left   = POS_Constants.BEZEL_INSET_LEFT,
-    right  = POS_Constants.BEZEL_INSET_RIGHT,
-    top    = POS_Constants.BEZEL_INSET_TOP,
-    bottom = POS_Constants.BEZEL_INSET_BOTTOM,
-}
+--- Header and status bar geometry.
+local HEADER_HEIGHT = 24
+local STATUS_BAR_HEIGHT = 24
+local HEADER_FONT = UIFont.Code
 
 --- Font for terminal text.
 local FONT = UIFont.Code
@@ -169,30 +146,18 @@ local BOOT_PAUSE_FRAMES = POS_Constants.BOOT_PAUSE_FRAMES
 -- Screen rect helper
 ---------------------------------------------------------------
 
---- Compute the content screen rectangle within the bezel.
+--- Compute the content area rectangle (between header and status bar).
 --- Returns absolute pixel coordinates relative to the window.
 ---@return number sx, number sy, number sw, number sh
 function POS_TerminalUI:getScreenRect()
-    local tex = getCRTBezel()
-    if tex then
-        local bx = math.floor(self.width * BEZEL.left)
-        local by = math.floor(self.height * BEZEL.top)
-        local bw = self.width - bx - math.floor(self.width * BEZEL.right)
-        local bh = self.height - by - math.floor(self.height * BEZEL.bottom)
-        return bx, by, bw, bh
-    else
-        -- Fallback: use title bar + padding (original behaviour)
-        local th = self:titleBarHeight()
-        local pad = 16
-        return pad, th + pad, self.width - pad * 2, self.height - th - pad * 2
-    end
+    return 0, HEADER_HEIGHT, self.width, self.height - HEADER_HEIGHT - STATUS_BAR_HEIGHT
 end
 
 ---------------------------------------------------------------
 -- Panel layout
 ---------------------------------------------------------------
 
---- Reposition nav, content, and context panels within the bezel.
+--- Reposition nav, content, and context panels within the content area.
 --- Called every prerender() to handle window resize.
 function POS_TerminalUI:repositionPanels()
     local sx, sy, sw, sh = self:getScreenRect()
@@ -287,45 +252,38 @@ function POS_TerminalUI:createChildren()
     PhobosLib.makeWindowResizable(self, 720, 780)
     ISCollapsableWindow.createChildren(self)
 
-    -- Hide standard window chrome — CRT bezel replaces it visually
-    local tex = getCRTBezel()
-    if tex then
-        if self.closeButton then self.closeButton:setVisible(false) end
-        if self.collapseButton then self.collapseButton:setVisible(false) end
-        if self.pinButton then self.pinButton:setVisible(false) end
-        self.drawFrame = false
-        self.background = false
-    end
+    -- Resolve theme colours (cached for this window lifetime)
+    TERM = POS_TerminalTheme.getTERM()
 
-    -- Create content panel for widget-based screens
+    -- Hide standard window chrome -- we draw our own header bar
+    self.drawFrame = false
+    self.background = false
+    if self.closeButton then self.closeButton:setVisible(false) end
+    if self.collapseButton then self.collapseButton:setVisible(false) end
+    if self.pinButton then self.pinButton:setVisible(false) end
+
+    -- Create content panels (no stencil clipping needed)
     local sx, sy, sw, sh = self:getScreenRect()
     local pad = SCREEN_PAD
-    -- Helper: create a stencil-clipped ISPanel (prevents content bleed-over)
-    local function createClippedPanel(parent, x, y, w, h)
+
+    local function createPanel(parent, x, y, w, h)
         local panel = ISPanel:new(x, y, w, h)
         panel.backgroundColor = { r = 0, g = 0, b = 0, a = 0 }
         panel.borderColor = { r = 0, g = 0, b = 0, a = 0 }
-        function panel:prerender()
-            ISPanel.prerender(self)
-            self:setStencilRect(0, 0, self.width, self.height)
-        end
-        function panel:postrender()
-            self:clearStencilRect()
-        end
         panel:initialise()
         panel:instantiate()
         parent:addChild(panel)
         return panel
     end
 
-    self.contentPanel = createClippedPanel(self, sx + pad, sy + pad, sw - pad * 2, sh - pad * 2)
+    self.contentPanel = createPanel(self, sx + pad, sy + pad, sw - pad * 2, sh - pad * 2)
 
     -- NavPanel (left sidebar)
-    self.navPanel = createClippedPanel(self, 0, 0, NAV_PANEL_WIDTH, 100)
+    self.navPanel = createPanel(self, 0, 0, NAV_PANEL_WIDTH, 100)
     self.navPanel:setVisible(false)
 
     -- ContextPanel (right sidebar)
-    self.contextPanel = createClippedPanel(self, 0, 0, CONTEXT_PANEL_WIDTH, 100)
+    self.contextPanel = createPanel(self, 0, 0, CONTEXT_PANEL_WIDTH, 100)
     self.contextPanel:setVisible(false)
 
     -- Register ESC key listener (closure captures self)
@@ -373,32 +331,65 @@ function POS_TerminalUI:prerender()
                         PhobosLib.safeGetText(POS_Constants.MSG_POWER_LOST))
                 end
                 PhobosLib.debug("POS", _TAG,
-                    "Desktop power lost — closing terminal")
+                    "Desktop power lost -- closing terminal")
                 POS_TerminalUI.closeTerminal()
                 return
             end
         end
     end
 
-    local tex = getCRTBezel()
-    if tex then
-        -- Draw CRT bezel texture covering entire window (behind child widgets)
-        self:drawTextureScaled(tex, 0, 0, self.width, self.height, 1.0, 1, 1, 1)
-        -- Scanlines are drawn in render() so they overlay child widgets
-    else
-        -- Fallback: original programmatic rendering
-        ISCollapsableWindow.prerender(self)
-        local th = self:titleBarHeight()
-        self:drawRect(0, th, self.width, self.height - th,
-            TERM.bg.a, TERM.bg.r, TERM.bg.g, TERM.bg.b)
+    -- Draw content area background
+    local sx, sy, sw, sh = self:getScreenRect()
+    self:drawRect(sx, sy, sw, sh,
+        TERM.bg.a, TERM.bg.r, TERM.bg.g, TERM.bg.b)
 
-        -- Inner border (fallback only)
-        local pad = 8
-        local bx, by = pad, th + pad
-        local bw, bh = self.width - pad * 2, self.height - th - pad * 2
-        self:drawRectBorder(bx, by, bw, bh,
-            TERM.border.a, TERM.border.r, TERM.border.g, TERM.border.b)
+    -- Draw header bar background (slightly brighter than content)
+    local hdrR = TERM.bg.r + 0.02
+    local hdrG = TERM.bg.g + 0.02
+    local hdrB = TERM.bg.b + 0.02
+    self:drawRect(0, 0, self.width, HEADER_HEIGHT, TERM.bg.a, hdrR, hdrG, hdrB)
+
+    -- Header bottom border
+    self:drawRect(0, HEADER_HEIGHT - 1, self.width, 1,
+        TERM.border.a, TERM.border.r, TERM.border.g, TERM.border.b)
+
+    -- Header left text: band label
+    local bandLabel = self.band == "tactical" and "POSNET_TAC" or "POSNET_OPS"
+    local headerTextY = (HEADER_HEIGHT - getTextManager():getFontHeight(HEADER_FONT)) / 2
+    self:drawText(bandLabel, 8, headerTextY,
+        TERM.header.r, TERM.header.g, TERM.header.b, 1.0, HEADER_FONT)
+
+    -- Header center text: current screen title
+    local screenTitle = ""
+    local currentScreen = POS_ScreenManager.currentScreen
+    if currentScreen then
+        local screenDef = POS_Registry and POS_Registry.getScreen and POS_Registry.getScreen(currentScreen)
+        if screenDef and screenDef.titleKey then
+            screenTitle = PhobosLib.safeGetText(screenDef.titleKey)
+        end
     end
+    if screenTitle ~= "" then
+        local titleW = getTextManager():MeasureStringX(HEADER_FONT, screenTitle)
+        local titleX = (self.width - titleW) / 2
+        self:drawText(screenTitle, titleX, headerTextY,
+            TERM.text.r, TERM.text.g, TERM.text.b, 1.0, HEADER_FONT)
+    end
+
+    -- Header right text: status + close button
+    local statusText = "SYS READY"
+    local closeText = "[X]"
+    local closeW = getTextManager():MeasureStringX(HEADER_FONT, closeText)
+    local statusW = getTextManager():MeasureStringX(HEADER_FONT, statusText)
+    local closeX = self.width - closeW - 8
+    local statusX = closeX - statusW - 12
+    self:drawText(statusText, statusX, headerTextY,
+        TERM.dim.r, TERM.dim.g, TERM.dim.b, 1.0, HEADER_FONT)
+    self:drawText(closeText, closeX, headerTextY,
+        TERM.header.r, TERM.header.g, TERM.header.b, 1.0, HEADER_FONT)
+
+    -- Store close button hit area for onMouseDown
+    self._closeHitX = closeX
+    self._closeHitW = closeW
 
     -- Reposition all panels (nav, content, context) on resize
     self:repositionPanels()
@@ -421,26 +412,60 @@ function POS_TerminalUI:render()
         self.contextPanel:setVisible(isReady and self.contextPanel:isVisible())
     end
 
-    -- Stencil clip drawText content to the screen area
-    self:setStencilRect(sx, sy, sw, sh)
-
     if self.terminalState == "booting" then
         self:renderBoot()
     else
         self:renderScreen()
     end
 
-    self:clearStencilRect()
+    -- Draw status bar background
+    local statusY = self.height - STATUS_BAR_HEIGHT
+    local hdrR = TERM.bg.r + 0.02
+    local hdrG = TERM.bg.g + 0.02
+    local hdrB = TERM.bg.b + 0.02
+    self:drawRect(0, statusY, self.width, STATUS_BAR_HEIGHT, TERM.bg.a, hdrR, hdrG, hdrB)
 
-    -- Scanline effect OVER widget children (CRT glass look)
-    for y = sy, sy + sh - 1, 3 do
-        self:drawRect(sx, y, sw, 1,
-            TERM.scan.a, TERM.scan.r, TERM.scan.g, TERM.scan.b)
+    -- Status bar top border
+    self:drawRect(0, statusY, self.width, 1,
+        TERM.border.a, TERM.border.r, TERM.border.g, TERM.border.b)
+
+    -- Status bar left text: user info
+    local player = getPlayer()
+    local playerName = player and player:getDisplayName() or "UNKNOWN"
+    local playerId = player and tostring(player:getOnlineID()) or "0"
+    local statusLeft = string.format("> USER: %s | HID: %s | LINK: ACTIVE", playerName, playerId)
+    local statusTextY = statusY + (STATUS_BAR_HEIGHT - getTextManager():getFontHeight(HEADER_FONT)) / 2
+    self:drawText(statusLeft, 8, statusTextY,
+        TERM.dim.r, TERM.dim.g, TERM.dim.b, 1.0, HEADER_FONT)
+
+    -- Status bar right text: game time + date
+    local gt = getGameTime()
+    local timeStr = ""
+    if gt then
+        local hour = gt:getHour()
+        local min = gt:getMinutes()
+        local day = gt:getDay()
+        local month = gt:getMonth() + 1  -- 0-indexed
+        local year = gt:getYear()
+        timeStr = string.format("%02d:%02d  %02d/%02d/%d", hour, min, day, month, year)
+    end
+    if timeStr ~= "" then
+        local timeW = getTextManager():MeasureStringX(HEADER_FONT, timeStr)
+        self:drawText(timeStr, self.width - timeW - 8, statusTextY,
+            TERM.dim.r, TERM.dim.g, TERM.dim.b, 1.0, HEADER_FONT)
     end
 
-    -- Phosphor glow effect over screen area
+    -- Scanline effect (subtle, over content area only)
+    local scanAlpha = 0.04
+    for y = sy, sy + sh - 1, 3 do
+        self:drawRect(sx, y, sw, 1,
+            scanAlpha, TERM.scan.r, TERM.scan.g, TERM.scan.b)
+    end
+
+    -- Phosphor glow effect over content area (subtle)
+    local glowAlpha = 0.03
     self:drawRect(sx, sy, sw, sh,
-        TERM.glow.a, TERM.glow.r, TERM.glow.g, TERM.glow.b)
+        glowAlpha, TERM.glow.r, TERM.glow.g, TERM.glow.b)
 end
 
 function POS_TerminalUI:onMouseDown(x, y)
@@ -449,6 +474,14 @@ function POS_TerminalUI:onMouseDown(x, y)
     if x < 0 or y < 0 or x > self.width or y > self.height then
         self:close()
         return true
+    end
+
+    -- Header [X] close button hit test
+    if y >= 0 and y <= HEADER_HEIGHT and self._closeHitX then
+        if x >= self._closeHitX and x <= self._closeHitX + self._closeHitW then
+            self:close()
+            return true
+        end
     end
 
     -- Click to skip boot sequence
@@ -564,7 +597,7 @@ function POS_TerminalUI:renderBoot()
         self.scrollOffset = 0
     end
 
-    -- Draw lines (clipped to screen area)
+    -- Draw lines
     local drawY = sy + pad - self.scrollOffset
     for _, text in ipairs(renderedLines) do
         if drawY + lh > sy and drawY < sy + sh then
@@ -648,7 +681,7 @@ function POS_TerminalUI.open(radioName, frequency, portablePC, signalStrength, b
                     if existingRate > 0 and existingRate >= drainRate then
                         PhobosLib.debug("POS", _TAG,
                             "Existing power drain at " .. existingRate
-                            .. "%%/min — skipping POSnet drain")
+                            .. "%%/min -- skipping POSnet drain")
                     else
                         -- Stop existing lower-rate drain if present
                         local existingSession = md[POS_Constants.MD_POWER_DRAIN_SESSION]
