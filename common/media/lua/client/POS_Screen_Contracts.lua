@@ -16,10 +16,11 @@
 
 ---------------------------------------------------------------
 -- POS_Screen_Contracts.lua
--- "Incoming Requests" — sell-side contract browser.
+-- "Incoming Requests" — sell-side contract browser under BBS.
 --
--- Three tabs: Available (posted contracts from the world),
--- Active (accepted, in-progress), History (settled/failed).
+-- Single unified list with status badges: [OPEN], [ACCEPTED],
+-- [DONE], [EXPIRED], [FAILED], [BETRAYED]. Filter buttons at
+-- top: All / Mine / Settled.
 --
 -- The ContextPanel shows full contract detail when a contract
 -- is selected: buyer info, briefing text, risk, deadline,
@@ -44,7 +45,7 @@ local _TAG = "[POS:ContractsScreen]"
 
 -- Currently selected contract ID (for ContextPanel detail)
 local _selectedContractId = nil
-local _activeTab = "available"  -- "available" | "active" | "history"
+local _activeFilter = "all"  -- "all" | "mine" | "settled"
 
 ---------------------------------------------------------------
 -- Helpers
@@ -58,11 +59,17 @@ local function getUrgencyLabel(urgency)
     return PhobosLib.safeGetText("UI_POS_Contract_Urgency_" .. tostring(urgency or 2))
 end
 
-local function getStatusLabel(status)
-    local key = "UI_POS_Contract_Status_"
-        .. string.sub(status or "posted", 1, 1):upper()
-        .. string.sub(status or "posted", 2)
-    return PhobosLib.safeGetText(key)
+local STATUS_BADGES = {
+    posted   = { text = "OPEN",     colour = "textBright" },
+    accepted = { text = "ACCEPTED", colour = "warning" },
+    settled  = { text = "DONE",     colour = "success" },
+    expired  = { text = "EXPIRED",  colour = "dim" },
+    failed   = { text = "FAILED",   colour = "error" },
+    betrayed = { text = "BETRAYED", colour = "error" },
+}
+
+local function getStatusBadge(status)
+    return STATUS_BADGES[status] or STATUS_BADGES.posted
 end
 
 local function getUrgencyColour(urgency, C)
@@ -89,25 +96,27 @@ end
 
 local screen = {}
 screen.id = POS_Constants.SCREEN_CONTRACTS
-screen.menuPath = {"pos.markets"}
+screen.menuPath = {"pos.bbs"}
 screen.titleKey = "UI_POS_Contract_Title"
 screen.sortOrder = 15
 
 ---------------------------------------------------------------
--- Tab rendering
+-- Contract row rendering
 ---------------------------------------------------------------
 
-local function renderContractRow(ctx, contract, parent, rx, ry, rw, isSelectable)
+local function renderContractRow(ctx, contract, parent, rx, ry, rw, _idx)
     local W = POS_TerminalWidgets
     local C = W.COLOURS
 
-    local kind = getKindLabel(contract.kind)
+    local badge = getStatusBadge(contract.status)
+    local badgeColour = C[badge.colour] or C.text
     local urgColour = getUrgencyColour(contract.urgency, C)
 
-    -- Row 1: Kind badge + briefing title
-    local title = contract.briefing and contract.briefing.title or kind
+    -- Row 1: [STATUS] Kind badge + briefing title
+    local title = contract.briefing and contract.briefing.title
+        or getKindLabel(contract.kind)
     W.createLabel(parent, rx, ry,
-        "[" .. kind .. "] " .. title, urgColour)
+        "[" .. badge.text .. "] " .. title, badgeColour)
     ry = ry + ctx.lineH
 
     -- Row 2: Item + quantity + payout
@@ -118,15 +127,18 @@ local function renderContractRow(ctx, contract, parent, rx, ry, rw, isSelectable
     local payout = contract.resolvedPayout or 0
     W.createLabel(parent, rx + 8, ry,
         tostring(qty) .. "x " .. itemName
-        .. "  —  $" .. string.format("%.2f", payout),
-        C.textBright)
+        .. "  --  $" .. string.format("%.2f", payout),
+        urgColour)
     ry = ry + ctx.lineH
 
     -- Row 3: Deadline + urgency
     local daysLeft = getDaysLeft(contract)
     local deadlineStr
-    if daysLeft > 0 then
-        deadlineStr = tostring(daysLeft) .. " days remaining"
+    if contract.status == "settled" or contract.status == "failed"
+            or contract.status == "betrayed" or contract.status == "expired" then
+        deadlineStr = badge.text
+    elseif daysLeft > 0 then
+        deadlineStr = tostring(daysLeft) .. " days left"
     elseif daysLeft == 0 then
         deadlineStr = "DUE TODAY"
     else
@@ -134,14 +146,18 @@ local function renderContractRow(ctx, contract, parent, rx, ry, rw, isSelectable
     end
     local urgStr = getUrgencyLabel(contract.urgency)
     W.createLabel(parent, rx + 8, ry,
-        "Urgency: " .. urgStr .. "  |  " .. deadlineStr, C.dim)
+        urgStr .. "  |  " .. deadlineStr, C.dim)
     ry = ry + ctx.lineH
 
-    -- Select button (highlights in ContextPanel)
-    if isSelectable then
+    -- Select button
+    local isTerminal = (contract.status ~= "expired")
+    if isTerminal then
         local contractId = contract.id
+        local isSelected = (_selectedContractId == contractId)
+        local label = isSelected and "> SELECTED" or "View Details"
+        local labelColour = isSelected and C.textBright or nil
         W.createButton(parent, rx, ry, rw, ctx.btnH,
-            PhobosLib.safeGetText("UI_POS_Screen_ViewDetails") or "View Details", nil,
+            label, labelColour,
             function()
                 _selectedContractId = contractId
                 POS_ScreenManager.refreshCurrentScreen()
@@ -151,7 +167,7 @@ local function renderContractRow(ctx, contract, parent, rx, ry, rw, isSelectable
         ry = ry + 4
     end
 
-    return ry
+    return ry - (ctx.lineH * 3 + (isTerminal and (ctx.btnH + 4) or 4))
 end
 
 ---------------------------------------------------------------
@@ -163,63 +179,67 @@ function screen.create(contentPanel, params, _terminal)
     local C = W.COLOURS
     local ctx = W.initLayout(contentPanel)
 
-    -- Resolve tab from params
-    _activeTab = (params and params.tab) or _activeTab or "available"
+    -- Resolve filter from params
+    _activeFilter = (params and params.filter) or _activeFilter or "all"
 
     W.drawHeader(ctx, "UI_POS_Contract_Title")
 
-    -- Tab bar
-    local tabs = {
-        { id = "available", key = "UI_POS_Contract_Available" },
-        { id = "active",    key = "UI_POS_Contract_Active" },
-        { id = "history",   key = "UI_POS_Contract_History" },
+    -- Filter buttons: All | Mine | Settled
+    local filters = {
+        { id = "all",     label = "All" },
+        { id = "mine",    label = "Mine" },
+        { id = "settled", label = "Settled" },
     }
 
-    local tabX = ctx.btnX
-    local tabW = math.floor(ctx.btnW / #tabs)
-    for _, tab in ipairs(tabs) do
-        if _activeTab == tab.id then
-            W.createLabel(contentPanel, tabX + 4, ctx.y + 2,
-                "> " .. W.safeGetText(tab.key), C.textBright)
+    local filterX = ctx.btnX
+    local filterW = math.floor(ctx.btnW / #filters) - 2
+    for _, f in ipairs(filters) do
+        if _activeFilter == f.id then
+            W.createLabel(contentPanel, filterX + 4, ctx.y + 2,
+                "> " .. f.label, C.textBright)
         else
-            local tabId = tab.id
-            W.createButton(contentPanel, tabX, ctx.y, tabW, ctx.btnH,
-                W.safeGetText(tab.key), nil,
+            local fId = f.id
+            W.createButton(contentPanel, filterX, ctx.y, filterW, ctx.btnH,
+                f.label, nil,
                 function()
-                    _activeTab = tabId
+                    _activeFilter = fId
                     _selectedContractId = nil
                     POS_ScreenManager.replaceCurrent(
-                        POS_Constants.SCREEN_CONTRACTS, { tab = tabId })
+                        POS_Constants.SCREEN_CONTRACTS, { filter = fId })
                 end)
         end
-        tabX = tabX + tabW + 2
+        filterX = filterX + filterW + 4
     end
     ctx.y = ctx.y + ctx.btnH + 6
 
     W.createSeparator(contentPanel, 0, ctx.y, 50, "-")
     ctx.y = ctx.y + ctx.lineH
 
-    -- Tab content
+    -- Gather contracts based on filter
     local contracts = {}
-    if _activeTab == "available" then
-        contracts = POS_ContractService.getAvailable()
-    elseif _activeTab == "active" then
+    if _activeFilter == "all" then
+        -- All non-settled: open + accepted
+        local avail = POS_ContractService.getAvailable()
+        local active = POS_ContractService.getActive()
+        for _, c in ipairs(avail) do contracts[#contracts + 1] = c end
+        for _, c in ipairs(active) do contracts[#contracts + 1] = c end
+    elseif _activeFilter == "mine" then
         contracts = POS_ContractService.getActive()
-    elseif _activeTab == "history" then
+    elseif _activeFilter == "settled" then
         contracts = POS_ContractService.getHistory()
     end
 
     if #contracts == 0 then
-        local emptyKey = _activeTab == "available"
-            and "UI_POS_Contract_None"
-            or "UI_POS_Contract_NoneActive"
-        W.createLabel(contentPanel, 8, ctx.y,
-            W.safeGetText(emptyKey), C.dim)
+        local emptyMsg = _activeFilter == "mine"
+            and "No accepted contracts. Browse [All] to find open requests."
+            or (_activeFilter == "settled"
+                and "No settled contracts yet."
+                or "No contracts available. Check back after the next economy tick.")
+        W.createLabel(contentPanel, 8, ctx.y, emptyMsg, C.dim)
         ctx.y = ctx.y + ctx.lineH
     else
         local currentPage = (params and params.contractPage) or 1
-        local tabCopy = _activeTab
-        local isSelectable = (_activeTab ~= "history")
+        local filterCopy = _activeFilter
 
         ctx.y = PhobosLib_Pagination.create(contentPanel, {
             items = contracts,
@@ -233,15 +253,15 @@ function screen.create(contentPanel, params, _terminal)
                 bgDark = C.bgDark, bgHover = C.bgHover,
                 border = C.border,
             },
-            renderItem = function(parent, rx, ry, rw, item, _idx)
+            renderItem = function(parent, rx, ry, rw, item, idx)
                 local startY = ry
-                ry = renderContractRow(ctx, item, parent, rx, ry, rw, isSelectable)
+                ry = renderContractRow(ctx, item, parent, rx, ry, rw, idx)
                 return ry - startY
             end,
             onPageChange = function(newPage)
                 POS_ScreenManager.replaceCurrent(
                     POS_Constants.SCREEN_CONTRACTS,
-                    { tab = tabCopy, contractPage = newPage })
+                    { filter = filterCopy, contractPage = newPage })
             end,
         })
     end
@@ -251,8 +271,7 @@ function screen.create(contentPanel, params, _terminal)
         and POS_TradeService.getPlayerBalance(getPlayer()) or 0
     ctx.y = ctx.y + 4
     W.createLabel(contentPanel, 8, ctx.y,
-        W.safeGetText("UI_POS_Trade_Balance") .. ": $"
-        .. string.format("%.2f", balance), C.dim)
+        "Balance: $" .. string.format("%.2f", balance), C.dim)
     ctx.y = ctx.y + ctx.lineH
 
     W.drawFooter(ctx)
@@ -274,9 +293,10 @@ screen.getContextData = function(_params)
         return data
     end
 
-    -- Header: kind badge
+    -- Header: status badge + kind
+    local badge = getStatusBadge(contract.status)
     table.insert(data, { type = "header",
-        text = getKindLabel(contract.kind) })
+        text = "[" .. badge.text .. "] " .. getKindLabel(contract.kind) })
     table.insert(data, { type = "separator" })
 
     -- Buyer archetype
@@ -330,13 +350,12 @@ screen.getContextData = function(_params)
             and contract.briefing.situation ~= "" then
         table.insert(data, { type = "separator" })
         table.insert(data, { type = "header", text = "BRIEFING" })
-        -- Show first 80 chars of situation as preview
         local sit = contract.briefing.situation
         if #sit > 80 then sit = string.sub(sit, 1, 77) .. "..." end
         table.insert(data, { type = "kv", key = "", value = sit })
     end
 
-    -- Inventory check for active contracts
+    -- Inventory check for accepted contracts
     if contract.status == POS_Constants.CONTRACT_STATUS_ACCEPTED
             and contract.resolvedItemType then
         table.insert(data, { type = "separator" })
@@ -363,9 +382,7 @@ screen.getContextData = function(_params)
             callback = function()
                 local ok, err = POS_ContractService.accept(cId)
                 if ok then
-                    _activeTab = "active"
-                    POS_ScreenManager.replaceCurrent(
-                        POS_Constants.SCREEN_CONTRACTS, { tab = "active" })
+                    POS_ScreenManager.refreshCurrentScreen()
                 else
                     if PhobosLib.notifyOrSay then
                         PhobosLib.notifyOrSay("POSnet", err or "Cannot accept", "error")
@@ -375,7 +392,6 @@ screen.getContextData = function(_params)
         })
     elseif contract.status == POS_Constants.CONTRACT_STATUS_ACCEPTED then
         local cId = contract.id
-        -- Fulfil button
         table.insert(data, {
             type = "action",
             text = "UI_POS_Contract_Fulfil",
@@ -391,7 +407,6 @@ screen.getContextData = function(_params)
                 end
             end,
         })
-        -- Abandon button
         table.insert(data, {
             type = "action",
             text = "UI_POS_Contract_Abandon",
@@ -410,7 +425,7 @@ end
 
 screen.destroy = function()
     _selectedContractId = nil
-    _activeTab = "available"
+    _activeFilter = "all"
     POS_TerminalWidgets.defaultDestroy()
 end
 
