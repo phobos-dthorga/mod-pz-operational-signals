@@ -1,0 +1,54 @@
+/*  ________________________________________________________________________
+ * / Copyright (c) 2026 Phobos A. D'thorga                                \
+ * |                                                                        |
+ * |           /\_/\                                                         |
+ * |         =/ o o \=    Phobos' PZ Modding                                |
+ * |          (  V  )     All rights reserved.                              |
+ * |     /\  / \   / \                                                      |
+ * |    /  \/   '-'   \   This source code is part of the Phobos            |
+ * |   /  /  \  ^  /\  \  mod suite for Project Zomboid (Build 42).         |
+ * |  (__/    \_/ \/  \__)                                                  |
+ * |     |   | |  | |     Unauthorised copying, modification, or            |
+ * |     |___|_|  |_|     distribution of this file is prohibited.          |
+ * |                                                                        |
+ * \________________________________________________________________________/
+ *
+ * POSnet Terminal Station — CraftBench entity for computer-based recipes.
+ * Maps to vanilla desktop computer sprites. Used by:
+ *   - ReviewFloppyDisk
+ *   - SalvageCorruptFloppy
+ */
+
+module Base
+{
+    entity POS_TerminalStation
+    {
+        component UiConfig
+        {
+            xuiSkin = default,
+            entityStyle = ES_POS_TerminalStation,
+            uiEnabled = true,
+        }
+        component CraftBench
+        {
+            Recipes = POS_TerminalStation,
+        }
+        component SpriteConfig
+        {
+            face S
+            {
+                layer
+                {
+                    row = appliances_com_01_0,
+                }
+            }
+            face E
+            {
+                layer
+                {
+                    row = appliances_com_01_4,
+                }
+            }
+        }
+    }
+}

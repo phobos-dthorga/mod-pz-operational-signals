@@ -1,0 +1,21 @@
+module Base
+{
+    xuiSkin default
+    {
+        entity ES_POS_TerminalStation
+        {
+            LuaWindowClass = ISEntityWindow,
+            DisplayName = Computer Terminal,
+            Icon = Desktop,
+            components
+            {
+                CraftLogic
+                {
+                    LuaPanelClass = ISCraftDefaultPanel,
+                    DisplayName = POSnet Terminal Station,
+                    Icon = Desktop,
+                }
+            }
+        }
+    }
+}
