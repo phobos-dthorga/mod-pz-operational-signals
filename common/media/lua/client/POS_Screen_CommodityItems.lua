@@ -89,8 +89,8 @@ local function executeBuyAction(fullType, categoryId, qty, avgPrice)
     local displayName = getItemDisplayName(fullType) or fullType
     if PhobosLib.notifyOrSay then
         PhobosLib.notifyOrSay("POSnet",
-            string.format(PhobosLib.safeGetText("UI_POS_Trade_PN_BuySuccess"),
-                qty, displayName, totalCost),
+            "Purchased " .. tostring(qty) .. "x " .. displayName
+            .. " for $" .. string.format("%.2f", totalCost),
             "success")
     end
 
