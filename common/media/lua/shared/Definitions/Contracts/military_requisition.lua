@@ -12,7 +12,7 @@ return {
     deadlineDaysMin = 4,
     deadlineDaysMax = 8,
     urgency = 3,
-    sigintRequired = 5,
+    sigintRequired = 0,
     reputationMin = 20,
     archetypeId = "military_logistician",
     betrayalChance = 0,

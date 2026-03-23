@@ -1372,7 +1372,26 @@ Operator (9-10).
   trait.
 - See `sigint-skill-design.md` Section 7 for costs and effects.
 
-### 21.5 Cross-Mod
+### 21.5 Access Rule
+
+**SIGINT gates data quality, never screen access.** All terminal screens
+are fully navigable from SIGINT Level 0. Low-SIGINT players see noisier
+data, lower confidence ratings, and fewer ambient discoveries — but they
+can access every screen, accept every visible contract, and browse every
+market view.
+
+| SIGINT Range | Effect |
+|-------------|--------|
+| 0-2 | Noisy data, low confidence, fewer ambient discoveries |
+| 3-5 | Reduced noise, medium confidence, pattern recognition |
+| 6-8 | High-fidelity data, early event detection, better prices |
+| 9-10 | Near-perfect intelligence, rare intercepts, predictive edge |
+
+Do NOT add `canOpen` or `sigintRequired` gates to screens or contracts.
+Equipment gates (Data Recorder, radio connection) are fine — they require
+physical tools, not skill level.
+
+### 21.6 Cross-Mod
 
 - ZScienceSkill: optional XP mirror (0.5x ratio) + 3 SIGINT specimens.
 - See `sigint-skill-design.md` Section 8 for integration details.

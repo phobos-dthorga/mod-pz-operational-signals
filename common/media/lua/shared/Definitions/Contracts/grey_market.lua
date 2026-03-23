@@ -12,7 +12,7 @@ return {
     deadlineDaysMin = 3,
     deadlineDaysMax = 5,
     urgency = 3,
-    sigintRequired = 3,
+    sigintRequired = 0,
     reputationMin = 0,
     archetypeId = "smuggler",
     betrayalChance = 0.15,

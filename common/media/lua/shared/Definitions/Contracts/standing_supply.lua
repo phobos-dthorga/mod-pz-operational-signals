@@ -12,7 +12,7 @@ return {
     deadlineDaysMin = 7,
     deadlineDaysMax = 14,
     urgency = 1,
-    sigintRequired = 2,
+    sigintRequired = 0,
     reputationMin = 10,
     archetypeId = "wholesaler",
     betrayalChance = 0,

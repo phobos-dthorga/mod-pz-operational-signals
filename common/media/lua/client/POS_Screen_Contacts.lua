@@ -40,21 +40,9 @@ screen.menuPath = {"pos.markets"}
 screen.titleKey = "UI_POS_Contacts_Title"
 screen.sortOrder = 15
 
----------------------------------------------------------------
--- Guard: SIGINT >= WHOLESALER_DIR_SIGINT_REQ (3)
----------------------------------------------------------------
-
-screen.canOpen = function()
-    local player = getSpecificPlayer(0)
-    if not player then
-        return false, PhobosLib.safeGetText("UI_POS_Contacts_RequiresSIGINT")
-    end
-    local sigintLevel = POS_SIGINTSkill.getLevel(player)
-    if sigintLevel < POS_Constants.WHOLESALER_DIR_SIGINT_REQ then
-        return false, PhobosLib.safeGetText("UI_POS_Contacts_RequiresSIGINT")
-    end
-    return true
-end
+-- NOTE: No SIGINT screen gate. Per §21, SIGINT affects data quality
+-- (confidence, noise), never screen access. All screens navigable
+-- from SIGINT 0. Low-SIGINT players see noisier contact data.
 
 ---------------------------------------------------------------
 -- State colour map for wholesaler operational state badges

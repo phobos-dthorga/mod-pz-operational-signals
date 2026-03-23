@@ -12,7 +12,7 @@ return {
     deadlineDaysMin = 5,
     deadlineDaysMax = 10,
     urgency = 2,
-    sigintRequired = 1,
+    sigintRequired = 0,
     reputationMin = 0,
     archetypeId = "baseline_trader",
     betrayalChance = 0,

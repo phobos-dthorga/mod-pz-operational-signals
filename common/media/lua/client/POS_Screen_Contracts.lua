@@ -338,12 +338,8 @@ screen.getContextData = function(_params)
             value = riskLabel, colour = contract.betrayalChance >= 0.10 and "error" or "warning" })
     end
 
-    -- SIGINT requirement
-    if contract.sigintRequired and contract.sigintRequired > 0 then
-        table.insert(data, { type = "kv",
-            key = "SIGINT Required",
-            value = "Level " .. tostring(contract.sigintRequired) })
-    end
+    -- NOTE: No SIGINT gate display. Per §21, SIGINT affects data quality
+    -- (confidence, noise), not screen/contract access.
 
     -- Briefing situation text (if available)
     if contract.briefing and contract.briefing.situation

@@ -186,14 +186,9 @@ function POS_ContractService.accept(contractId)
         return false, "Maximum active contracts reached"
     end
 
-    -- Check SIGINT requirement
-    local player = getPlayer()
-    if player and c.sigintRequired and c.sigintRequired > 0 then
-        local level = PhobosLib.getPlayerPerkLevel(player, "SIGINT") or 0
-        if level < c.sigintRequired then
-            return false, "Requires SIGINT Level " .. tostring(c.sigintRequired)
-        end
-    end
+    -- NOTE: No SIGINT gate on acceptance. Per §21, SIGINT affects data
+    -- quality (what contracts you discover), not access (what you can accept).
+    -- If a contract is visible, it's actionable.
 
     c.status = POS_Constants.CONTRACT_STATUS_ACCEPTED
     c.acceptedDay = getGameTime() and getGameTime():getNightsSurvived() or 0

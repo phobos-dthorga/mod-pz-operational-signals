@@ -12,7 +12,7 @@ return {
     deadlineDaysMin = 2,
     deadlineDaysMax = 4,
     urgency = 4,
-    sigintRequired = 2,
+    sigintRequired = 0,
     reputationMin = 5,
     archetypeId = "",  -- resolved: could be any archetype in distress
     betrayalChance = 0,
