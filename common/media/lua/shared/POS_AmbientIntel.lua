@@ -147,11 +147,10 @@ end
 --- Initialise the ambient intel system.
 --- Called from OnGameStart. Uses PhobosLib.lazyInit() guard.
 function POS_AmbientIntel.init()
-    PhobosLib.lazyInit("POS_AmbientIntel", function()
-        Events.EveryOneMinute.Add(POS_AmbientIntel.onEveryOneMinute)
-        _initialised = true
-        PhobosLib.debug("POS", _TAG, "Ambient intel system initialised")
-    end)
+    if _initialised then return end
+    _initialised = true
+    Events.EveryOneMinute.Add(POS_AmbientIntel.onEveryOneMinute)
+    PhobosLib.debug("POS", _TAG, "Ambient intel system initialised")
 end
 
 --- EveryOneMinute tick handler.
