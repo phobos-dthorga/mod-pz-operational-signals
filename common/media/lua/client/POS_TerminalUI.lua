@@ -62,9 +62,6 @@ end
 --- Content padding inside the screen area.
 local SCREEN_PAD = POS_Constants.UI_SCREEN_PADDING
 
---- Navigation sidebar width (left panel, fixed).
-local NAV_PANEL_WIDTH = POS_Constants.UI_NAV_PANEL_WIDTH
-
 --- Context detail panel width (right panel, fixed).
 local CONTEXT_PANEL_WIDTH = POS_Constants.UI_CONTEXT_PANEL_WIDTH
 
