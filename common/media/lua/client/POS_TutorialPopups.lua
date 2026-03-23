@@ -81,6 +81,14 @@ local function buildPopupContent(lineKeys)
 end
 
 ---------------------------------------------------------------
+-- Deferred registration — PhobosLib_Popup.lua (client) may not
+-- be loaded yet when this file runs at load time.
+---------------------------------------------------------------
+
+local function _registerTutorialPopups()
+    if not PhobosLib.registerNoticePopup then return end
+
+---------------------------------------------------------------
 -- Popup 1: First Connection
 ---------------------------------------------------------------
 
@@ -224,3 +232,7 @@ PhobosLib.registerNoticePopup("POS", "tutorial_first_satellite", {
         end
     end,
 })
+
+end -- _registerTutorialPopups
+
+Events.OnGameStart.Add(_registerTutorialPopups)

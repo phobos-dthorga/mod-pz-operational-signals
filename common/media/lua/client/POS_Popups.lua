@@ -28,7 +28,10 @@ local GUIDE_POPUP_WIDTH = 620
 --- Default guide popup window height.
 local GUIDE_POPUP_HEIGHT = 500
 
-PhobosLib.registerGuidePopup("POS", {
+-- Defer registration to OnGameStart so PhobosLib_Popup.lua is loaded
+local function _registerPopups()
+    if not PhobosLib.registerGuidePopup then return end
+    PhobosLib.registerGuidePopup("POS", {
     title = POS_TerminalWidgets.safeGetText("UI_POS_GuideTitle"),
     width = GUIDE_POPUP_WIDTH,
     height = GUIDE_POPUP_HEIGHT,
@@ -48,4 +51,7 @@ PhobosLib.registerGuidePopup("POS", {
     end,
     backgroundColor = { r = 0.05, g = 0.08, b = 0.05, a = 0.95 },
     borderColor = { r = 0.15, g = 0.40, b = 0.15, a = 1.0 },
-})
+    })
+end
+
+Events.OnGameStart.Add(_registerPopups)
