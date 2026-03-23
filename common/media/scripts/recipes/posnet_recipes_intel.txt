@@ -54,7 +54,7 @@ module PhobosOperationalSignals {
         OnCreate = POS_CraftCallbacks.onCreateVHSReviewNote,
 
         Tags = POS_TVStation;CannotBeResearched,
-        timedAction = Craft,
+        timedAction = Making_Surface,
 
         inputs
         {
@@ -106,7 +106,7 @@ module PhobosOperationalSignals {
         OnCreate = POS_CraftCallbacks.onCreateReviewFloppyDisk,
 
         Tags = POS_TerminalStation;CannotBeResearched,
-        timedAction = Craft,
+        timedAction = Making_Surface,
 
         inputs
         {

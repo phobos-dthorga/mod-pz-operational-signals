@@ -28,7 +28,7 @@ module PhobosOperationalSignals {
         OnCreate = POS_CraftCallbacks.onCreateRepairDataRecorder,
 
         Tags = AnySurfaceCraft,
-        timedAction = Craft,
+        timedAction = Making_Surface,
         SkillRequired = Electrical:3,
         xpAward = Electrical:15,
 
