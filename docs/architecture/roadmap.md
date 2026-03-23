@@ -9,19 +9,19 @@
 
 | # | Feature | Status | Tier | Complexity | Design Ref |
 |---|---------|--------|------|------------|------------|
-| 1 | Living Market Phase 2-3 (4 archetypes) | Designed | High | Medium-High | living-market-design.md |
-| 2 | Mission Content Expansion | 5 of ~12 types | High | Low | mission-system-design.md |
-| 3 | Market Event System (rumours) | Schema only | High | High | living-market-design.md Phase 4 |
+| 1 | Living Market Phase 2-3 (4 archetypes) | **DONE** | High | Medium-High | living-market-design.md |
+| 2 | Mission Content Expansion | **15 of 15** | High | Low | mission-system-design.md |
+| 3 | Market Event System (rumours) | **DONE** | High | High | living-market-design.md Phase 4 |
 | 4 | Contract System Phase 2-3 | Phase 1 done | Medium | Medium | design-guidelines.md §42-43 |
 | 5 | Camera Workstation Phase 2-4 | Phase 1 done | Medium | Medium | camera-workstation-design.md |
 | 6 | Data Recorder Phase 2-4 | Phase 1 done | Medium | Medium | data-recorder-design.md |
 | 7 | Signal Strength affects Missions | Designed, 0% | Medium | Low | design-guidelines.md §5.4 |
 | 8 | Unimplemented Terminal Screens (4) | Constants only | Polish | Medium | design-guidelines.md §33 |
-| 9 | Building Target Name Resolution | Placeholder | Polish | Trivial | POS_MissionGenerator.lua:132 |
+| 9 | Building Target Name Resolution | **DONE** | Polish | Trivial | POS_MissionGenerator.lua |
 | 10 | Market Recon Repeat Visit Discount | TODO in code | Polish | Low | POS_MarketReconAction.lua:96 |
 | 11 | Physical Item Trading (Contacts) | Designed, 0% | Polish | Medium | design-guidelines.md §1.3 |
 | 12 | Cross-Mod Missions (PCP/PIP) | Not started | Content | Low | interoperability-matrix.md |
-| 13 | Archetype Voice Packs (4 remaining) | 3 of 7 done | Content | Low | design-guidelines.md §32 |
+| 13 | Archetype Voice Packs (4 remaining) | **7 of 7** | Content | Low | design-guidelines.md §32 |
 | 14 | Satellite Passive Collection | Design only | Future | High | satellite-passive-collection-design.md |
 
 ---
