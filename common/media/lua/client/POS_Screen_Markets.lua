@@ -54,7 +54,7 @@ function screen.create(contentPanel, _params, _terminal)
     -- Sub-menu options (built dynamically from registry)
     local terminal = POS_TerminalUI and POS_TerminalUI.instance
     local band = terminal and terminal.band or "operations"
-    local menuCtx = { band = band, terminal = terminal }
+    local menuCtx = { connected = true, band = band, terminal = terminal }
     local player = getSpecificPlayer(0)
     local entries = POS_MenuBuilder.buildMenu({"pos.markets"}, player, menuCtx)
 

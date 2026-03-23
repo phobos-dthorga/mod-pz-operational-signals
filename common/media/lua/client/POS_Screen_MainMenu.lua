@@ -98,6 +98,7 @@ function screen.create(contentPanel, _params, terminal)
 
     -- Menu option buttons (built dynamically from registry)
     local menuCtx = {
+        connected = true,
         band = band,
         signal = signal,
         terminal = terminal,

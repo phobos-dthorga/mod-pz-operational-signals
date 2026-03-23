@@ -74,7 +74,7 @@ function screen.create(contentPanel, _params, _terminal)
     }
 
     -- Sub-menu options (built dynamically from registry)
-    local menuCtx = { band = band, terminal = terminal }
+    local menuCtx = { connected = true, band = band, terminal = terminal }
     local player = getSpecificPlayer(0)
     local entries = POS_MenuBuilder.buildMenu({"pos.bbs"}, player, menuCtx)
 
