@@ -46,32 +46,45 @@ local function getCategoryWeight(categoryId)
 end
 
 local DISPLAY_CATEGORY_MAP = {
+    -- medicine (clean supplies only — Wound/Bandage are blood-soaked states)
     FirstAid            = "medicine",
-    Wound               = "medicine",
-    Bandage             = "medicine",
+    -- food
     Food                = "food",
     Cooking             = "food",
     CookingWeapon       = "food",
+    -- ammunition
     Ammo                = "ammunition",
     Explosives          = "ammunition",
     WeaponPart          = "ammunition",
+    -- tools
     Tool                = "tools",
     ToolWeapon          = "tools",
     Material            = "tools",
     RecipeResource      = "tools",
     VehicleMaintenance  = "tools",
     Gardening           = "tools",
+    Household           = "tools",
+    Paint               = "tools",
+    Security            = "tools",
+    -- radio / electronics
     Electronics         = "radio",
     Communications      = "radio",
     LightSource         = "radio",
+    -- survival
     Camping             = "survival",
     Fishing             = "survival",
     Trapping            = "survival",
     WaterContainer      = "survival",
+    Bag                 = "survival",
+    FireSource          = "survival",
+    Water               = "survival",
+    -- weapons
     Weapon              = "weapons",
     WeaponCrafted       = "weapons",
+    -- clothing
     Clothing            = "clothing",
     ProtectiveGear      = "clothing",
+    -- literature
     Literature          = "literature",
     SkillBook           = "literature",
     Cartography         = "literature",
@@ -132,22 +145,9 @@ local SUB_CATEGORY_DEFS = {
         displayCategories = { "FirstAid" },
         namePatterns = nil,
     },
-    {
-        id = "bandages",
-        parentCategory = "medicine",
-        labelKey = "UI_POS_SubCat_Bandages",
-        weight = 1.0,
-        displayCategories = { "Bandage" },
-        namePatterns = nil,
-    },
-    {
-        id = "wound_care",
-        parentCategory = "medicine",
-        labelKey = "UI_POS_SubCat_WoundCare",
-        weight = 0.8,
-        displayCategories = { "Wound" },
-        namePatterns = nil,
-    },
+    -- NOTE: "bandages" and "wound_care" sub-categories removed — their
+    -- DisplayCategories (Bandage, Wound) are blood-soaked body states,
+    -- not tradeable items. Clean bandages use DisplayCategory "FirstAid".
     -- food
     {
         id = "canned_food",
@@ -410,34 +410,59 @@ function POS_ItemPool.init()
             else
                 local fullType    = script:getFullName()
                 local displayCat  = script:getDisplayCategory()
-                local itemWeight  = script:getActualWeight()
-                local condMax     = script:getConditionMax()
-                local daysFresh   = script:getDaysFresh()
-                local daysRotten  = script:getDaysTotallyRotten()
-                local isPerishable = (daysFresh and daysFresh > 0)
-                    or (daysRotten and daysRotten > 0)
 
-                local categoryId = resolveCommodityCategory(displayCat, fullType)
-                local subCatId   = resolveSubCategory(fullType, displayCat, categoryId, isPerishable)
-                local hasCondition = condMax and condMax > 0
-                local basePrice  = calculateBasePrice(itemWeight, categoryId, hasCondition)
+                -- ── Curation filter ──────────────────────────
+                -- Skip items whose DisplayCategory is blacklisted
+                local excluded = false
+                local excludedCats = POS_Constants.ITEM_POOL_EXCLUDED_CATEGORIES
+                if excludedCats and displayCat and excludedCats[displayCat] then
+                    excluded = true
+                end
+                -- Skip items matching blacklisted name patterns
+                if not excluded and POS_Constants.ITEM_POOL_EXCLUDED_PATTERNS then
+                    for _, pat in ipairs(POS_Constants.ITEM_POOL_EXCLUDED_PATTERNS) do
+                        if string.find(fullType, pat, 1, true) then
+                            excluded = true
+                            break
+                        end
+                    end
+                end
 
-                local record = {
-                    fullType         = fullType,
-                    displayCategory  = displayCat,
-                    commodityCategory = categoryId,
-                    subCategory      = subCatId,
-                    weight           = itemWeight,
-                    conditionMax     = condMax,
-                    basePrice        = basePrice,
-                }
+                if not excluded then
+                    local itemWeight  = script:getActualWeight()
+                    local condMax     = script:getConditionMax()
+                    local daysFresh   = script:getDaysFresh()
+                    local daysRotten  = script:getDaysTotallyRotten()
+                    local isPerishable = (daysFresh and daysFresh > 0)
+                        or (daysRotten and daysRotten > 0)
 
-                indexItem(record)
+                    local categoryId = resolveCommodityCategory(displayCat, fullType)
+                    local subCatId   = resolveSubCategory(fullType, displayCat, categoryId, isPerishable)
+                    local hasCondition = condMax and condMax > 0
+                    local basePrice  = calculateBasePrice(itemWeight, categoryId, hasCondition)
+
+                    local record = {
+                        fullType         = fullType,
+                        displayCategory  = displayCat,
+                        commodityCategory = categoryId,
+                        subCategory      = subCatId,
+                        weight           = itemWeight,
+                        conditionMax     = condMax,
+                        basePrice        = basePrice,
+                    }
+
+                    indexItem(record)
+                end
             end
         end
     end
 
     initialised = true
+
+    -- Log pool statistics for diagnostics
+    local totalIndexed = 0
+    for _, items in pairs(pool) do totalIndexed = totalIndexed + #items end
+    PhobosLib.debug("POS", "ItemPool", "Initialised: " .. tostring(totalIndexed) .. " items indexed from ScriptManager")
 end
 
 --- Return all item records for a given commodity category.

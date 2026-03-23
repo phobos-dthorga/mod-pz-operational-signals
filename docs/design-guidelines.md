@@ -2970,3 +2970,65 @@ loop over `POS_ItemPool.selectRandomItems()`.
 | Instant full catalog | Removes progression incentive |
 | Discovery resets on load | Must persist in player ModData |
 | Category-level discovery | Discovery is per-item, not per-category |
+
+---
+
+## 36. Item Pool Curation
+
+### 36.1 Principle
+
+Not every PZ item is tradeable. The item pool applies a two-layer exclusion
+filter (DisplayCategory blacklist + name pattern blacklist) before indexing.
+See `docs/item-pool-curation.md` for the full exclusion list and rationale.
+
+### 36.2 Constants Location
+
+All curation constants live in `POS_Constants_Market.lua` (not base
+`POS_Constants.lua`) to respect the Kahlua assignment limit.
+
+### 36.3 Cross-Mod Items
+
+Cross-mod items bypass curation entirely — they are registered explicitly
+via `POS_ItemPool.registerItem()` and are always included.
+
+### 36.4 Anti-Patterns
+
+| Anti-Pattern | Why It's Wrong |
+|---|---|
+| Whitelist-only approach | Too fragile; new PZ updates add categories silently |
+| Filtering by item type string | DisplayCategory is the canonical PZ classification |
+| Hardcoding item fullTypes | Thousands of items; patterns are more maintainable |
+| Filtering at selection time | Wastes memory indexing items that are never selected |
+
+---
+
+## 37. Data Reset Tool
+
+### 37.1 Purpose
+
+A developer/debug terminal screen that wipes all POSnet-related data from
+the current save. Useful when corrupted or stale data causes crashes or
+incorrect behaviour without requiring manual save file editing.
+
+### 37.2 Access Control
+
+The screen is only visible when **either**:
+- PZ is launched with the `-debug` flag (`isDebugEnabled()`)
+- The `POS.EnableDebugLogging` sandbox option is enabled
+
+### 37.3 Architecture
+
+- **`POS_DataResetService.lua`** (shared) — business logic. Clears all
+  `WMD_*` world ModData keys (authority only) and `MODDATA_*` player keys.
+  No magic strings — all keys referenced via `POS_Constants`.
+- **`POS_Screen_DataReset.lua`** (client) — terminal screen with two-step
+  confirmation dialog. Red-highlighted warning, Cancel / Confirm buttons.
+
+### 37.4 Anti-Patterns
+
+| Anti-Pattern | Why It's Wrong |
+|---|---|
+| Single-click destructive action | Accidental data loss |
+| Clearing ModData on non-authority | Desync in multiplayer |
+| Hardcoding ModData key strings | Drift from POS_Constants definitions |
+| Showing in production builds | Confuses non-developer players |
