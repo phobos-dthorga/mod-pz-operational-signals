@@ -114,6 +114,18 @@ POS_Events.OnContractFulfilled = LuaEvent.new("POS.OnContractFulfilled")
 POS_Events.OnContractBetrayted = LuaEvent.new("POS.OnContractBetrayted")
 
 ---------------------------------------------------------------
+-- Free Agent System (§46)
+---------------------------------------------------------------
+
+--- Fired when a free agent is deployed into the field.
+--- Payload: { agentId = string, archetype = string, zoneId = string }
+POS_Events.OnFreeAgentDeployed = LuaEvent.new("POS.OnFreeAgentDeployed")
+
+--- Fired when a free agent's state changes (transit, delayed, etc.).
+--- Payload: { agentId = string, prevState = string, newState = string, agentName = string }
+POS_Events.OnFreeAgentStateChanged = LuaEvent.new("POS.OnFreeAgentStateChanged")
+
+---------------------------------------------------------------
 -- UI & Screen Events
 ---------------------------------------------------------------
 

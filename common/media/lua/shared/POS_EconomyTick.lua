@@ -120,6 +120,11 @@ function POS_EconomyTick.processDayTick()
         end
     end
 
+    -- Phase 5.9: Free agent state machine tick
+    if POS_FreeAgentService and POS_FreeAgentService.tick then
+        PhobosLib.safecall(POS_FreeAgentService.tick, currentDay)
+    end
+
     -- Phase 6: Mark tick processed
     meta.lastProcessedDay = currentDay
     meta.lastProcessedHour = currentHour

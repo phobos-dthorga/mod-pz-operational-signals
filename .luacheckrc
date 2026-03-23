@@ -79,6 +79,7 @@ globals = {
     "POS_Events",
     "POS_EventService",
     "POS_BandRegistry",
+    "POS_FreeAgentService",
     "POS_SignalPanel",
     "POS_MissionBriefingResolver",
     "POS_VoicePackRegistry",

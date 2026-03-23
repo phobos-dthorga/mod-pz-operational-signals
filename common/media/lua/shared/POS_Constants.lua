@@ -177,6 +177,41 @@ POS_Constants.SIGNAL_GARBLE_FRAGMENTS  = {
 }
 
 ---------------------------------------------------------------
+-- Free Agent System (§46)
+-- Runners, brokers, couriers sent into the wasteland.
+---------------------------------------------------------------
+
+POS_Constants.FREE_AGENT_MAX_ACTIVE            = 3
+POS_Constants.FREE_AGENT_ADVANCE_CHANCE        = 0.55   -- chance to advance per tick
+POS_Constants.FREE_AGENT_DEFAULT_RISK          = 0.10
+POS_Constants.FREE_AGENT_DEFAULT_COMMISSION    = 0.10
+POS_Constants.FREE_AGENT_DEFAULT_ESTIMATED_DAYS = 4
+
+POS_Constants.FREE_AGENT_COMMISSION_RATES = {
+    runner             = 0.05,   -- cheap, fast, risky
+    broker             = 0.15,   -- finds better prices, takes more
+    courier            = 0.10,   -- professional, reliable
+    smuggler           = 0.20,   -- best margins, may vanish
+    wholesaler_contact = 0.08,   -- stable, predictable
+}
+
+POS_Constants.FREE_AGENT_RISK_LEVELS = {
+    runner             = 0.20,   -- high risk, might not come back
+    broker             = 0.05,   -- low risk, stays remote
+    courier            = 0.10,   -- moderate, professional
+    smuggler           = 0.25,   -- highest risk, operates outside the law
+    wholesaler_contact = 0.03,   -- minimal risk, established routes
+}
+
+POS_Constants.FREE_AGENT_ESTIMATED_DAYS = {
+    runner             = 2,
+    broker             = 5,
+    courier            = 3,
+    smuggler           = 4,
+    wholesaler_contact = 6,
+}
+
+---------------------------------------------------------------
 -- Mission categories & statuses
 ---------------------------------------------------------------
 
