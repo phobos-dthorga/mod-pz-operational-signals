@@ -150,6 +150,12 @@ function POS_MarketDatabase.addRecord(record)
                     PhobosLib.notifyOrSay(player, "POS",
                         PhobosLib.safeGetText("UI_POS_Discovery_NewItem") .. ": "
                         .. PhobosLib.getItemDisplayName(fullType))
+                    if POS_Events and POS_Events.OnItemDiscovered then
+                        POS_Events.OnItemDiscovered:trigger({
+                            fullType = fullType,
+                            categoryId = record.categoryId,
+                        })
+                    end
                 end
             end
         end
@@ -157,6 +163,15 @@ function POS_MarketDatabase.addRecord(record)
 
     PhobosLib.debug("POS", _TAG, "[MarketDB] Added intel record: "
         .. tostring(record.id) .. " (cat: " .. tostring(record.categoryId) .. ")")
+
+    -- Emit event for SignalPanel and other subscribers
+    if POS_Events and POS_Events.OnMarketSnapshotUpdated then
+        POS_Events.OnMarketSnapshotUpdated:trigger({
+            categoryId = record.categoryId,
+            sourceType = record.sourcePrefix or record.sourceTier or "unknown",
+            recordId   = record.id,
+        })
+    end
 
     return true
 end

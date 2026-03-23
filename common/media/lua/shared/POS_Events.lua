@@ -1,0 +1,101 @@
+--  ________________________________________________________________________
+-- / Copyright (c) 2026 Phobos A. D'thorga                                \
+-- |                                                                        |
+-- |           /\_/\                                                         |
+-- |         =/ o o \=    Phobos' PZ Modding                                |
+-- |          (  V  )     All rights reserved.                              |
+-- |     /\  / \   / \                                                      |
+-- |    /  \/   '-'   \   This source code is part of the Phobos            |
+-- |   /  /  \  ^  /\  \  mod suite for Project Zomboid (Build 42).         |
+-- |  (__/    \_/ \/  \__)                                                  |
+-- |     |   | |  | |     Unauthorised copying, modification, or            |
+-- |     |___|_|  |_|     distribution of this file is prohibited.          |
+-- |                                                                        |
+-- \________________________________________________________________________/
+--
+
+---------------------------------------------------------------
+-- POS_Events.lua
+-- POSnet internal event bus built on Starlit's LuaEvent.
+-- Provides named events that subsystems emit and UI/extensions
+-- subscribe to, enabling loose coupling across the mod.
+--
+-- Usage:
+--   Emit:      POS_Events.OnMarketSnapshotUpdated:trigger({ categoryId = "fuel" })
+--   Subscribe: POS_Events.OnMarketSnapshotUpdated:addListener(function(data) ... end)
+--   Remove:    POS_Events.OnMarketSnapshotUpdated:removeListener(myFn)
+--
+-- See design-guidelines.md §40 for integration roadmap.
+---------------------------------------------------------------
+
+local LuaEvent = require("Starlit/Events")
+
+POS_Events = {}
+
+---------------------------------------------------------------
+-- Connection & Signal
+---------------------------------------------------------------
+
+--- Fired when the radio link state changes (connected/disconnected).
+--- Payload: { connected = boolean, signalStrength = number }
+POS_Events.OnConnectionStateChanged = LuaEvent.new("POS.OnConnectionStateChanged")
+
+--- Fired when the active band changes (tactical/operations).
+--- Payload: { band = string }
+POS_Events.OnBandChanged = LuaEvent.new("POS.OnBandChanged")
+
+--- Fired when signal strength changes significantly.
+--- Payload: { signalStrength = number, quality = string }
+POS_Events.OnSignalStateChanged = LuaEvent.new("POS.OnSignalStateChanged")
+
+---------------------------------------------------------------
+-- Market & Economy
+---------------------------------------------------------------
+
+--- Fired when a new market observation is ingested (ambient, recon, agent).
+--- Payload: { categoryId = string, sourceType = string, recordId = string }
+POS_Events.OnMarketSnapshotUpdated = LuaEvent.new("POS.OnMarketSnapshotUpdated")
+
+--- Fired when the daily economy tick completes.
+--- Payload: { day = number }
+POS_Events.OnStockTickClosed = LuaEvent.new("POS.OnStockTickClosed")
+
+--- Fired when a buy/sell trade transaction completes.
+--- Payload: { fullType = string, quantity = number, totalPrice = number, isBuy = boolean }
+POS_Events.OnTradeCompleted = LuaEvent.new("POS.OnTradeCompleted")
+
+---------------------------------------------------------------
+-- Intelligence & Discovery
+---------------------------------------------------------------
+
+--- Fired when ambient intel generates new observations.
+--- Payload: { count = number, categories = table }
+POS_Events.OnAmbientIntelReceived = LuaEvent.new("POS.OnAmbientIntelReceived")
+
+--- Fired when a new item is discovered in the trade catalog.
+--- Payload: { fullType = string, categoryId = string }
+POS_Events.OnItemDiscovered = LuaEvent.new("POS.OnItemDiscovered")
+
+---------------------------------------------------------------
+-- Missions & Operations
+---------------------------------------------------------------
+
+--- Fired when a new mission/operation is generated and available.
+--- Payload: { missionId = string, category = string, difficulty = number }
+POS_Events.OnMissionGenerated = LuaEvent.new("POS.OnMissionGenerated")
+
+--- Fired when a mission/operation is completed.
+--- Payload: { missionId = string, success = boolean, rewardCash = number }
+POS_Events.OnMissionCompleted = LuaEvent.new("POS.OnMissionCompleted")
+
+---------------------------------------------------------------
+-- UI & Background
+---------------------------------------------------------------
+
+--- Fired to request a screen refresh (e.g. after data changes).
+--- Payload: { screenId = string? } (nil = refresh all)
+POS_Events.OnScreenInvalidationRequested = LuaEvent.new("POS.OnScreenInvalidationRequested")
+
+--- Fired when a background process starts, progresses, or completes.
+--- Payload: { processId = string, label = string, progress = number (0-100), complete = boolean }
+POS_Events.OnBackgroundProcessChanged = LuaEvent.new("POS.OnBackgroundProcessChanged")

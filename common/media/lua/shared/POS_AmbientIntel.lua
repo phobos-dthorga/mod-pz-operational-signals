@@ -179,6 +179,7 @@ function POS_AmbientIntel.onEveryOneMinute()
     local currentDay = getCurrentDay()
     local zones = getMarketZones()
     local generated = 0
+    local usedCategories = {}
 
     for _ = 1, count do
         -- Pick random category with anti-repetition
@@ -257,6 +258,7 @@ function POS_AmbientIntel.onEveryOneMinute()
             -- Add to database
             PhobosLib.safecall(POS_MarketDatabase.addRecord, record)
             generated = generated + 1
+            usedCategories[#usedCategories + 1] = catId
         end
     end
 
@@ -265,6 +267,14 @@ function POS_AmbientIntel.onEveryOneMinute()
 
     PhobosLib.debug("POS", _TAG,
         "Generated " .. tostring(generated) .. " ambient observations")
+
+    -- Emit event for SignalPanel and other subscribers
+    if generated > 0 and POS_Events and POS_Events.OnAmbientIntelReceived then
+        POS_Events.OnAmbientIntelReceived:trigger({
+            count = generated,
+            categories = usedCategories or {},
+        })
+    end
 
     _lastTickMinute = nowMinutes
 end

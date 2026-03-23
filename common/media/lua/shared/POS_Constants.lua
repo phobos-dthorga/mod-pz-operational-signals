@@ -126,11 +126,19 @@ POS_Constants.POWER_CHECK_INTERVAL   = 60
 -- Terminal UI layout
 ---------------------------------------------------------------
 
--- SIGNAL_PANEL_WIDTH will be set when §9 SignalPanel is implemented
+POS_Constants.UI_SIGNAL_PANEL_WIDTH         = 180
 POS_Constants.UI_CONTEXT_PANEL_WIDTH        = 200
 POS_Constants.UI_CONTEXT_COLLAPSE_THRESHOLD = 900
 POS_Constants.UI_SCREEN_PADDING             = 8
 POS_Constants.UI_PANEL_GAP                  = 4
+
+---------------------------------------------------------------
+-- Signal feed limits
+---------------------------------------------------------------
+
+POS_Constants.SIGNAL_FEED_MAX_ENTRIES   = 20
+POS_Constants.ALERT_FEED_MAX_ENTRIES    = 10
+POS_Constants.PROCESS_FEED_MAX_ENTRIES  = 5
 
 ---------------------------------------------------------------
 -- Terminal frame geometry (telnet-style header + status bar)

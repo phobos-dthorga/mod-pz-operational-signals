@@ -135,6 +135,11 @@ function POS_EconomyTick.processDayTick()
     end
 
     PhobosLib.debug("POS", _TAG, "[EconomyTick] Day " .. tostring(currentDay) .. " complete")
+
+    -- Emit event for SignalPanel and other subscribers
+    if POS_Events and POS_Events.OnStockTickClosed then
+        POS_Events.OnStockTickClosed:trigger({ day = currentDay })
+    end
 end
 
 ---------------------------------------------------------------
