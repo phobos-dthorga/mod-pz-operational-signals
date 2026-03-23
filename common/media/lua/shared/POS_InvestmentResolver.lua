@@ -53,11 +53,7 @@ local PAYOUT_KEY_PREFIX = "POS_PendingPayouts_"
 --- Get the pending resolutions array from world modData.
 ---@return table Array of pending investment records
 local function getPendingResolutions()
-    local gmd = ModData.getOrCreate(PENDING_KEY)
-    if not gmd.entries then
-        gmd.entries = {}
-    end
-    return gmd.entries
+    return PhobosLib.getWorldModDataTable(PENDING_KEY, "entries")
 end
 
 --- Get the pending payouts array for a specific player.
@@ -65,11 +61,7 @@ end
 ---@return table Array of payout records
 local function getPendingPayouts(username)
     local key = PAYOUT_KEY_PREFIX .. username
-    local gmd = ModData.getOrCreate(key)
-    if not gmd.entries then
-        gmd.entries = {}
-    end
-    return gmd.entries
+    return PhobosLib.getWorldModDataTable(key, "entries")
 end
 
 ---------------------------------------------------------------
@@ -189,10 +181,10 @@ function POS_InvestmentResolver.deliverPendingPayouts(player)
     local username = POS_PlayerFileStore.sanitiseUsername(player:getUsername())
 
     local key = PAYOUT_KEY_PREFIX .. username
-    local gmd = ModData.getOrCreate(key)
-    if not gmd.entries or #gmd.entries == 0 then return end
+    local entries = PhobosLib.getWorldModDataTable(key, "entries")
+    if not entries or #entries == 0 then return end
 
-    for _, payout in ipairs(gmd.entries) do
+    for _, payout in ipairs(entries) do
         sendServerCommand(player, POS_Constants.CMD_MODULE, POS_Constants.CMD_INVESTMENT_RESOLVED, {
             investmentId = payout.investmentId,
             status = payout.status,

@@ -34,39 +34,39 @@ local _TAG = "[POS:WorldState]"
 ---------------------------------------------------------------
 
 function POS_WorldState.getWorld()
-    return ModData.getOrCreate(POS_Constants.WMD_WORLD)
+    return PhobosLib.getWorldModData(POS_Constants.WMD_WORLD)
 end
 
 function POS_WorldState.getExchange()
-    return ModData.getOrCreate(POS_Constants.WMD_EXCHANGE)
+    return PhobosLib.getWorldModData(POS_Constants.WMD_EXCHANGE)
 end
 
 function POS_WorldState.getWholesalers()
-    return ModData.getOrCreate(POS_Constants.WMD_WHOLESALERS)
+    return PhobosLib.getWorldModData(POS_Constants.WMD_WHOLESALERS)
 end
 
 function POS_WorldState.getMarketZones()
-    return ModData.getOrCreate(POS_Constants.WMD_MARKET_ZONES)
+    return PhobosLib.getWorldModData(POS_Constants.WMD_MARKET_ZONES)
 end
 
 function POS_WorldState.getRumours()
-    return ModData.getOrCreate(POS_Constants.WMD_RUMOURS)
+    return PhobosLib.getWorldModData(POS_Constants.WMD_RUMOURS)
 end
 
 function POS_WorldState.getMeta()
-    return ModData.getOrCreate(POS_Constants.WMD_META)
+    return PhobosLib.getWorldModData(POS_Constants.WMD_META)
 end
 
 function POS_WorldState.getBuildings()
-    return ModData.getOrCreate(POS_Constants.WMD_BUILDINGS)
+    return PhobosLib.getWorldModData(POS_Constants.WMD_BUILDINGS)
 end
 
 function POS_WorldState.getMailboxes()
-    return ModData.getOrCreate(POS_Constants.WMD_MAILBOXES)
+    return PhobosLib.getWorldModData(POS_Constants.WMD_MAILBOXES)
 end
 
 function POS_WorldState.getMarketData()
-    return ModData.getOrCreate(POS_Constants.WMD_MARKET_DATA)
+    return PhobosLib.getWorldModData(POS_Constants.WMD_MARKET_DATA)
 end
 
 ---------------------------------------------------------------

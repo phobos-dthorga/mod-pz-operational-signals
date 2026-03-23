@@ -102,7 +102,7 @@ function POS_SatelliteService.isCalibrated(sq)
 
     -- Calibration stored in world modData (shared between players)
     local ok, val = PhobosLib.safecall(function()
-        return ModData.getOrCreate("POS_Satellite")[key]
+        return PhobosLib.getWorldModData("POS_Satellite")[key]
     end)
     return ok and val == true
 end
@@ -115,7 +115,7 @@ function POS_SatelliteService.setCalibrated(sq, calibrated)
     if not key then return end
 
     PhobosLib.safecall(function()
-        ModData.getOrCreate("POS_Satellite")[key] = calibrated
+        PhobosLib.getWorldModData("POS_Satellite")[key] = calibrated
     end)
 end
 
@@ -373,7 +373,7 @@ function POS_SatelliteService.calibrate(player, sq)
     local calKey = POS_SatelliteService.getCalibrationKey(sq)
     if calKey then
         PhobosLib.safecall(function()
-            local satData = ModData.getOrCreate("POS_Satellite")
+            local satData = PhobosLib.getWorldModData("POS_Satellite")
             satData[calKey .. "_lastPower"] = getGameTime():getWorldAgeHours()
         end)
     end
@@ -497,7 +497,7 @@ function POS_SatelliteService.getWiringData(sq)
     if not sq then return nil end
     local buildingKey = getBuildingKey(sq)
     if not buildingKey then return nil end
-    local satData = ModData.getOrCreate("POS_Satellite")
+    local satData = PhobosLib.getWorldModData("POS_Satellite")
     local prefix = POS_Constants.SATELLITE_WIRING_KEY_PREFIX .. buildingKey .. "_"
     local targetX = satData[prefix .. "targetX"]
     if not targetX then return nil end
@@ -515,7 +515,7 @@ function POS_SatelliteService.setWiringData(sq, data)
     if not sq or not data then return end
     local buildingKey = getBuildingKey(sq)
     if not buildingKey then return end
-    local satData = ModData.getOrCreate("POS_Satellite")
+    local satData = PhobosLib.getWorldModData("POS_Satellite")
     local prefix = POS_Constants.SATELLITE_WIRING_KEY_PREFIX .. buildingKey .. "_"
     satData[prefix .. "targetX"]    = data.targetX
     satData[prefix .. "targetY"]    = data.targetY
@@ -529,7 +529,7 @@ function POS_SatelliteService.clearWiringData(sq)
     if not sq then return end
     local buildingKey = getBuildingKey(sq)
     if not buildingKey then return end
-    local satData = ModData.getOrCreate("POS_Satellite")
+    local satData = PhobosLib.getWorldModData("POS_Satellite")
     local prefix = POS_Constants.SATELLITE_WIRING_KEY_PREFIX .. buildingKey .. "_"
     satData[prefix .. "targetX"]    = nil
     satData[prefix .. "targetY"]    = nil
@@ -675,7 +675,7 @@ end
 --- Check all known calibrated dishes and decalibrate if power lost.
 --- Called periodically (e.g., from POS_EconomyTick).
 function POS_SatelliteService.checkDecalibration()
-    local ok, satData = PhobosLib.safecall(function() return ModData.getOrCreate("POS_Satellite") end)
+    local ok, satData = PhobosLib.safecall(function() return PhobosLib.getWorldModData("POS_Satellite") end)
     if not ok or not satData then return end
 
     -- This would iterate world modData entries to find calibrated dishes

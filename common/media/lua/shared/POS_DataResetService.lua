@@ -96,7 +96,7 @@ function POS_DataResetService.resetWorldData()
     local cleared = 0
     local worldKeys = getAllWorldKeys()
     for _, key in ipairs(worldKeys) do
-        local data = ModData.getOrCreate(key)
+        local data = PhobosLib.getWorldModData(key)
         if data then
             -- Wipe all fields from the table (ModData tables can't be nilled)
             for field in pairs(data) do
