@@ -792,13 +792,14 @@ Per the design philosophy (terminal, not dashboard):
 
 ### 9.9 Vertical Design Awareness
 
-The CRT bezel consumes 13% top + 30% bottom = 43% of vertical space.
-At 1170px default, usable height is ~667px (~33 lines at 20px lineH).
+The telnet-style frame consumes a 24px header bar + 24px status bar = 48px
+of vertical space (~4% at default 1170px). Usable content height is ~1122px
+(~56 lines at 20px lineH).
 
 - Pagination page sizes should adapt to available vertical space using
   `PhobosLib_Pagination`'s `maxHeight` option.
 - Headers + footers + breadcrumbs should not exceed ~6 lines combined.
-- Screens should test at the minimum window height (780px, ~22 usable lines).
+- Screens should test at the minimum window height (780px, ~36 usable lines).
 
 ---
 
@@ -2836,7 +2837,7 @@ implementation is `createTabbedView()` from `POS_TerminalWidgets`.
 Screens with variable-height content that may exceed the terminal panel must
 wrap their content sections in `PhobosLib.createScrollPanel()`. The header and
 footer (Back button) stay **outside** the scroll area on the original
-`contentPanel`. This prevents content from overflowing the CRT bezel.
+`contentPanel`. This prevents content from overflowing the content area.
 
 ```lua
 -- After header
@@ -3032,3 +3033,46 @@ The screen is only visible when **either**:
 | Clearing ModData on non-authority | Desync in multiplayer |
 | Hardcoding ModData key strings | Drift from POS_Constants definitions |
 | Showing in production builds | Confuses non-developer players |
+
+---
+
+## 38. Boot Sequence Customisation
+
+### 38.1 Architecture
+
+The terminal boot sequence is driven by definition files loaded through
+the PhobosLib data-pack architecture (schema + registry + loader).
+
+- **Schema**: `POS_BootSequenceSchema.lua` — validates `id`, `systemName`,
+  `durationSeconds`, `postBootPauseSec`, `lines[]`
+- **Default definition**: `Definitions/BootSequence/default.lua` — telnet-style
+  connection handshake
+- **Loader**: `POS_BootSequence.lua` — registry with `allowOverwrite = true`
+- **Template**: `Definitions/BootSequence/_template.lua` for custom definitions
+
+### 38.2 Token System
+
+Boot lines support runtime token replacement:
+
+| Token | Resolves To |
+|-------|-------------|
+| `%FREQ%` | Connected frequency in MHz (e.g. "91.5") |
+| `%BAND%` | Band name ("Operations" or "Tactical") |
+| `%PLAYER%` | Player display name |
+| `%SIGNAL%` | Signal strength percentage (e.g. "64%") |
+| `%RADIO%` | Connected radio display name |
+
+### 38.3 MP Server Override
+
+Servers and addon mods override the boot sequence by registering a
+definition with `id = "default"`. The registry uses `allowOverwrite = true`,
+so the last registration wins. Addon mods should use `OnGameStart` to
+register after the built-in default has loaded.
+
+### 38.4 Anti-Patterns
+
+| Anti-Pattern | Why It's Wrong |
+|---|---|
+| Hardcoding boot text in POS_TerminalUI | Not customisable by servers/addons |
+| Token resolution at file-load time | Connection info not available yet |
+| Fixed boot duration | Different text lengths need different timing |
