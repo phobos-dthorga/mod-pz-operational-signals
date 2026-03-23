@@ -132,10 +132,10 @@ function screen.create(contentPanel, params, _terminal)
     for _, a in ipairs(allAgents) do
         local archMatch = _activeArchetype == "all" or a.agentArchetype == _activeArchetype
         local statusMatch = true
-        if _activeStatus == "failed" then
-            statusMatch = (a.state == "failed")
-        elseif _activeStatus == "completed" then
-            statusMatch = (a.state == "completed")
+        if _activeStatus == POS_Constants.AGENT_STATE_FAILED then
+            statusMatch = (a.state == POS_Constants.AGENT_STATE_FAILED)
+        elseif _activeStatus == POS_Constants.AGENT_STATE_COMPLETED then
+            statusMatch = (a.state == POS_Constants.AGENT_STATE_COMPLETED)
         end
         if archMatch and statusMatch then
             agents[#agents + 1] = a
@@ -150,7 +150,7 @@ function screen.create(contentPanel, params, _terminal)
         local currentPage = (params and params.page) or 1
         ctx.y = PhobosLib_Pagination.create(ctx.panel, {
             items = agents,
-            pageSize = 4,
+            pageSize = POS_Constants.FREE_AGENT_PAGE_SIZE,
             currentPage = currentPage,
             x = 0, y = ctx.y,
             width = ctx.panel:getWidth(),
@@ -181,8 +181,8 @@ function screen.create(contentPanel, params, _terminal)
                 local day = getGameTime() and getGameTime():getNightsSurvived() or 0
                 local elapsed = day - agent.startDay
                 local eta = math.max(0, agent.estimatedDays - elapsed)
-                local riskLabel = agent.riskLevel >= 0.20 and "HIGH"
-                    or (agent.riskLevel >= 0.10 and "MODERATE" or "LOW")
+                local riskLabel = agent.riskLevel >= POS_Constants.RISK_THRESHOLD_HIGH and "HIGH"
+                    or (agent.riskLevel >= POS_Constants.RISK_THRESHOLD_MODERATE and "MODERATE" or "LOW")
                 W.createLabel(parent, rx + 8, ry,
                     "ETA: ~" .. tostring(eta) .. "d | Risk: " .. riskLabel
                     .. " | Commission: " .. tostring(math.floor(agent.commissionRate * 100)) .. "%",
@@ -190,7 +190,8 @@ function screen.create(contentPanel, params, _terminal)
                 ry = ry + ctx.lineH
 
                 -- Recall button for active agents
-                if agent.state ~= "completed" and agent.state ~= "failed" then
+                if agent.state ~= POS_Constants.AGENT_STATE_COMPLETED
+                        and agent.state ~= POS_Constants.AGENT_STATE_FAILED then
                     local agentId = agent.id
                     W.createButton(parent, rx, ry, rw, ctx.btnH,
                         PhobosLib.safeGetText("UI_POS_FreeAgent_Recall"), nil,
@@ -203,7 +204,9 @@ function screen.create(contentPanel, params, _terminal)
                     ry = ry + 4
                 end
 
-                return ry - (ctx.lineH * 3 + (agent.state ~= "completed" and agent.state ~= "failed" and (ctx.btnH + 4) or 4))
+                local hasRecall = agent.state ~= POS_Constants.AGENT_STATE_COMPLETED
+                    and agent.state ~= POS_Constants.AGENT_STATE_FAILED
+                return ry - (ctx.lineH * 3 + (hasRecall and (ctx.btnH + 4) or 4))
             end,
             onPageChange = function(newPage)
                 POS_ScreenManager.replaceCurrent(screen.id, {

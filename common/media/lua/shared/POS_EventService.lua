@@ -80,7 +80,7 @@ function POS_EventService.fireEvent(eventDef, zoneId, currentDay)
         expiryDay  = currentDay + (eventDef.durationDays or POS_Constants.EVENT_DEFAULT_DURATION_DAYS),
         pressure   = eventDef.pressureEffect or 0,
         categories = eventDef.affectedCategories or {},
-        signalClass = eventDef.signalClass or "soft",
+        signalClass = eventDef.signalClass or POS_Constants.EVENT_DEFAULT_SIGNAL_CLASS,
         displayNameKey = eventDef.displayNameKey or ("UI_POS_Event_" .. (eventDef.id or "Unknown")),
     }
 
@@ -101,9 +101,12 @@ function POS_EventService.fireEvent(eventDef, zoneId, currentDay)
 
     -- Generate rumour
     if POS_RumourGenerator and POS_RumourGenerator.addRumour then
-        local impactHint = eventRecord.pressure > 0 and "shortage" or "surplus"
-        if eventDef.id == "theft_raid" or eventDef.id == "requisition_diversion" then
-            impactHint = "disruption"
+        local impactHint = eventRecord.pressure > 0
+            and POS_Constants.EVENT_IMPACT_SHORTAGE
+            or POS_Constants.EVENT_IMPACT_SURPLUS
+        if eventDef.id == POS_Constants.MARKET_EVENT_THEFT_RAID
+                or eventDef.id == POS_Constants.MARKET_EVENT_REQUISITION then
+            impactHint = POS_Constants.EVENT_IMPACT_DISRUPTION
         end
         POS_RumourGenerator.addRumour({
             eventId        = eventDef.id,

@@ -137,6 +137,39 @@ POS_Constants.UI_SCREEN_PADDING             = 8
 POS_Constants.UI_PANEL_GAP                  = 4
 
 ---------------------------------------------------------------
+-- Event impact hints (Market Event System)
+---------------------------------------------------------------
+
+POS_Constants.EVENT_IMPACT_SHORTAGE   = "shortage"
+POS_Constants.EVENT_IMPACT_SURPLUS    = "surplus"
+POS_Constants.EVENT_IMPACT_DISRUPTION = "disruption"
+POS_Constants.EVENT_DEFAULT_SIGNAL_CLASS = "soft"
+
+---------------------------------------------------------------
+-- Wholesaler operational state labels
+---------------------------------------------------------------
+
+POS_Constants.WHOLESALER_STATE_ACTIVE     = "active"
+POS_Constants.WHOLESALER_STATE_SUSPENDED  = "suspended"
+POS_Constants.WHOLESALER_STATE_BLOCKED    = "blocked"
+POS_Constants.WHOLESALER_STATE_COLLAPSED  = "collapsed"
+POS_Constants.WHOLESALER_STATE_STARTING   = "starting"
+POS_Constants.WHOLESALER_STATE_RECOVERING = "recovering"
+
+---------------------------------------------------------------
+-- Pressure display normalisation
+---------------------------------------------------------------
+
+POS_Constants.PRESSURE_NORM_OFFSET  = 2    -- pressure range -2..+2
+POS_Constants.PRESSURE_NORM_DIVISOR = 4    -- normalise to 0..1
+
+---------------------------------------------------------------
+-- Display layout
+---------------------------------------------------------------
+
+POS_Constants.WHOLESALER_LABEL_MAX_LENGTH = 10
+
+---------------------------------------------------------------
 -- Signal feed limits
 ---------------------------------------------------------------
 
@@ -180,6 +213,40 @@ POS_Constants.SIGNAL_GARBLE_FRAGMENTS  = {
 -- Free Agent System (§46)
 -- Runners, brokers, couriers sent into the wasteland.
 ---------------------------------------------------------------
+
+-- Agent states (state machine)
+POS_Constants.AGENT_STATE_DRAFTED      = "drafted"
+POS_Constants.AGENT_STATE_ASSEMBLING   = "assembling"
+POS_Constants.AGENT_STATE_TRANSIT      = "transit"
+POS_Constants.AGENT_STATE_NEGOTIATION  = "negotiation"
+POS_Constants.AGENT_STATE_SETTLEMENT   = "settlement"
+POS_Constants.AGENT_STATE_COMPLETED    = "completed"
+POS_Constants.AGENT_STATE_FAILED       = "failed"
+POS_Constants.AGENT_STATE_DELAYED      = "delayed"
+POS_Constants.AGENT_STATE_COMPROMISED  = "compromised"
+
+-- Agent archetypes
+POS_Constants.FREE_AGENT_ARCHETYPE_RUNNER    = "runner"
+POS_Constants.FREE_AGENT_ARCHETYPE_BROKER    = "broker"
+POS_Constants.FREE_AGENT_ARCHETYPE_COURIER   = "courier"
+POS_Constants.FREE_AGENT_ARCHETYPE_SMUGGLER  = "smuggler"
+POS_Constants.FREE_AGENT_ARCHETYPE_CONTACT   = "wholesaler_contact"
+
+-- State transition probabilities
+POS_Constants.FREE_AGENT_DELAY_VS_COMPROMISE = 0.50
+POS_Constants.FREE_AGENT_DELAY_RESOLVE_CHANCE = 0.60
+POS_Constants.FREE_AGENT_COMPROMISE_FAIL_CHANCE = 0.30
+POS_Constants.FREE_AGENT_COMPROMISE_RECOVER_CHANCE = 0.40
+
+-- Risk display thresholds
+POS_Constants.RISK_THRESHOLD_HIGH     = 0.20
+POS_Constants.RISK_THRESHOLD_MODERATE = 0.10
+POS_Constants.BETRAYAL_THRESHOLD_HIGH     = 0.15
+POS_Constants.BETRAYAL_THRESHOLD_MODERATE = 0.05
+POS_Constants.BETRAYAL_COLOUR_THRESHOLD   = 0.10
+
+-- Display
+POS_Constants.FREE_AGENT_PAGE_SIZE = 4
 
 POS_Constants.FREE_AGENT_MAX_ACTIVE            = 3
 POS_Constants.FREE_AGENT_ADVANCE_CHANCE        = 0.55   -- chance to advance per tick

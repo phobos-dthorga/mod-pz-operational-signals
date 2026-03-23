@@ -332,10 +332,11 @@ screen.getContextData = function(_params)
 
     -- Risk indicator (betrayal chance)
     if contract.betrayalChance and contract.betrayalChance > 0 then
-        local riskLabel = contract.betrayalChance >= 0.15 and "HIGH"
-            or (contract.betrayalChance >= 0.05 and "MODERATE" or "LOW")
+        local riskLabel = contract.betrayalChance >= POS_Constants.BETRAYAL_THRESHOLD_HIGH and "HIGH"
+            or (contract.betrayalChance >= POS_Constants.BETRAYAL_THRESHOLD_MODERATE and "MODERATE" or "LOW")
         table.insert(data, { type = "kv", key = "UI_POS_Contract_Risk",
-            value = riskLabel, colour = contract.betrayalChance >= 0.10 and "error" or "warning" })
+            value = riskLabel,
+            colour = contract.betrayalChance >= POS_Constants.BETRAYAL_COLOUR_THRESHOLD and "error" or "warning" })
     end
 
     -- NOTE: No SIGINT gate display. Per §21, SIGINT affects data quality

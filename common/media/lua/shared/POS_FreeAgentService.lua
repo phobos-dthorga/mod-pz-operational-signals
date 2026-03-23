@@ -43,16 +43,17 @@ local _TAG = "[POS:FreeAgent]"
 -- State constants (no magic strings)
 ---------------------------------------------------------------
 
+-- Use constants from POS_Constants — no magic strings
 local STATE = {
-    DRAFTED      = "drafted",
-    ASSEMBLING   = "assembling",
-    TRANSIT      = "transit",
-    NEGOTIATION  = "negotiation",
-    SETTLEMENT   = "settlement",
-    COMPLETED    = "completed",
-    FAILED       = "failed",
-    DELAYED      = "delayed",
-    COMPROMISED  = "compromised",
+    DRAFTED      = POS_Constants.AGENT_STATE_DRAFTED,
+    ASSEMBLING   = POS_Constants.AGENT_STATE_ASSEMBLING,
+    TRANSIT      = POS_Constants.AGENT_STATE_TRANSIT,
+    NEGOTIATION  = POS_Constants.AGENT_STATE_NEGOTIATION,
+    SETTLEMENT   = POS_Constants.AGENT_STATE_SETTLEMENT,
+    COMPLETED    = POS_Constants.AGENT_STATE_COMPLETED,
+    FAILED       = POS_Constants.AGENT_STATE_FAILED,
+    DELAYED      = POS_Constants.AGENT_STATE_DELAYED,
+    COMPROMISED  = POS_Constants.AGENT_STATE_COMPROMISED,
 }
 
 ---------------------------------------------------------------
@@ -117,7 +118,7 @@ local function resolveNextState(agent, currentDay)
     elseif agent.state == STATE.TRANSIT then
         -- Risk: delay or compromise
         if PhobosLib.randFloat(0, 1) < riskChance then
-            return (PhobosLib.randFloat(0, 1) < 0.5)
+            return (PhobosLib.randFloat(0, 1) < POS_Constants.FREE_AGENT_DELAY_VS_COMPROMISE)
                 and STATE.DELAYED or STATE.COMPROMISED
         end
         if PhobosLib.randFloat(0, 1) < advanceChance then
@@ -126,16 +127,16 @@ local function resolveNextState(agent, currentDay)
 
     elseif agent.state == STATE.DELAYED then
         -- Delays resolve after 1-2 days
-        if elapsed >= 2 or PhobosLib.randFloat(0, 1) < 0.6 then
+        if elapsed >= 2 or PhobosLib.randFloat(0, 1) < POS_Constants.FREE_AGENT_DELAY_RESOLVE_CHANCE then
             return STATE.TRANSIT  -- resume transit
         end
 
     elseif agent.state == STATE.COMPROMISED then
         -- Compromised agents have a chance to recover or fail
-        if PhobosLib.randFloat(0, 1) < 0.3 then
+        if PhobosLib.randFloat(0, 1) < POS_Constants.FREE_AGENT_COMPROMISE_FAIL_CHANCE then
             return STATE.FAILED  -- lost the cargo, lost the agent
         end
-        if PhobosLib.randFloat(0, 1) < 0.4 then
+        if PhobosLib.randFloat(0, 1) < POS_Constants.FREE_AGENT_COMPROMISE_RECOVER_CHANCE then
             return STATE.TRANSIT  -- recovered, continues
         end
 

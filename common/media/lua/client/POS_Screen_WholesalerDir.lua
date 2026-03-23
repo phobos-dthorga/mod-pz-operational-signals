@@ -95,7 +95,8 @@ function screen.create(contentPanel, params, _terminal)
             if zDef and zDef.name then zLabel = zDef.name end
         end
         -- Truncate long zone names
-        if #zLabel > 12 then zLabel = string.sub(zLabel, 1, 10) .. ".." end
+        local maxLen = POS_Constants.WHOLESALER_LABEL_MAX_LENGTH
+        if #zLabel > maxLen + 2 then zLabel = string.sub(zLabel, 1, maxLen) .. ".." end
 
         if _activeZone == zoneId then
             W.createLabel(ctx.panel, zoneTabX + 4, ctx.y + 2, "> " .. zLabel, C.textBright)

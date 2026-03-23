@@ -41,7 +41,9 @@ screen.requires = { connected = true }
 
 --- Build a text-based pressure bar: [########----] 65%
 local function buildPressureBar(pressure, maxWidth)
-    local pct = PhobosLib.clamp((pressure + 2) / 4, 0, 1)  -- normalise -2..+2 to 0..1
+    local pct = PhobosLib.clamp(
+        (pressure + POS_Constants.PRESSURE_NORM_OFFSET)
+        / POS_Constants.PRESSURE_NORM_DIVISOR, 0, 1)
     local filled = math.floor(pct * maxWidth)
     local empty = maxWidth - filled
     return "[" .. string.rep("#", filled) .. string.rep("-", empty) .. "] "
