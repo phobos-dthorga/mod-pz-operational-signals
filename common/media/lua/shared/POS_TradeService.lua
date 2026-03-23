@@ -391,6 +391,15 @@ function POS_TradeService.computeBulkDiscount(quantity)
     return 1.0
 end
 
+--- Get the player's current money balance.
+---@param player IsoPlayer|nil  Defaults to getPlayer()
+---@return number  Balance in dollars
+function POS_TradeService.getPlayerBalance(player)
+    player = player or getPlayer()
+    if not player then return 0 end
+    return PhobosLib.countPlayerMoney(player) or 0
+end
+
 
 --- Map wholesaler stockLevel to a translation key for UI display.
 ---@param wholesaler table
