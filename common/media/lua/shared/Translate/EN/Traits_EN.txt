@@ -1,0 +1,14 @@
+Traits_EN = {
+    Trait_POS_AnalyticalMind = "Analytical Mind",
+    Trait_POS_AnalyticalMind_desc = "Sharp, systematic thinker. +1 SIGINT starting level, +25% SIGINT XP rate.",
+    Trait_POS_RadioHobbyist = "Radio Hobbyist",
+    Trait_POS_RadioHobbyist_desc = "Pre-apocalypse ham radio enthusiast. +1 SIGINT starting level, +20% scan radius.",
+    Trait_POS_SystemsThinker = "Systems Thinker",
+    Trait_POS_SystemsThinker_desc = "Sees connections others miss. Cross-correlation unlocks earlier (SIGINT 4).",
+    Trait_POS_Impatient = "Impatient",
+    Trait_POS_Impatient_desc = "Rushes through analysis. Terminal analysis takes 30% longer.",
+    Trait_POS_DisorganisedThinker = "Disorganised Thinker",
+    Trait_POS_DisorganisedThinker_desc = "Scattered focus. -25% SIGINT XP, +20% noise in analysis.",
+    Trait_POS_SignalBlindness = "Signal Blindness",
+    Trait_POS_SignalBlindness_desc = "Fundamentally tone-deaf to radio patterns. SIGINT capped at Level 5.",
+}

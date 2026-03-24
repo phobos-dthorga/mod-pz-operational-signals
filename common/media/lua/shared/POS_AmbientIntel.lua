@@ -54,20 +54,11 @@ local STOCK_BUCKETS = { "low", "medium", "high" }
 ---------------------------------------------------------------
 
 --- Check whether the player is connected to POSnet.
---- Uses safecall since POS_ConnectionManager is client-only.
---- Returns true if connected, or if ConnectionManager is unavailable
---- (server context — allow generation).
+--- Delegates to PhobosLib.isTerminalConnected() which checks
+--- POS_ConnectionManager state (shared) and POS_TerminalUI
+--- instance (client). Returns false when no terminal is nearby.
 local function isPlayerConnected()
-    local ok, connMgr = PhobosLib.safecall(require, "POS_ConnectionManager")
-    if not ok or not connMgr then
-        -- ConnectionManager unavailable (server context) — allow generation
-        return true
-    end
-    if type(connMgr.isConnected) == "function" then
-        local ok2, connected = PhobosLib.safecall(connMgr.isConnected)
-        if ok2 then return connected end
-    end
-    return false
+    return PhobosLib.isTerminalConnected()
 end
 
 --- Pick a random element from an array.
@@ -146,11 +137,48 @@ end
 
 --- Initialise the ambient intel system.
 --- Called from OnGameStart. Uses PhobosLib.lazyInit() guard.
+--- Whether the EveryOneMinute hook is currently registered.
+local _tickRegistered = false
+
+--- Register the EveryOneMinute tick (called when terminal connects).
+local function registerTick()
+    if _tickRegistered then return end
+    _tickRegistered = true
+    Events.EveryOneMinute.Add(POS_AmbientIntel.onEveryOneMinute)
+    PhobosLib.debug("POS", _TAG, "Ambient tick registered (connected)")
+end
+
+--- Unregister the EveryOneMinute tick (called when terminal disconnects).
+local function unregisterTick()
+    if not _tickRegistered then return end
+    _tickRegistered = false
+    Events.EveryOneMinute.Remove(POS_AmbientIntel.onEveryOneMinute)
+    PhobosLib.debug("POS", _TAG, "Ambient tick unregistered (disconnected)")
+end
+
 function POS_AmbientIntel.init()
     if _initialised then return end
     _initialised = true
-    Events.EveryOneMinute.Add(POS_AmbientIntel.onEveryOneMinute)
-    PhobosLib.debug("POS", _TAG, "Ambient intel system initialised")
+
+    -- Event-driven: register/unregister EveryOneMinute based on
+    -- connection state via Starlit POS_Events.OnConnectionStateChanged.
+    -- Zero wasted cycles when disconnected.
+    if POS_Events and POS_Events.OnConnectionStateChanged then
+        POS_Events.OnConnectionStateChanged:addListener(function(data)
+            if data and data.connected then
+                registerTick()
+            else
+                unregisterTick()
+            end
+        end)
+    end
+
+    -- If already connected at init time (e.g. mod reload), register now
+    if isPlayerConnected() then
+        registerTick()
+    end
+
+    PhobosLib.debug("POS", _TAG, "Ambient intel system initialised (event-driven)")
 end
 
 --- EveryOneMinute tick handler.
