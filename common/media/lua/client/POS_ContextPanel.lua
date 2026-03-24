@@ -44,22 +44,12 @@ function POS_ContextPanel.render(contextPanel, terminal)
     POS_TerminalWidgets.clearPanel(contextPanel)
 
     local screen = POS_ScreenManager.screens[POS_ScreenManager.currentScreen]
-    if not screen or not screen.getContextData then
-        PhobosLib.debug("POS", "CtxPanel", "no getContextData for screen")
-        return
-    end
+    if not screen or not screen.getContextData then return end
 
     local data = nil
     local ok, result = PhobosLib.safecall(screen.getContextData, POS_ScreenManager.currentParams)
     if ok then data = result end
-    if not data or #data == 0 then
-        PhobosLib.debug("POS", "CtxPanel",
-            "empty data (ok=" .. tostring(ok) .. " #data=" .. tostring(data and #data or "nil") .. ")")
-        return
-    end
-    PhobosLib.debug("POS", "CtxPanel",
-        "rendering " .. tostring(#data) .. " items, panel visible=" .. tostring(contextPanel:isVisible())
-        .. " w=" .. tostring(contextPanel:getWidth()))
+    if not data or #data == 0 then return end
 
     local W = POS_TerminalWidgets
     local C = W.COLOURS
