@@ -160,6 +160,9 @@ POS_Constants.HEADER_SEPARATOR_WIDTH       = 50
 POS_Constants.CONFIDENCE_HIGH_THRESHOLD    = 2.5
 POS_Constants.CONFIDENCE_MEDIUM_THRESHOLD  = 1.5
 POS_Constants.SIGNAL_CLASS_HARD            = "hard"
+POS_Constants.CONTACTS_ZONE_OFFSET         = 0.55
+POS_Constants.SIGINT_HIGH_VISIBILITY_LEVEL = 7
+POS_Constants.PAGE_SIZE_WHOLESALER_DIR     = 5
 
 ---------------------------------------------------------------
 -- Event impact hints (Market Event System)

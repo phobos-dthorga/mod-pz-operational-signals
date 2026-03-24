@@ -1159,5 +1159,6 @@
     "UI_POS_MarketOverview_TabExchange": "Exchange",
     "UI_POS_Exchange_Disabled": "Exchange system is disabled in sandbox settings.",
     "UI_POS_Contacts_TabContacts": "Contacts",
-    "UI_POS_Contacts_TabDirectory": "Directory"
+    "UI_POS_Contacts_TabDirectory": "Directory",
+    "UI_POS_WholesalerDir_GeneralSupply": "General supply"
 }

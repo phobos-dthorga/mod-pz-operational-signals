@@ -16,12 +16,17 @@
 
 ---------------------------------------------------------------
 -- POS_Screen_Contacts.lua
--- Consolidated contacts screen showing all known wholesaler
--- contacts with state badges and trade entry points.
--- Replaces: Traders + WholesalerDir + TradeTerminal (entry)
+-- 2-tab contacts/directory screen:
+--   Tab 1 "Contacts" — flat wholesaler list with trade buttons
+--   Tab 2 "Directory" — zone × state dual-tab filtered view
+--     (absorbed from POS_Screen_WholesalerDir.lua)
+--
+-- Uses PhobosLib_DualTab for all tab rendering.
+-- Subscribes to POS_Events.OnStockTickClosed for reactive refresh.
 ---------------------------------------------------------------
 
 require "PhobosLib"
+require "PhobosLib_DualTab"
 require "POS_Constants"
 require "POS_ScreenManager"
 require "POS_TerminalWidgets"
@@ -34,19 +39,14 @@ require "POS_API"
 
 ---------------------------------------------------------------
 
-local screen = {}
-screen.id = POS_Constants.SCREEN_CONTACTS
-screen.menuPath = {"pos.markets"}
-screen.titleKey = "UI_POS_Contacts_Title"
-screen.sortOrder = 15
+local _activeTab = "contacts"  -- "contacts" | "directory"
+local _dirZone = nil           -- nil = all zones (directory tab)
+local _dirState = "all"        -- "all" | "active" | "suspended" | "collapsed"
 
--- NOTE: No SIGINT screen gate. Per §21, SIGINT affects data quality
--- (confidence, noise), never screen access. All screens navigable
--- from SIGINT 0. Low-SIGINT players see noisier contact data.
-
----------------------------------------------------------------
--- State colour map for wholesaler operational state badges
----------------------------------------------------------------
+local TOP_TABS = {
+    { id = "contacts",  labelKey = "UI_POS_Contacts_TabContacts" },
+    { id = "directory", labelKey = "UI_POS_Contacts_TabDirectory" },
+}
 
 local STATE_COLOUR_MAP = {
     [POS_Constants.WHOLESALER_STATE_STABLE]      = "success",
@@ -57,9 +57,17 @@ local STATE_COLOUR_MAP = {
     [POS_Constants.WHOLESALER_STATE_COLLAPSING]    = "error",
 }
 
---- Check whether a wholesaler state blocks ALL trade (both buy and sell).
----@param state string|nil  Wholesaler operational state
----@return boolean          True if trade is fully blocked
+local DIR_STATE_BADGES = {
+    active     = { key = "UI_POS_Wholesaler_Active",    colour = "success" },
+    suspended  = { key = "UI_POS_Wholesaler_Suspended", colour = "warning" },
+    blocked    = { key = "UI_POS_Wholesaler_Blocked",   colour = "error" },
+    collapsed  = { key = "UI_POS_Wholesaler_Collapsed", colour = "dim" },
+    starting   = { key = "UI_POS_Wholesaler_Starting",  colour = "textBright" },
+    recovering = { key = "UI_POS_Wholesaler_Recovering", colour = "warning" },
+}
+
+local DIR_STATE_FILTERS = { "all", "active", "suspended", "collapsed" }
+
 local function _isTradeFullyBlocked(state)
     if not state then return true end
     local buyBlocked = POS_Constants.TRADE_BLOCKED_BUY_STATES
@@ -70,55 +78,47 @@ local function _isTradeFullyBlocked(state)
 end
 
 ---------------------------------------------------------------
--- Screen
+
+local screen = {}
+screen.id = POS_Constants.SCREEN_CONTACTS
+screen.menuPath = {"pos.markets"}
+screen.titleKey = "UI_POS_Contacts_Title"
+screen.sortOrder = 15
+
+---------------------------------------------------------------
+-- Tab 1: Contacts (flat list with trade buttons)
 ---------------------------------------------------------------
 
-function screen.create(contentPanel, _params, _terminal)
+local function renderContacts(ctx, params)
     local W = POS_TerminalWidgets
     local C = W.COLOURS
-    local ctx = W.initLayout(contentPanel)
 
-    -- Header
-    W.drawHeader(ctx, "UI_POS_Contacts_Title")
-
-    -- Current player SIGINT level
     local player = getSpecificPlayer(0)
-    local sigintLevel = 0
-    if player then
-        sigintLevel = POS_SIGINTSkill.getLevel(player)
-    end
+    local sigintLevel = player and POS_SIGINTSkill.getLevel(player) or 0
 
-    -- Fetch wholesalers (nil-safe)
     local wholesalers = POS_WorldState.getWholesalers()
     local visThreshold = POS_Constants.WHOLESALER_VISIBLE_THRESHOLD
 
-    -- Zone registry for display names
-    local zoneRegistry = nil
-    if POS_MarketSimulation and POS_MarketSimulation.getZoneRegistry then
-        zoneRegistry = POS_MarketSimulation.getZoneRegistry()
-    end
+    local zoneRegistry = POS_MarketSimulation
+        and POS_MarketSimulation.getZoneRegistry
+        and POS_MarketSimulation.getZoneRegistry()
 
-    -- Build list of contacts
     local entries = {}
     if wholesalers then
         for wId, w in pairs(wholesalers) do
             if type(w) == "table" then
                 local visible = (w.visibility or 0) > visThreshold
-                local highSigint = sigintLevel >= 7
-                table.insert(entries, {
-                    id = wId,
-                    wholesaler = w,
+                local highSigint = sigintLevel >= POS_Constants.SIGINT_HIGH_VISIBILITY_LEVEL
+                entries[#entries + 1] = {
+                    id = wId, wholesaler = w,
                     isRevealed = visible or highSigint,
-                })
+                }
             end
         end
     end
 
-    -- Sort: revealed first, then by ID for stable ordering
     table.sort(entries, function(a, b)
-        if a.isRevealed ~= b.isRevealed then
-            return a.isRevealed
-        end
+        if a.isRevealed ~= b.isRevealed then return a.isRevealed end
         return (a.id or "") < (b.id or "")
     end)
 
@@ -126,105 +126,230 @@ function screen.create(contentPanel, _params, _terminal)
         W.createLabel(ctx.panel, 8, ctx.y,
             W.safeGetText("UI_POS_Contacts_NoContacts"), C.dim)
         ctx.y = ctx.y + ctx.lineH
+        return
+    end
+
+    local currentPage = (params and params.contactPage) or 1
+    ctx.y = PhobosLib_Pagination.create(ctx.panel, {
+        items = entries,
+        pageSize = POS_Constants.PAGE_SIZE_CONTACTS,
+        currentPage = currentPage,
+        x = ctx.btnX, y = ctx.y, width = ctx.btnW,
+        colours = { text = C.text, dim = C.dim, bgDark = C.bgDark,
+                    bgHover = C.bgHover, border = C.border },
+        renderItem = function(parent, rx, ry, rw, entry, _idx)
+            local itemY = 0
+            local w = entry.wholesaler
+
+            local name = entry.isRevealed
+                and (W.safeGetText(w.nameKey or w.displayNameKey or "") or w.name or entry.id)
+                or W.safeGetText("UI_POS_Contacts_UnknownContact")
+
+            local zoneId = w.regionId or w.zone or "???"
+            local zoneName = zoneRegistry
+                and PhobosLib.getRegistryDisplayName(zoneRegistry, zoneId, zoneId)
+                or zoneId
+
+            local stateBadge = W.safeGetText("UI_POS_Contacts_StateUnknown")
+            local stateColourKey = "dim"
+            if w.state then
+                if POS_WholesalerService and POS_WholesalerService.getStateDisplayName then
+                    stateBadge = POS_WholesalerService.getStateDisplayName(w.state)
+                end
+                stateColourKey = STATE_COLOUR_MAP[w.state] or "dim"
+            end
+
+            W.createLabel(parent, rx, ry + itemY, name, C.text)
+            W.createLabel(parent, rx + rw * POS_Constants.CONTACTS_ZONE_OFFSET, ry + itemY, zoneName, C.dim)
+            itemY = itemY + ctx.lineH
+
+            PhobosLib.createStatusBadge(parent, rx + 8, ry + itemY, stateBadge, C[stateColourKey] or C.dim)
+            itemY = itemY + ctx.lineH
+
+            local wsId = entry.id
+            if _isTradeFullyBlocked(w.state) then
+                local btn = W.createButton(parent, rx, ry + itemY, rw, ctx.btnH,
+                    W.safeGetText("UI_POS_Contacts_Blocked"), nil, nil)
+                if btn and btn.setEnable then btn:setEnable(false) end
+            else
+                W.createButton(parent, rx, ry + itemY, rw, ctx.btnH,
+                    W.safeGetText("UI_POS_Contacts_Trade"), nil,
+                    function()
+                        POS_ScreenManager.navigateTo(
+                            POS_Constants.SCREEN_TRADE_CATALOG,
+                            { wholesalerId = wsId })
+                    end)
+            end
+            itemY = itemY + ctx.btnH + 4
+
+            return itemY + 4
+        end,
+        onPageChange = function(newPage)
+            POS_ScreenManager.replaceCurrent(screen.id,
+                { tab = "contacts", contactPage = newPage })
+        end,
+    })
+end
+
+---------------------------------------------------------------
+-- Tab 2: Directory (zone × state dual-tab, absorbed from WholesalerDir)
+---------------------------------------------------------------
+
+local function renderDirectory(ctx, params)
+    local W = POS_TerminalWidgets
+    local C = W.COLOURS
+
+    -- Build zone tabs dynamically
+    local zones = POS_Constants.MARKET_ZONES or {}
+    local zoneTabs = { { id = "all", labelKey = "UI_POS_Assignments_FilterAll" } }
+    for _, zoneId in ipairs(zones) do
+        local zLabel = zoneId
+        if POS_MarketSimulation and POS_MarketSimulation.getZoneRegistry then
+            local zDef = POS_MarketSimulation.getZoneRegistry():get(zoneId)
+            if zDef and zDef.name then zLabel = zDef.name end
+        end
+        if #zLabel > POS_Constants.WHOLESALER_LABEL_MAX_LENGTH + 2 then
+            zLabel = string.sub(zLabel, 1, POS_Constants.WHOLESALER_LABEL_MAX_LENGTH) .. ".."
+        end
+        zoneTabs[#zoneTabs + 1] = { id = zoneId, label = zLabel }
+    end
+
+    local stateTabs = {}
+    for _, sId in ipairs(DIR_STATE_FILTERS) do
+        stateTabs[#stateTabs + 1] = {
+            id = sId,
+            labelKey = "UI_POS_Assignments_Filter" .. sId:sub(1,1):upper() .. sId:sub(2),
+        }
+    end
+
+    _dirZone = (params and params.dirZone) or _dirZone
+    _dirState = (params and params.dirState) or _dirState or "all"
+
+    -- Dual-tab bar (PhobosLib_DualTab)
+    ctx.y = PhobosLib_DualTab.create({
+        panel   = ctx.panel,
+        y       = ctx.y,
+        tabs1   = zoneTabs,
+        tabs2   = stateTabs,
+        active1 = _dirZone or "all",
+        active2 = _dirState,
+        colours = C,
+        btnH    = ctx.btnH,
+        _W      = W,
+        onTabChange = function(tab1, tab2)
+            _dirZone = (tab1 == "all") and nil or tab1
+            _dirState = tab2
+            POS_ScreenManager.replaceCurrent(screen.id,
+                { tab = "directory", dirZone = _dirZone, dirState = tab2 })
+        end,
+    })
+
+    W.createSeparator(ctx.panel, 0, ctx.y, POS_Constants.HEADER_SEPARATOR_WIDTH, "-")
+    ctx.y = ctx.y + ctx.lineH
+
+    -- Get filtered wholesalers
+    local wholesalers = {}
+    if POS_WholesalerService and POS_WholesalerService.getAllVisible then
+        local ok, all = PhobosLib.safecall(POS_WholesalerService.getAllVisible)
+        if ok and all then
+            for _, w in ipairs(all) do
+                local zoneMatch = not _dirZone or w.regionId == _dirZone
+                local stateMatch = _dirState == "all" or w.state == _dirState
+                if zoneMatch and stateMatch then
+                    wholesalers[#wholesalers + 1] = w
+                end
+            end
+        end
+    end
+
+    if #wholesalers == 0 then
+        W.createLabel(ctx.panel, 8, ctx.y,
+            PhobosLib.safeGetText("UI_POS_WholesalerDir_None"), C.dim)
+        ctx.y = ctx.y + ctx.lineH
     else
-        local currentPage = (_params and _params.contactPage) or 1
+        local currentPage = (params and params.dirPage) or 1
         ctx.y = PhobosLib_Pagination.create(ctx.panel, {
-            items = entries,
-            pageSize = POS_Constants.PAGE_SIZE_CONTACTS,
+            items = wholesalers,
+            pageSize = POS_Constants.PAGE_SIZE_WHOLESALER_DIR,
             currentPage = currentPage,
-            x = ctx.btnX,
-            y = ctx.y,
-            width = ctx.btnW,
-            colours = {
-                text = C.text, dim = C.dim,
-                bgDark = C.bgDark, bgHover = C.bgHover,
-                border = C.border,
-            },
-            renderItem = function(parent, rx, ry, rw, entry, _idx)
-                local itemY = 0
-                local w = entry.wholesaler
+            x = 0, y = ctx.y, width = ctx.panel:getWidth(),
+            colours = { text = C.text, dim = C.dim, bgDark = C.bgDark,
+                        bgHover = C.bgHover, border = C.border },
+            renderItem = function(parent, rx, ry, rw, w, _idx)
+                local badge = DIR_STATE_BADGES[w.state] or DIR_STATE_BADGES.active
+                local badgeText = PhobosLib.safeGetText(badge.key)
+                local badgeColour = C[badge.colour] or C.text
 
-                -- Resolve display name
-                local name
-                if entry.isRevealed then
-                    local nameKey = w.nameKey or w.displayNameKey
-                    name = nameKey and W.safeGetText(nameKey)
-                        or (w.name or entry.id)
-                else
-                    name = W.safeGetText("UI_POS_Contacts_UnknownContact")
-                end
+                W.createLabel(parent, rx, ry,
+                    "[" .. badgeText .. "] " .. (w.displayName or w.id)
+                    .. " -- " .. (w.regionId or "?"), badgeColour)
+                ry = ry + ctx.lineH
 
-                -- Resolve zone name
-                local zoneId = w.regionId or w.zone or "???"
-                local zoneName = zoneId
-                if zoneRegistry then
-                    zoneName = PhobosLib.getRegistryDisplayName(
-                        zoneRegistry, zoneId, zoneId)
-                end
+                local catStr = w.primaryCategories
+                    and table.concat(w.primaryCategories, ", ") or ""
+                W.createLabel(parent, rx + 8, ry,
+                    catStr ~= "" and catStr
+                    or PhobosLib.safeGetText("UI_POS_WholesalerDir_GeneralSupply"), C.dim)
+                ry = ry + ctx.lineH + 4
 
-                -- Resolve state badge
-                local stateBadge = W.safeGetText("UI_POS_Contacts_StateUnknown")
-                local stateColourKey = "dim"
-                if w.state then
-                    if POS_WholesalerService
-                            and POS_WholesalerService.getStateDisplayName then
-                        stateBadge = POS_WholesalerService
-                            .getStateDisplayName(w.state)
-                    end
-                    stateColourKey = STATE_COLOUR_MAP[w.state] or "dim"
-                end
-                local stateColour = C[stateColourKey] or C.dim
-
-                -- Line 1: name + zone
-                W.createLabel(parent, rx, ry + itemY, name, C.text)
-                -- Zone on same line, right-aligned area
-                W.createLabel(parent, rx + rw * 0.55, ry + itemY,
-                    zoneName, C.dim)
-                itemY = itemY + ctx.lineH
-
-                -- Line 2: state badge (coloured)
-                PhobosLib.createStatusBadge(parent,
-                    rx + 8, ry + itemY, stateBadge, stateColour)
-                itemY = itemY + ctx.lineH
-
-                -- Trade button
-                local wsId = entry.id
-                local tradeBlocked = _isTradeFullyBlocked(w.state)
-                if tradeBlocked then
-                    -- Disabled trade button
-                    local btn = W.createButton(parent, rx, ry + itemY,
-                        rw, ctx.btnH,
-                        W.safeGetText("UI_POS_Contacts_Blocked"),
-                        nil, nil)
-                    if btn and btn.setEnable then
-                        btn:setEnable(false)
-                    end
-                else
-                    W.createButton(parent, rx, ry + itemY, rw, ctx.btnH,
-                        W.safeGetText("UI_POS_Contacts_Trade"), nil,
-                        function()
-                            POS_ScreenManager.navigateTo(
-                                POS_Constants.SCREEN_TRADE_CATALOG,
-                                { wholesalerId = wsId })
-                        end)
-                end
-                itemY = itemY + ctx.btnH + 4
-
-                return itemY + 4
+                return ctx.lineH * 2 + 4
             end,
             onPageChange = function(newPage)
-                POS_ScreenManager.replaceCurrent(
-                    POS_Constants.SCREEN_CONTACTS,
-                    { contactPage = newPage })
+                POS_ScreenManager.replaceCurrent(screen.id,
+                    { tab = "directory", dirZone = _dirZone, dirState = _dirState, dirPage = newPage })
             end,
         })
     end
+end
 
-    -- Footer
+---------------------------------------------------------------
+-- Main create
+---------------------------------------------------------------
+
+function screen.create(contentPanel, params, _terminal)
+    local W = POS_TerminalWidgets
+    local C = W.COLOURS
+    local ctx = W.initLayout(contentPanel)
+
+    _activeTab = (params and params.tab) or _activeTab or "contacts"
+
+    W.drawHeader(ctx, "UI_POS_Contacts_Title")
+
+    -- Top-level tab bar
+    ctx.y = PhobosLib_DualTab.createSingle({
+        panel   = ctx.panel,
+        y       = ctx.y,
+        tabs1   = TOP_TABS,
+        active1 = _activeTab,
+        colours = C,
+        btnH    = ctx.btnH,
+        _W      = W,
+        onTabChange = function(tab1)
+            _activeTab = tab1
+            POS_ScreenManager.replaceCurrent(screen.id, { tab = tab1 })
+        end,
+    })
+
+    W.createSeparator(ctx.panel, 0, ctx.y, POS_Constants.HEADER_SEPARATOR_WIDTH, "-")
+    ctx.y = ctx.y + ctx.lineH
+
+    -- Render active tab
+    if _activeTab == "contacts" then
+        renderContacts(ctx, params)
+    elseif _activeTab == "directory" then
+        renderDirectory(ctx, params)
+    end
+
     W.drawFooter(ctx)
 end
 
-screen.destroy = POS_TerminalWidgets.defaultDestroy
+---------------------------------------------------------------
+
+screen.destroy = function()
+    _dirZone = nil
+    _dirState = "all"
+    POS_TerminalWidgets.defaultDestroy()
+end
 
 function screen.refresh(params)
     POS_TerminalWidgets.dynamicRefresh(screen, params)
@@ -237,9 +362,7 @@ screen.getContextData = function(_params)
         local count = 0
         if wholesalers then
             for _, w in pairs(wholesalers) do
-                if type(w) == "table" then
-                    count = count + 1
-                end
+                if type(w) == "table" then count = count + 1 end
             end
         end
         table.insert(result, { type = "kv",
@@ -248,6 +371,18 @@ screen.getContextData = function(_params)
         return result
     end)
     return (ok and data) or {}
+end
+
+---------------------------------------------------------------
+-- Starlit reactive refresh
+---------------------------------------------------------------
+
+if POS_Events and POS_Events.OnStockTickClosed then
+    POS_Events.OnStockTickClosed:addListener(function()
+        if POS_ScreenManager.currentScreen == screen.id then
+            POS_ScreenManager.refreshCurrentScreen()
+        end
+    end)
 end
 
 ---------------------------------------------------------------
