@@ -1152,5 +1152,12 @@
     "UI_POS_FreeAgent_GeneralCargo": "General cargo",
     "UI_POS_Assignments_FilterCompleted": "Completed",
     "UI_POS_Assignments_FilterFailed": "Failed",
-    "UI_POS_Signal_AgentUpdate": "Agent update"
+    "UI_POS_Signal_AgentUpdate": "Agent update",
+
+    "UI_POS_MarketOverview_TabSummary": "Summary",
+    "UI_POS_MarketOverview_TabZones": "Zones",
+    "UI_POS_MarketOverview_TabExchange": "Exchange",
+    "UI_POS_Exchange_Disabled": "Exchange system is disabled in sandbox settings.",
+    "UI_POS_Contacts_TabContacts": "Contacts",
+    "UI_POS_Contacts_TabDirectory": "Directory"
 }

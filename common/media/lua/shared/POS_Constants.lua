@@ -148,6 +148,20 @@ POS_Constants.ZONE_DEFAULT_VOLATILITY                    = 0.20
 POS_Constants.PERK_SIGINT                                = "SIGINT"
 
 ---------------------------------------------------------------
+-- Market Overview display constants (§33)
+---------------------------------------------------------------
+
+POS_Constants.PRESSURE_COLOUR_THRESHOLD    = 0.3
+POS_Constants.ZONE_TOP_PRESSURES           = 3
+POS_Constants.ZONE_PRESSURE_BAR_WIDTH      = 20
+POS_Constants.PRESSURE_HIGH_THRESHOLD      = 0.5
+POS_Constants.ZONE_SEPARATOR_WIDTH         = 40
+POS_Constants.HEADER_SEPARATOR_WIDTH       = 50
+POS_Constants.CONFIDENCE_HIGH_THRESHOLD    = 2.5
+POS_Constants.CONFIDENCE_MEDIUM_THRESHOLD  = 1.5
+POS_Constants.SIGNAL_CLASS_HARD            = "hard"
+
+---------------------------------------------------------------
 -- Event impact hints (Market Event System)
 ---------------------------------------------------------------
 
