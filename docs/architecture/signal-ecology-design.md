@@ -197,6 +197,16 @@ Each POSnet subsystem feeds into or consumes the five signal pillars:
 See `broadcast-influence-design.md` §3–4 for how broadcasts specifically
 affect the market and agent systems through these pillars.
 
+### 3.5 Signal Degradation of Broadcast Content
+
+Signal quality affects not just whether broadcasts are *received*, but how
+much *information* they contain. The World Broadcast Network degrades
+bulletin content at low signal quality — names drop out, numbers become
+vague, confidence markers blur, and lines truncate.
+
+See `world-broadcast-network-design.md` §6 for the four degradation tiers
+(Locked → Clear → Faded → Fragmented) and their effects on bulletin text.
+
 ---
 
 ## 4. Signal States

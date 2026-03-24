@@ -300,6 +300,16 @@ creates individual broadcasts that affect a single zone, Tier V:
 
 See `broadcast-influence-design.md` for the full influence loop mechanics.
 
+The Tier V relay also governs the **World Broadcast Network** (see
+`world-broadcast-network-design.md` §8). Where Tier IV bridges data into
+broadcast, Tier V controls:
+- Which domains dominate airtime
+- How widely bulletins propagate
+- How much noise vs clarity exists on public channels
+- Rebroadcast policy and editorial weighting
+
+See `radio-band-taxonomy-design.md` §5.2 for the governance model.
+
 ---
 
 ## 8. Sprite Detection

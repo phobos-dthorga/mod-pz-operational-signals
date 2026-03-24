@@ -4041,3 +4041,22 @@ For each store, document:
 - Avoid unbounded arrays in ModData — PZ serialises the entire table on save
 
 **Cross-reference**: `data-stores-reference.md`
+
+---
+
+## 54. Radio Band Taxonomy
+
+POSnet uses **three radio domains** that must not be conflated:
+
+| Domain | Purpose | Accessible Via |
+|--------|---------|---------------|
+| Civilian Data Net | Structured POSnet terminal traffic | Terminals, data-capable radios |
+| Tactical Data Net | Restricted network traffic | Terminals, military gear, satellites |
+| Broadcast Bands | Public editorialised bulletins | Any radio (handheld, vehicle, etc.) |
+
+> **Design rule**: Data bands carry payloads. Broadcast bands carry
+> interpretations. Never expose raw simulation data on public broadcast
+> channels. Tier IV bridges data → broadcast. Tier V governs both planes.
+
+**Cross-references**: `radio-band-taxonomy-design.md`,
+`world-broadcast-network-design.md`

@@ -332,6 +332,13 @@ BroadcastTrust = {
 
 See `broadcast-influence-design.md` §5 for full trust system mechanics.
 
+> **Data-to-broadcast bridge**: Tier IV satellite broadcasts bridge the data plane
+> (Civilian/Tactical Data Nets) to the public broadcast plane (Market Broadcast
+> Service, Emergency Broadcast Service, etc.). This translation boundary is
+> defined in `radio-band-taxonomy-design.md` §5.1. The delivery pipeline through
+> which broadcasts reach player radios is defined in
+> `world-broadcast-network-design.md`.
+
 ---
 
 ## 6. Calibration (First-Use Setup)
