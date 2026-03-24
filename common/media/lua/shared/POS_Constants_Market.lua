@@ -37,9 +37,10 @@ POS_Constants.SCREEN_WATCHLIST          = "pos.markets.watchlist"
 POS_Constants.SCREEN_EXCHANGE           = "pos.exchange"
 POS_Constants.SCREEN_EXCHANGE_OVERVIEW  = "pos.exchange.overview"
 POS_Constants.SCREEN_EXCHANGE_PORTFOLIO = "pos.exchange.portfolio"
-POS_Constants.SCREEN_ZONE_OVERVIEW     = "pos.markets.zones"
-POS_Constants.SCREEN_EVENT_LOG         = "pos.markets.events"
-POS_Constants.SCREEN_WHOLESALER_DIR    = "pos.markets.directory"
+-- DEPRECATED: absorbed into other screens during consolidation (§33.4)
+-- POS_Constants.SCREEN_ZONE_OVERVIEW     = "pos.markets.zones"       -- → Market Overview Tab 2
+-- POS_Constants.SCREEN_EVENT_LOG         = "pos.markets.events"      -- → Market Signals (filtered)
+-- POS_Constants.SCREEN_WHOLESALER_DIR    = "pos.markets.directory"   -- → Contacts Tab 2
 POS_Constants.SCREEN_CONTRACTS         = "pos.markets.contracts"
 POS_Constants.SCREEN_AGENT_DEPLOY      = "pos.bbs.agents.deploy"
 POS_Constants.SCREEN_TRADE_TERMINAL    = "pos.markets.trade"

@@ -1215,5 +1215,21 @@
     "UI_POS_Assignments_StatusComplete": "Complete",
     "UI_POS_Assignments_StatusExpired": "Expired",
     "UI_POS_Assignments_StatusUnknown": "Unknown",
-    "UI_POS_Assignments_TypeUnknown": "Unknown Type"
+    "UI_POS_Assignments_TypeUnknown": "Unknown Type",
+
+    "UI_POS_Signals_FilterAll": "All Signals",
+    "UI_POS_Signals_FilterHard": "Hard Events",
+    "UI_POS_Signals_FilterSoft": "Rumours",
+    "UI_POS_Signals_FilterStructural": "Structural",
+    "UI_POS_Signals_Pressure": "Supply Pressure",
+    "UI_POS_Signals_Duration": "Duration",
+    "UI_POS_Signals_Remaining": "remaining",
+    "UI_POS_Signals_Impact": "Expected Impact",
+    "UI_POS_Signals_Reliability": "Reliability",
+    "UI_POS_Signals_Source": "Source",
+    "UI_POS_Signals_NoDetail": "Select a signal for details.",
+    "UI_POS_Signals_NoMatch": "No signals match this filter.",
+    "UI_POS_Signals_RelatedContracts": "Related Contracts",
+    "UI_POS_Zone": "Zone",
+    "UI_POS_Categories": "Categories"
 }
