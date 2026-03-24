@@ -171,6 +171,32 @@ Each intelligence tier applies a floor and ceiling to the composite:
 
 Even at Tier V, 100% is practically unreachable. This is intentional.
 
+### 3.4 Per-Subsystem Pillar Contributions
+
+Each POSnet subsystem feeds into or consumes the five signal pillars:
+
+| Subsystem | Propagation | Infrastructure | Clarity | Saturation | Intent |
+|-----------|-------------|---------------|---------|------------|--------|
+| Weather / Season | Direct input (rain, storms, fog, wind) | — | Noise source | — | — |
+| Power Grid | — | Direct input (blackouts, generator fuel) | — | — | — |
+| Hardware Condition | — | Direct input (wear, calibration drift) | — | — | — |
+| Wiring Distance | — | Degrades (cable-distance mechanic) | — | — | — |
+| Wholesaler Activity | — | — | — | Contributes (market chatter volume) | — |
+| Free Agent Count | — | — | — | Contributes (active agent transmissions) | — |
+| Panic Events | — | — | Noise spike | Spike (desperate broadcasts) | — |
+| Tier IV Broadcast | — | Consumes (power draw) | Consumes (distortion risk) | Increases (broadcast adds to chatter) | — |
+| Tier V Relay | — | Stabilises (floor raised) | Improves (reconstruction) | Buffers (priority filtering) | Enables (player-controlled allocation) |
+| Terminal Analysis | — | — | Direct input (encoding/decoding quality) | — | — |
+| Competing Broadcasts | — | — | Interference source | Contributes | — |
+
+> **Reading the table**: "Direct input" means the subsystem is a primary data source
+> for that pillar. "Contributes" means it adds pressure. "Consumes" means it draws
+> from the pillar's capacity. "Stabilises/Buffers/Improves" means it counteracts
+> degradation.
+
+See `broadcast-influence-design.md` §3–4 for how broadcasts specifically
+affect the market and agent systems through these pillars.
+
 ---
 
 ## 4. Signal States

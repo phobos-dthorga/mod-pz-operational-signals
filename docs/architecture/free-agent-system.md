@@ -219,6 +219,13 @@ The radio layer is not just flavour for agents — it has mechanical effects:
 > **Current state**: Not yet wired. Signal quality is available via
 > `POS_ConnectionManager.getSignalStrength()` but agents don't read it.
 
+> **Future integration**: When the Broadcast Influence system is implemented
+> (see `broadcast-influence-design.md` §4), Tier IV broadcasts will create
+> `agent_advisory` records that modify agent telemetry quality, recall odds,
+> route bias, and per-archetype behavioural modifiers. Signal infrastructure
+> will no longer be a flat percentage — it will be a composite of five pillars
+> (see `signal-ecology-design.md` §3).
+
 ---
 
 ## 8. Archetype Tuning
