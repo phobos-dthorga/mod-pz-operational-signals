@@ -464,10 +464,13 @@ jobs:
           for key in sorted(referenced_keys):
               if key in defined_keys:
                   continue
-              # Check if it's a dynamic prefix (skip those)
+              # Skip keys ending with _ (clearly a prefix being concatenated)
+              if key.endswith("_"):
+                  continue
+              # Check if it matches a known dynamic prefix (skip those)
               is_dynamic = False
               for prefix in dynamic_prefixes:
-                  if key.startswith(prefix) and len(key) > len(prefix):
+                  if key.startswith(prefix):
                       is_dynamic = True
                       break
               if is_dynamic:
