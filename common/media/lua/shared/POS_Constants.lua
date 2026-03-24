@@ -140,10 +140,12 @@ POS_Constants.UI_PANEL_GAP                  = 4
 -- Free Agent risk model (§46)
 ---------------------------------------------------------------
 
-POS_Constants.FREE_AGENT_MAX_EFFECTIVE_RISK           = 0.75
+POS_Constants.FREE_AGENT_MAX_EFFECTIVE_RISK              = 0.75
 POS_Constants.FREE_AGENT_SIGINT_RISK_REDUCTION_PER_LEVEL = 0.03
-POS_Constants.SIGNAL_ENTRY_TYPE_AGENT                 = "agent"
-POS_Constants.FREE_AGENT_TICK_INTERVAL_TICKS          = 1200
+POS_Constants.SIGNAL_ENTRY_TYPE_AGENT                    = "agent"
+POS_Constants.FREE_AGENT_TICK_INTERVAL_TICKS             = 1200
+POS_Constants.ZONE_DEFAULT_VOLATILITY                    = 0.20
+POS_Constants.PERK_SIGINT                                = "SIGINT"
 
 ---------------------------------------------------------------
 -- Event impact hints (Market Event System)
