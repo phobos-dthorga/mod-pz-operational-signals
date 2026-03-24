@@ -81,6 +81,7 @@ globals = {
     "POS_BandRegistry",
     "POS_FreeAgentService",
     "POS_SignalPanel",
+    "PhobosLib_DualTab",
     "POS_MissionBriefingResolver",
     "POS_NotificationChannels",
     "PN_ChannelRegistry",

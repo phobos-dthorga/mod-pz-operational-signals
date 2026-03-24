@@ -3605,9 +3605,11 @@ POS_BandRegistry.getRegistry():register({
 
 ## 46. Free Agent Operations
 
-> **Status**: Fully playable. Schema, service, screen, economy tick,
-> Deploy UI (archetype picker), cargo consumption on deploy, contract
-> settlement on completion, PN channel integration (5 channels).
+> **Status**: Fully playable + observable. Schema, service, screen,
+> economy tick, Deploy UI, cargo consumption, contract settlement,
+> PN channels (5), ContextPanel detail (state/risk/ETA/cargo/SIGINT),
+> signal feed persistence, zone-aware risk scaling, SIGINT influence.
+> Dual-tab rendering via PhobosLib_DualTab.
 
 ### 46.1 Overview
 

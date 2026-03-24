@@ -26,6 +26,7 @@
 ---------------------------------------------------------------
 
 require "PhobosLib"
+require "PhobosLib_DualTab"
 require "POS_Constants"
 require "POS_ScreenManager"
 require "POS_TerminalWidgets"
@@ -39,8 +40,19 @@ local _activeArchetype = "all"
 local _activeStatus = "active"
 local _selectedAgentId = nil
 
-local ARCHETYPE_FILTERS = { "all", "runner", "broker", "courier", "smuggler" }
-local STATUS_FILTERS = { "active", "completed", "failed" }
+local ARCHETYPE_TABS = {
+    { id = "all",      labelKey = "UI_POS_Assignments_FilterAll" },
+    { id = "runner",   labelKey = "UI_POS_FreeAgent_Archetype_runner" },
+    { id = "broker",   labelKey = "UI_POS_FreeAgent_Archetype_broker" },
+    { id = "courier",  labelKey = "UI_POS_FreeAgent_Archetype_courier" },
+    { id = "smuggler", labelKey = "UI_POS_FreeAgent_Archetype_smuggler" },
+}
+
+local STATUS_TABS = {
+    { id = "active",    labelKey = "UI_POS_Assignments_FilterActive" },
+    { id = "completed", labelKey = "UI_POS_Assignments_FilterCompleted" },
+    { id = "failed",    labelKey = "UI_POS_Assignments_FilterFailed" },
+}
 
 local STATE_COLOURS = {
     drafted      = "textBright",
@@ -73,50 +85,25 @@ function screen.create(contentPanel, params, _terminal)
 
     W.drawHeader(ctx, "UI_POS_FreeAgent_Title")
 
-    -- Tab Row 1: Archetype
-    local archTabW = math.floor(ctx.panel:getWidth() / #ARCHETYPE_FILTERS) - 2
-    local archTabX = 0
-    for _, archId in ipairs(ARCHETYPE_FILTERS) do
-        local label = archId == "all"
-            and PhobosLib.safeGetText("UI_POS_Assignments_FilterAll")
-            or PhobosLib.safeGetText("UI_POS_FreeAgent_Archetype_" .. archId)
-        if _activeArchetype == archId then
-            W.createLabel(ctx.panel, archTabX + 4, ctx.y + 2, "> " .. label, C.textBright)
-        else
-            local aId = archId
-            W.createButton(ctx.panel, archTabX, ctx.y, archTabW, ctx.btnH,
-                label, nil, function()
-                    _activeArchetype = aId
-                    _selectedAgentId = nil
-                    POS_ScreenManager.replaceCurrent(screen.id,
-                        { archetype = aId, status = _activeStatus })
-                end)
-        end
-        archTabX = archTabX + archTabW + 2
-    end
-    ctx.y = ctx.y + ctx.btnH + 4
-
-    -- Tab Row 2: Status
-    local statusTabW = math.floor(ctx.panel:getWidth() / #STATUS_FILTERS) - 2
-    local statusTabX = 0
-    for _, statusId in ipairs(STATUS_FILTERS) do
-        local label = PhobosLib.safeGetText("UI_POS_Assignments_Filter"
-            .. statusId:sub(1,1):upper() .. statusId:sub(2))
-        if _activeStatus == statusId then
-            W.createLabel(ctx.panel, statusTabX + 4, ctx.y + 2, "> " .. label, C.textBright)
-        else
-            local sId = statusId
-            W.createButton(ctx.panel, statusTabX, ctx.y, statusTabW, ctx.btnH,
-                label, nil, function()
-                    _activeStatus = sId
-                    _selectedAgentId = nil
-                    POS_ScreenManager.replaceCurrent(screen.id,
-                        { archetype = _activeArchetype, status = sId })
-                end)
-        end
-        statusTabX = statusTabX + statusTabW + 2
-    end
-    ctx.y = ctx.y + ctx.btnH + 4
+    -- Dual tab bar: archetype × status (via PhobosLib_DualTab)
+    ctx.y = PhobosLib_DualTab.create({
+        panel   = ctx.panel,
+        y       = ctx.y,
+        tabs1   = ARCHETYPE_TABS,
+        tabs2   = STATUS_TABS,
+        active1 = _activeArchetype,
+        active2 = _activeStatus,
+        colours = C,
+        btnH    = ctx.btnH,
+        _W      = W,
+        onTabChange = function(tab1, tab2)
+            _activeArchetype = tab1
+            _activeStatus = tab2
+            _selectedAgentId = nil
+            POS_ScreenManager.replaceCurrent(screen.id,
+                { archetype = tab1, status = tab2 })
+        end,
+    })
 
     W.createSeparator(ctx.panel, 0, ctx.y, 50, "-")
     ctx.y = ctx.y + ctx.lineH
@@ -189,24 +176,21 @@ function screen.create(contentPanel, params, _terminal)
                     C.dim)
                 ry = ry + ctx.lineH
 
-                -- Recall button for active agents
-                if agent.state ~= POS_Constants.AGENT_STATE_COMPLETED
-                        and agent.state ~= POS_Constants.AGENT_STATE_FAILED then
-                    local agentId = agent.id
-                    W.createButton(parent, rx, ry, rw, ctx.btnH,
-                        PhobosLib.safeGetText("UI_POS_FreeAgent_Recall"), nil,
-                        function()
-                            POS_FreeAgentService.recall(agentId)
-                            POS_ScreenManager.refreshCurrentScreen()
-                        end)
-                    ry = ry + ctx.btnH + 4
-                else
-                    ry = ry + 4
-                end
+                -- Select button (populates ContextPanel detail)
+                local agentId = agent.id
+                local isSelected = (_selectedAgentId == agentId)
+                local selectLabel = isSelected
+                    and "> " .. PhobosLib.safeGetText("UI_POS_Screen_ViewDetails")
+                    or PhobosLib.safeGetText("UI_POS_Screen_ViewDetails")
+                W.createButton(parent, rx, ry, rw, ctx.btnH,
+                    selectLabel, nil,
+                    function()
+                        _selectedAgentId = agentId
+                        POS_ScreenManager.refreshCurrentScreen()
+                    end)
+                ry = ry + ctx.btnH + 4
 
-                local hasRecall = agent.state ~= POS_Constants.AGENT_STATE_COMPLETED
-                    and agent.state ~= POS_Constants.AGENT_STATE_FAILED
-                return ry - (ctx.lineH * 3 + (hasRecall and (ctx.btnH + 4) or 4))
+                return ry - (ctx.lineH * 3 + ctx.btnH + 4)
             end,
             onPageChange = function(newPage)
                 POS_ScreenManager.replaceCurrent(screen.id, {
@@ -231,11 +215,115 @@ end
 screen.getContextData = function()
     local data = {}
     local active = POS_FreeAgentService.getActive()
-    if #active > 0 then
-        table.insert(data, { type = "header", text = "UI_POS_FreeAgent_Title" })
-        table.insert(data, { type = "kv", key = "Active",
-            value = tostring(#active) .. "/" .. tostring(POS_Constants.FREE_AGENT_MAX_ACTIVE) })
+
+    -- Summary header
+    table.insert(data, { type = "header", text = "UI_POS_FreeAgent_Title" })
+    table.insert(data, { type = "kv",
+        key = PhobosLib.safeGetText("UI_POS_FreeAgent_Active"),
+        value = tostring(#active) .. "/" .. tostring(POS_Constants.FREE_AGENT_MAX_ACTIVE) })
+    table.insert(data, { type = "separator" })
+
+    -- Selected agent detail
+    local agent = _selectedAgentId
+        and POS_FreeAgentService.get(_selectedAgentId)
+
+    if not agent then
+        table.insert(data, { type = "kv",
+            key = PhobosLib.safeGetText("UI_POS_Screen_Hint"),
+            value = PhobosLib.safeGetText("UI_POS_FreeAgent_SelectHint") })
+        return data
     end
+
+    -- Archetype + state badge
+    local archLabel = PhobosLib.safeGetText(
+        "UI_POS_FreeAgent_Archetype_" .. agent.agentArchetype)
+    local stateLabel = PhobosLib.safeGetText(
+        "UI_POS_FreeAgent_State_" .. agent.state)
+    local stateColour = STATE_COLOURS[agent.state]
+    table.insert(data, { type = "header",
+        text = "[" .. stateLabel .. "] " .. agent.agentName })
+    table.insert(data, { type = "kv",
+        key = PhobosLib.safeGetText("UI_POS_FreeAgent_ArchetypeLabel"),
+        value = archLabel })
+
+    -- Zone
+    local zoneName = agent.zoneId or "?"
+    if POS_MarketSimulation and POS_MarketSimulation.getZoneLuxuryDemand then
+        -- Zone is accessible — try display name
+        zoneName = agent.zoneId
+    end
+    table.insert(data, { type = "kv",
+        key = PhobosLib.safeGetText("UI_POS_FreeAgent_Zone"),
+        value = zoneName })
+
+    -- ETA countdown
+    local day = getGameTime() and getGameTime():getNightsSurvived() or 0
+    local elapsed = day - (agent.startDay or 0)
+    local eta = math.max(0, (agent.estimatedDays or 0) - elapsed)
+    table.insert(data, { type = "kv",
+        key = PhobosLib.safeGetText("UI_POS_AgentDeploy_EstimatedTime"),
+        value = "~" .. tostring(eta) .. "d",
+        colour = eta <= 1 and "warning" or nil })
+
+    -- Risk (zone-adjusted display)
+    local riskLevel = agent.riskLevel or 0
+    local riskLabel = riskLevel >= POS_Constants.RISK_THRESHOLD_HIGH and "HIGH"
+        or (riskLevel >= POS_Constants.RISK_THRESHOLD_MODERATE and "MODERATE" or "LOW")
+    table.insert(data, { type = "kv",
+        key = PhobosLib.safeGetText("UI_POS_AgentDeploy_Risk"),
+        value = riskLabel,
+        colour = riskLevel >= POS_Constants.RISK_THRESHOLD_HIGH and "error"
+            or (riskLevel >= POS_Constants.RISK_THRESHOLD_MODERATE and "warning" or nil) })
+
+    -- Cargo
+    local cargoName = agent.cargoFullType and agent.cargoFullType ~= ""
+        and (PhobosLib.getItemDisplayName
+            and PhobosLib.getItemDisplayName(agent.cargoFullType)
+            or agent.cargoFullType)
+        or PhobosLib.safeGetText("UI_POS_FreeAgent_GeneralCargo")
+    table.insert(data, { type = "kv",
+        key = PhobosLib.safeGetText("UI_POS_AgentDeploy_CargoCost"),
+        value = tostring(agent.cargoQuantity or 0) .. "x " .. cargoName })
+
+    table.insert(data, { type = "separator" })
+
+    -- Commission breakdown
+    local payout = agent.settlementPayout or 0
+    local commission = payout * (agent.commissionRate or 0)
+    local netPayout = payout - commission
+    table.insert(data, { type = "kv",
+        key = PhobosLib.safeGetText("UI_POS_AgentDeploy_Commission"),
+        value = tostring(math.floor((agent.commissionRate or 0) * 100))
+            .. "% ($" .. string.format("%.2f", commission) .. ")" })
+    table.insert(data, { type = "kv",
+        key = PhobosLib.safeGetText("UI_POS_FreeAgent_NetPayout"),
+        value = "$" .. string.format("%.2f", netPayout), colour = "success" })
+
+    -- SIGINT bonus (if captured)
+    if agent.sigintLevel and agent.sigintLevel > 0 then
+        local sigintBonus = agent.sigintLevel
+            * POS_Constants.FREE_AGENT_SIGINT_RISK_REDUCTION_PER_LEVEL
+        table.insert(data, { type = "kv",
+            key = PhobosLib.safeGetText("UI_POS_FreeAgent_SigintBonus"),
+            value = "-" .. tostring(math.floor(sigintBonus * 100)) .. "% risk" })
+    end
+
+    -- Recall button (if active)
+    if agent.state ~= POS_Constants.AGENT_STATE_COMPLETED
+            and agent.state ~= POS_Constants.AGENT_STATE_FAILED then
+        table.insert(data, { type = "separator" })
+        local agentId = agent.id
+        table.insert(data, {
+            type = "action",
+            text = "UI_POS_FreeAgent_Recall",
+            callback = function()
+                POS_FreeAgentService.recall(agentId)
+                _selectedAgentId = nil
+                POS_ScreenManager.refreshCurrentScreen()
+            end,
+        })
+    end
+
     return data
 end
 

@@ -201,9 +201,25 @@ function screen.create(contentPanel, params, _terminal)
         ctx.y = ctx.y + ctx.lineH
 
         W.createLabel(contentPanel, 8, ctx.y,
-            "Net payout: $" .. string.format("%.2f", netPayout),
+            PhobosLib.safeGetText("UI_POS_FreeAgent_NetPayout")
+            .. ": $" .. string.format("%.2f", netPayout),
             C.success)
-        ctx.y = ctx.y + ctx.lineH + 4
+        ctx.y = ctx.y + ctx.lineH
+
+        -- SIGINT bonus display
+        local player = getPlayer()
+        local sigintLvl = PhobosLib.getPlayerPerkLevel
+            and PhobosLib.getPlayerPerkLevel(player, POS_Constants.PERK_SIGINT) or 0
+        if sigintLvl > 0 then
+            local sigintPct = math.floor(sigintLvl
+                * POS_Constants.FREE_AGENT_SIGINT_RISK_REDUCTION_PER_LEVEL * 100)
+            W.createLabel(contentPanel, 8, ctx.y,
+                PhobosLib.safeGetText("UI_POS_FreeAgent_SigintBonus")
+                .. ": -" .. tostring(sigintPct) .. "% risk",
+                C.textBright)
+            ctx.y = ctx.y + ctx.lineH
+        end
+        ctx.y = ctx.y + 4
 
         -- Inventory check
         local player = getPlayer()

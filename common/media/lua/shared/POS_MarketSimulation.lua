@@ -388,6 +388,16 @@ function POS_MarketSimulation.getZoneLuxuryDemand(zoneId)
     return def and def.luxuryDemand or 1.0
 end
 
+--- Get the base volatility for a zone.
+--- Used by POS_FreeAgentService for zone-aware risk scaling.
+--- @param zoneId string  Zone key
+--- @return number        Base volatility (default from constants)
+function POS_MarketSimulation.getZoneVolatility(zoneId)
+    if not _zoneRegistry then return POS_Constants.ZONE_DEFAULT_VOLATILITY end
+    local def = _zoneRegistry:get(zoneId)
+    return def and def.baseVolatility or POS_Constants.ZONE_DEFAULT_VOLATILITY
+end
+
 ---------------------------------------------------------------
 -- Wholesaler lifecycle management
 ---------------------------------------------------------------

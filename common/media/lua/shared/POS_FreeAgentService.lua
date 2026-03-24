@@ -105,7 +105,27 @@ local function resolveNextState(agent, currentDay)
     if elapsed < 1 then return nil end  -- min 1 day per state
 
     local advanceChance = POS_Constants.FREE_AGENT_ADVANCE_CHANCE
-    local riskChance = agent.riskLevel or POS_Constants.FREE_AGENT_DEFAULT_RISK
+
+    -- Zone-aware risk scaling (Part 3 — §46)
+    local baseRisk = agent.riskLevel or POS_Constants.FREE_AGENT_DEFAULT_RISK
+    local zoneVol = POS_Constants.ZONE_DEFAULT_VOLATILITY
+    if POS_MarketSimulation and POS_MarketSimulation.getZoneVolatility then
+        local ok, vol = PhobosLib.safecall(
+            POS_MarketSimulation.getZoneVolatility, agent.zoneId)
+        if ok and type(vol) == "number" then zoneVol = vol end
+    end
+    local effectiveRisk = baseRisk * (1.0 + zoneVol)
+
+    -- SIGINT skill influence (Part 4 — §46)
+    local sigintLevel = agent.sigintLevel or 0
+    if sigintLevel > 0 then
+        local sigintBonus = sigintLevel
+            * POS_Constants.FREE_AGENT_SIGINT_RISK_REDUCTION_PER_LEVEL
+        effectiveRisk = effectiveRisk * (1.0 - sigintBonus)
+    end
+
+    local riskChance = PhobosLib.clamp(
+        effectiveRisk, 0, POS_Constants.FREE_AGENT_MAX_EFFECTIVE_RISK)
 
     if agent.state == STATE.DRAFTED then
         return STATE.ASSEMBLING
@@ -215,6 +235,9 @@ function POS_FreeAgentService.deploy(contractId, archetype, zoneId,
         -- Cargo provenance (hard invariant §4.1)
         cargoSourceType    = "player_inventory",
         cargoSourceOwnerId = player and player:getUsername() or "",
+        -- SIGINT influence (§46, Part 4)
+        sigintLevel        = PhobosLib.getPlayerPerkLevel
+            and PhobosLib.getPlayerPerkLevel(player, POS_Constants.PERK_SIGINT) or 0,
     }
 
     store.agents[#store.agents + 1] = agent
@@ -314,6 +337,16 @@ function POS_FreeAgentService.tick(currentDay)
                     priority = statePriority,
                     channel  = POS_Constants.PN_CHANNEL_AGENTS,
                 })
+
+                -- Signal feed persistence (Part 2 — §46 visibility)
+                if POS_SignalPanel and POS_SignalPanel.addEntry then
+                    POS_SignalPanel.addEntry({
+                        type   = POS_Constants.SIGNAL_ENTRY_TYPE_AGENT,
+                        text   = agent.agentName .. ": " .. stateLabel,
+                        day    = currentDay,
+                        colour = stateColour,
+                    })
+                end
             end
         end
     end
