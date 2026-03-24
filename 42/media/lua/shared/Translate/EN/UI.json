@@ -1265,5 +1265,11 @@
     "UI_POS_Gate_SigintBenefit": "Higher SIGINT improves contract terms and data quality.",
     "UI_POS_Gate_DifficultyLocked": "Higher-difficulty missions unlock as your reputation and signal quality improve.",
     "UI_POS_Gate_SignalLimits": "Signal quality (%1%%) limits available mission difficulty.",
-    "UI_POS_Gate_SignalImprove": "Improve your radio setup for harder, higher-paying assignments."
+    "UI_POS_Gate_SignalImprove": "Improve your radio setup for harder, higher-paying assignments.",
+
+    "UI_POS_AgentDeploy_StandaloneTitle": "Standalone Trade Run",
+    "UI_POS_AgentDeploy_StandaloneDesc": "Deploy an agent on a speculative trade run. No contract required — the agent will seek opportunities independently.",
+    "UI_POS_AgentDeploy_StandaloneCost": "No cargo cost. Agent operates on commission from discovered trades.",
+    "UI_POS_AgentDeploy_GeneralCargo": "General cargo",
+    "UI_POS_AgentDeploy_SelectPrompt": "Select an agent type above to proceed."
 }

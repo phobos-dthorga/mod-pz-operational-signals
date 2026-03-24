@@ -269,32 +269,45 @@ function POS_ContractGenerator.generateFromWorldState()
     local allDefs = _contractRegistry:getAll()
     local generated = 0
 
+    -- Collect all enabled definitions once
+    local candidates = {}
+    for _, def in ipairs(allDefs) do
+        if def.enabled ~= false then
+            candidates[#candidates + 1] = def
+        end
+    end
+
+    if #candidates == 0 then return 0 end
+
     for _, zoneId in ipairs(zones) do
         local shortages = findShortages(zoneId)
 
-        for _, shortage in ipairs(shortages) do
-            -- Pick a contract definition that fits
-            local candidates = {}
-            for _, def in ipairs(allDefs) do
-                if def.enabled ~= false then
-                    candidates[#candidates + 1] = def
-                end
+        if #shortages > 0 then
+            -- Pressure-driven: pick the highest-pressure category
+            local shortage = shortages[1]
+            local def = candidates[ZombRand(#candidates) + 1]
+            local contract = buildContract(def, shortage.categoryId, zoneId)
+            if contract then
+                local ok = POS_ContractService.post(contract)
+                if ok then generated = generated + 1 end
             end
-
-            if #candidates > 0 then
+        else
+            -- Fallback: no pressure data yet (0 wholesalers or early game).
+            -- Generate a baseline contract with a random category so the
+            -- player isn't staring at an empty Incoming Requests screen
+            -- forever.  Only fires if this zone has produced zero contracts
+            -- so far today.
+            local allCats = POS_MarketRegistry and POS_MarketRegistry.getAllCategories
+                and POS_MarketRegistry.getAllCategories() or {}
+            if #allCats > 0 then
+                local cat = allCats[ZombRand(#allCats) + 1]
                 local def = candidates[ZombRand(#candidates) + 1]
-                local contract = buildContract(def, shortage.categoryId, zoneId)
-
+                local contract = buildContract(def, cat.id, zoneId)
                 if contract then
                     local ok = POS_ContractService.post(contract)
-                    if ok then
-                        generated = generated + 1
-                    end
+                    if ok then generated = generated + 1 end
                 end
             end
-
-            -- Only generate 1 contract per zone per tick to avoid flooding
-            break
         end
     end
 

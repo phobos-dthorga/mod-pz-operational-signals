@@ -235,52 +235,59 @@ function screen.create(contentPanel, params, _terminal)
                 local signalClass = entry.signalClass or POS_Constants.SIGNAL_CLASS_SOFT
                 local signalColour = _getSignalColour(signalClass, C)
 
-                -- Line 1: Day + [BADGE] + event type
-                local dayStr = PhobosLib.safeGetText("UI_POS_MarketSignals_Day")
-                    .. " " .. tostring(entry.day or 0)
-                W.createLabel(parent, rx, ry + itemY, dayStr, C.text)
-
-                local badgeX = rx + POS_Constants.SIGNALS_BADGE_OFFSET
+                -- Line 1: Day + [BADGE] + event type (single concatenated line)
+                local dayStr = "Day " .. tostring(entry.day or 0)
                 local badge = _getSignalBadge(signalClass)
-                PhobosLib.createStatusBadge(parent, badgeX, ry + itemY,
-                    "[" .. badge .. "]", signalColour)
-
-                local typeX = badgeX + POS_Constants.SIGNALS_TYPE_OFFSET
-                W.createLabel(parent, typeX, ry + itemY,
-                    PhobosLib.safeGetText(entry.typeKey), C.text)
+                local typeText = PhobosLib.safeGetText(entry.typeKey)
+                local line1 = dayStr .. "  [" .. badge .. "]  " .. typeText
+                W.createLabel(parent, rx, ry + itemY, line1, signalColour)
                 itemY = itemY + ctx.lineH
 
-                -- Line 2: zone + categories + meta
+                -- Line 2: zone + categories
+                local zoneName = entry.zone or "???"
+                -- Resolve zone display name
+                if POS_MarketSimulation and POS_MarketSimulation.getZoneRegistry then
+                    local ok, zReg = PhobosLib.safecall(POS_MarketSimulation.getZoneRegistry)
+                    if ok and zReg then
+                        zoneName = PhobosLib.getRegistryDisplayName(zReg, entry.zone, zoneName)
+                    end
+                end
                 local cats = entry.categories
                 if type(cats) == "table" then cats = table.concat(cats, ", ") end
                 cats = cats or "???"
-
-                local detailLine = (entry.zone or "???") .. " -- " .. cats
-                W.createLabel(parent, rx + 12, ry + itemY, detailLine, C.dim)
-
-                if entry.source == "rumour" and entry.impactHint then
-                    local meta = "  |  "
-                        .. PhobosLib.safeGetText("UI_POS_Signals_Impact")
-                        .. ": " .. entry.impactHint
-                    if entry.daysLeft then
-                        meta = meta .. "  |  " .. tostring(entry.daysLeft) .. "d "
-                            .. PhobosLib.safeGetText("UI_POS_Signals_Remaining")
-                    end
-                    W.createLabel(parent, rx + 12 +
-                        getTextManager():MeasureStringX(UIFont.Small, detailLine),
-                        ry + itemY, meta, C.dim)
-                end
+                W.createLabel(parent, rx + 12, ry + itemY,
+                    zoneName .. " -- " .. cats, C.dim)
                 itemY = itemY + ctx.lineH
 
-                -- Select button
-                local entryIdx = idx
-                local isSelected = (_selectedSignalIdx == entryIdx)
+                -- Line 3: meta (impact + remaining) for rumours
+                if entry.source == "rumour" then
+                    local metaParts = {}
+                    if entry.impactHint then
+                        metaParts[#metaParts + 1] =
+                            PhobosLib.safeGetText("UI_POS_Signals_Impact")
+                            .. ": " .. entry.impactHint
+                    end
+                    if entry.daysLeft then
+                        metaParts[#metaParts + 1] =
+                            tostring(entry.daysLeft) .. "d "
+                            .. PhobosLib.safeGetText("UI_POS_Signals_Remaining")
+                    end
+                    if #metaParts > 0 then
+                        W.createLabel(parent, rx + 12, ry + itemY,
+                            table.concat(metaParts, "  |  "), C.dim)
+                        itemY = itemY + ctx.lineH
+                    end
+                end
+
+                -- Select button — use global index for ContextPanel lookup
+                local globalIdx = ((currentPage - 1) * POS_Constants.SIGNALS_PAGE_SIZE) + idx
+                local isSelected = (_selectedSignalIdx == globalIdx)
                 W.createButton(parent, rx, ry + itemY, rw, ctx.btnH,
                     isSelected and "> SELECTED"
                         or PhobosLib.safeGetText("UI_POS_Screen_ViewDetails"),
-                    isSelected and C.textBright or nil,
+                    nil,
                     function()
-                        _selectedSignalIdx = entryIdx
+                        _selectedSignalIdx = globalIdx
                         POS_ScreenManager.refreshCurrentScreen()
                     end)
                 itemY = itemY + ctx.btnH + 4

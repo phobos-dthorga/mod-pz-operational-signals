@@ -99,41 +99,54 @@ function screen.create(contentPanel, params, _terminal)
 
     W.drawHeader(ctx, "UI_POS_AgentDeploy_Title")
 
-    -- Load contract
+    -- Load contract (optional — nil for standalone trade runs)
     local contractId = params and params.contractId
     local contract = contractId and POS_ContractService.get(contractId)
+    local isStandalone = (contract == nil)
 
-    if not contract then
+    -- Resolve cargo/payout context
+    local itemName, qty, payout
+
+    if contract then
+        -- Contract-linked mode: cargo + payout from contract
+        itemName = contract.resolvedItemType
+            and getItemDisplayName(contract.resolvedItemType)
+            or (contract.categoryId or "?")
+        qty = contract.resolvedQuantity or 0
+        payout = contract.resolvedPayout or 0
+
         W.createLabel(contentPanel, 8, ctx.y,
-            "No contract specified.", C.error)
+            PhobosLib.safeGetText("UI_POS_Contract_Title") .. ": "
+            .. (contract.briefing and contract.briefing.title or contract.kind or "?"),
+            C.textBright)
         ctx.y = ctx.y + ctx.lineH
-        W.drawFooter(ctx)
-        return
+
+        W.createLabel(contentPanel, 8, ctx.y,
+            PhobosLib.safeGetText("UI_POS_AgentDeploy_CargoCost") .. ": "
+            .. tostring(qty) .. "x " .. itemName,
+            C.text)
+        ctx.y = ctx.y + ctx.lineH
+
+        W.createLabel(contentPanel, 8, ctx.y,
+            "Payout: $" .. string.format("%.2f", payout),
+            C.text)
+        ctx.y = ctx.y + ctx.lineH + 4
+    else
+        -- Standalone trade run: no contract, agent does a speculative run
+        itemName = PhobosLib.safeGetText("UI_POS_AgentDeploy_GeneralCargo")
+        qty = 0
+        payout = 0
+
+        W.createLabel(contentPanel, 8, ctx.y,
+            PhobosLib.safeGetText("UI_POS_AgentDeploy_StandaloneTitle"),
+            C.textBright)
+        ctx.y = ctx.y + ctx.lineH
+
+        W.createLabel(contentPanel, 8, ctx.y,
+            PhobosLib.safeGetText("UI_POS_AgentDeploy_StandaloneDesc"),
+            C.dim)
+        ctx.y = ctx.y + ctx.lineH + 4
     end
-
-    -- Contract summary
-    local itemName = contract.resolvedItemType
-        and getItemDisplayName(contract.resolvedItemType)
-        or (contract.categoryId or "?")
-    local qty = contract.resolvedQuantity or 0
-    local payout = contract.resolvedPayout or 0
-
-    W.createLabel(contentPanel, 8, ctx.y,
-        PhobosLib.safeGetText("UI_POS_Contract_Title") .. ": "
-        .. (contract.briefing and contract.briefing.title or contract.kind or "?"),
-        C.textBright)
-    ctx.y = ctx.y + ctx.lineH
-
-    W.createLabel(contentPanel, 8, ctx.y,
-        PhobosLib.safeGetText("UI_POS_AgentDeploy_CargoCost") .. ": "
-        .. tostring(qty) .. "x " .. itemName,
-        C.text)
-    ctx.y = ctx.y + ctx.lineH
-
-    W.createLabel(contentPanel, 8, ctx.y,
-        "Payout: $" .. string.format("%.2f", payout),
-        C.text)
-    ctx.y = ctx.y + ctx.lineH + 4
 
     W.createSeparator(contentPanel, 0, ctx.y, 50, "-")
     ctx.y = ctx.y + ctx.lineH
@@ -180,31 +193,41 @@ function screen.create(contentPanel, params, _terminal)
     W.createSeparator(contentPanel, 0, ctx.y, 50, "-")
     ctx.y = ctx.y + ctx.lineH
 
-    -- Cost preview (if archetype selected)
+    -- Cost preview + confirm (if archetype selected)
     if _selectedArchetype then
         local info = getArchetypeInfo(_selectedArchetype)
-        local commission = payout * info.commission
-        local netPayout = payout - commission
 
-        W.createLabel(contentPanel, 8, ctx.y,
-            PhobosLib.safeGetText("UI_POS_AgentDeploy_CargoCost")
-            .. ": " .. tostring(qty) .. "x " .. itemName
-            .. " (consumed from inventory)",
-            C.warning)
-        ctx.y = ctx.y + ctx.lineH
+        if not isStandalone then
+            -- Contract mode: show cargo cost + commission + inventory
+            local commission = payout * info.commission
+            local netPayout = payout - commission
 
-        W.createLabel(contentPanel, 8, ctx.y,
-            PhobosLib.safeGetText("UI_POS_AgentDeploy_Commission")
-            .. ": $" .. string.format("%.2f", commission)
-            .. " (" .. tostring(math.floor(info.commission * 100)) .. "%)",
-            C.dim)
-        ctx.y = ctx.y + ctx.lineH
+            W.createLabel(contentPanel, 8, ctx.y,
+                PhobosLib.safeGetText("UI_POS_AgentDeploy_CargoCost")
+                .. ": " .. tostring(qty) .. "x " .. itemName
+                .. " (consumed from inventory)",
+                C.warning)
+            ctx.y = ctx.y + ctx.lineH
 
-        W.createLabel(contentPanel, 8, ctx.y,
-            PhobosLib.safeGetText("UI_POS_FreeAgent_NetPayout")
-            .. ": $" .. string.format("%.2f", netPayout),
-            C.success)
-        ctx.y = ctx.y + ctx.lineH
+            W.createLabel(contentPanel, 8, ctx.y,
+                PhobosLib.safeGetText("UI_POS_AgentDeploy_Commission")
+                .. ": $" .. string.format("%.2f", commission)
+                .. " (" .. tostring(math.floor(info.commission * 100)) .. "%)",
+                C.dim)
+            ctx.y = ctx.y + ctx.lineH
+
+            W.createLabel(contentPanel, 8, ctx.y,
+                PhobosLib.safeGetText("UI_POS_FreeAgent_NetPayout")
+                .. ": $" .. string.format("%.2f", netPayout),
+                C.success)
+            ctx.y = ctx.y + ctx.lineH
+        else
+            -- Standalone mode: no cargo cost, agent works on commission
+            W.createLabel(contentPanel, 8, ctx.y,
+                PhobosLib.safeGetText("UI_POS_AgentDeploy_StandaloneCost"),
+                C.dim)
+            ctx.y = ctx.y + ctx.lineH
+        end
 
         -- SIGINT bonus display
         local player = getPlayer()
@@ -221,27 +244,38 @@ function screen.create(contentPanel, params, _terminal)
         end
         ctx.y = ctx.y + 4
 
-        -- Inventory check
-        local player = getPlayer()
-        local owned = 0
-        if player and contract.resolvedItemType and PhobosLib.findAllItemsByFullType then
-            local found = PhobosLib.findAllItemsByFullType(player, contract.resolvedItemType)
-            owned = type(found) == "table" and #found or (type(found) == "number" and found or 0)
+        -- Inventory check (contract mode only)
+        local hasEnough = true
+        if not isStandalone then
+            local player2 = getPlayer()
+            local owned = 0
+            if player2 and contract.resolvedItemType and PhobosLib.findAllItemsByFullType then
+                local found = PhobosLib.findAllItemsByFullType(player2, contract.resolvedItemType)
+                owned = type(found) == "table" and #found or (type(found) == "number" and found or 0)
+            end
+            hasEnough = owned >= qty
+            local invColour = hasEnough and C.success or C.error
+            W.createLabel(contentPanel, 8, ctx.y,
+                PhobosLib.safeGetText("UI_POS_Inventory") .. ": " .. tostring(owned) .. "/" .. tostring(qty),
+                invColour)
+            ctx.y = ctx.y + ctx.lineH + 4
         end
-        local hasEnough = owned >= qty
-        local invColour = hasEnough and C.success or C.error
-        W.createLabel(contentPanel, 8, ctx.y,
-            PhobosLib.safeGetText("UI_POS_Inventory") .. ": " .. tostring(owned) .. "/" .. tostring(qty),
-            invColour)
-        ctx.y = ctx.y + ctx.lineH + 4
 
-        -- Confirm button
-        local cId = contractId
+        -- Confirm deploy button
+        local cId = contractId or ""
         local archId = _selectedArchetype
-        local zoneId = contract.zoneId or ""
-        local cargoType = contract.resolvedItemType or ""
+        local zoneId = (contract and contract.zoneId) or ""
+        local cargoType = (contract and contract.resolvedItemType) or ""
         local cargoQty = qty
         local payAmt = payout
+
+        -- For standalone: pick a random zone for the trade run
+        if isStandalone and zoneId == "" then
+            local zones = POS_Constants.MARKET_ZONES or {}
+            if #zones > 0 then
+                zoneId = zones[ZombRand(#zones) + 1]
+            end
+        end
 
         if hasEnough then
             W.createButton(contentPanel, 4, ctx.y,
@@ -271,7 +305,7 @@ function screen.create(contentPanel, params, _terminal)
         end
     else
         W.createLabel(contentPanel, 8, ctx.y,
-            "Select an agent type above to proceed.", C.dim)
+            PhobosLib.safeGetText("UI_POS_AgentDeploy_SelectPrompt"), C.dim)
         ctx.y = ctx.y + ctx.lineH
     end
 
