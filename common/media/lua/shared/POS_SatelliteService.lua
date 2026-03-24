@@ -554,6 +554,7 @@ function POS_SatelliteService.validateWiredLink(sq)
         return true
     end
     local desktopSprites = POS_Constants.DESKTOP_COMPUTER_SPRITES
+    if not desktopSprites then return false end
     for i = 0, targetSq:getObjects():size() - 1 do
         local obj = targetSq:getObjects():get(i)
         local sprite = obj:getSprite()

@@ -364,3 +364,39 @@ jobs:
             echo "All files are valid UTF-8."
           fi
           exit $FAIL
+
+      - name: Load-time forward-reference guard
+        run: |
+          echo "Checking for load-time captures of split-file constants..."
+          FAIL=0
+          # Detect: local X = POS_Constants.Y at file scope (outside functions)
+          # These are dangerous when Y is defined in a split file that loads later.
+          # Safe pattern: resolve inside functions, not at module load time.
+          while IFS= read -r -d '' f; do
+            # Only check files that are NOT POS_Constants*.lua themselves
+            BASENAME=$(basename "$f")
+            if [[ "$BASENAME" == POS_Constants* ]]; then
+              continue
+            fi
+            # Find load-time captures: "local X = POS_Constants.SOMETHING" at top scope
+            # Heuristic: lines matching the pattern that are NOT inside a function body
+            # We check lines before the first "function " definition
+            FIRST_FUNC=$(grep -n "^function \|^local function " "$f" | head -1 | cut -d: -f1)
+            if [ -z "$FIRST_FUNC" ]; then
+              FIRST_FUNC=9999
+            fi
+            while IFS=: read -r LINENUM LINE; do
+              if [ "$LINENUM" -lt "$FIRST_FUNC" ] 2>/dev/null; then
+                # Check if this captures a constant that lives in a split file
+                CONST_NAME=$(echo "$LINE" | grep -oP 'POS_Constants\.(\w+)' | head -1)
+                if [ -n "$CONST_NAME" ]; then
+                  # Check if it does arithmetic (subtraction, addition) which crashes on nil
+                  if echo "$LINE" | grep -qP '[-+*/]'; then
+                    echo "::warning file=$f,line=$LINENUM::Potentially unsafe load-time arithmetic on split-file constant: $LINE"
+                  fi
+                fi
+              fi
+            done < <(grep -n "^local .* = POS_Constants\." "$f")
+          done < <(find common/media/lua -name '*.lua' -print0)
+          echo "Forward-reference check complete."
+          exit $FAIL

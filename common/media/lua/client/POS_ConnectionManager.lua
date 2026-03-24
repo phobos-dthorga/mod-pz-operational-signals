@@ -37,7 +37,10 @@ POS_ConnectionManager = {}
 local _TAG = "[POS:ConnMgr]"
 
 --- Desktop computer sprite lookup (delegated to POS_Constants).
-local DESKTOP_SPRITES = POS_Constants.DESKTOP_COMPUTER_SPRITES
+-- NOTE: Do NOT capture at load time. POS_Constants may not have finished
+-- loading if a prior line caused a runtime error (forward-reference crash).
+-- Resolve lazily at call time instead.
+local DESKTOP_SPRITES = nil
 
 --- Search radius for nearby desktop computers (tiles).
 local DESKTOP_SEARCH_RADIUS = 3
@@ -58,7 +61,11 @@ local function isDesktopComputer(obj)
         return nil
     end)
     if not ok or not spriteName then return false end
-    return DESKTOP_SPRITES[spriteName] == true
+    -- Lazy resolve (avoids nil if POS_Constants aborted before defining the table)
+    if not DESKTOP_SPRITES then
+        DESKTOP_SPRITES = POS_Constants.DESKTOP_COMPUTER_SPRITES
+    end
+    return DESKTOP_SPRITES and DESKTOP_SPRITES[spriteName] == true or false
 end
 
 --- Check if a desktop computer is within range of the given square.
