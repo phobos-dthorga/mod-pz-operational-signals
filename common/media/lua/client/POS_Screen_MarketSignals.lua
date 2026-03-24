@@ -117,9 +117,10 @@ local function _collectRumours(currentDay)
             result[#result + 1] = {
                 day          = r.recordedDay or r.day or currentDay,
                 signalClass  = POS_Constants.SIGNAL_CLASS_SOFT,
-                typeKey      = r.messageKey or "UI_POS_BBS_UnknownRumour",
-                zone         = r.regionId or r.region or "???",
-                categories   = r.categoryIds or r.categories or "???",
+                typeKey      = r.messageKey or r.displayNameKey
+                                   or "UI_POS_BBS_UnknownRumour",
+                zone         = r.regionId or r.region or r.source or "???",
+                categories   = r.categoryIds or r.categories,
                 impactHint   = r.impactHint,
                 daysLeft     = daysLeft,
                 reliability  = r.confidence or r.reliability or "medium",
@@ -362,12 +363,14 @@ screen.getContextData = function(_params)
         key = PhobosLib.safeGetText("UI_POS_Zone"),
         value = zoneName })
 
-    -- Categories
+    -- Categories (may be nil for event-sourced rumours)
     local cats = entry.categories
     if type(cats) == "table" then cats = table.concat(cats, ", ") end
-    table.insert(data, { type = "kv",
-        key = PhobosLib.safeGetText("UI_POS_Categories"),
-        value = cats or "???" })
+    if cats then
+        table.insert(data, { type = "kv",
+            key = PhobosLib.safeGetText("UI_POS_Categories"),
+            value = cats })
+    end
 
     -- Day
     table.insert(data, { type = "kv",
