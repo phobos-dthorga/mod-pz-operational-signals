@@ -220,6 +220,17 @@ POS_Constants.MISSION_MIN_DIFFICULTY            = 1
 POS_Constants.MISSION_MAX_DIFFICULTY            = 5
 POS_Constants.MISSION_VOICE_OVERRIDE_SECTIONS   = { "situation", "submission" }
 
+-- Voice section name constants (avoid magic strings)
+POS_Constants.VOICE_SECTION_SITUATION    = "situation"
+POS_Constants.VOICE_SECTION_SUBMISSION   = "submission"
+POS_Constants.VOICE_SECTION_AGENT_STATE  = "agentState"
+POS_Constants.VOICE_SECTION_INVESTMENT   = "investment"
+
+-- Extended voice override sections (includes agent + investment)
+POS_Constants.VOICE_ALL_OVERRIDE_SECTIONS = {
+    "situation", "submission", "agentState", "investment",
+}
+
 ---------------------------------------------------------------
 -- Signal-based mission degradation (§5.4)
 -- Simulates radio transmissions breaking up through static.

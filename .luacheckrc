@@ -86,6 +86,7 @@ globals = {
     "POS_NotificationChannels",
     "PN_ChannelRegistry",
     "POS_VoicePackRegistry",
+    "POS_VoicePackSchema",
     "POS_TextPoolSchema",
     "POS_MissionSchema",
     "POS_ContractSchema",

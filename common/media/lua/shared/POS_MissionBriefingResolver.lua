@@ -76,7 +76,7 @@ function POS_MissionBriefingResolver.init()
         "Definitions/TextPools/submissions_common",
     }
 
-    -- Load voice packs (all 8 archetypes)
+    -- Load voice packs: situation pools (8 archetypes)
     local voicePaths = {
         "Definitions/TextPools/voice_scavenger",
         "Definitions/TextPools/voice_quartermaster",
@@ -86,6 +86,15 @@ function POS_MissionBriefingResolver.init()
         "Definitions/TextPools/voice_trader",
         "Definitions/TextPools/voice_speculator",
         "Definitions/TextPools/voice_crafter",
+        -- Submission voice pools (8 archetypes)
+        "Definitions/TextPools/voice_smuggler_submissions",
+        "Definitions/TextPools/voice_military_submissions",
+        "Definitions/TextPools/voice_trader_submissions",
+        "Definitions/TextPools/voice_crafter_submissions",
+        "Definitions/TextPools/voice_scavenger_submissions",
+        "Definitions/TextPools/voice_quartermaster_submissions",
+        "Definitions/TextPools/voice_wholesaler_submissions",
+        "Definitions/TextPools/voice_speculator_submissions",
     }
 
     for _, path in ipairs(paths) do

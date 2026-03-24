@@ -16,17 +16,23 @@
 
 ---------------------------------------------------------------
 -- POS_VoicePackRegistry.lua
--- Maps market agent archetype IDs to text pool overrides for
--- mission briefing sections.  Only "situation" and "submission"
--- sections are overridable per §32 design.
+-- Data-pack-driven voice pack system mapping market agent
+-- archetypes to text pool overrides for briefing sections.
 --
--- Voice packs change the *tone* of briefings (e.g. smuggler
--- uses shadier language) without altering mission structure.
+-- Supports: situation, submission, agentState, investment.
+--
+-- Addon mods extend via Definitions/VoicePacks/*.lua files
+-- following POS_VoicePackSchema.
+--
+-- See design-guidelines.md §32.7.
 ---------------------------------------------------------------
 
+require "PhobosLib"
 require "POS_Constants"
 
 POS_VoicePackRegistry = {}
+
+local _TAG = "[POS:VoicePacks]"
 
 ---------------------------------------------------------------
 -- Internal state
@@ -34,22 +40,72 @@ POS_VoicePackRegistry = {}
 
 -- archetypeId -> { sectionName -> textPoolId }
 local _overrides = {}
+local _registry = nil
+local _initialised = false
+
+---------------------------------------------------------------
+-- Built-in definition paths
+---------------------------------------------------------------
+
+local BUILTIN_PATHS = {
+    "Definitions/VoicePacks/scavenger",
+    "Definitions/VoicePacks/quartermaster",
+    "Definitions/VoicePacks/wholesaler",
+    "Definitions/VoicePacks/smuggler",
+    "Definitions/VoicePacks/military",
+    "Definitions/VoicePacks/trader",
+    "Definitions/VoicePacks/speculator",
+    "Definitions/VoicePacks/crafter",
+}
 
 ---------------------------------------------------------------
 -- Public API
 ---------------------------------------------------------------
 
---- Register a voice pack override for an archetype.
---- Only sections listed in MISSION_VOICE_OVERRIDE_SECTIONS are accepted.
---- @param archetypeId string Market agent archetype ID
---- @param sectionName string Briefing section (e.g. "situation")
---- @param textPoolId string Text pool ID to use instead of default
+--- Initialise the voice pack registry from definition files.
+--- Uses PhobosLib data-pack pattern (schema → registry → definitions).
+function POS_VoicePackRegistry.init()
+    if _initialised then return end
+    _initialised = true
+
+    local schema = require("POS_VoicePackSchema")
+    _registry = PhobosLib.createRegistry({
+        name           = "VoicePacks",
+        schema         = schema,
+        idField        = "id",
+        allowOverwrite = true,
+        tag            = _TAG,
+    })
+
+    -- Load built-in definitions
+    for _, path in ipairs(BUILTIN_PATHS) do
+        local ok, data = pcall(require, path)
+        if ok and type(data) == "table" then
+            _registry:register(data)
+            -- Apply overrides from definition
+            if data.archetypeId and data.overrides then
+                POS_VoicePackRegistry.registerPack(data.archetypeId, data.overrides)
+            end
+        else
+            PhobosLib.warn("POS", _TAG, "Failed to load voice pack: " .. tostring(path))
+        end
+    end
+
+    PhobosLib.debug("POS", _TAG,
+        "Loaded " .. tostring(_registry:count()) .. " voice pack(s)")
+end
+
+--- Register a voice pack override for an archetype + section.
+--- Validates section against VOICE_ALL_OVERRIDE_SECTIONS.
+---@param archetypeId string Market agent archetype ID
+---@param sectionName string Briefing section constant
+---@param textPoolId string Text pool ID to use
 function POS_VoicePackRegistry.register(archetypeId, sectionName, textPoolId)
     if not archetypeId or not sectionName or not textPoolId then return end
 
-    -- Validate section is overridable
+    -- Validate section against extended override list
     local allowed = false
-    for _, s in ipairs(POS_Constants.MISSION_VOICE_OVERRIDE_SECTIONS) do
+    for _, s in ipairs(POS_Constants.VOICE_ALL_OVERRIDE_SECTIONS) do
         if s == sectionName then
             allowed = true
             break
@@ -64,17 +120,17 @@ function POS_VoicePackRegistry.register(archetypeId, sectionName, textPoolId)
 end
 
 --- Get the text pool override for an archetype + section.
---- @param archetypeId string
---- @param sectionName string
---- @return string|nil Text pool ID, or nil for default
+---@param archetypeId string
+---@param sectionName string
+---@return string|nil Text pool ID, or nil for default
 function POS_VoicePackRegistry.getOverride(archetypeId, sectionName)
     if not archetypeId or not _overrides[archetypeId] then return nil end
     return _overrides[archetypeId][sectionName]
 end
 
 --- Register all overrides from a voice pack definition table.
---- @param archetypeId string
---- @param overrides table Map of sectionName → textPoolId
+---@param archetypeId string
+---@param overrides table Map of sectionName → textPoolId
 function POS_VoicePackRegistry.registerPack(archetypeId, overrides)
     if not archetypeId or type(overrides) ~= "table" then return end
     for section, poolId in pairs(overrides) do
@@ -82,50 +138,13 @@ function POS_VoicePackRegistry.registerPack(archetypeId, overrides)
     end
 end
 
----------------------------------------------------------------
--- Built-in voice packs
----------------------------------------------------------------
+--- Get the underlying registry for addon mods.
+---@return table|nil Registry instance
+function POS_VoicePackRegistry.getRegistry()
+    return _registry
+end
 
-local _builtInRegistered = false
-
---- Register built-in voice packs. Called lazily on first resolve.
+--- Legacy compatibility: initBuiltIn() now delegates to init().
 function POS_VoicePackRegistry.initBuiltIn()
-    if _builtInRegistered then return end
-    _builtInRegistered = true
-
-    -- All 7 archetypes have distinct voices for situation descriptions.
-    -- Each voice pack overrides the "situation" section of mission/contract
-    -- briefings when that archetype is the sponsor.
-
-    POS_VoicePackRegistry.registerPack("scavenger_trader", {
-        situation  = "voice_scavenger_situations",
-    })
-
-    POS_VoicePackRegistry.registerPack("quartermaster", {
-        situation  = "voice_quartermaster_situations",
-    })
-
-    POS_VoicePackRegistry.registerPack("wholesaler", {
-        situation  = "voice_wholesaler_situations",
-    })
-
-    POS_VoicePackRegistry.registerPack("smuggler", {
-        situation  = "voice_smuggler_situations",
-    })
-
-    POS_VoicePackRegistry.registerPack("military_logistics", {
-        situation  = "voice_military_situations",
-    })
-
-    POS_VoicePackRegistry.registerPack("baseline_trader", {
-        situation  = "voice_trader_situations",
-    })
-
-    POS_VoicePackRegistry.registerPack("speculator", {
-        situation  = "voice_speculator_situations",
-    })
-
-    POS_VoicePackRegistry.registerPack("specialist_crafter", {
-        situation  = "voice_crafter_situations",
-    })
+    POS_VoicePackRegistry.init()
 end
