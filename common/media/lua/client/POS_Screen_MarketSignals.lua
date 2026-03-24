@@ -288,7 +288,8 @@ function screen.create(contentPanel, params, _terminal)
                     nil,
                     function()
                         _selectedSignalIdx = globalIdx
-                        POS_ScreenManager.refreshCurrentScreen()
+                        POS_ScreenManager.replaceCurrent(screen.id,
+                            { filter = _activeFilter })
                     end)
                 itemY = itemY + ctx.btnH + 4
 
