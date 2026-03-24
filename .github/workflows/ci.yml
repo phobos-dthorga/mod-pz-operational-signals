@@ -400,3 +400,79 @@ jobs:
           done < <(find common/media/lua -name '*.lua' -print0)
           echo "Forward-reference check complete."
           exit $FAIL
+
+      - name: Translation key reference audit
+        run: |
+          python3 <<'PYEOF'
+          import re, json, sys, os, glob
+
+          # Collect all UI_POS_ keys from UI.json
+          ui_json = "42/media/lua/shared/Translate/EN/UI.json"
+          if not os.path.isfile(ui_json):
+              print("No UI.json yet — skipping.")
+              sys.exit(0)
+
+          with open(ui_json) as f:
+              defined_keys = set(json.load(f).keys())
+
+          # Scan all Lua files for safeGetText("UI_POS_*") references
+          referenced_keys = set()
+          lua_files = glob.glob("common/media/lua/**/*.lua", recursive=True)
+
+          for lf in lua_files:
+              with open(lf, encoding="utf-8", errors="replace") as f:
+                  content = f.read()
+              # Match: safeGetText("UI_POS_...") and safeGetText('UI_POS_...')
+              for m in re.finditer(r'safeGetText\(["\'](["\']?UI_POS_\w+)["\']', content):
+                  key = m.group(1).strip("\"'")
+                  if key.startswith("UI_POS_"):
+                      referenced_keys.add(key)
+
+          # Also check for hardcoded string references like "UI_POS_*" in table values
+          for lf in lua_files:
+              with open(lf, encoding="utf-8", errors="replace") as f:
+                  for line_no, line in enumerate(f, 1):
+                      for m in re.finditer(r'"(UI_POS_\w+)"', line):
+                          referenced_keys.add(m.group(1))
+
+          # Exclude keys that are dynamically constructed (pattern-based)
+          # e.g. "UI_POS_Zone_" .. zoneId — these can't be statically checked
+          dynamic_prefixes = [
+              "UI_POS_Zone_",
+              "UI_POS_Mission_Category_",
+              "UI_POS_FreeAgent_State_",
+              "UI_POS_FreeAgent_Archetype_",
+              "UI_POS_Wholesaler_State_",
+              "UI_POS_Contract_Kind_",
+              "UI_POS_Contract_Urgency_",
+              "UI_POS_Contract_Status_",
+              "UI_POS_Assignments_Filter",
+              "UI_POS_Event_",
+          ]
+
+          fail = False
+          missing = []
+          for key in sorted(referenced_keys):
+              if key in defined_keys:
+                  continue
+              # Check if it's a dynamic prefix (skip those)
+              is_dynamic = False
+              for prefix in dynamic_prefixes:
+                  if key.startswith(prefix) and len(key) > len(prefix):
+                      is_dynamic = True
+                      break
+              if is_dynamic:
+                  continue
+              missing.append(key)
+
+          if missing:
+              for key in missing:
+                  print(f"::error::Referenced translation key not found in UI.json: {key}")
+              fail = True
+
+          if fail:
+              print(f"FAIL: {len(missing)} missing translation key(s)")
+              sys.exit(1)
+          else:
+              print(f"All {len(referenced_keys)} referenced UI_POS_ keys verified ({len(defined_keys)} defined).")
+          PYEOF
