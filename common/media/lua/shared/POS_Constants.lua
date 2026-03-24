@@ -618,31 +618,11 @@ POS_Constants.WRITING_IMPLEMENTS = {
 
 ---------------------------------------------------------------
 -- VHS media confidence threshold tiers (for resolveThresholdTier)
+-- NOTE: Threshold tables are defined in POS_Constants_Media.lua
+-- (loaded AFTER base constants) to avoid forward-reference crashes.
+-- See POS_Constants_Media.lua lines 133-210 for the authoritative
+-- definitions of VHS/MICROCASSETTE/FLOPPY_CONFIDENCE_THRESHOLDS.
 ---------------------------------------------------------------
-
---- Sorted ascending by threshold. Used with PhobosLib.resolveThresholdTier().
---- confMod <= -2500 -> low, confMod <= -1000 -> medium, else -> high.
-POS_Constants.VHS_CONFIDENCE_THRESHOLDS = {
-    { threshold = POS_Constants.VHS_CONFIDENCE_MOD_SPLICED,     result = POS_Constants.CONFIDENCE_LOW },
-    { threshold = POS_Constants.VHS_CONFIDENCE_MOD_REFURBISHED, result = POS_Constants.CONFIDENCE_MEDIUM },
-}
-
---- Microcassette: confMod >= MICROCASSETTE_CONFIDENCE_MOD -> high, else -> medium.
---- Default: high (when confMod exceeds all thresholds).
-POS_Constants.MICROCASSETTE_CONFIDENCE_THRESHOLDS = {
-    { threshold = POS_Constants.MICROCASSETTE_CONFIDENCE_MOD - 1,
-      result    = POS_Constants.CONFIDENCE_MEDIUM },
-}
-
---- Floppy: confMod >= FLOPPY_CONFIDENCE_MOD -> high,
----         confMod >= FLOPPY_WORN_CONFIDENCE_MOD -> medium, else -> low.
---- Default: high (when confMod exceeds all thresholds).
-POS_Constants.FLOPPY_CONFIDENCE_THRESHOLDS = {
-    { threshold = POS_Constants.FLOPPY_WORN_CONFIDENCE_MOD - 1,
-      result    = POS_Constants.CONFIDENCE_LOW },
-    { threshold = POS_Constants.FLOPPY_CONFIDENCE_MOD - 1,
-      result    = POS_Constants.CONFIDENCE_MEDIUM },
-}
 
 ---------------------------------------------------------------
 -- Persistence modData keys (operations / investments)
