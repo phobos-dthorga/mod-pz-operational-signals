@@ -2805,13 +2805,37 @@ mission definitions. The full design lives at `docs/architecture/mission-system-
 - Anti-repetition via `PhobosLib.avoidRecent()` with rolling history
   (max 10 per section).
 
-### 32.4 Voice Packs (Optional)
+### 32.4 Voice Packs
 
-- Per-archetype text overrides for intro and closing sections.
-- Fallback chain: archetype-specific pool -> default pool (voice packs are
-  never required).
-- 7 potential voices matching existing agent archetypes.
-- Voice packs are **additive content** — the system works without any defined.
+> **Status**: Fully implemented across 4 section types.
+
+Voice packs use the data-pack pattern (`POS_VoicePackSchema.lua` →
+`Definitions/VoicePacks/*.lua` → `POS_VoicePackRegistry.lua`).
+
+**Supported sections** (via `VOICE_ALL_OVERRIDE_SECTIONS`):
+
+| Section | Scope | Pools | Status |
+|---------|-------|-------|--------|
+| `situation` | Mission/contract briefings | 8 (all archetypes) | Implemented |
+| `submission` | Mission/contract completion instructions | 8 (all archetypes) | Implemented |
+| `agentState` | Free agent state transition messages | 5 (agent archetypes) | Implemented |
+| `investment` | Investment opportunity descriptions | — | Planned |
+
+**Fallback chain**: archetype-specific pool → default common pool.
+Voice packs are **additive** — the system works without any defined.
+
+**8 market agent archetypes** with distinct voices:
+scavenger (scrappy), quartermaster (methodical), wholesaler (volume),
+smuggler (shadowy), military (formal), trader (mercantile),
+speculator (analytical), crafter (technical).
+
+**5 free agent archetypes** with state-specific messages:
+runner (breathless), courier (professional), broker (smooth),
+smuggler (covert), contact (reliable).
+
+**Addon extensibility**: register via `Definitions/VoicePacks/*.lua`
+following `POS_VoicePackSchema`. Addon voice packs are loaded
+alongside built-in ones via `PhobosLib.createRegistry()`.
 
 ### 32.5 Anti-Patterns
 
