@@ -1102,7 +1102,18 @@ These items build ON TOP of this system and are explicitly deferred:
 
 ---
 
-## 22. Success Criteria
+## 22. Tier I Sending — Field Observations
+
+- Per the five-tier sending taxonomy (design-guidelines.md §20.4), Tier I transmits **raw observations**.
+- Sending at Tier I is messy, narrow, lossy, and often delayed. It should feel human and improvised.
+- Examples: recon snippets, tagged coordinates, item sightings, danger markers, distress bursts, courier drop notices, crude market whispers.
+- Mechanism: data chunks recorded on media can be physically transported (courier) or transmitted via radio at reduced fidelity. Radio transmission at Tier I has the lowest clarity and highest loss rate.
+- Signal ecology impact: Tier I transmissions add minimal saturation to the network. They are low-power, short-range, and easily lost in noise.
+- Cross-reference: `signal-ecology-design.md`, `design-guidelines.md §20.4`.
+
+---
+
+## 23. Success Criteria
 
 The Data-Recorder implementation is successful when:
 

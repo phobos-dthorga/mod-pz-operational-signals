@@ -28,6 +28,9 @@ anti-patterns) are covered in `design-guidelines.md` §34.
 | Trade Service | wholesaler state, PriceEngine prices, ItemPool categories, player inventory/money | inventory changes, money changes, stock mutations, state transitions, PN notifications | POSNET.Wholesalers (stock), player inventory (items/money) | POS_MarketSimulation, PhobosNotifications | player trade action |
 | Ambient Intel | terminal connection, market categories, base prices | low-confidence observations, item discoveries, item-level price data (`record.items` + `record.discoveredItems`) | POS_MarketDatabase (world ModData) | POS_ConnectionManager, POS_MarketSimulation | EveryOneMinute (30 min interval) |
 | Discovery System | observation records with discoveredItems | player ModData discoveries, PN notifications | player ModData (POSNET_Discoveries) | POS_MarketDatabase, PhobosLib | observation addRecord |
+| Strategic Relay | broadcast payloads, agent telemetry, market signals | relay queue packets, intercept results, agent backhaul data, fused intelligence | relay site modData | POS_FreeAgentService, POS_MarketSimulation, POS_SatelliteService | relay tick, intercept sweep, bandwidth change |
+| Signal Ecology | weather state, grid power, market volatility, agent count, hardware condition | composite signal state (5 pillars), qualitative signal band | cached per-hour | POS_ConnectionManager, POS_MarketSimulation, POS_FreeAgentService | hourly tick, state change events |
+| Broadcast Influence | compiled artifacts, broadcast mode, trust score | market_signal records, agent_advisory records, rumour echoes, trust mutations | POSNET.Broadcasts | POS_WholesalerService, POS_FreeAgentService, POS_RumourGenerator | broadcast sent |
 
 ---
 
@@ -106,5 +109,70 @@ This mapping prepares for a future event bus without requiring one now.
     confidence    = 7500,               -- confidence in basis points
     zoneId        = "muldraugh",         -- zone context (optional)
     sourceType    = "passive_recon",     -- originating system
+}
+```
+
+### Broadcast Record (Tier IV Influence Layer)
+
+```lua
+{
+    id            = "bc_1042",
+    type          = "scarcity_alert",    -- scarcity_alert | surplus_notice | route_warning | contact_bulletin | strategic_rumour
+    origin        = "satellite_tier4",   -- broadcast source
+    zoneId        = "west_point",
+    categoryId    = "ammo",
+    confidence    = 0.81,                -- derived from artifact quality
+    strength      = 0.46,                -- 0.0 to 1.0
+    freshness     = 0.90,                -- decays over time
+    trustWeight   = 0.67,                -- station broadcast credibility
+    issuedDay     = 22,
+    expiresDay    = 25,
+}
+```
+
+### Market Effect Projection (from Broadcast)
+
+```lua
+{
+    zoneId              = "west_point",
+    categoryId          = "ammo",
+    perceivedPressureMod = 0.22,         -- shifts perceived, not real pressure
+    rumourChanceMod     = 0.18,
+    wholesalerBias      = {
+        accumulate = 0.14,
+        conceal    = 0.09,
+    },
+}
+```
+
+### Agent Advisory (from Broadcast)
+
+```lua
+{
+    id              = "adv_991",
+    zoneId          = "west_point",
+    advisoryType    = "scarcity_alert",
+    severity        = 0.46,
+    confidence      = 0.81,
+    telemetryBonus  = 0.10,
+    recallBonus     = 0.06,
+    routeRiskMod    = 0.12,
+    expiresDay      = 25,
+}
+```
+
+### Signal State (Signal Ecology v2 — Future)
+
+```lua
+{
+    composite         = 0.72,            -- final [0, 1] value
+    qualitativeState  = "clear",         -- locked | clear | faded | fragmented | ghosted | lost
+    pillars = {
+        propagation    = 0.85,
+        infrastructure = 0.70,
+        clarity        = 0.65,
+        saturation     = 0.30,
+        intent         = 0.80,
+    },
 }
 ```

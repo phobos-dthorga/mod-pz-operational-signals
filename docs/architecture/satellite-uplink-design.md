@@ -824,3 +824,277 @@ Not brutal punishment — just enough to make stable infrastructure matter.
 - Signal quality bonuses for elevation and shielded cable upgrades
 - Lightning/storm disruption events
 - Amplifiers, boosters, junction boxes
+
+---
+
+## 25. Broadcast Influence Layer
+
+> **Status:** Design only — not yet implemented.
+
+### 25.1 Tier IV as the Influence Layer
+
+Tier IV is not the market itself or the agent simulator. It is the layer that
+pushes interpreted intelligence back into both systems. Tier III validates,
+Tier IV amplifies and shapes perception. Tier IV turns intelligence into
+influence.
+
+### 25.2 Broadcast Modes
+
+Four broadcast modes define how intelligence is projected:
+
+| Mode | Range | Clarity | Cost | Speed | Notes |
+|------|-------|---------|------|-------|-------|
+| **Local Pulse** | Short-range | High | Low | Fast | Tight, reliable, minimal side-effects |
+| **Regional Broadcast** | Wide reach | Moderate | Moderate | Moderate | Affected by saturation — diminishing returns in noisy zones |
+| **Emergency Burst** | Full range | Low (high distortion) | High | Immediate | Cuts through noise; causes signal instability afterward |
+| **Whisper Cast** | Narrow audience | High | Moderate | Slow propagation | Low detectability; surgical targeting |
+
+### 25.3 Broadcast Classes
+
+Five initial broadcast classes, each producing distinct systemic reactions:
+
+| Class | Perceived Pressure | Market Effect | Agent Effect | Side Effects |
+|-------|-------------------|---------------|--------------|-------------|
+| **Scarcity Alert** | Up | Wholesaler accumulation, prices rising | Broker urgency | Rumours multiply |
+| **Surplus Notice** | Down | Dump posture, prices soften | Trader opportunism | Crowding risk |
+| **Route Warning** | Lateral | Courier caution up, recall delay risk | Scavenger route variance | Mission routing adjusts |
+| **Contact Bulletin** | Neutral | Market visibility increases | Agent destination interest, inbound chatter up | Unlocks opportunities |
+| **Strategic Rumour** | Variable | Larger social distortion, lower trust | Stronger but less predictable reaction | More noise |
+
+### 25.4 Market Integration
+
+Broadcasts influence markets through three channels:
+
+#### 25.4.1 Information Shock
+
+Broadcasts create **perceived pressure**, not real inventory changes. The market
+reacts to what it believes, not what is true. Each broadcast injects a market
+signal into the economy:
+
+```lua
+--- Market signal injected by a Tier IV broadcast.
+--- Perceived pressure, not a real inventory change.
+market_signal = {
+    id           = nil,   -- unique signal ID (auto-generated)
+    zoneId       = nil,   -- target zone
+    categoryId   = nil,   -- affected market category
+    signalType   = nil,   -- broadcast class (e.g. "scarcity_alert")
+    strength     = 0.0,   -- 0.0–1.0, proportional to broadcast power
+    confidence   = 0.0,   -- 0.0–1.0, affects trust and rumour ratio
+    decayDays    = 0,     -- days until signal fully decays
+    source       = nil,   -- originator tag (player ID, faction, etc.)
+    public       = true,  -- whether visible to all market participants
+}
+```
+
+#### 25.4.2 Wholesaler Posture Shift
+
+Broadcasts nudge wholesaler posture states rather than setting them directly.
+Valid postures: `accumulate`, `hold`, `probe`, `dump`, `reroute`, `conceal`.
+
+```lua
+POS_WholesalerService.applyBroadcastInfluence(signal)
+```
+
+The function reads `signal.signalType` and `signal.strength` to calculate a
+posture nudge vector. The wholesaler's current posture, local inventory reality,
+and trust in the broadcast source all modulate the final outcome.
+
+#### 25.4.3 Rumour Generation
+
+Every broadcast emits **one authoritative signal** plus **zero-to-N rumour
+echoes**. The number and distortion of rumour echoes depends on:
+
+- Signal strength (stronger = more echoes)
+- Signal confidence (lower confidence = more distorted echoes)
+- Zone saturation (saturated zones amplify rumours)
+- Zone desperation (desperate zones generate wilder variants)
+- Active blackouts (blackout zones produce delayed, garbled echoes)
+
+### 25.5 Agent Integration
+
+Broadcasts influence field agents through four channels:
+
+#### 25.5.1 Broadcast-Derived Tasking Environment
+
+Agents react to public broadcasts as environmental stimuli. A Scarcity Alert
+in a zone makes scavengers more interested; a Route Warning makes couriers
+more cautious. Agents do not obey broadcasts — they respond to the
+informational climate broadcasts create.
+
+#### 25.5.2 Telemetry Richness
+
+Tier IV satellite capability improves the quality and cadence of agent updates.
+Key telemetry fields affected:
+
+- `telemetryQuality` — fidelity of agent status reports
+- `lastKnownState` — most recent confirmed agent activity
+- `lastContactDay` — recency of last successful check-in
+- `contactConfidence` — certainty that the agent is still operational
+
+Higher telemetry richness means better situational awareness for the player
+when managing deployed agents.
+
+#### 25.5.3 Recall Assistance
+
+Broadcasting a recall window through the satellite provides:
+
+- Chance bonus to successful agent recall
+- Reduced recall delay (agent responds faster)
+- Narrower uncertainty window on agent arrival
+
+#### 25.5.4 Agent Behavioural Modulation
+
+Each agent archetype has a **BroadcastResponse** profile that defines how
+broadcasts shift their behavioural biases:
+
+```lua
+BroadcastResponse = {
+    scavenger = {
+        scarcity_alert = { riskBias = +0.10, zoneInterest = +0.25 },
+        hazard_alert   = { riskBias = -0.15 },
+    },
+    courier = {
+        hazard_alert   = { routeCaution = +0.30 },
+        surplus_notice  = { deliveryPriority = +0.10 },
+    },
+    broker = {
+        scarcity_alert = { tradeUrgency = +0.25 },
+        surplus_notice  = { accumulationChance = +0.15 },
+    },
+    smuggler = {
+        military_alert = { stealthBias = +0.30, directRouteChance = -0.20 },
+    },
+}
+```
+
+Values are additive modifiers applied to the agent's base behavioural profile
+for the duration of the broadcast's decay window.
+
+### 25.6 Broadcast Trust
+
+Each zone maintains a **regional trust score** for satellite broadcasts.
+Trust changes based on:
+
+- **Accuracy** — did the broadcast reflect reality? Accurate broadcasts
+  build trust; false ones erode it.
+- **Confidence level** — high-confidence broadcasts that prove wrong
+  damage trust more than low-confidence ones.
+- **Frequency of sensational alerts** — constant Emergency Bursts or
+  Strategic Rumours degrade trust faster than measured Local Pulses.
+- **Follow-up reality match** — did the narrative hold up? Markets and
+  agents remember.
+
+Trust effects:
+
+| Trust Level | Market Effect | Agent Effect |
+|-------------|--------------|--------------|
+| High | Broadcasts move markets cleanly; posture shifts are direct | Agents treat advisories as reliable |
+| Medium | Mixed response; some rumour generation | Agents weigh advisories against local observation |
+| Low | More rumours than posture changes; markets resist | Agents may discount or ignore suspicious advisories |
+
+### 25.7 Confidence vs Influence
+
+A core design tension: **high-confidence broadcasts have trusted, slow
+impact; low-confidence broadcasts have risky, volatile impact.**
+
+The player chooses: *"Do I tell the truth carefully, or push a narrative
+aggressively?"*
+
+- High confidence + accurate = slow, steady, reliable market movement.
+  Trust builds. Agents comply. Rumour generation is minimal.
+- Low confidence + aggressive = fast, volatile, unpredictable market
+  movement. Trust erodes. Agents are skeptical. Rumour generation is high.
+- The optimal strategy depends on context: sometimes a careful truth
+  serves better; sometimes a loud narrative creates the opening you need.
+
+### 25.8 Broadcast Consequences
+
+Broadcasting costs more than power. Every transmission:
+
+- **Increases saturation** temporarily in the target zone, reducing
+  effectiveness of subsequent broadcasts
+- **Attracts competing signals** — other information sources (NPC factions,
+  rival operators in MP) may respond or counter-broadcast
+- **Creates misinformation echoes** — even truthful broadcasts generate
+  distorted copies as they propagate through the zone
+- **Raises detection risk** — frequent broadcasting from the same location
+  increases the chance of hostile attention
+- **Destabilises local signal clarity** — the zone's signal-to-noise ratio
+  degrades temporarily, affecting all SIGINT operations in the area
+
+### 25.9 Data Structures
+
+Implementation-ready Lua table schemas for the broadcast system:
+
+#### 25.9.1 Broadcast Record
+
+```lua
+--- A single broadcast event, stored for history and trust evaluation.
+broadcast_record = {
+    id              = nil,   -- unique broadcast ID (auto-generated)
+    timestamp       = 0,     -- game hour of broadcast
+    dishLocation    = nil,   -- { x, y } of the satellite dish used
+    mode            = nil,   -- "local_pulse" | "regional_broadcast" | "emergency_burst" | "whisper_cast"
+    class           = nil,   -- "scarcity_alert" | "surplus_notice" | "route_warning" | "contact_bulletin" | "strategic_rumour"
+    targetZoneId    = nil,   -- zone receiving the broadcast
+    categoryId      = nil,   -- market category (if applicable)
+    strength        = 0.0,   -- 0.0–1.0
+    confidence      = 0.0,   -- 0.0–1.0
+    decayDays       = 0,     -- days until effects fully decay
+    source          = nil,   -- player ID or faction tag
+    sigintLevel     = 0,     -- operator SIGINT skill at time of broadcast
+    powerStability  = 0.0,   -- generator fuel fraction at broadcast time
+    dishCondition   = 0.0,   -- dish condition fraction at broadcast time
+    rumoursEmitted  = 0,     -- count of rumour echoes generated
+    trustAtBroadcast = 0.0,  -- zone trust score at time of broadcast
+}
+```
+
+#### 25.9.2 Market Effect Projection
+
+```lua
+--- Projected market effect of a broadcast, calculated at broadcast time.
+market_effect_projection = {
+    broadcastId     = nil,   -- reference to broadcast_record.id
+    zoneId          = nil,   -- affected zone
+    categoryId      = nil,   -- affected market category
+    pressureType    = nil,   -- "up" | "down" | "lateral" | "neutral" | "variable"
+    pressureMagnitude = 0.0, -- 0.0–1.0, scaled by strength and trust
+    postureSuggestion = nil, -- suggested wholesaler posture nudge direction
+    postureStrength = 0.0,   -- 0.0–1.0, strength of posture nudge
+    rumourCount     = 0,     -- expected rumour echoes
+    rumourDistortion = 0.0,  -- 0.0–1.0, average distortion of echoes
+    decayStartDay   = 0,     -- game day when decay begins
+    decayEndDay     = 0,     -- game day when effect reaches zero
+    realityMatch    = nil,   -- nil until evaluated; then true/false
+}
+```
+
+#### 25.9.3 Agent Advisory
+
+```lua
+--- Advisory pushed to agents in response to a broadcast.
+agent_advisory = {
+    broadcastId     = nil,   -- reference to broadcast_record.id
+    agentId         = nil,   -- target agent
+    archetype       = nil,   -- agent archetype (scavenger, courier, broker, smuggler)
+    advisoryType    = nil,   -- broadcast class that triggered this advisory
+    modifiers       = {},    -- key-value pairs from BroadcastResponse profile
+    telemetryBoost  = 0.0,   -- improvement to telemetry quality (0.0–1.0)
+    recallBonus     = 0.0,   -- chance bonus for recall attempts (0.0–1.0)
+    recallDelayMod  = 0.0,   -- reduction in recall delay (fraction, 0.0–1.0)
+    expiresDay      = 0,     -- game day when advisory expires
+    trusted         = true,  -- whether the agent trusts this advisory (based on zone trust)
+}
+```
+
+### 25.10 Doctrine
+
+> *"Tier IV should not control markets or agents directly; it should alter
+> the informational climate in which both make decisions."*
+
+The Broadcast Influence Layer is a perception engine, not a command system.
+It shapes what markets believe and what agents prioritise — but never
+overrides their autonomous logic. The player's power is narrative, not
+mechanical. This is the line that must never be crossed.
