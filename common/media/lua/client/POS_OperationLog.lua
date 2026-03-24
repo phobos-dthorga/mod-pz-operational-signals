@@ -60,10 +60,10 @@ function POS_OperationLog.addOperation(operation)
     local ops = getOperationsStore(player)
     local maxActive = POS_Sandbox.getMaxActiveOperations()
 
-    -- Count current active operations
+    -- Count current active operations (pairs() for ModData compat)
     local activeCount = 0
-    for i = 1, #ops do
-        if ops[i].status == POS_Constants.STATUS_ACTIVE then
+    for _, op in pairs(ops) do
+        if type(op) == "table" and op.status == POS_Constants.STATUS_ACTIVE then
             activeCount = activeCount + 1
         end
     end
@@ -74,14 +74,19 @@ function POS_OperationLog.addOperation(operation)
     end
 
     -- Check for duplicate
-    for i = 1, #ops do
-        if ops[i].id == operation.id then
+    for _, op in pairs(ops) do
+        if type(op) == "table" and op.id == operation.id then
             PhobosLib.debug("POS", _TAG, "Duplicate operation ID: " .. operation.id)
             return false
         end
     end
 
-    table.insert(ops, operation)
+    -- Append using explicit index (table.insert crashes on Java ModData)
+    local nextIdx = 0
+    for k, _ in pairs(ops) do
+        if type(k) == "number" and k > nextIdx then nextIdx = k end
+    end
+    ops[nextIdx + 1] = operation
     PhobosLib.debug("POS", _TAG, "Operation added to log: " .. operation.id)
     return true
 end
@@ -100,9 +105,9 @@ end
 function POS_OperationLog.getByStatus(status)
     local all = POS_OperationLog.getAll()
     local results = {}
-    for i = 1, #all do
-        if all[i].status == status then
-            table.insert(results, all[i])
+    for _, op in pairs(all) do
+        if type(op) == "table" and op.status == status then
+            results[#results + 1] = op
         end
     end
     return results
@@ -113,9 +118,9 @@ end
 --- @return table|nil
 function POS_OperationLog.get(operationId)
     local all = POS_OperationLog.getAll()
-    for i = 1, #all do
-        if all[i].id == operationId then
-            return all[i]
+    for _, op in pairs(all) do
+        if type(op) == "table" and op.id == operationId then
+            return op
         end
     end
     return nil
@@ -155,9 +160,11 @@ function POS_OperationLog.getCounts()
         [POS_Constants.STATUS_FAILED]    = 0,
         [POS_Constants.STATUS_CANCELLED] = 0,
     }
-    for i = 1, #all do
-        local s = all[i].status or POS_Constants.STATUS_ACTIVE
-        counts[s] = (counts[s] or 0) + 1
+    for _, op in pairs(all) do
+        if type(op) == "table" then
+            local s = op.status or POS_Constants.STATUS_ACTIVE
+            counts[s] = (counts[s] or 0) + 1
+        end
     end
     return counts
 end

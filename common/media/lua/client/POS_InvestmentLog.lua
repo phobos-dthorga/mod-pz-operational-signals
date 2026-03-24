@@ -72,14 +72,19 @@ function POS_InvestmentLog.addOpportunity(opportunity)
 
     local opps = getStore(POS_Constants.MODDATA_OPPORTUNITIES)
 
-    -- Check for duplicate
-    for i = 1, #opps do
-        if opps[i].id == opportunity.id then
+    -- Check for duplicate (pairs() for ModData compatibility — # crashes on Java tables)
+    for _, opp in pairs(opps) do
+        if type(opp) == "table" and opp.id == opportunity.id then
             return false
         end
     end
 
-    table.insert(opps, opportunity)
+    -- Append using explicit index (table.insert crashes on ModData)
+    local nextIdx = 0
+    for k, _ in pairs(opps) do
+        if type(k) == "number" and k > nextIdx then nextIdx = k end
+    end
+    opps[nextIdx + 1] = opportunity
     POS_ScreenManager.markDirty()
     PhobosLib.debug("POS", _TAG, "[InvLog] Opportunity added: " .. opportunity.id)
     return true
@@ -93,11 +98,11 @@ function POS_InvestmentLog.getOpenOpportunities()
     local currentDay = gameTime and gameTime:getNightsSurvived() or 0
     local results = {}
 
-    for i = 1, #opps do
-        local opp = opps[i]
-        if opp.status == POS_Constants.OPP_STATUS_OPEN
-           and (not opp.expiryDay or opp.expiryDay > currentDay) then
-            table.insert(results, opp)
+    for _, opp in pairs(opps) do
+        if type(opp) == "table"
+                and opp.status == POS_Constants.OPP_STATUS_OPEN
+                and (not opp.expiryDay or opp.expiryDay > currentDay) then
+            results[#results + 1] = opp
         end
     end
 
@@ -109,9 +114,9 @@ end
 ---@return table|nil
 function POS_InvestmentLog.getOpportunity(opportunityId)
     local opps = getStore(POS_Constants.MODDATA_OPPORTUNITIES)
-    for i = 1, #opps do
-        if opps[i].id == opportunityId then
-            return opps[i]
+    for _, opp in pairs(opps) do
+        if type(opp) == "table" and opp.id == opportunityId then
+            return opp
         end
     end
     return nil
@@ -180,9 +185,9 @@ end
 function POS_InvestmentLog.getInvestmentsByStatus(status)
     local all = POS_InvestmentLog.getAllInvestments()
     local results = {}
-    for i = 1, #all do
-        if all[i].status == status then
-            table.insert(results, all[i])
+    for _, inv in pairs(all) do
+        if type(inv) == "table" and inv.status == status then
+            results[#results + 1] = inv
         end
     end
     return results
@@ -193,8 +198,8 @@ end
 function POS_InvestmentLog.countActiveInvestments()
     local all = POS_InvestmentLog.getAllInvestments()
     local count = 0
-    for i = 1, #all do
-        if all[i].status == POS_Constants.INV_STATUS_ACTIVE then
+    for _, inv in pairs(all) do
+        if type(inv) == "table" and inv.status == POS_Constants.INV_STATUS_ACTIVE then
             count = count + 1
         end
     end
@@ -208,14 +213,14 @@ end
 ---@return table|nil The resolved investment record
 function POS_InvestmentLog.resolveInvestment(investmentId, status)
     local all = POS_InvestmentLog.getAllInvestments()
-    for i = 1, #all do
-        if all[i].investmentId == investmentId
-           and all[i].status == POS_Constants.INV_STATUS_ACTIVE then
-            POS_InvestmentService.resolveInvestment(all[i], status)
+    for _, inv in pairs(all) do
+        if type(inv) == "table" and inv.investmentId == investmentId
+                and inv.status == POS_Constants.INV_STATUS_ACTIVE then
+            POS_InvestmentService.resolveInvestment(inv, status)
             POS_ScreenManager.markDirty()
             PhobosLib.debug("POS", _TAG, "[InvLog] Investment resolved: " .. investmentId
-                .. " → " .. status)
-            return all[i]
+                .. " -> " .. status)
+            return inv
         end
     end
     return nil
