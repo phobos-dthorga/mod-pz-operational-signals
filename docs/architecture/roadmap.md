@@ -16,7 +16,7 @@
 | 5 | Camera Workstation Phase 2-4 | **Phase 2 DONE** | Medium | Medium | camera-workstation-design.md |
 | 6 | Data Recorder Phase 2-4 | **Phase 2 DONE** | Medium | Medium | data-recorder-design.md |
 | 7 | Signal Strength affects Missions | **DONE** | Medium | Low | design-guidelines.md §5.4 |
-| 8 | Unimplemented Terminal Screens (4) | **2 of 4 DONE** | Polish | Medium | design-guidelines.md §33 |
+| 8 | Terminal Screen Consolidation | **DONE** (1 deferred) | Polish | Medium | design-guidelines.md §33 |
 | 9 | Building Target Name Resolution | **DONE** | Polish | Trivial | POS_MissionGenerator.lua |
 | 10 | Market Recon Repeat Visit Discount | **DONE** | Polish | Low | POS_MarketReconAction.lua |
 | 11 | Physical Item Trading (Contacts) | Designed, 0% | Polish | Medium | design-guidelines.md §1.3 |
@@ -172,20 +172,17 @@ progression (WalkieTalkie1 → HamRadio2).
 
 ## Tier 3: Polish & Content
 
-### 8. Unimplemented Terminal Screens
+### 8. Terminal Screen Consolidation
 
-Four screen constants defined but no screen files exist:
+**Status**: Phase 1 (20→12) and Phase 2 (25→22) **DONE**.
 
-| Constant | Screen ID | Purpose |
-|----------|-----------|---------|
-| `SCREEN_WHOLESALER_DIR` | pos.markets.directory | Wholesaler network visibility |
-| `SCREEN_ZONE_OVERVIEW` | pos.markets.zones | Zone pressure heatmap |
-| `SCREEN_EXCHANGE_OVERVIEW` | pos.exchange.overview | Stock exchange viewer |
-| `SCREEN_EVENT_LOG` | pos.markets.events | Hard events timeline |
+Absorbed screens:
+- Zone Overview → Market Overview Tab 2 "Zones"
+- Stockmarket → Market Overview Tab 3 "Exchange"
+- Wholesaler Directory → Contacts Tab 2 "Directory"
 
-**Recommendation**: Wholesaler Directory is highest value (visibility into
-supply network). Zone Overview is good world-building. Exchange and Event
-Log can wait.
+Only `SCREEN_EVENT_LOG` (pos.markets.events) remains unimplemented.
+Low priority — Market Signals screen covers most of this functionality.
 
 ---
 
