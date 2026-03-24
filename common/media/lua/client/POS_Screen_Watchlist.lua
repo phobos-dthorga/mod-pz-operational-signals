@@ -175,5 +175,17 @@ screen.getContextData = function(_params)
 end
 
 ---------------------------------------------------------------
+-- Starlit reactive refresh
+---------------------------------------------------------------
+
+if POS_Events and POS_Events.OnTradeCompleted then
+    POS_Events.OnTradeCompleted:addListener(function()
+        if POS_ScreenManager.currentScreen == screen.id then
+            POS_ScreenManager.refreshCurrentScreen()
+        end
+    end)
+end
+
+---------------------------------------------------------------
 
 POS_API.registerScreen(screen)

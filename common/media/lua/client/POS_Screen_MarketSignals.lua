@@ -294,5 +294,17 @@ function screen.refresh(params)
 end
 
 ---------------------------------------------------------------
+-- Starlit reactive refresh
+---------------------------------------------------------------
+
+if POS_Events and POS_Events.OnMarketEvent then
+    POS_Events.OnMarketEvent:addListener(function()
+        if POS_ScreenManager.currentScreen == screen.id then
+            POS_ScreenManager.refreshCurrentScreen()
+        end
+    end)
+end
+
+---------------------------------------------------------------
 
 POS_API.registerScreen(screen)

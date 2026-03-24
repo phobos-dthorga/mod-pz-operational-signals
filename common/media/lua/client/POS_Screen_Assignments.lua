@@ -23,6 +23,7 @@
 ---------------------------------------------------------------
 
 require "PhobosLib"
+require "PhobosLib_DualTab"
 require "POS_Constants"
 require "POS_ScreenManager"
 require "POS_TerminalWidgets"
@@ -650,6 +651,29 @@ local STATUS_BADGES = {
 --- Status filter tabs.
 local STATUS_FILTERS = { "all", "active", "available", "done" }
 
+--- Build category tabs from POS_Constants.MISSION_CATEGORIES.
+local function _buildCategoryTabs()
+    local tabs = {}
+    for _, catId in ipairs(POS_Constants.MISSION_CATEGORIES) do
+        tabs[#tabs + 1] = {
+            id = catId,
+            labelKey = "UI_POS_Mission_Category_" .. catId,
+        }
+    end
+    return tabs
+end
+
+local function _buildStatusTabs()
+    local tabs = {}
+    for _, sId in ipairs(STATUS_FILTERS) do
+        tabs[#tabs + 1] = {
+            id = sId,
+            labelKey = "UI_POS_Assignments_Filter" .. sId:sub(1,1):upper() .. sId:sub(2),
+        }
+    end
+    return tabs
+end
+
 --- Get missions filtered by category and status.
 local function getFilteredMissions(category, status)
     local result = {}
@@ -798,55 +822,27 @@ function screen.create(contentPanel, _params, _terminal)
         C.text)
     ctx.y = ctx.y + ctx.lineH + 4
 
-    -- ── Tab Row 1: Category ──────────────────────────────────
-    local categories = POS_Constants.MISSION_CATEGORIES
-    local catTabW = math.floor(ctx.panel:getWidth() / #categories) - 2
-    local catTabX = 0
-    for _, catId in ipairs(categories) do
-        local label = PhobosLib.safeGetText("UI_POS_Mission_Category_" .. catId)
-        if _activeCategory == catId then
-            W.createLabel(ctx.panel, catTabX + 4, ctx.y + 2,
-                "> " .. label, C.textBright)
-        else
-            local cId = catId
-            W.createButton(ctx.panel, catTabX, ctx.y, catTabW, ctx.btnH,
-                label, nil,
-                function()
-                    _activeCategory = cId
-                    _selectedMissionId = nil
-                    POS_ScreenManager.replaceCurrent(screen.id,
-                        { category = cId, status = _activeStatus })
-                end)
-        end
-        catTabX = catTabX + catTabW + 2
-    end
-    ctx.y = ctx.y + ctx.btnH + 4
+    -- Dual tab bar: category × status (PhobosLib_DualTab)
+    ctx.y = PhobosLib_DualTab.create({
+        panel   = ctx.panel,
+        y       = ctx.y,
+        tabs1   = _buildCategoryTabs(),
+        tabs2   = _buildStatusTabs(),
+        active1 = _activeCategory,
+        active2 = _activeStatus,
+        colours = C,
+        btnH    = ctx.btnH,
+        _W      = W,
+        onTabChange = function(tab1, tab2)
+            _activeCategory = tab1
+            _activeStatus = tab2
+            _selectedMissionId = nil
+            POS_ScreenManager.replaceCurrent(screen.id,
+                { category = tab1, status = tab2 })
+        end,
+    })
 
-    -- ── Tab Row 2: Status ────────────────────────────────────
-    local statusTabW = math.floor(ctx.panel:getWidth() / #STATUS_FILTERS) - 2
-    local statusTabX = 0
-    for _, statusId in ipairs(STATUS_FILTERS) do
-        local label = PhobosLib.safeGetText("UI_POS_Assignments_Filter"
-            .. statusId:sub(1,1):upper() .. statusId:sub(2))
-        if _activeStatus == statusId then
-            W.createLabel(ctx.panel, statusTabX + 4, ctx.y + 2,
-                "> " .. label, C.textBright)
-        else
-            local sId = statusId
-            W.createButton(ctx.panel, statusTabX, ctx.y, statusTabW, ctx.btnH,
-                label, nil,
-                function()
-                    _activeStatus = sId
-                    _selectedMissionId = nil
-                    POS_ScreenManager.replaceCurrent(screen.id,
-                        { category = _activeCategory, status = sId })
-                end)
-        end
-        statusTabX = statusTabX + statusTabW + 2
-    end
-    ctx.y = ctx.y + ctx.btnH + 4
-
-    W.createSeparator(ctx.panel, 0, ctx.y, 50, "-")
+    W.createSeparator(ctx.panel, 0, ctx.y, POS_Constants.HEADER_SEPARATOR_WIDTH, "-")
     ctx.y = ctx.y + ctx.lineH
 
     -- ── Filtered mission list ────────────────────────────────
