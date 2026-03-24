@@ -104,15 +104,20 @@ local function renderContacts(ctx, params)
         and POS_MarketSimulation.getZoneRegistry()
 
     local entries = {}
+    local hiddenCount = 0
     if wholesalers then
         for wId, w in pairs(wholesalers) do
             if type(w) == "table" then
                 local visible = (w.visibility or 0) > visThreshold
                 local highSigint = sigintLevel >= POS_Constants.SIGINT_HIGH_VISIBILITY_LEVEL
-                entries[#entries + 1] = {
-                    id = wId, wholesaler = w,
-                    isRevealed = visible or highSigint,
-                }
+                if visible or highSigint then
+                    entries[#entries + 1] = {
+                        id = wId, wholesaler = w,
+                        isRevealed = true,
+                    }
+                else
+                    hiddenCount = hiddenCount + 1
+                end
             end
         end
     end
@@ -189,6 +194,21 @@ local function renderContacts(ctx, params)
                 { tab = "contacts", contactPage = newPage })
         end,
     })
+
+    -- §49 No Silent Gates: show hidden contacts hint
+    if hiddenCount > 0 then
+        ctx.y = ctx.y + 4
+        W.createLabel(ctx.panel, 8, ctx.y,
+            PhobosLib.safeGetText("UI_POS_Gate_HiddenContacts")
+                :gsub("%%1", tostring(hiddenCount)),
+            C.dim)
+        ctx.y = ctx.y + ctx.lineH
+        W.createLabel(ctx.panel, 8, ctx.y,
+            PhobosLib.safeGetText("UI_POS_Gate_SigintReveal")
+                :gsub("%%1", tostring(sigintLevel)),
+            C.dim)
+        ctx.y = ctx.y + ctx.lineH
+    end
 end
 
 ---------------------------------------------------------------

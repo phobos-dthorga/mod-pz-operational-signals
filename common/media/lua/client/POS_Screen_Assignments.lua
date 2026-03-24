@@ -855,6 +855,41 @@ function screen.create(contentPanel, _params, _terminal)
         W.createLabel(ctx.panel, 8, ctx.y,
             PhobosLib.safeGetText(emptyKey), C.dim)
         ctx.y = ctx.y + ctx.lineH
+
+        -- §49 No Silent Gates: explain WHY and HOW to overcome
+        -- Check if band filtering is hiding missions for this category
+        local activeBand = nil
+        if POS_ConnectionManager and POS_ConnectionManager.getActiveBand then
+            local ok, band = PhobosLib.safecall(POS_ConnectionManager.getActiveBand)
+            if ok then activeBand = band end
+        end
+        if activeBand then
+            W.createLabel(ctx.panel, 8, ctx.y,
+                PhobosLib.safeGetText("UI_POS_Gate_NoBandMissions")
+                .. " (" .. activeBand .. ")", C.dim)
+            ctx.y = ctx.y + ctx.lineH
+        end
+
+        -- Hint about difficulty/signal gating
+        local signalPct = 100
+        if POS_ConnectionManager and POS_ConnectionManager.getSignalStrength then
+            local ok, sig = PhobosLib.safecall(POS_ConnectionManager.getSignalStrength)
+            if ok and type(sig) == "number" then
+                signalPct = PhobosLib.clamp(math.floor(sig * 100), 0, 100)
+            end
+        end
+        if signalPct < 100 then
+            W.createLabel(ctx.panel, 8, ctx.y,
+                PhobosLib.safeGetText("UI_POS_Gate_SignalLimits")
+                    :gsub("%%1", tostring(signalPct)),
+                C.dim)
+            ctx.y = ctx.y + ctx.lineH
+        end
+
+        -- General difficulty hint
+        W.createLabel(ctx.panel, 8, ctx.y,
+            PhobosLib.safeGetText("UI_POS_Gate_DifficultyLocked"), C.dim)
+        ctx.y = ctx.y + ctx.lineH
     else
         local currentPage = (_params and _params.missionPage) or 1
         local catCopy = _activeCategory

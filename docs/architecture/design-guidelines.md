@@ -3762,6 +3762,55 @@ enable it. Silently showing empty content leaves the user confused.
 
 ---
 
+## 49. No Silent Gates
+
+### 49.1 Principle
+
+Every gate, restriction, or hidden requirement in POSnet MUST explain
+itself to the player. If the user doesn't know about an inherent design
+feature, a specific mention MUST be made and how it can be OVERCOME.
+
+Every gate message must include three elements:
+1. **WHAT** is restricted ("These missions require a tactical band")
+2. **WHY** it's restricted ("Your radio is tuned to Operations")
+3. **HOW** to overcome it ("Switch to POSnet_Tactical frequency")
+
+### 49.2 Gate Types
+
+| Gate Type | Explained? | Message Location |
+|-----------|-----------|------------------|
+| Connection required | YES | Menu item disabled with reason |
+| Signal strength minimum | YES | Menu item disabled with reason |
+| Radio band (screens) | YES | Menu item disabled with reason |
+| Radio band (missions) | YES | Empty state in Assignments (§49) |
+| Camera cooldown | YES | Context menu tooltip |
+| Camera power/inputs | YES | Context menu tooltip |
+| Wholesaler state blocked | YES | Disabled trade button |
+| Player balance | YES | Disabled buy button + balance shown |
+| SIGINT visibility | YES | Hidden count + skill hint in Contacts (§49) |
+| Mission difficulty cap | YES | Footer hint in Assignments (§49) |
+| Signal → mission quality | YES | Footer hint in Assignments (§49) |
+| Living Market disabled | YES | Explicit message on affected screens (§48) |
+| Equipment required | YES | Menu item disabled with reason |
+
+### 49.3 Implementation Pattern
+
+All gate messages use `UI_POS_Gate_*` translation keys with `%1`/`%2`
+placeholders for dynamic values (skill level, signal %, band name).
+Messages are rendered as dim-coloured labels below the empty state.
+
+### 49.4 Anti-Patterns
+
+| Anti-Pattern | Why It's Wrong |
+|---|---|
+| Silent content filtering | Player sees empty list, doesn't know why |
+| "No data" without context | Doesn't explain the specific gate or how to overcome |
+| SIGINT gates on screen access | Per §21, SIGINT affects data quality, not access |
+| Hiding menu items entirely | Show the screen with an explanation |
+| Hardcoded gate messages | Use UI_POS_Gate_* translation keys |
+
+---
+
 ## 47. Operations Actor Architecture
 
 > **Status**: Design document. Reframes Free Agents from "selling Phase 3"
