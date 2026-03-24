@@ -105,7 +105,9 @@ function screen.create(contentPanel, params, _terminal)
     local isStandalone = (contract == nil)
 
     -- Resolve cargo/payout context
-    local itemName, qty, payout
+    local itemName = nil
+    local qty = 0
+    local payout = 0
 
     if contract then
         -- Contract-linked mode: cargo + payout from contract
