@@ -1150,7 +1150,6 @@
     "UI_POS_FreeAgent_NetPayout": "Net Payout",
     "UI_POS_FreeAgent_SigintBonus": "SIGINT Bonus",
     "UI_POS_FreeAgent_GeneralCargo": "General cargo",
-    "UI_POS_Assignments_FilterActive": "Active",
     "UI_POS_Assignments_FilterCompleted": "Completed",
     "UI_POS_Assignments_FilterFailed": "Failed",
     "UI_POS_Signal_AgentUpdate": "Agent update"
