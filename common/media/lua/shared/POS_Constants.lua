@@ -429,12 +429,21 @@ POS_Constants.FONT_SCALE_LARGE_WIDTH = 900
 -- World ModData keys (Global ModData containers)
 ---------------------------------------------------------------
 
-POS_Constants.WMD_WORLD       = "POSNET.World"
-POS_Constants.WMD_EXCHANGE    = "POSNET.Exchange"
-POS_Constants.WMD_WHOLESALERS = "POSNET.Wholesalers"
-POS_Constants.WMD_META        = "POSNET.Meta"
-POS_Constants.WMD_BUILDINGS   = "POSNET.Buildings"
-POS_Constants.WMD_MAILBOXES   = "POSNET.Mailboxes"
+POS_Constants.WMD_WORLD               = "POSNET.World"
+POS_Constants.WMD_EXCHANGE            = "POSNET.Exchange"
+POS_Constants.WMD_WHOLESALERS         = "POSNET.Wholesalers"
+POS_Constants.WMD_META                = "POSNET.Meta"
+POS_Constants.WMD_BUILDINGS           = "POSNET.Buildings"
+POS_Constants.WMD_MAILBOXES           = "POSNET.Mailboxes"
+POS_Constants.WMD_CONTRACTS           = "POSNET.Contracts"
+POS_Constants.WMD_FREE_AGENTS         = "POSNET.FreeAgents"
+POS_Constants.WMD_ACTIVE_EVENTS       = "POSNET.ActiveEvents"
+POS_Constants.WMD_RECENT_EVENTS       = "POSNET.RecentEvents"
+POS_Constants.WMD_EVENT_LOG           = "POSNET.EventLog"
+POS_Constants.WMD_BUILDING_CACHE      = "POSNET.BuildingCache"
+POS_Constants.WMD_MAILBOX_CACHE       = "POSNET.MailboxCache"
+POS_Constants.WMD_PENDING_RESOLUTIONS = "POS_PendingResolutions"
+POS_Constants.PENDING_PAYOUT_PREFIX   = "POS_PendingPayouts_"
 
 ---------------------------------------------------------------
 -- Schema versioning

@@ -4015,3 +4015,29 @@ a different class of truth.
 `tier-v-strategic-relay-design.md` §6,
 `broadcast-influence-design.md` §2,
 `passive-recon-design.md` §2.3
+
+---
+
+## 53. Data Store Registry
+
+Every persistent data store (ModData key) used by POSnet MUST be
+registered in `data-stores-reference.md` before merge.
+
+For each store, document:
+1. **Constant name** (`WMD_` for world, `MODDATA_` for player)
+2. **Owner module** (which service reads/writes it)
+3. **Cap / pruning strategy** (`pushRolling`, `trimByAge`, lifecycle, or unbounded)
+4. **Growth classification** (LOW / MEDIUM / HIGH)
+5. **Reset coverage** (is it in `POS_DataResetService`?)
+6. **Multiplayer scope** (shared world vs per-player)
+
+> **Anti-pattern**: Adding a `getWorldModDataTable()` call without updating the
+> registry. Unregistered stores become invisible to the reset system and data
+> audits, leading to ghost data that survives resets and corrupts save files.
+
+**PhobosLib utilities to prefer**:
+- `pushRolling(arr, val, cap)` — for any array that grows over time
+- `trimByAge(arr, dayField, maxDays, currentDay)` — for entries with timestamps
+- Avoid unbounded arrays in ModData — PZ serialises the entire table on save
+
+**Cross-reference**: `data-stores-reference.md`

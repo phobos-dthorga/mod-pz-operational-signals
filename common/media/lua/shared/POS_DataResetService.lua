@@ -56,6 +56,29 @@ local function getAllWorldKeys()
     if POS_Constants.WMD_MARKET_ZONES then keys[#keys + 1] = POS_Constants.WMD_MARKET_ZONES end
     if POS_Constants.WMD_RUMOURS      then keys[#keys + 1] = POS_Constants.WMD_RUMOURS end
     if POS_Constants.WMD_MARKET_DATA  then keys[#keys + 1] = POS_Constants.WMD_MARKET_DATA end
+
+    -- Keys from POS_Constants_Trade / core constants (may not exist yet at file-load time)
+    if POS_Constants.WMD_TRADE_HISTORY      then keys[#keys + 1] = POS_Constants.WMD_TRADE_HISTORY end
+    if POS_Constants.WMD_CONTRACTS          then keys[#keys + 1] = POS_Constants.WMD_CONTRACTS end
+    if POS_Constants.WMD_FREE_AGENTS        then keys[#keys + 1] = POS_Constants.WMD_FREE_AGENTS end
+    if POS_Constants.WMD_ACTIVE_EVENTS      then keys[#keys + 1] = POS_Constants.WMD_ACTIVE_EVENTS end
+    if POS_Constants.WMD_RECENT_EVENTS      then keys[#keys + 1] = POS_Constants.WMD_RECENT_EVENTS end
+    if POS_Constants.WMD_EVENT_LOG          then keys[#keys + 1] = POS_Constants.WMD_EVENT_LOG end
+    if POS_Constants.WMD_BUILDING_CACHE     then keys[#keys + 1] = POS_Constants.WMD_BUILDING_CACHE end
+    if POS_Constants.WMD_MAILBOX_CACHE      then keys[#keys + 1] = POS_Constants.WMD_MAILBOX_CACHE end
+    if POS_Constants.WMD_PENDING_RESOLUTIONS then keys[#keys + 1] = POS_Constants.WMD_PENDING_RESOLUTIONS end
+
+    -- Dynamic per-player payout key (world-level ModData keyed by username)
+    if POS_Constants.PENDING_PAYOUT_PREFIX then
+        local player = getSpecificPlayer(0)
+        if player then
+            local username = player:getUsername()
+            if username then
+                keys[#keys + 1] = POS_Constants.PENDING_PAYOUT_PREFIX .. username
+            end
+        end
+    end
+
     return keys
 end
 
