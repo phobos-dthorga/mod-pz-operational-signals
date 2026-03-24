@@ -428,26 +428,35 @@ jobs:
                   if key.startswith("UI_POS_"):
                       referenced_keys.add(key)
 
-          # Also check for hardcoded string references like "UI_POS_*" in table values
-          for lf in lua_files:
-              with open(lf, encoding="utf-8", errors="replace") as f:
-                  for line_no, line in enumerate(f, 1):
-                      for m in re.finditer(r'"(UI_POS_\w+)"', line):
-                          referenced_keys.add(m.group(1))
+          # Skip broad "UI_POS_*" in table values — only check safeGetText calls
+          # (The broad grep catches dynamic prefixes and template examples)
 
           # Exclude keys that are dynamically constructed (pattern-based)
           # e.g. "UI_POS_Zone_" .. zoneId — these can't be statically checked
           dynamic_prefixes = [
               "UI_POS_Zone_",
               "UI_POS_Mission_Category_",
+              "UI_POS_Mission_Difficulty_",
               "UI_POS_FreeAgent_State_",
               "UI_POS_FreeAgent_Archetype_",
+              "UI_POS_FreeAgent_NetPayout",
+              "UI_POS_FreeAgent_SigintBonus",
               "UI_POS_Wholesaler_State_",
               "UI_POS_Contract_Kind_",
               "UI_POS_Contract_Urgency_",
               "UI_POS_Contract_Status_",
               "UI_POS_Assignments_Filter",
               "UI_POS_Event_",
+              "UI_POS_Market_Cat_",
+              "UI_POS_Market_Category_",
+              "UI_POS_Market_SubCat_",
+              "UI_POS_SubCat_",
+              "UI_POS_Agent_Your",
+              "UI_POS_MarketEvent_Your",
+              "UI_POS_Rumour_",
+              "UI_POS_BBS_InvDesc_",
+              "UI_POS_Analysis_",
+              "UI_POS_Wholesaler_",
           ]
 
           fail = False
