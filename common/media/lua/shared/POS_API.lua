@@ -77,6 +77,7 @@ function POS_API.registerScreen(def)
             refresh = def.refresh or function() end,
             onEnter = def.onEnter,
             onExit = def.onExit,
+            getContextData = def.getContextData,
         }
         -- Only register if not already registered
         if not POS_ScreenManager.screens or not POS_ScreenManager.screens[def.id] then
