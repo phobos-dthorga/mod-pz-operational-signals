@@ -79,7 +79,12 @@ function POS_InvestmentResolver.registerInvestment(username, investmentId,
     principalAmount, returnAmount, maturityDay, actualRisk)
 
     local pending = getPendingResolutions()
-    table.insert(pending, {
+    -- Append using explicit index (table.insert crashes on Java ModData)
+    local nextIdx = 0
+    for k, _ in pairs(pending) do
+        if type(k) == "number" and k > nextIdx then nextIdx = k end
+    end
+    pending[nextIdx + 1] = {
         investmentId = investmentId,
         username = username,
         principalAmount = principalAmount,
@@ -87,7 +92,7 @@ function POS_InvestmentResolver.registerInvestment(username, investmentId,
         maturityDay = maturityDay,
         actualRisk = actualRisk,
         status = "pending",
-    })
+    }
 
     PhobosLib.debug("POS", _TAG, "[InvResolver] Registered investment: " .. investmentId
         .. " for " .. username .. " (maturity day " .. maturityDay .. ")")
@@ -105,33 +110,38 @@ function POS_InvestmentResolver.resolveMatured()
     local currentDay = gameTime:getNightsSurvived()
 
     local pending = getPendingResolutions()
-    local resolved = {}
 
-    for i = #pending, 1, -1 do
-        local entry = pending[i]
-        if entry.status == "pending" and entry.maturityDay <= currentDay then
+    -- Build surviving entries into a new table (rebuild approach —
+    -- #, table.insert, table.remove all crash on Java ModData)
+    local surviving = {}
+    local survivingIdx = 1
+
+    for _, entry in pairs(pending) do
+        if type(entry) ~= "table" then
+            -- skip non-table entries (ModData metadata)
+        elseif entry.status == "pending" and entry.maturityDay and entry.maturityDay <= currentDay then
             -- Roll against actualRisk
             local roll = ZombRand(RESOLUTION_PRECISION) / RESOLUTION_PRECISION  -- [0, 1)
             local status
             local returnAmount = 0
 
-            if roll < entry.actualRisk then
+            if roll < (entry.actualRisk or 0) then
                 status = POS_Constants.INV_STATUS_DEFAULTED
-                PhobosLib.debug("POS", _TAG, "[InvResolver] DEFAULTED: " .. entry.investmentId
+                PhobosLib.debug("POS", _TAG, "[InvResolver] DEFAULTED: " .. (entry.investmentId or "?")
                     .. " (roll=" .. string.format("%.3f", roll)
-                    .. " < risk=" .. string.format("%.3f", entry.actualRisk) .. ")")
+                    .. " < risk=" .. string.format("%.3f", entry.actualRisk or 0) .. ")")
             else
                 status = POS_Constants.INV_STATUS_MATURED
-                returnAmount = entry.returnAmount
-                PhobosLib.debug("POS", _TAG, "[InvResolver] MATURED: " .. entry.investmentId
+                returnAmount = entry.returnAmount or 0
+                PhobosLib.debug("POS", _TAG, "[InvResolver] MATURED: " .. (entry.investmentId or "?")
                     .. " (roll=" .. string.format("%.3f", roll)
-                    .. " >= risk=" .. string.format("%.3f", entry.actualRisk)
+                    .. " >= risk=" .. string.format("%.3f", entry.actualRisk or 0)
                     .. ", payout=$" .. returnAmount .. ")")
             end
 
             -- Try to send to online player
             local sent = false
-            local players = getOnlinePlayers()
+            local players = getOnlinePlayers and getOnlinePlayers()
             if players then
                 for j = 0, players:size() - 1 do
                     local p = players:get(j)
@@ -148,25 +158,32 @@ function POS_InvestmentResolver.resolveMatured()
             end
 
             -- If player is offline, queue payout for later
-            if not sent then
+            if not sent and entry.username then
                 local payouts = getPendingPayouts(entry.username)
-                table.insert(payouts, {
+                -- Append using explicit index (table.insert crashes on Java ModData)
+                local payNextIdx = 0
+                for k, _ in pairs(payouts) do
+                    if type(k) == "number" and k > payNextIdx then payNextIdx = k end
+                end
+                payouts[payNextIdx + 1] = {
                     investmentId = entry.investmentId,
                     status = status,
                     returnAmount = returnAmount,
-                })
+                }
                 PhobosLib.debug("POS", _TAG, "[InvResolver] Player " .. entry.username
-                    .. " offline — queued payout for " .. entry.investmentId)
+                    .. " offline -- queued payout for " .. (entry.investmentId or "?"))
             end
 
-            table.insert(resolved, i)
+            -- Don't add to surviving (it's resolved)
+        else
+            -- Not yet matured — keep in pending
+            surviving[survivingIdx] = entry
+            survivingIdx = survivingIdx + 1
         end
     end
 
-    -- Remove resolved entries (reverse order to maintain indices)
-    for _, idx in ipairs(resolved) do
-        table.remove(pending, idx)
-    end
+    -- Replace the pending store with surviving entries only
+    PhobosLib.setWorldModDataTable(PENDING_KEY, "entries", surviving)
 end
 
 ---------------------------------------------------------------

@@ -167,10 +167,15 @@ function POS_InvestmentLog.recordInvestment(opportunityId, principalAmount,
         opportunityId, principalAmount, returnAmount,
         maturityDay, actualRisk, posterName, currentDay)
 
-    table.insert(investments, record)
+    -- Append using explicit index (table.insert crashes on Java ModData)
+    local nextIdx = 0
+    for k, _ in pairs(investments) do
+        if type(k) == "number" and k > nextIdx then nextIdx = k end
+    end
+    investments[nextIdx + 1] = record
     POS_ScreenManager.markDirty()
     PhobosLib.debug("POS", _TAG, "[InvLog] Investment recorded: " .. opportunityId
-        .. " ($" .. principalAmount .. " → $" .. returnAmount .. ")")
+        .. " ($" .. principalAmount .. " -> $" .. returnAmount .. ")")
 end
 
 --- Get all player investments.

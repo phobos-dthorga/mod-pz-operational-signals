@@ -91,11 +91,28 @@ function POS_EventService.fireEvent(eventDef, zoneId, currentDay)
     saveEventStore(store)
 
     -- Add to recent events log (for Market Signals screen)
+    -- Use pairs() count for ModData compat (# and table.remove crash on Java tables)
     local recent = getRecentEvents()
-    recent[#recent + 1] = eventRecord
-    -- Cap recent events
-    while #recent > POS_Constants.EVENT_MAX_RECENT do
-        table.remove(recent, 1)
+    local recentCount = 0
+    for k, _ in pairs(recent) do
+        if type(k) == "number" and k > recentCount then recentCount = k end
+    end
+    recent[recentCount + 1] = eventRecord
+
+    -- Cap recent events by rebuilding (table.remove crashes on ModData)
+    if recentCount + 1 > POS_Constants.EVENT_MAX_RECENT then
+        local trimmed = {}
+        local startIdx = (recentCount + 1) - POS_Constants.EVENT_MAX_RECENT + 1
+        local newIdx = 1
+        for i = startIdx, recentCount + 1 do
+            if recent[i] then
+                trimmed[newIdx] = recent[i]
+                newIdx = newIdx + 1
+            end
+        end
+        saveRecentEvents(trimmed)
+    else
+        saveRecentEvents(recent)
     end
     saveRecentEvents(recent)
 

@@ -59,18 +59,28 @@ end
 ---@return number  Count of entries removed
 function POS_RumourGenerator.pruneExpired(currentDay)
     local entries = POS_RumourGenerator.getRumours()
-    local removed = 0
-    local i = 1
-    while i <= #entries do
-        local entry = entries[i]
-        if not entry or not entry.expiryDay or entry.expiryDay <= currentDay then
-            table.remove(entries, i)
-            removed = removed + 1
-        else
-            i = i + 1
+    -- Rebuild without expired entries (# and table.remove crash on Java ModData)
+    local surviving = {}
+    local survivingIdx = 1
+    local totalCount = 0
+
+    for _, entry in pairs(entries) do
+        if type(entry) == "table" then
+            totalCount = totalCount + 1
+            if entry.expiryDay and entry.expiryDay > currentDay then
+                surviving[survivingIdx] = entry
+                survivingIdx = survivingIdx + 1
+            end
         end
     end
+
+    local removed = totalCount - (survivingIdx - 1)
     if removed > 0 then
+        -- Clear and rewrite (ModData-safe)
+        local keysToRemove = {}
+        for k, _ in pairs(entries) do keysToRemove[#keysToRemove + 1] = k end
+        for _, k in ipairs(keysToRemove) do entries[k] = nil end
+        for k, v in pairs(surviving) do entries[k] = v end
         PhobosLib.debug("POS", _TAG, "Pruned " .. tostring(removed) .. " expired rumours")
     end
     return removed

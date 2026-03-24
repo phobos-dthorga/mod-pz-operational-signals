@@ -139,16 +139,22 @@ function POS_PlayerState.addToWatchlist(player, categoryId)
     if POS_PlayerState.isWatching(player, categoryId) then return false end
     local wl = PhobosLib.getPlayerModDataTable(player, POS_Constants.MODDATA_WATCHLIST)
     if not wl then return false end
+    -- Count entries using pairs() (# crashes on Java ModData)
+    local entryCount = 0
+    for k, _ in pairs(wl) do
+        if type(k) == "number" then entryCount = entryCount + 1 end
+    end
     local maxEntries = POS_Constants.WATCHLIST_MAX_ENTRIES
-    if #wl >= maxEntries then return false end
+    if entryCount >= maxEntries then return false end
     local gt = getGameTime and getGameTime()
     local day = gt and gt:getNightsSurvived() or 0
-    table.insert(wl, {
+    -- Append using explicit index (table.insert crashes on Java ModData)
+    wl[entryCount + 1] = {
         categoryId = categoryId,
         addedDay = day,
         lastSnapshotAvg = nil,
         lastSnapshotDay = 0,
-    })
+    }
     return true
 end
 
@@ -159,12 +165,28 @@ end
 function POS_PlayerState.removeFromWatchlist(player, categoryId)
     local wl = PhobosLib.getPlayerModDataTable(player, POS_Constants.MODDATA_WATCHLIST)
     if not wl then return false end
-    for i, entry in ipairs(wl) do
-        if entry.categoryId == categoryId then
-            table.remove(wl, i)
-            return true
+    -- Rebuild without the target entry (table.remove crashes on Java ModData)
+    local found = false
+    local rebuilt = {}
+    local idx = 1
+    for _, entry in pairs(wl) do
+        if type(entry) == "table" then
+            if not found and entry.categoryId == categoryId then
+                found = true  -- skip this one
+            else
+                rebuilt[idx] = entry
+                idx = idx + 1
+            end
         end
     end
+    if not found then return false end
+    -- Clear and rewrite (ModData-safe)
+    local keysToRemove = {}
+    for k, _ in pairs(wl) do keysToRemove[#keysToRemove + 1] = k end
+    for _, k in ipairs(keysToRemove) do wl[k] = nil end
+    for k, v in pairs(rebuilt) do wl[k] = v end
+    return true
+end
     return false
 end
 

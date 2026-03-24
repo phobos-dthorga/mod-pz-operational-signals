@@ -217,9 +217,9 @@ end
 ---@param currentDay number Current game day (nightsSurvived)
 function POS_OperationService.checkExpiry(operations, currentDay)
     if not operations or not currentDay then return end
-    for i = 1, #operations do
-        local op = operations[i]
-        if op.status == POS_Constants.STATUS_ACTIVE and op.expiryDay then
+    -- Use pairs() for ModData compat (# crashes on Java tables)
+    for _, op in pairs(operations) do
+        if type(op) == "table" and op.status == POS_Constants.STATUS_ACTIVE and op.expiryDay then
             if currentDay >= op.expiryDay then
                 POS_OperationService.expireOperation(op)
             end
@@ -255,9 +255,8 @@ function POS_OperationService.onEveryOneMinute()
 
     -- Check completion for active operations
     if POS_CompletionDetector and POS_CompletionDetector.checkOperation then
-        for i = 1, #ops do
-            local op = ops[i]
-            if op.status == POS_Constants.STATUS_ACTIVE then
+        for _, op in pairs(ops) do
+            if type(op) == "table" and op.status == POS_Constants.STATUS_ACTIVE then
                 if POS_CompletionDetector.checkOperation(player, op) then
                     POS_OperationService.completeOperation(op, player)
                 end
