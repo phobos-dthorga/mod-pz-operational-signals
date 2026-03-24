@@ -2850,28 +2850,31 @@ Main Menu (pos.main)
  ├── BBS Hub (pos.bbs)
  │    ├── Bulletin Board        (pos.bbs.board)
  │    │    └── Post Detail      (pos.bbs.post)            [programmatic]
- │    ├── Incoming Requests     (pos.bbs.contracts)        — sell-side contracts (unified list + badges)
- │    ├── Assignments           (pos.bbs.assignments)      — dual tabs: category × status
- │    │    └── Negotiate        (pos.bbs.negotiate)        [programmatic]
- │    ├── Field Agents          (pos.bbs.agents)           — dual tabs: archetype × status
+ │    ├── Incoming Requests     (pos.bbs.contracts)        — unified list + status badges
+ │    ├── Assignments           (pos.bbs.assignments)      — DualTab: category × status
+ │    │    ├── Negotiate        (pos.bbs.negotiate)        [programmatic]
+ │    │    └── Agent Deploy     (pos.bbs.agents.deploy)    [programmatic]
+ │    ├── Field Agents          (pos.bbs.agents)           — DualTab: archetype × status
  │    ├── Investments           (pos.bbs.investments)
  │    └── Intelligence Analysis (pos.data.analysis)
  ├── Markets Hub (pos.markets)
- │    ├── Market Overview       (pos.markets.overview)      — intel + commodities + zone data
+ │    ├── Market Overview       (pos.markets.overview)      — 3 tabs: Summary | Zones | Exchange
  │    │    ├── Commodity Detail  (pos.markets.commodity)    [drill-down]
- │    │    └── Commodity Items   (pos.markets.items)        [drill-down, buy/sell toggle]
- │    ├── Known Contacts        (pos.markets.contacts)      — traders + wholesalers
- │    ├── Market Signals        (pos.markets.signals)       — hard events + soft rumours
- │    ├── Supply Network Dir    (pos.markets.directory)     — dual tabs: zone × state
- │    ├── Zone Overview         (pos.markets.zones)         — pressure bars + events
- │    ├── Watchlist             (pos.markets.watchlist)
+ │    │    └── Commodity Items   (pos.markets.items)        [drill-down, buy/sell + qty]
+ │    ├── Known Contacts        (pos.markets.contacts)      — 2 tabs: Contacts | Directory
+ │    ├── Market Signals        (pos.markets.signals)       — hard events + soft rumours [reactive]
+ │    ├── Watchlist             (pos.markets.watchlist)      — [reactive: OnTradeCompleted]
  │    ├── Market Reports        (pos.markets.reports)
  │    └── Trade Catalog         (pos.markets.trade)
  │         └── Trade Receipt    (pos.markets.receipt)       [programmatic]
- ├── Stockmarket                (pos.stockmarket)
  ├── Data Management            (pos.data)                  [debug only]
  │    └── Data Reset            (pos.data.reset)            [debug only]
  └── Settings                   (pos.settings)              [placeholder]
+
+Absorbed screens (deleted):
+ - Zone Overview → Market Overview Tab 2 "Zones"
+ - Stockmarket → Market Overview Tab 3 "Exchange"
+ - Wholesaler Directory → Contacts Tab 2 "Directory"
 ```
 
 Screens marked `[programmatic]` are navigated to by code (button callbacks,
