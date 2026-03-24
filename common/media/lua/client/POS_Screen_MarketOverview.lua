@@ -188,7 +188,11 @@ local function renderSummary(ctx, params)
         and POS_Sandbox.isLivingMarketEnabled
         and POS_Sandbox.isLivingMarketEnabled()
 
-    if livingMarketEnabled then
+    if not livingMarketEnabled then
+        W.createLabel(ctx.panel, 8, ctx.y,
+            PhobosLib.safeGetText("UI_POS_LivingMarket_Disabled"), C.warning)
+        ctx.y = ctx.y + ctx.lineH * 2
+    else
         W.createLabel(ctx.panel, 0, ctx.y,
             "=== " .. W.safeGetText("UI_POS_MarketOverview_ZonePressure") .. " ===",
             C.textBright)

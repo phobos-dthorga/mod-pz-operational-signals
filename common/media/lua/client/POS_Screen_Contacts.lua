@@ -199,15 +199,43 @@ local function renderDirectory(ctx, params)
     local W = POS_TerminalWidgets
     local C = W.COLOURS
 
-    -- Build zone tabs dynamically
+    -- Check Living Market gate first
+    local livingMarketEnabled = POS_Sandbox
+        and POS_Sandbox.isLivingMarketEnabled
+        and POS_Sandbox.isLivingMarketEnabled()
+
+    if not livingMarketEnabled then
+        W.createLabel(ctx.panel, 8, ctx.y,
+            PhobosLib.safeGetText("UI_POS_LivingMarket_Disabled"), C.warning)
+        ctx.y = ctx.y + ctx.lineH * 2
+        return
+    end
+
+    -- Build zone tabs dynamically with fallback chain:
+    -- 1. Zone registry → zDef.name
+    -- 2. Translation key → UI_POS_Zone_<zoneId>
+    -- 3. Raw zoneId (title-cased)
     local zones = POS_Constants.MARKET_ZONES or {}
     local zoneTabs = { { id = "all", labelKey = "UI_POS_Assignments_FilterAll" } }
     for _, zoneId in ipairs(zones) do
-        local zLabel = zoneId
+        local zLabel = nil
+        -- Try zone registry first
         if POS_MarketSimulation and POS_MarketSimulation.getZoneRegistry then
-            local zDef = POS_MarketSimulation.getZoneRegistry():get(zoneId)
-            if zDef and zDef.name then zLabel = zDef.name end
+            local ok, zReg = PhobosLib.safecall(POS_MarketSimulation.getZoneRegistry)
+            if ok and zReg then
+                local zDef = zReg:get(zoneId)
+                if zDef and zDef.name then zLabel = zDef.name end
+            end
         end
+        -- Fallback: translation key
+        if not zLabel then
+            local key = "UI_POS_Zone_" .. zoneId
+            local translated = PhobosLib.safeGetText(key)
+            if translated and translated ~= key then zLabel = translated end
+        end
+        -- Fallback: raw ID
+        if not zLabel then zLabel = zoneId end
+        -- Truncate
         if #zLabel > POS_Constants.WHOLESALER_LABEL_MAX_LENGTH + 2 then
             zLabel = string.sub(zLabel, 1, POS_Constants.WHOLESALER_LABEL_MAX_LENGTH) .. ".."
         end

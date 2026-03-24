@@ -71,6 +71,9 @@ function screen.create(contentPanel, params, _terminal)
         W.createLabel(ctx.panel, 8, ctx.y,
             W.safeGetText("UI_POS_Market_InsufficientData"), C.dim)
         ctx.y = ctx.y + ctx.lineH
+        W.createLabel(ctx.panel, 8, ctx.y,
+            PhobosLib.safeGetText("UI_POS_CommodityDetail_HowToGather"), C.dim)
+        ctx.y = ctx.y + ctx.lineH
     else
         -- Lowest price
         W.createLabel(ctx.panel, 8, ctx.y,

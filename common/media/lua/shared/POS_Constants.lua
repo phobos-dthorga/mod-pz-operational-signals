@@ -198,7 +198,7 @@ POS_Constants.PRESSURE_NORM_DIVISOR = 4    -- normalise to 0..1
 -- Display layout
 ---------------------------------------------------------------
 
-POS_Constants.WHOLESALER_LABEL_MAX_LENGTH = 10
+POS_Constants.WHOLESALER_LABEL_MAX_LENGTH = 16
 
 ---------------------------------------------------------------
 -- Signal feed limits

@@ -506,10 +506,13 @@ function POS_MarketSimulation.tickSimulation(currentDay)
 
     -- First tick: spawn wholesalers from definitions
     if not _firstTickDone then
-        -- Use pairs() count instead of next() — Kahlua's next() can crash
-        -- on Java-backed ModData tables (KahluaTableImpl)
+        -- Count actual wholesaler entries (not just any ModData key).
+        -- The old code used `break` after first key which caused a false
+        -- positive when Java ModData had metadata keys but no wholesalers.
         local storeCount = 0
-        for _ in pairs(wholesalerStore) do storeCount = storeCount + 1 break end
+        for _, v in pairs(wholesalerStore) do
+            if type(v) == "table" then storeCount = storeCount + 1 end
+        end
         if storeCount == 0 then
             POS_MarketSimulation._spawnWholesalers(wholesalerStore)
         end

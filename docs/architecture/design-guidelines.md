@@ -3699,6 +3699,45 @@ All `notifyOrSay` calls use the correct opts-table signature with
 
 ---
 
+## 48. Empty State UX — Sandbox Gate Messages
+
+### 48.1 Principle
+
+Every screen that depends on a sandbox feature MUST show a clear message
+when that feature is disabled, explaining WHAT is missing and HOW to
+enable it. Silently showing empty content leaves the user confused.
+
+### 48.2 Message Tiers
+
+| Tier | When | Example |
+|------|------|---------|
+| Feature disabled | Sandbox option OFF | "Living Market is disabled. Enable it in Sandbox Options > ..." |
+| Data not yet populated | Feature ON but no ticks yet | "No market events yet. Signals generate automatically during economy ticks." |
+| User action needed | Feature works, data empty | "Add categories from Market Overview to track price changes." |
+
+### 48.3 Screens with Gate Messages
+
+| Screen | Gate | Message Key |
+|--------|------|------------|
+| Market Overview (Zone Pressure) | Living Market | `UI_POS_LivingMarket_Disabled` |
+| Contacts (Directory tab) | Living Market | `UI_POS_LivingMarket_Disabled` |
+| Market Signals (empty) | Living Market | `UI_POS_LivingMarket_Disabled` or `UI_POS_Signals_WaitForTick` |
+| Watchlist (empty) | User action | `UI_POS_Watchlist_HowToAdd` |
+| Commodity Detail (no sources) | User action | `UI_POS_CommodityDetail_HowToGather` |
+| Exchange tab | Exchange option | `UI_POS_Exchange_Disabled` (already existed) |
+| Intelligence Analysis | Equipment | Multi-line guidance (already existed) |
+
+### 48.4 Anti-Patterns
+
+| Anti-Pattern | Why It's Wrong |
+|---|---|
+| Silent empty content | User doesn't know what's wrong or how to fix it |
+| Generic "no data" message | Doesn't explain the specific dependency |
+| Hardcoded English in messages | Use translation keys for all empty-state text |
+| Hiding screens entirely | Show the screen with explanation, not a locked menu item |
+
+---
+
 ## 47. Operations Actor Architecture
 
 > **Status**: Design document. Reframes Free Agents from "selling Phase 3"

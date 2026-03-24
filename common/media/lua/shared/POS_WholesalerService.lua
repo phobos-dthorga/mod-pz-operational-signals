@@ -620,3 +620,27 @@ function POS_WholesalerService.getStateDisplayName(state)
     if not suffix then return state end
     return PhobosLib.safeGetText("UI_POS_Wholesaler_State_" .. suffix)
 end
+
+--- Get all wholesalers that are visible (above visibility threshold).
+--- Returns a plain Lua array (safe for # and ipairs) copied from ModData.
+---@return table[] Array of wholesaler tables with .id field set
+function POS_WholesalerService.getAllVisible()
+    local store = nil
+    if POS_WorldState and POS_WorldState.getWholesalers then
+        store = POS_WorldState.getWholesalers()
+    end
+    if not store then return {} end
+
+    local threshold = POS_Constants.WHOLESALER_VISIBLE_THRESHOLD
+    local result = {}
+    for wId, w in pairs(store) do
+        if type(w) == "table" then
+            local vis = (w.visibility or 0) > threshold
+            if vis then
+                w.id = w.id or wId
+                result[#result + 1] = w
+            end
+        end
+    end
+    return result
+end

@@ -65,6 +65,9 @@ function screen.create(contentPanel, params, _terminal)
         W.createLabel(ctx.panel, 8, ctx.y,
             W.safeGetText("UI_POS_Market_WatchlistEmpty"), C.dim)
         ctx.y = ctx.y + ctx.lineH
+        W.createLabel(ctx.panel, 8, ctx.y,
+            PhobosLib.safeGetText("UI_POS_Watchlist_HowToAdd"), C.dim)
+        ctx.y = ctx.y + ctx.lineH
     else
         local currentPage = (params and params.watchPage) or 1
         ctx.y = PhobosLib_Pagination.create(ctx.panel, {
