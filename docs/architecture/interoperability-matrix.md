@@ -31,6 +31,8 @@ anti-patterns) are covered in `design-guidelines.md` §34.
 | Strategic Relay | broadcast payloads, agent telemetry, market signals | relay queue packets, intercept results, agent backhaul data, fused intelligence | relay site modData | POS_FreeAgentService, POS_MarketSimulation, POS_SatelliteService | relay tick, intercept sweep, bandwidth change |
 | Signal Ecology | weather state, grid power, market volatility, agent count, hardware condition | composite signal state (5 pillars), qualitative signal band | cached per-hour | POS_ConnectionManager, POS_MarketSimulation, POS_FreeAgentService | hourly tick, state change events |
 | Broadcast Influence | compiled artifacts, broadcast mode, trust score | market_signal records, agent_advisory records, rumour echoes, trust mutations | POSNET.Broadcasts | POS_WholesalerService, POS_FreeAgentService, POS_RumourGenerator | broadcast sent |
+| World Broadcast Network | broadcast candidates, voice-pack templates, channel schedules, signal quality | floating text bulletins, signal fragments, broadcast history log | WBN candidate queue (rolling, capped) | OnBroadcastTick (EveryTenMinutes) |
+| Signal Fragments | radio broadcasts received by player | market/route/infrastructure/agent/anomaly fragments with confidence 0.2–0.6 | Player ModData (rolling, capped) | OnBroadcastReceived |
 
 ---
 
@@ -158,6 +160,22 @@ This mapping prepares for a future event bus without requiring one now.
     recallBonus     = 0.06,
     routeRiskMod    = 0.12,
     expiresDay      = 25,
+}
+```
+
+### Signal Fragment (Tier 0.5 Intelligence)
+
+```lua
+{
+    type          = "market_fragment",
+    zoneId        = "muldraugh",
+    categoryId    = "fuel",
+    direction     = "up",
+    estimatedChange = 0.12,
+    confidence    = 0.42,
+    freshness     = 0.9,
+    source        = "radio_broadcast",
+    verified      = false
 }
 ```
 

@@ -600,6 +600,8 @@ on modest hardware, the broadcast layer should complete in < 2.5ms.
 | `living-market-design.md` | The Living Market consumes market_signal records and applies perceived pressure shifts |
 | `interoperability-matrix.md` | Canonical payload shapes for all records; this system's schemas are registered there |
 | `design-guidelines.md` section 52 | Governing design principles for the broadcast influence layer |
+| `world-broadcast-network-design.md` | Diegetic delivery pipeline that presents broadcast influence effects as radio bulletins |
+| `radio-band-taxonomy-design.md` | Band separation rules governing where broadcasts are heard |
 
 ---
 
