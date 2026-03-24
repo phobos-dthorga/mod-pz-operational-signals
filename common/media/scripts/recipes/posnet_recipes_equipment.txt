@@ -16,32 +16,19 @@
 
 module PhobosOperationalSignals {
 
-/* ----- REPAIR DATA-RECORDER ----- */
-/*  Restore a damaged Data-Recorder using electronics scrap and a screwdriver.
-    Requires Electrical skill level 3.                                        */
-
     craftRecipe RepairDataRecorder
     {
-        time = 300,
-        category = Phobos SIGINT Ops,
-        NeedToBeLearn = false,
-        OnCreate = POS_CraftCallbacks.onCreateRepairDataRecorder,
+        item 1 PhobosOperationalSignals.DataRecorder,
+        item 1 Base.ElectronicsScrap,
+        item keep 1 Base.Screwdriver,
 
-        Tags = AnySurfaceCraft,
-        timedAction = Making_Surface,
+        result PhobosOperationalSignals.DataRecorder 1,
+
+        time 300,
+        category PhobosFieldOps,
+        needToBeLearn false,
         SkillRequired = Electrical:3,
-        xpAward = Electrical:15,
-
-        inputs
-        {
-            item 1 [PhobosOperationalSignals.DataRecorder],
-            item 1 [Base.ElectronicsScrap],
-            item 1 [Base.Screwdriver] mode:keep flags[NoBrokenItems],
-        }
-        outputs
-        {
-            item 1 PhobosOperationalSignals.DataRecorder,
-        }
+        OnCreate POS_CraftCallbacks.onCreateRepairDataRecorder,
     }
 
 }

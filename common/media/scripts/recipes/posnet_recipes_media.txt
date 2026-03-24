@@ -16,199 +16,111 @@
 
 module PhobosOperationalSignals {
 
-/* ----- REFURBISH VHS TAPE ----- */
-/*  Repair a damaged VHS tape using duct tape and a screwdriver.             */
-
     craftRecipe RefurbishVHSTape
     {
-        time = 200,
-        category = Phobos Field Ops,
-        NeedToBeLearn = false,
-        OnCreate = POS_CraftCallbacks.onCreateRefurbishedTape,
+        item 1 PhobosOperationalSignals.DamagedVHSTape,
+        item keep 1 Base.Screwdriver,
+        item 1 Base.DuctTape,
 
-        Tags = AnySurfaceCraft,
-        timedAction = Making_Surface,
+        result PhobosOperationalSignals.RefurbishedVHSCTape 1,
 
-        inputs
-        {
-            item 1 [PhobosOperationalSignals.DamagedVHSTape],
-            item 1 [Base.DuctTape],
-            item 1 [Base.Screwdriver] mode:keep flags[NoBrokenItems],
-        }
-        outputs
-        {
-            item 1 PhobosOperationalSignals.RefurbishedVHSCTape,
-        }
+        time 200,
+        category PhobosFieldOps,
+        needToBeLearn false,
+        OnCreate POS_CraftCallbacks.onCreateRefurbishedTape,
     }
-
-/* ----- SPLICE RECON TAPE ----- */
-/*  Combine two damaged VHS tapes into a single usable spliced tape.         */
 
     craftRecipe SpliceReconTape
     {
-        time = 250,
-        category = Phobos Field Ops,
-        NeedToBeLearn = false,
-        OnCreate = POS_CraftCallbacks.onCreateSplicedTape,
+        item 2 PhobosOperationalSignals.DamagedVHSTape,
+        item 1 Base.DuctTape,
 
-        Tags = AnySurfaceCraft,
-        timedAction = Making_Surface,
+        result PhobosOperationalSignals.SplicedReconTape 1,
 
-        inputs
-        {
-            item 2 [PhobosOperationalSignals.DamagedVHSTape],
-            item 1 [Base.DuctTape],
-        }
-        outputs
-        {
-            item 1 PhobosOperationalSignals.SplicedReconTape,
-        }
+        time 250,
+        category PhobosFieldOps,
+        needToBeLearn false,
+        OnCreate POS_CraftCallbacks.onCreateSplicedTape,
     }
-
-/* ----- IMPROVISE RECON TAPE ----- */
-/*  Fashion a usable recon tape from magnetic tape scrap and duct tape.      */
 
     craftRecipe ImproviseReconTape
     {
-        time = 300,
-        category = Phobos Field Ops,
-        NeedToBeLearn = false,
-        OnCreate = POS_CraftCallbacks.onCreateImprovisedTape,
+        item 1 PhobosOperationalSignals.MagneticTapeScrap,
+        item 1 Base.DuctTape,
+        item keep 1 Base.Screwdriver,
 
-        Tags = AnySurfaceCraft,
-        timedAction = Making_Surface,
+        result PhobosOperationalSignals.ImprovisedReconTape 1,
 
-        inputs
-        {
-            item 1 [PhobosOperationalSignals.MagneticTapeScrap],
-            item 1 [Base.DuctTape],
-            item 1 [Base.Screwdriver] mode:keep flags[NoBrokenItems],
-        }
-        outputs
-        {
-            item 1 PhobosOperationalSignals.ImprovisedReconTape,
-        }
+        time 300,
+        category PhobosFieldOps,
+        needToBeLearn false,
+        OnCreate POS_CraftCallbacks.onCreateImprovisedTape,
     }
-
-/* ----- RECYCLE TAPE TO SCRAP ----- */
-/*  Salvage magnetic tape material from worn or damaged VHS tapes.           */
 
     craftRecipe RecycleTapeToScrap
     {
-        time = 60,
-        category = Phobos Field Ops,
-        NeedToBeLearn = false,
+        item 1 [PhobosOperationalSignals.WornVHSTape;PhobosOperationalSignals.DamagedVHSTape],
 
-        Tags = AnySurfaceCraft,
-        timedAction = Making_Surface,
+        result PhobosOperationalSignals.MagneticTapeScrap 1,
 
-        inputs
-        {
-            item 1 [PhobosOperationalSignals.WornVHSTape;PhobosOperationalSignals.DamagedVHSTape],
-        }
-        outputs
-        {
-            item 1 PhobosOperationalSignals.MagneticTapeScrap,
-        }
+        time 60,
+        category PhobosFieldOps,
+        needToBeLearn false,
     }
-
-/* ----- CONVERT VANILLA VHS ----- */
-/*  Strip a retail or home VHS tape to produce a blank VHS-C tape.
-    Requires access to a TV or monitor (POS_TVStation tag).                  */
 
     craftRecipe ConvertVanillaVHS
     {
-        time = 180,
-        category = Phobos SIGINT Ops,
-        NeedToBeLearn = false,
-        OnCreate = POS_CraftCallbacks.onCreateConvertedVHSTape,
+        item 1 [Base.VHS_Retail;Base.VHS_Home],
+        item keep 1 Base.Screwdriver,
 
+        result PhobosOperationalSignals.BlankVHSCTape 1,
+
+        time 180,
         Tags = POS_TVStation;CannotBeResearched,
-        timedAction = Making_Surface,
-
-        inputs
-        {
-            item 1 [Base.VHS_Retail;Base.VHS_Home],
-            item 1 [Base.Screwdriver] mode:keep flags[NoBrokenItems],
-        }
-        outputs
-        {
-            item 1 PhobosOperationalSignals.BlankVHSCTape,
-        }
+        needToBeLearn false,
+        OnCreate POS_CraftCallbacks.onCreateConvertedVHSTape,
     }
-
-/* ----- REWIND MICROCASSETTE ----- */
-/*  Rewind a recorded microcassette using a pencil as a spindle.             */
 
     craftRecipe RewindMicrocassette
     {
-        time = 60,
-        category = Phobos Field Ops,
-        NeedToBeLearn = false,
-        OnCreate = POS_CraftCallbacks.onCreateRewindMicrocassette,
+        item 1 PhobosOperationalSignals.RecordedMicrocassette,
+        item keep 1 Base.Pencil,
 
-        Tags = AnySurfaceCraft;CannotBeResearched,
-        timedAction = Making_Surface,
+        result PhobosOperationalSignals.RewoundMicrocassette 1,
 
-        inputs
-        {
-            item 1 [PhobosOperationalSignals.RecordedMicrocassette],
-            item 1 [Base.Pencil] mode:keep,
-        }
-        outputs
-        {
-            item 1 PhobosOperationalSignals.RewoundMicrocassette,
-        }
+        time 60,
+        category PhobosFieldOps,
+        Tags = CannotBeResearched,
+        needToBeLearn false,
+        OnCreate POS_CraftCallbacks.onCreateRewindMicrocassette,
     }
-
-/* ----- RECYCLE MICROCASSETTE ----- */
-/*  Salvage magnetic tape material from a spent microcassette.               */
 
     craftRecipe RecycleMicrocassette
     {
-        time = 60,
-        category = Phobos Field Ops,
-        NeedToBeLearn = false,
-        OnCreate = POS_CraftCallbacks.onCreateRecycleMicrocassette,
+        item 1 PhobosOperationalSignals.SpentMicrocassette,
 
-        Tags = AnySurfaceCraft;CannotBeResearched,
-        timedAction = Making_Surface,
+        result PhobosOperationalSignals.MagneticTapeScrap 1,
 
-        inputs
-        {
-            item 1 [PhobosOperationalSignals.SpentMicrocassette],
-        }
-        outputs
-        {
-            item 1 PhobosOperationalSignals.MagneticTapeScrap,
-        }
+        time 60,
+        category PhobosFieldOps,
+        Tags = CannotBeResearched,
+        needToBeLearn false,
+        OnCreate POS_CraftCallbacks.onCreateRecycleMicrocassette,
     }
-
-/* ----- SALVAGE CORRUPT FLOPPY ----- */
-/*  Extract electronics scrap from a corrupt floppy disk.
-    Requires terminal access and Electrical skill.                           */
 
     craftRecipe SalvageCorruptFloppy
     {
-        time = 60,
-        category = Phobos SIGINT Ops,
-        NeedToBeLearn = false,
-        OnCreate = POS_CraftCallbacks.onCreateSalvageCorruptFloppy,
+        item 1 PhobosOperationalSignals.CorruptFloppyDisk,
+        item keep 1 Base.Screwdriver,
 
+        result Base.ElectronicsScrap 1,
+
+        time 60,
+        category PhobosFieldOps,
         Tags = POS_TerminalStation;CannotBeResearched,
-        timedAction = Making_Surface,
+        needToBeLearn false,
         SkillRequired = Electrical:2,
-        xpAward = Electrical:10,
-
-        inputs
-        {
-            item 1 [PhobosOperationalSignals.CorruptFloppyDisk],
-            item 1 [Base.Screwdriver] mode:keep flags[NoBrokenItems],
-        }
-        outputs
-        {
-            item 1 Base.ElectronicsScrap,
-        }
+        OnCreate POS_CraftCallbacks.onCreateSalvageCorruptFloppy,
     }
 
 }

@@ -16,108 +16,64 @@
 
 module PhobosOperationalSignals {
 
-/* ----- CRAFT FIELD REPORT ----- */
-/*  Compile a recon photograph and writing materials into a structured
-    field report for terminal submission.                                     */
-
     craftRecipe CraftFieldReport
     {
-        time = 300,
-        category = Phobos Field Ops,
-        NeedToBeLearn = false,
-        OnCreate = POS_CraftCallbacks.onCreateFieldReport,
+        -- Inputs
+        item 1 PhobosOperationalSignals.ReconPhotograph,
+        item 1 [Base.SheetPaper2;Base.Notebook],
+        item keep 1 [Base.Pen;Base.Pencil;Base.RedPen;Base.BluePen;Base.GreenPen],
 
-        Tags = AnySurfaceCraft,
-        timedAction = Making_Surface,
+        -- Output
+        result PhobosOperationalSignals.FieldReport 1,
 
-        inputs
-        {
-            item 1 [PhobosOperationalSignals.ReconPhotograph],
-            item 1 [Base.SheetPaper2;Base.Notebook],
-            item 1 [Base.Pen;Base.Pencil;Base.RedPen;Base.BluePen;Base.GreenPen] mode:keep,
-        }
-        outputs
-        {
-            item 1 PhobosOperationalSignals.FieldReport,
-        }
+        -- Properties
+        time 300,
+        category PhobosFieldOps,
+        needToBeLearn false,
+        OnCreate POS_CraftCallbacks.onCreateFieldReport,
     }
-
-/* ----- REVIEW VHS TAPE ----- */
-/*  Analyse a recorded recon tape by viewing it and taking notes.
-    Requires access to a TV or monitor (POS_TVStation tag).                  */
 
     craftRecipe ReviewVHSTape
     {
-        time = 300,
-        category = Phobos SIGINT Ops,
-        NeedToBeLearn = false,
-        OnCreate = POS_CraftCallbacks.onCreateVHSReviewNote,
+        item 1 PhobosOperationalSignals.RecordedReconTape,
+        item 1 [Base.SheetPaper2;Base.Notebook],
+        item keep 1 [Base.Pen;Base.Pencil;Base.RedPen;Base.BluePen;Base.GreenPen],
 
+        result PhobosOperationalSignals.RawMarketNote 1,
+
+        time 300,
         Tags = POS_TVStation;CannotBeResearched,
-        timedAction = Making_Surface,
-
-        inputs
-        {
-            item 1 [PhobosOperationalSignals.RecordedReconTape],
-            item 1 [Base.SheetPaper2;Base.Notebook],
-            item 1 [Base.Pen;Base.Pencil;Base.RedPen;Base.BluePen;Base.GreenPen] mode:keep,
-        }
-        outputs
-        {
-            item 1 PhobosOperationalSignals.RawMarketNote,
-        }
+        needToBeLearn false,
+        OnCreate POS_CraftCallbacks.onCreateVHSReviewNote,
     }
-
-/* ----- REVIEW MICROCASSETTE ----- */
-/*  Play back a recorded or rewound microcassette and transcribe
-    the market intelligence into a raw note.                                 */
 
     craftRecipe ReviewMicrocassette
     {
-        time = 200,
-        category = Phobos Field Ops,
-        NeedToBeLearn = false,
-        OnCreate = POS_CraftCallbacks.onCreateReviewMicrocassette,
+        item 1 [PhobosOperationalSignals.RecordedMicrocassette;PhobosOperationalSignals.RewoundMicrocassette],
+        item 1 [Base.SheetPaper2;Base.Notebook],
+        item keep 1 [Base.Pen;Base.Pencil;Base.RedPen;Base.BluePen;Base.GreenPen],
 
-        Tags = AnySurfaceCraft,
-        timedAction = Making_Surface,
+        result PhobosOperationalSignals.RawMarketNote 1,
 
-        inputs
-        {
-            item 1 [PhobosOperationalSignals.RecordedMicrocassette;PhobosOperationalSignals.RewoundMicrocassette],
-            item 1 [Base.SheetPaper2;Base.Notebook],
-            item 1 [Base.Pen;Base.Pencil;Base.RedPen;Base.BluePen;Base.GreenPen] mode:keep,
-        }
-        outputs
-        {
-            item 1 PhobosOperationalSignals.RawMarketNote,
-        }
+        time 200,
+        category PhobosFieldOps,
+        needToBeLearn false,
+        OnCreate POS_CraftCallbacks.onCreateReviewMicrocassette,
     }
-
-/* ----- REVIEW FLOPPY DISK ----- */
-/*  Load a recorded or worn floppy disk and extract the data into
-    a raw market note. Requires terminal access (POS_TerminalStation).       */
 
     craftRecipe ReviewFloppyDisk
     {
-        time = 150,
-        category = Phobos SIGINT Ops,
-        NeedToBeLearn = false,
-        OnCreate = POS_CraftCallbacks.onCreateReviewFloppyDisk,
+        item 1 [PhobosOperationalSignals.RecordedFloppyDisk;PhobosOperationalSignals.WornFloppyDisk],
+        item 1 [Base.SheetPaper2;Base.Notebook],
+        item keep 1 [Base.Pen;Base.Pencil;Base.RedPen;Base.BluePen;Base.GreenPen],
 
+        result PhobosOperationalSignals.RawMarketNote 1,
+
+        time 150,
+        category PhobosFieldOps,
         Tags = POS_TerminalStation;CannotBeResearched,
-        timedAction = Making_Surface,
-
-        inputs
-        {
-            item 1 [PhobosOperationalSignals.RecordedFloppyDisk;PhobosOperationalSignals.WornFloppyDisk],
-            item 1 [Base.SheetPaper2;Base.Notebook],
-            item 1 [Base.Pen;Base.Pencil;Base.RedPen;Base.BluePen;Base.GreenPen] mode:keep,
-        }
-        outputs
-        {
-            item 1 PhobosOperationalSignals.RawMarketNote,
-        }
+        needToBeLearn false,
+        OnCreate POS_CraftCallbacks.onCreateReviewFloppyDisk,
     }
 
 }

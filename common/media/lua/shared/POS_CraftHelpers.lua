@@ -41,8 +41,12 @@ local _TAG = "[POS:CraftHelpers]"
 function POS_CraftHelpers.damageWritingImplement(items, player)
     if not items or not player then return nil end
 
-    local chancePct = POS_Constants.WRITING_DAMAGE_CHANCE_DEFAULT
-    local damageAmt = POS_Constants.WRITING_DAMAGE_AMOUNT_DEFAULT
+    local chancePct = PhobosLib.getConfigurable(
+        POS_Sandbox, "getWritingDamageChance",
+        POS_Constants.WRITING_DAMAGE_CHANCE_DEFAULT)
+    local damageAmt = PhobosLib.getConfigurable(
+        POS_Sandbox, "getWritingDamageAmount",
+        POS_Constants.WRITING_DAMAGE_AMOUNT_DEFAULT)
 
     local foundImpl = nil
 
