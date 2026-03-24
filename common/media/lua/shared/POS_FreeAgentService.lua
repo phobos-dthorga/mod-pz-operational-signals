@@ -321,8 +321,20 @@ function POS_FreeAgentService.tick(currentDay)
                     })
                 end
 
-                -- Signal feed update
-                local stateLabel = PhobosLib.safeGetText("UI_POS_FreeAgent_State_" .. nextState)
+                -- Signal feed update — use voiced message if available
+                local stateLabel
+                if POS_MissionBriefingResolver
+                        and POS_MissionBriefingResolver.resolveAgentStateMessage then
+                    local ok, voiced = PhobosLib.safecall(
+                        POS_MissionBriefingResolver.resolveAgentStateMessage,
+                        agent.agentArchetype, nextState)
+                    if ok and voiced and voiced ~= nextState then
+                        stateLabel = voiced
+                    end
+                end
+                if not stateLabel then
+                    stateLabel = PhobosLib.safeGetText("UI_POS_FreeAgent_State_" .. nextState)
+                end
                 local stateColour = (nextState == STATE.FAILED or nextState == STATE.COMPROMISED)
                     and "error"
                     or ((nextState == STATE.DELAYED) and "warning"

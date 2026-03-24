@@ -95,6 +95,12 @@ function POS_MissionBriefingResolver.init()
         "Definitions/TextPools/voice_quartermaster_submissions",
         "Definitions/TextPools/voice_wholesaler_submissions",
         "Definitions/TextPools/voice_speculator_submissions",
+        -- Agent state voice pools (5 free agent archetypes)
+        "Definitions/TextPools/voice_runner_agent_states",
+        "Definitions/TextPools/voice_courier_agent_states",
+        "Definitions/TextPools/voice_broker_agent_states",
+        "Definitions/TextPools/voice_smuggler_agent_states",
+        "Definitions/TextPools/voice_contact_agent_states",
     }
 
     for _, path in ipairs(paths) do
@@ -270,4 +276,53 @@ end
 function POS_MissionBriefingResolver.getTextPoolRegistry()
     POS_MissionBriefingResolver.init()
     return _textPoolRegistry
+end
+
+--- Resolve a voiced agent state message for a free agent archetype.
+--- Falls back to the generic state label if no voice pool exists.
+---@param agentArchetype string  Free agent archetype (runner, broker, etc.)
+---@param stateName string       State name (drafted, transit, etc.)
+---@param context table|nil      Token resolution context
+---@return string                Resolved state message text
+function POS_MissionBriefingResolver.resolveAgentStateMessage(agentArchetype, stateName, context)
+    POS_MissionBriefingResolver.init()
+
+    -- Check voice pack for archetype → agentState pool
+    local poolId = nil
+    if POS_VoicePackRegistry and POS_VoicePackRegistry.getOverride then
+        poolId = POS_VoicePackRegistry.getOverride(agentArchetype,
+            POS_Constants.VOICE_SECTION_AGENT_STATE)
+    end
+
+    if not poolId or not _textPoolRegistry then
+        -- Fallback: generic state label
+        return PhobosLib.safeGetText("UI_POS_FreeAgent_State_" .. stateName) or stateName
+    end
+
+    -- Get pool entries
+    local pool = _textPoolRegistry:get(poolId)
+    if not pool or not pool.entries then
+        return PhobosLib.safeGetText("UI_POS_FreeAgent_State_" .. stateName) or stateName
+    end
+
+    -- Filter by state condition
+    local filtered = {}
+    for _, entry in ipairs(pool.entries) do
+        if entry.conditions and entry.conditions.state == stateName then
+            filtered[#filtered + 1] = entry
+        end
+    end
+
+    if #filtered == 0 then
+        return PhobosLib.safeGetText("UI_POS_FreeAgent_State_" .. stateName) or stateName
+    end
+
+    -- Pick weighted
+    local selected = PhobosLib.pickWeighted(filtered, context)
+    if not selected then
+        selected = filtered[ZombRand(#filtered) + 1]
+    end
+
+    local text = selected and selected.text or stateName
+    return context and PhobosLib.resolveTokens(text, context) or text
 end
