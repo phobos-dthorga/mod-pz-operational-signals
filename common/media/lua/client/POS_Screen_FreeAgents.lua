@@ -129,6 +129,15 @@ function screen.create(contentPanel, params, _terminal)
         end
     end
 
+    -- Deploy New Agent button (always visible, breaks chicken-and-egg)
+    W.createButton(ctx.panel, 4, ctx.y,
+        ctx.panel:getWidth() - 8, ctx.btnH,
+        PhobosLib.safeGetText("UI_POS_FreeAgent_Deploy"), nil,
+        function()
+            POS_ScreenManager.navigateTo(POS_Constants.SCREEN_AGENT_DEPLOY, {})
+        end)
+    ctx.y = ctx.y + ctx.btnH + 6
+
     if #agents == 0 then
         W.createLabel(ctx.panel, 8, ctx.y,
             PhobosLib.safeGetText("UI_POS_FreeAgent_None"), C.dim)
