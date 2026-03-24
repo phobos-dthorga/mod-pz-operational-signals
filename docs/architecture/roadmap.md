@@ -259,3 +259,62 @@ operating states: Idle, Passive Collection (heavy power drain), Deep Sweep
 **Dependencies**: Satellite wiring system, power model, data pipeline.
 
 **Design ref**: `satellite-passive-collection-design.md`.
+
+---
+
+### 15. Tier V Strategic Relay / Regional Command Node
+
+**Status**: Design document complete.
+
+**Feature**: Permanent large satellite dishes at civic infrastructure (fire
+stations, military outposts) become Tier V command installations. Unlike Tier IV
+(broadcast), Tier V coordinates the network itself: relay queuing, agent backhaul,
+signal fusion, intercept sweeps, bandwidth allocation. Transforms the player from
+intelligence gatherer to network operator.
+
+**Key distinction**: Tier IV speaks loudly. Tier V listens, judges, routes, and
+commands.
+
+**Dependencies**: Tier IV satellite system, free agent service, living market,
+signal ecology (§16).
+
+**Design ref**: `tier-v-strategic-relay-design.md`, `design-guidelines.md §51`.
+
+---
+
+### 16. Signal Ecology (v2 Signal Model)
+
+**Status**: Design document complete. Future architecture.
+
+**Feature**: Replace flat signal-strength percentage with a five-pillar composite
+model: Propagation (weather/terrain), Infrastructure (power/hardware), Clarity
+(noise/encoding), Saturation (agents/market), Intent (bandwidth/priority).
+Qualitative signal states (Locked, Clear, Faded, Fragmented, Ghosted, Lost)
+replace raw percentages. Creates a closed emergent loop: weather affects signal,
+signal affects agents, agents affect markets, markets affect signal.
+
+**Migration**: Five-phase incremental transition from v1 to v2. Backward
+compatible via `getSignalStrength()` returning composite float.
+
+**Dependencies**: Weather API (vanilla PZ), PhobosLib power system, living market.
+
+**Design ref**: `signal-ecology-design.md`, `design-guidelines.md §50`.
+
+---
+
+### 17. Tier IV Broadcast Influence Layer
+
+**Status**: Design document complete.
+
+**Feature**: Tier IV redefined as the "influence layer" -- broadcasts alter the
+informational climate in which markets and agents make decisions. Five broadcast
+classes (Scarcity Alert, Surplus Notice, Route Warning, Contact Bulletin,
+Strategic Rumour), four broadcast modes (Local Pulse, Regional, Emergency Burst,
+Whisper Cast), regional trust scores, and market/agent integration via
+`market_signal` and `agent_advisory` records. Wholesaler posture nudging, rumour
+echo generation, and broadcast consequences (saturation, misinformation).
+
+**Dependencies**: Satellite service, wholesaler service, free agent service,
+rumour system.
+
+**Design ref**: `satellite-uplink-design.md §25`.

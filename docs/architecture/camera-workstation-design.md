@@ -1029,7 +1029,18 @@ ladder that rewards progressive investment.
 
 ---
 
-## 23. Success Criteria
+## 23. Tier III Sending — Validated Packages
+
+- Per the five-tier sending taxonomy (design-guidelines.md §20.4), Tier III transmits **validated packages**.
+- Compiled artifacts from the Camera Workstation are portable, tradeable, and authoritative. They carry confidence ratings and provenance chains.
+- Examples: compiled site surveys, market bulletins, reviewed media packages, confidence-rated summaries, wholesaler dossiers.
+- Mechanism: compiled artifacts can be physically traded (item exchange) or digitally transmitted to a linked satellite uplink for Tier IV broadcast. The compilation step transforms raw data into broadcast-ready packages.
+- Signal ecology impact: Tier III outputs do not directly generate RF traffic. Their influence is indirect — they become the fuel for Tier IV broadcasts.
+- Cross-reference: `signal-ecology-design.md`, `satellite-uplink-design.md §25`, `design-guidelines.md §20.4`.
+
+---
+
+## 24. Success Criteria
 
 The Camera Workstation implementation is successful when:
 

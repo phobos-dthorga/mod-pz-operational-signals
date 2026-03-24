@@ -738,7 +738,18 @@ data-recorder    passive-recon          camera-workstation
 
 ---
 
-## 19. Success Criteria
+## 19. Tier II Sending — Structured Reports
+
+- Per the five-tier sending taxonomy (design-guidelines.md §20.4), Tier II transmits **interpretations**.
+- Sending at Tier II is deliberate and formatted — the first tier where outbound traffic has structure.
+- Examples: cleaned intel fragments, target packages, mission submissions, contact updates, trade intent notices, agent recall/reroute requests.
+- Mechanism: terminal-processed intelligence can be packaged and transmitted via the connected radio. Output is formatted as structured report packets with metadata (confidence, freshness, source type).
+- Signal ecology impact: Tier II transmissions are moderate power, base-station range. They contribute measurably to network saturation during active use.
+- Cross-reference: `signal-ecology-design.md`, `design-guidelines.md §20.4`.
+
+---
+
+## 20. Success Criteria
 
 The Terminal Analysis implementation is successful when:
 

@@ -452,3 +452,13 @@ Icons required:
 | `POS_VHSTapeRecorded.png` | Recorded VHS Tape (generic) |
 
 Total: 9 icons, estimated cost ~$1.62.
+
+---
+
+## 11. Tier I Sending — Passive Observations
+
+- Per the five-tier sending taxonomy (design-guidelines.md §20.4), passive recon devices contribute to Tier I's **raw observation** output.
+- Passive devices do not actively transmit. Instead, they record observations that become available for Tier I sending when the player chooses to transmit via radio or physically transport media.
+- The scanner radio (§2.3) is uniquely positioned: it both passively receives AND can be used to send crude observation bursts. This dual role makes it the most versatile Tier I device.
+- Signal ecology impact: passive recon generates zero outbound saturation by default. Only explicit player-initiated sends create network traffic.
+- Cross-reference: `signal-ecology-design.md`, `data-recorder-design.md`, `design-guidelines.md §20.4`.

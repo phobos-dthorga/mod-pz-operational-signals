@@ -1302,9 +1302,9 @@ If PhobosNotifications is not installed, registration is silently skipped.
 
 ---
 
-## 20. Four-Tier Intelligence Hierarchy
+## 20. Five-Tier Intelligence Hierarchy
 
-POSnet's intelligence pipeline is structured as a four-tier hierarchy. Each tier
+POSnet's intelligence pipeline is structured as a five-tier hierarchy. Each tier
 represents a distinct level of sophistication, location, and strategic value.
 All tiers are independently useful — no tier is a hard dependency on another.
 
@@ -1316,10 +1316,11 @@ All tiers are independently useful — no tier is a hard dependency on another.
 | II — Analysis | Terminal | Radio + computer | Intel Fragments | **SIGINT skill** |
 | III — Compilation | Camera Workstation | TV stations | Compiled reports, bulletins | Location + SIGINT |
 | IV — Broadcast | Satellite Uplink | Rooftops, military | Regional market effects | SIGINT credibility |
+| V — Command | Strategic Relay | Fire stations, military | Network coordination | Infrastructure quality |
 
 ### 20.2 Design Principles
 
-1. **No mandatory bottlenecks.** Raw Market Notes can skip Tiers II-IV and go
+1. **No mandatory bottlenecks.** Raw Market Notes can skip Tiers II-V and go
    directly into the market database. Each tier is an optional premium path.
 2. **Progressive investment.** Higher tiers require more travel, infrastructure,
    materials, and time — but produce proportionally more impactful results.
@@ -1328,9 +1329,49 @@ All tiers are independently useful — no tier is a hard dependency on another.
    a deficiency.
 4. **SIGINT as throughline.** The SIGINT skill connects all tiers as an
    analytical progression — minimal effect at Tier I, primary domain at Tier II,
-   secondary influence at Tier III, tertiary influence at Tier IV.
+   secondary influence at Tier III, tertiary influence at Tier IV, network
+   management at Tier V.
+5. **Each tier transmits a different class of truth.** Tier I transmits
+   observations. Tier II transmits interpretations. Tier III transmits
+   validated packages. Tier IV transmits public influence. Tier V transmits
+   network intent. See §20.4 for the full sending taxonomy.
 
-### 20.3 Design Documents
+### 20.3 Tier IV vs Tier V Distinction
+
+Tier IV and Tier V serve fundamentally different roles:
+
+| Attribute | Tier IV (Broadcast) | Tier V (Command) |
+|-----------|--------------------|--------------------|
+| Role | Broadcast compiled intelligence outward | Coordinate the network itself |
+| Scope | Regional | Network-wide |
+| Output | Narrative (influence perception) | Intent (route, prioritise, fuse) |
+| Interaction | One-to-many | Many-to-many |
+| Player feel | "I speak" | "I orchestrate" |
+| Hardware | Portable/findable dish | Permanent fixed installation |
+
+**Hard Rule**: If Tier IV starts doing routing, filtering, or coordination,
+it has become Tier V. If Tier V starts directly authoring public
+broadcasts, it has become Tier IV. Keep the boundary clean.
+
+### 20.4 Sending Taxonomy (All Tiers)
+
+Every tier can transmit, but each tier transmits a different class of truth:
+
+| Tier | Class | Examples |
+|------|-------|----------|
+| I — Field | **Observations** | Recon snippets, tagged coordinates, item sightings, danger markers, distress bursts, courier drop notices, crude market whispers |
+| II — Terminal | **Interpretations** | Cleaned intel fragments, target packages, mission submissions, contact updates, trade intent notices, agent recall requests |
+| III — Compilation | **Validated Packages** | Compiled site surveys, market bulletins, reviewed media packages, confidence-rated summaries, wholesaler dossiers |
+| IV — Broadcast | **Public Influence** | Market guidance, scarcity alerts, opportunity pings, faction influence broadcasts, destabilising rumours or stabilising truth |
+| V — Command | **Network Intent** | Relay directives, agent dispatch envelopes, synchronisation packets, market coordination orders, threat advisories, priority overrides |
+
+Tier I sending is messy, narrow, lossy, and delayed — it should feel human
+and improvised. Tier II is deliberate and formatted. Tier III is portable,
+tradeable, and authoritative. Tier IV affects systems, not just records.
+Tier V is the first tier where POSnet stops feeling like a terminal and
+starts feeling like an infrastructure organism.
+
+### 20.5 Design Documents
 
 | Tier | Design Document |
 |------|----------------|
@@ -1338,7 +1379,9 @@ All tiers are independently useful — no tier is a hard dependency on another.
 | II | `terminal-analysis-design.md` |
 | III | `camera-workstation-design.md` |
 | IV | `satellite-uplink-design.md` |
+| V | `tier-v-strategic-relay-design.md` |
 | Skill | `sigint-skill-design.md` |
+| Signal | `signal-ecology-design.md` |
 
 ---
 
@@ -3863,3 +3906,87 @@ See `free-agent-system.md` §12 for full detail.
 | Fuzzy cargo provenance | "Where did the items go?" must always be answerable |
 | Per-player isolated data stores in MP | Kills the shared-world radio fantasy |
 | Bolting MP ownership on later | Schema shape depends on ownership decisions |
+
+---
+
+## 50. Signal Ecology (Future Architecture v2)
+
+> **Status**: Future target architecture. Current implementation uses flat
+> signal percentage (v1). See `signal-ecology-design.md` for full design.
+
+### 50.1 Principle
+
+Signal should never be a guarantee. It should be a negotiation between
+physics, infrastructure, people, systems, and the player's intent. The
+flat 100% signal at top-tier radios collapses an entire dimension of
+gameplay into a solved state. POSnet thrives on uncertainty, degradation,
+and interpretation.
+
+### 50.2 Five Pillars
+
+| Pillar | Layer | Question | Key Inputs |
+|--------|-------|----------|------------|
+| Propagation | Physics | "How well can the signal travel?" | Weather, season, terrain, antenna type |
+| Infrastructure | Hardware | "How stable is the network?" | Grid power, generator fuel, hardware condition, calibration |
+| Clarity | Information | "How readable is what we receive?" | Noise, encoding quality, terminal analysis level, interference |
+| Saturation | Economic | "How crowded is the air?" | Active agents, market chatter, panic events, band competition |
+| Intent | Player control | "What are we trying to do?" | Bandwidth allocation, priority routing, transmission type |
+
+### 50.3 Signal States
+
+Replace raw percentage with qualitative bands: **Locked** (85-100%),
+**Clear** (65-84%), **Faded** (45-64%), **Fragmented** (25-44%),
+**Ghosted** (10-24%), **Lost** (0-9%).
+
+### 50.4 Emergent Loop
+
+Weather affects signal. Signal affects agents. Agents affect markets.
+Markets affect signal. This closed loop means radios are never "solved"
+and players must interpret evidence rather than consume truth.
+
+### 50.5 Migration Path
+
+Phase A: weather effects on existing signal. Phase B: infrastructure
+pillar. Phase C: market/agent saturation. Phase D: full ecology UI.
+Phase E: intent pillar (Tier V). See `signal-ecology-design.md` §8 for
+full migration strategy.
+
+---
+
+## 51. Tier V Strategic Relay
+
+> **Status**: Design document. See `tier-v-strategic-relay-design.md` for
+> full design.
+
+### 51.1 Principle
+
+Tier V is the apex of the intelligence hierarchy. It is the first true
+POSnet **command installation** — a permanent, power-hungry, strategic
+relay that transforms the player from an intelligence gatherer into a
+network operator.
+
+**Tier IV speaks loudly. Tier V listens, judges, routes, and commands.**
+
+### 51.2 Core Functions
+
+| Function | Description |
+|----------|-------------|
+| Regional Uplink | Stronger, multi-zone satellite broadcast |
+| Relay Queue | Store-and-forward for lower-tier reports |
+| Agent Backhaul | Improved telemetry and recall for field agents |
+| Signal Fusion | Cross-source intelligence synthesis |
+| Intercept Sweep | Timed action to hunt rare strategic traffic |
+| Priority Routing | Bandwidth allocation across domains |
+
+### 51.3 Hardware Identity
+
+Permanent large satellite dishes on civic buildings (fire stations,
+military outposts, communications facilities). Cannot be crafted,
+moved, or replicated. Must be discovered, claimed, and maintained.
+
+### 51.4 Crown-Not-Replacement Rule
+
+Tier V depends on all lower tiers for raw truth. It is hungry: it
+needs field captures, recorder media, terminal analysis, camera
+compilations, and agent reports. The command node is a crown, not a
+replacement for the kingdom beneath it.
