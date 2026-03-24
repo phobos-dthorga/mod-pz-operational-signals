@@ -87,6 +87,9 @@ function screen.create(contentPanel, params, _terminal)
         W.createLabel(ctx.panel, 8, ctx.y,
             W.safeGetText("UI_POS_Market_NoData"), C.dim)
         ctx.y = ctx.y + ctx.lineH
+        W.createLabel(ctx.panel, 8, ctx.y,
+            PhobosLib.safeGetText("UI_POS_Reports_HowToPopulate"), C.dim)
+        ctx.y = ctx.y + ctx.lineH
     else
         local currentPage = (params and params.reportPage) or 1
         ctx.y = PhobosLib_Pagination.create(ctx.panel, {

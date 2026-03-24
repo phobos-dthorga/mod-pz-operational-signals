@@ -109,21 +109,23 @@ local function _collectRumours(currentDay)
     end
 
     local rumours = POS_RumourGenerator.getActiveRumours(currentDay) or {}
-    for _, r in ipairs(rumours) do
-        local expiryDay = r.expiryDay or currentDay
-        local daysLeft = math.max(0, expiryDay - currentDay)
+    for _, r in pairs(rumours) do
+        if type(r) == "table" then
+            local expiryDay = r.expiryDay or currentDay
+            local daysLeft = math.max(0, expiryDay - currentDay)
 
-        result[#result + 1] = {
-            day          = r.day or currentDay,
-            signalClass  = POS_Constants.SIGNAL_CLASS_SOFT,
-            typeKey      = r.messageKey or "UI_POS_BBS_UnknownRumour",
-            zone         = r.region or "???",
-            categories   = r.categories or "???",
-            impactHint   = r.impactHint,
-            daysLeft     = daysLeft,
-            reliability  = r.reliability or "medium",
-            source       = "rumour",
-        }
+            result[#result + 1] = {
+                day          = r.recordedDay or r.day or currentDay,
+                signalClass  = POS_Constants.SIGNAL_CLASS_SOFT,
+                typeKey      = r.messageKey or "UI_POS_BBS_UnknownRumour",
+                zone         = r.regionId or r.region or "???",
+                categories   = r.categoryIds or r.categories or "???",
+                impactHint   = r.impactHint,
+                daysLeft     = daysLeft,
+                reliability  = r.confidence or r.reliability or "medium",
+                source       = "rumour",
+            }
+        end
     end
     return result
 end

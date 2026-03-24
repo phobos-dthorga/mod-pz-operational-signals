@@ -1253,5 +1253,17 @@
     "UI_POS_BBSHub_OpenContracts": "Open Contracts",
     "UI_POS_BBSHub_ActiveAgents": "Active Agents",
     "UI_POS_Analysis_TotalRecordings": "Total Recordings",
-    "UI_POS_DataReset_Irreversible": "This action cannot be undone"
+    "UI_POS_DataReset_Irreversible": "This action cannot be undone",
+
+    "UI_POS_BBS_UnknownRumour": "Unverified report",
+    "UI_POS_Reports_HowToPopulate": "Market reports are generated from compiled camera data and completed recon operations. Gather field intelligence to populate this screen.",
+    "UI_POS_Gate_BandRequired": "These missions require a different radio band. Switch frequencies to access them.",
+    "UI_POS_Gate_NoBandMissions": "No missions available on current frequency.",
+    "UI_POS_Gate_HiddenContacts": "%1 additional contact(s) remain hidden.",
+    "UI_POS_Gate_SigintReveal": "Increase your SIGINT skill (currently Level %1) to reveal more of the supply network.",
+    "UI_POS_Gate_SigintRequired": "Requires SIGINT Level %1 (you have %2).",
+    "UI_POS_Gate_SigintBenefit": "Higher SIGINT improves contract terms and data quality.",
+    "UI_POS_Gate_DifficultyLocked": "Higher-difficulty missions unlock as your reputation and signal quality improve.",
+    "UI_POS_Gate_SignalLimits": "Signal quality (%1%%) limits available mission difficulty.",
+    "UI_POS_Gate_SignalImprove": "Improve your radio setup for harder, higher-paying assignments."
 }
