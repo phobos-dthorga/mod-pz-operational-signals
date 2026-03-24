@@ -176,6 +176,9 @@ function screen.create(contentPanel, params, _terminal)
     local ctx = W.initLayout(contentPanel)
 
     _activeFilter = (params and params.filter) or _activeFilter or "all"
+    if params and params.selectedIdx then
+        _selectedSignalIdx = params.selectedIdx
+    end
 
     W.drawHeader(ctx, "UI_POS_MarketSignals_Title")
 
@@ -289,7 +292,7 @@ function screen.create(contentPanel, params, _terminal)
                     function()
                         _selectedSignalIdx = globalIdx
                         POS_ScreenManager.replaceCurrent(screen.id,
-                            { filter = _activeFilter })
+                            { filter = _activeFilter, selectedIdx = globalIdx })
                     end)
                 itemY = itemY + ctx.btnH + 4
 
