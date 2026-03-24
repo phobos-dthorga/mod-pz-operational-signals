@@ -126,7 +126,6 @@ function POS_VoicePackRegistry.initBuiltIn()
     })
 
     POS_VoicePackRegistry.registerPack("specialist_crafter", {
-        -- Specialist crafter uses common pool (no distinct voice yet)
-        -- Future: add voice_crafter_situations for technical/workshop tone
+        situation  = "voice_crafter_situations",
     })
 end

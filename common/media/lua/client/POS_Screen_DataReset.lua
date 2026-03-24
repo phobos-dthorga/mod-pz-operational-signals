@@ -175,6 +175,17 @@ function screen.refresh(_params)
     -- Static screen — no dynamic data
 end
 
+screen.getContextData = function(_params)
+    local data = {}
+    table.insert(data, { type = "header", text = "UI_POS_DataReset_Title" })
+    table.insert(data, { type = "separator" })
+    table.insert(data, { type = "kv",
+        key = PhobosLib.safeGetText("UI_POS_DataReset_Warning"),
+        value = PhobosLib.safeGetText("UI_POS_DataReset_Irreversible"),
+        colour = "error" })
+    return data
+end
+
 ---------------------------------------------------------------
 
 POS_API.registerScreen(screen)

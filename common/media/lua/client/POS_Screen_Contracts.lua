@@ -138,11 +138,11 @@ local function renderContractRow(ctx, contract, parent, rx, ry, rw, _idx)
             or contract.status == "betrayed" or contract.status == "expired" then
         deadlineStr = badge.text
     elseif daysLeft > 0 then
-        deadlineStr = tostring(daysLeft) .. " days left"
+        deadlineStr = tostring(daysLeft) .. " " .. PhobosLib.safeGetText("UI_POS_Signals_Remaining")
     elseif daysLeft == 0 then
-        deadlineStr = "DUE TODAY"
+        deadlineStr = PhobosLib.safeGetText("UI_POS_Contract_DueToday")
     else
-        deadlineStr = "OVERDUE"
+        deadlineStr = PhobosLib.safeGetText("UI_POS_Contract_Overdue")
     end
     local urgStr = getUrgencyLabel(contract.urgency)
     W.createLabel(parent, rx + 8, ry,
@@ -230,12 +230,12 @@ function screen.create(contentPanel, params, _terminal)
     end
 
     if #contracts == 0 then
-        local emptyMsg = _activeFilter == "mine"
-            and "No accepted contracts. Browse [All] to find open requests."
+        local emptyKey = _activeFilter == "mine"
+            and "UI_POS_Contract_EmptyMine"
             or (_activeFilter == "settled"
-                and "No settled contracts yet."
-                or "No contracts available. Check back after the next economy tick.")
-        W.createLabel(contentPanel, 8, ctx.y, emptyMsg, C.dim)
+                and "UI_POS_Contract_EmptySettled"
+                or "UI_POS_Contract_EmptyAll")
+        W.createLabel(contentPanel, 8, ctx.y, PhobosLib.safeGetText(emptyKey), C.dim)
         ctx.y = ctx.y + ctx.lineH
     else
         local currentPage = (params and params.contractPage) or 1

@@ -135,6 +135,75 @@ function screen.refresh(_params)
 end
 
 ---------------------------------------------------------------
+-- ContextPanel: terminal status overview
+---------------------------------------------------------------
+
+screen.getContextData = function(_params)
+    local data = {}
+    table.insert(data, { type = "header", text = "UI_POS_MainMenu_Status" })
+    table.insert(data, { type = "separator" })
+
+    -- Signal strength
+    local signalPct = 0
+    if POS_ConnectionManager and POS_ConnectionManager.getSignalStrength then
+        local ok, sig = PhobosLib.safecall(POS_ConnectionManager.getSignalStrength)
+        if ok and type(sig) == "number" then
+            signalPct = PhobosLib.clamp(math.floor(sig * 100), 0, 100)
+        end
+    end
+    table.insert(data, { type = "bar",
+        key = PhobosLib.safeGetText("UI_POS_MainMenu_SignalStatus"),
+        value = signalPct })
+
+    -- Band
+    if POS_ConnectionManager and POS_ConnectionManager.getActiveBand then
+        local ok, band = PhobosLib.safecall(POS_ConnectionManager.getActiveBand)
+        if ok and band then
+            table.insert(data, { type = "kv",
+                key = PhobosLib.safeGetText("UI_POS_Band"),
+                value = band })
+        end
+    end
+
+    table.insert(data, { type = "separator" })
+
+    -- Player balance
+    local player = getSpecificPlayer(0)
+    if player then
+        local balance = 0
+        if POS_TradeService and POS_TradeService.getPlayerBalance then
+            local ok, bal = PhobosLib.safecall(POS_TradeService.getPlayerBalance, player)
+            if ok and type(bal) == "number" then balance = bal end
+        end
+        table.insert(data, { type = "kv",
+            key = PhobosLib.safeGetText("UI_POS_MainMenu_Balance"),
+            value = "$" .. string.format("%.2f", balance) })
+
+        -- Reputation tier
+        if POS_Reputation and POS_Reputation.getPlayerTierDef then
+            local tierDef = POS_Reputation.getPlayerTierDef(player)
+            if tierDef and tierDef.key then
+                table.insert(data, { type = "kv",
+                    key = PhobosLib.safeGetText("UI_POS_Ops_Reputation"),
+                    value = PhobosLib.safeGetText(tierDef.key) })
+            end
+        end
+    end
+
+    -- Active operations count
+    if POS_OperationLog and POS_OperationLog.getByStatus then
+        local ok, active = PhobosLib.safecall(POS_OperationLog.getByStatus, POS_Constants.STATUS_ACTIVE)
+        if ok and active then
+            table.insert(data, { type = "kv",
+                key = PhobosLib.safeGetText("UI_POS_MainMenu_ActiveOps"),
+                value = tostring(#active) })
+        end
+    end
+
+    return data
+end
+
+---------------------------------------------------------------
 
 POS_API.registerCategory({
     id = "pos.main",

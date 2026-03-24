@@ -1237,5 +1237,23 @@
     "UI_POS_Watchlist_HowToAdd": "Add categories from the Market Overview screen to track price changes.",
     "UI_POS_CommodityDetail_HowToGather": "Gather market intel via ambient observations, field recon, or data recording to populate this category.",
     "UI_POS_Signals_WaitForTick": "No market events yet. Signals generate automatically during economy ticks.",
-    "UI_POS_Directory_NoWholesalers": "No wholesalers visible yet. Wholesalers appear after the first economy tick."
+    "UI_POS_Directory_NoWholesalers": "No wholesalers visible yet. Wholesalers appear after the first economy tick.",
+
+    "UI_POS_Inventory": "Inventory",
+    "UI_POS_Level": "Level",
+    "UI_POS_Band": "Band",
+    "UI_POS_Contract_DueToday": "DUE TODAY",
+    "UI_POS_Contract_Overdue": "OVERDUE",
+    "UI_POS_Contract_EmptyAll": "No contracts available. Check back after the next economy tick.",
+    "UI_POS_Contract_EmptyMine": "No accepted contracts. Browse [All] to find open requests.",
+    "UI_POS_Contract_EmptySettled": "No settled contracts yet.",
+    "UI_POS_MainMenu_Status": "Terminal Status",
+    "UI_POS_MainMenu_SignalStatus": "Signal",
+    "UI_POS_MainMenu_ActiveOps": "Active Operations",
+    "UI_POS_MainMenu_Balance": "Balance",
+    "UI_POS_BBSHub_OpenContracts": "Open Contracts",
+    "UI_POS_BBSHub_ActiveAgents": "Active Agents",
+    "UI_POS_Analysis_TotalRecordings": "Total Recordings",
+    "UI_POS_DataReset_Warning": "Warning",
+    "UI_POS_DataReset_Irreversible": "This action cannot be undone"
 }

@@ -231,7 +231,7 @@ function screen.create(contentPanel, params, _terminal)
         local hasEnough = owned >= qty
         local invColour = hasEnough and C.success or C.error
         W.createLabel(contentPanel, 8, ctx.y,
-            "Inventory: " .. tostring(owned) .. "/" .. tostring(qty),
+            PhobosLib.safeGetText("UI_POS_Inventory") .. ": " .. tostring(owned) .. "/" .. tostring(qty),
             invColour)
         ctx.y = ctx.y + ctx.lineH + 4
 
@@ -285,6 +285,49 @@ end
 
 function screen.refresh(params)
     POS_TerminalWidgets.dynamicRefresh(screen, params)
+end
+
+screen.getContextData = function(_params)
+    local data = {}
+
+    if not _selectedArchetype then
+        table.insert(data, { type = "header", text = "UI_POS_AgentDeploy_Title" })
+        table.insert(data, { type = "kv",
+            key = "", value = PhobosLib.safeGetText("UI_POS_AgentDeploy_SelectArchetype") })
+        return data
+    end
+
+    local info = getArchetypeInfo(_selectedArchetype)
+    table.insert(data, { type = "header", text = info.label })
+    table.insert(data, { type = "separator" })
+
+    table.insert(data, { type = "kv",
+        key = PhobosLib.safeGetText("UI_POS_AgentDeploy_Commission"),
+        value = tostring(math.floor(info.commission * 100)) .. "%" })
+
+    local riskLabel = getRiskLabel(info.risk)
+    local riskColour = info.risk >= POS_Constants.RISK_THRESHOLD_HIGH and "error"
+        or (info.risk >= POS_Constants.RISK_THRESHOLD_MODERATE and "warning" or nil)
+    table.insert(data, { type = "kv",
+        key = PhobosLib.safeGetText("UI_POS_AgentDeploy_Risk"),
+        value = riskLabel, colour = riskColour })
+
+    table.insert(data, { type = "kv",
+        key = PhobosLib.safeGetText("UI_POS_AgentDeploy_EstimatedTime"),
+        value = "~" .. tostring(info.eta) .. "d" })
+
+    -- Active agent count
+    if POS_FreeAgentService and POS_FreeAgentService.getActive then
+        local ok, agents = PhobosLib.safecall(POS_FreeAgentService.getActive)
+        if ok and agents then
+            table.insert(data, { type = "separator" })
+            table.insert(data, { type = "kv",
+                key = PhobosLib.safeGetText("UI_POS_BBSHub_ActiveAgents"),
+                value = tostring(#agents) .. "/" .. tostring(POS_Constants.FREE_AGENT_MAX_ACTIVE) })
+        end
+    end
+
+    return data
 end
 
 POS_API.registerScreen(screen)

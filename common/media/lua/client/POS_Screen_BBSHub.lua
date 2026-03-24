@@ -112,6 +112,44 @@ function screen.refresh(_params)
     -- Static screen — no dynamic refresh needed
 end
 
+screen.getContextData = function(_params)
+    local data = {}
+    table.insert(data, { type = "header", text = "UI_POS_BBSHub_Header" })
+    table.insert(data, { type = "separator" })
+
+    -- Active operations
+    if POS_OperationLog and POS_OperationLog.getByStatus then
+        local ok, active = PhobosLib.safecall(POS_OperationLog.getByStatus, POS_Constants.STATUS_ACTIVE)
+        if ok and active then
+            table.insert(data, { type = "kv",
+                key = PhobosLib.safeGetText("UI_POS_MainMenu_ActiveOps"),
+                value = tostring(#active) })
+        end
+    end
+
+    -- Open contracts
+    if POS_ContractService and POS_ContractService.getAvailable then
+        local ok, avail = PhobosLib.safecall(POS_ContractService.getAvailable)
+        if ok and avail then
+            table.insert(data, { type = "kv",
+                key = PhobosLib.safeGetText("UI_POS_BBSHub_OpenContracts"),
+                value = tostring(#avail) })
+        end
+    end
+
+    -- Active free agents
+    if POS_FreeAgentService and POS_FreeAgentService.getActive then
+        local ok, agents = PhobosLib.safecall(POS_FreeAgentService.getActive)
+        if ok and agents then
+            table.insert(data, { type = "kv",
+                key = PhobosLib.safeGetText("UI_POS_BBSHub_ActiveAgents"),
+                value = tostring(#agents) })
+        end
+    end
+
+    return data
+end
+
 ---------------------------------------------------------------
 
 POS_API.registerCategory({

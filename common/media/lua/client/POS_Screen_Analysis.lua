@@ -252,6 +252,33 @@ function screen.refresh(params)
     POS_TerminalWidgets.dynamicRefresh(screen, params)
 end
 
+screen.getContextData = function(_params)
+    local data = {}
+    table.insert(data, { type = "header", text = "UI_POS_Analysis_Title" })
+    table.insert(data, { type = "separator" })
+
+    -- Total recordings available
+    if POS_DataRecorderService and POS_DataRecorderService.getRawDataCount then
+        local ok, count = PhobosLib.safecall(POS_DataRecorderService.getRawDataCount)
+        if ok and type(count) == "number" then
+            table.insert(data, { type = "kv",
+                key = PhobosLib.safeGetText("UI_POS_Analysis_TotalRecordings"),
+                value = tostring(count) })
+        end
+    end
+
+    -- SIGINT skill level
+    local player = getSpecificPlayer(0)
+    if player and POS_SIGINTSkill and POS_SIGINTSkill.getLevel then
+        local lvl = POS_SIGINTSkill.getLevel(player)
+        table.insert(data, { type = "kv",
+            key = "SIGINT",
+            value = PhobosLib.safeGetText("UI_POS_Level") .. " " .. tostring(lvl) })
+    end
+
+    return data
+end
+
 ---------------------------------------------------------------
 
 POS_API.registerScreen(screen)
