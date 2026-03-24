@@ -288,6 +288,18 @@ But a serious lever.
 - Selected zone pressure
 - Selected agent uplink status
 
+### 7.5 With Broadcast Influence System
+
+Tier V amplifies and coordinates what Tier IV initiates. Where Tier IV
+creates individual broadcasts that affect a single zone, Tier V:
+
+- **Relays broadcasts** across multiple zones via the relay queue
+- **Fuses intelligence** from multiple Tier IV broadcasts into higher-confidence composite signals
+- **Amplifies trust** — broadcasts relayed through a calibrated Tier V node carry the relay's trust weight, improving market response quality
+- **Coordinates agents** — Tier V can issue direct dispatch envelopes and reroute packages, while Tier IV can only influence agents indirectly through the broadcast-derived tasking environment
+
+See `broadcast-influence-design.md` for the full influence loop mechanics.
+
 ---
 
 ## 8. Sprite Detection

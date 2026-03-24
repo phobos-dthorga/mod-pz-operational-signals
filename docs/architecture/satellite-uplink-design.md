@@ -247,7 +247,7 @@ Same 6-state system as Camera Workstation and Gather Market Intel:
 | `ON_COOLDOWN` | Recently broadcast from this dish | Greyed out, shows remaining time |
 | `NOT_CALIBRATED` | Dish not yet calibrated (first use) | Greyed out, shows calibration action |
 
-### 5.6 Cooldown
+### 5.8 Cooldown
 
 Broadcast cooldown is per-dish, scoped to the building using the same
 `BuildingDef.getX()/getY()` composite key pattern:
@@ -258,6 +258,79 @@ Broadcast cooldown is per-dish, scoped to the building using the same
 
 Cooldown stored in player modData:
 `POS_SatelliteVisit_<buildingDefX>_<buildingDefY>_broadcast`
+
+---
+
+### 5.5 Broadcast Modes
+
+Instead of a single "send report" action, Tier IV supports 5 broadcast modes:
+
+| Mode | Use Case | Market Effect | Agent Effect | Rumour Echo Risk |
+|------|----------|--------------|--------------|-----------------|
+| Scarcity Alert | Stock low, failed deliveries, hazard blocking supply | Perceived pressure up; wholesaler accumulation bias | Scavenger zone interest up; broker urgency up | High — panic multiplies rumours |
+| Surplus Notice | Cache discovered, bulk arrival confirmed | Perceived pressure down; dump posture rises | Trader opportunism up; crowding risk rises | Medium — attracts competitors |
+| Route Warning | Danger confirmed, blackout/unrest/zombie density | Courier caution up; mission routing adjusts | Route variance up; recall delay risk increases | Low — fear limits retransmission |
+| Contact Bulletin | New trader/wholesaler/military contact confirmed | Market visibility improves; inbound chatter rises | Agent destination interest rises | Low — factual, limited distortion |
+| Strategic Rumour | Player pushes low-confidence narrative intentionally | Larger social distortion; lower trust | Stronger but less predictable reaction | Very High — weaponised uncertainty |
+
+Each broadcast mode is selected by the player during the broadcast compose step.
+The mode determines which `market_signal` and `agent_advisory` records are created
+(see `broadcast-influence-design.md` for the full influence loop).
+
+> **Design principle**: Every broadcast involves a tradeoff. Wider reach means lower
+> clarity. Higher priority means more distortion. Faster transmission means more
+> fragmentation. A broadcast is never perfect — it is interpreted by receivers.
+
+### 5.6 Broadcast Constraints (Tier IV vs Tier V)
+
+Tier IV is **projection**, not **control**. To maintain the clean hierarchy with
+Tier V (Strategic Relay), Tier IV has these mechanical constraints:
+
+| Capability | Tier IV | Tier V |
+|-----------|---------|--------|
+| Zone scope | Single zone per broadcast | Multi-zone, network-wide |
+| Queue / store-and-forward | No — fire-and-forget | Yes — relay queue with priority |
+| Bandwidth allocation | No — fixed channel | Yes — agents vs markets vs intercepts |
+| Signal fusion | No | Yes — combine multiple sources into higher-confidence summaries |
+| Intercept sweep | No | Yes — deliberate timed action to hunt rare traffic |
+| Delivery guarantee | No — affected by signal ecology | No — but significantly more resilient |
+| Agent management | Indirect (broadcast-derived tasking) | Direct (dispatch envelopes, reroute packages) |
+| Routing | No inter-terminal routing | Yes — relay directives, signal priority overrides |
+
+> **Boundary rule**: If Tier IV starts doing routing, filtering, or coordination,
+> it has become Tier V. Keep the boundary clean.
+
+### 5.7 Broadcast Trust Score
+
+Each Tier IV broadcast station maintains a per-region **trust score** (0.0–1.0)
+that affects how the world responds to its broadcasts.
+
+**Trust mutations:**
+- Accurate broadcasts (follow-up reality matches narrative) → trust rises
+- High-confidence broadcasts → trust rises (small)
+- Low-confidence "strategic rumour" broadcasts → trust drops
+- Frequent sensational alerts without follow-up → trust drops significantly
+- No broadcasts for extended period → trust slowly decays toward 0.5 (neutral)
+
+**Trust effects:**
+- High trust (>0.7): broadcasts move markets cleanly, agents respond promptly
+- Medium trust (0.4–0.7): normal response, some rumour noise
+- Low trust (<0.4): broadcasts create more rumours than true posture changes; agents may discount advisories
+
+```lua
+BroadcastTrust = {
+    regional = {
+        muldraugh  = 0.50,  -- starts neutral
+        rosewood   = 0.50,
+        west_point = 0.50,
+        march_ridge = 0.50,
+        riverside  = 0.50,
+        louisville = 0.50,
+    }
+}
+```
+
+See `broadcast-influence-design.md` §5 for full trust system mechanics.
 
 ---
 

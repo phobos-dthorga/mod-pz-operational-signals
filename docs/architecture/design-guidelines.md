@@ -3990,3 +3990,28 @@ Tier V depends on all lower tiers for raw truth. It is hungry: it
 needs field captures, recorder media, terminal analysis, camera
 compilations, and agent reports. The command node is a crown, not a
 replacement for the kingdom beneath it.
+
+---
+
+## 52. Intelligence Transmission Hierarchy
+
+**Core law**: Every tier should be able to transmit, but each tier transmits
+a different class of truth.
+
+| Tier | Transmits | Character | Examples |
+|------|-----------|-----------|----------|
+| I — Field | **Observations** | Raw, messy, lossy, delayed. Feels human and improvised. | Recon snippets, tagged coordinates, item sightings, danger markers, distress bursts, courier drop notices, crude market whispers |
+| II — Terminal | **Interpretations** | Deliberate and formatted. Structured reports. | Cleaned intel fragments, target packages, mission submissions, contact updates, trade intent notices, agent recall requests |
+| III — Compilation | **Validated packages** | Portable, tradable, authoritative. | Compiled site surveys, market bulletins, reviewed media packages, confidence-rated summaries, wholesaler dossiers |
+| IV — Broadcast | **Public influence** | Affects systems, not just records. Regional narratives. | Public market guidance, scarcity alerts, region-wide opportunity pings, faction influence broadcasts, destabilising rumours or stabilising truth |
+| V — Strategic | **Network intent** | Infrastructure organism. Coordination traffic. | Relay directives, agent dispatch envelopes, authentication handshakes, synchronisation packets, market coordination orders, threat advisories, signal priority overrides, inter-terminal routing |
+
+> **§52.1 Design boundary**: If a lower tier starts transmitting the class
+> above it, it has crossed the hierarchy line. A radio cannot broadcast
+> regional narratives. A satellite cannot issue relay directives.
+> Keep each tier's verbs distinct.
+
+**Cross-references**: `satellite-uplink-design.md` §5.5–5.7,
+`tier-v-strategic-relay-design.md` §6,
+`broadcast-influence-design.md` §2,
+`passive-recon-design.md` §2.3

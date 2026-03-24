@@ -473,6 +473,23 @@ logistics.
 | Smuggler | Normal margins | Opportunity rises | Opportunity rises sharply |
 | Speculator | Low activity | Hoarding chance increases | Exploits information gap |
 
+### 8.8 Broadcast Influence on Wholesaler Behaviour
+
+When the Tier IV Broadcast Influence system is active (see
+`broadcast-influence-design.md` §3.2), satellite broadcasts can nudge
+wholesaler behavioural posture without directly forcing inventory actions.
+
+Broadcast influence is a **weighted nudge**, not a hard state rewrite:
+
+- A high-confidence **scarcity alert** on ammunition might cause a military
+  wholesaler to shift toward `hold`/`accumulate`, a black-market broker
+  toward `conceal`, and a speculator toward `probe`.
+- A **surplus notice** on crops might cause an agricultural wholesaler to
+  `dump`, a speculator to `hold`, and a smuggler to ignore the broadcast.
+
+The key distinction: Tier IV does not tell wholesalers what *is* true.
+It changes how they *behave toward what seems true*.
+
 ---
 
 ## 9. Supply Pressure System
