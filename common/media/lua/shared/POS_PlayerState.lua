@@ -187,8 +187,6 @@ function POS_PlayerState.removeFromWatchlist(player, categoryId)
     for k, v in pairs(rebuilt) do wl[k] = v end
     return true
 end
-    return false
-end
 
 ---------------------------------------------------------------
 -- Item discovery (intel-gated trade catalog)
