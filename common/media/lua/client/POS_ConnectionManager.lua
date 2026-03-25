@@ -215,6 +215,14 @@ function POS_ConnectionManager.canConnect(player, radioObj)
     end)
     local band = POS_AZASIntegration and POS_AZASIntegration.matchFrequency
         and POS_AZASIntegration.matchFrequency(tunedFreq)
+
+    -- Only data bands (operations/tactical) provide terminal access.
+    -- WBN broadcast bands are receive-only — no terminal services.
+    if band and POS_AZASIntegration.isBroadcastBand
+            and POS_AZASIntegration.isBroadcastBand(band) then
+        return false, "UI_POS_BroadcastBandNoTerminal"
+    end
+
     if not band then
         local opsFreq = POS_AZASIntegration and POS_AZASIntegration.getOperationsFrequency
             and POS_AZASIntegration.getOperationsFrequency() or 130000

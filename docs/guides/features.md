@@ -185,3 +185,30 @@ WBN opener/closer text pools:
 - Your broadcast history is saved and can be reviewed at a POSnet terminal
 - Price movements are expressed as rounded percentages (e.g. "up twelve percent")
 - Cause framing may accompany movements (e.g. "following renewed shortages")
+
+### Radio Forecasts
+
+WBN broadcasts include forward-looking predictions alongside current reports:
+
+- **Weather forecasts** (high confidence): PZ's engine pre-computes future
+  weather, so WBN can accurately predict storms, heavy rain, blizzards,
+  fog, and temperature extremes 1–3 days ahead.
+- **Economic forecasts** (medium confidence): price drift extrapolation and
+  convoy ETA intelligence provide approximate market predictions.
+- **Power grid forecasts** (low confidence): speculative warnings when grid
+  shutoff approaches, giving players time to prepare generator fuel.
+
+Forecasts use confidence-scaled language: "expect" (high), "are likely to
+see" (medium), "may see" (low). Horizon varies randomly from 1–3 days.
+
+### Band Access
+
+POSnet uses two distinct radio domains:
+
+- **Data bands** (Operations Net, Tactical Net): structured terminal traffic.
+  Required for POSnet terminal access.
+- **Broadcast bands** (Market Bulletin, Emergency Service): public radio
+  bulletins. Listen-only — no terminal access. Any radio can receive these.
+
+Tuning a broadcast frequency while trying to connect a terminal will show
+a message explaining that data channels are required for terminal operations.

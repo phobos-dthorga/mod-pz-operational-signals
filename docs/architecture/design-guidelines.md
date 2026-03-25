@@ -4056,6 +4056,12 @@ POSnet uses **three radio domains** that must not be conflated:
 **Cross-references**: `radio-band-taxonomy-design.md`,
 `world-broadcast-network-design.md`
 
+> **Terminal access rule**: Terminal services are gated behind data bands
+> only. Broadcast bands (`wbn_market`, `wbn_emergency`) are receive-only
+> and must never provide terminal access. Use
+> `POS_AZASIntegration.isDataBand(band)` to verify terminal eligibility.
+> See `radio-band-taxonomy-design.md` §3.2.
+
 ---
 
 ## 55. WBN Coding Conventions

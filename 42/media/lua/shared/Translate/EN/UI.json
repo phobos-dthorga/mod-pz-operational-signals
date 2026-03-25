@@ -228,6 +228,7 @@
     "UI_POS_BBSHub_ActiveCount": "(%1 active)",
 
     "UI_POS_FrequencyMismatch": "Tune radio to %1 MHz (ops) or %2 MHz (tactical)",
+    "UI_POS_BroadcastBandNoTerminal": "This frequency carries public broadcasts only. Tune to a POSnet data channel for terminal access.",
     "UI_POS_ComputerFrequencyInfo": "POSnet: %1 MHz (ops) / %2 MHz (tactical)",
     "UI_POS_SignalTooWeak": "Signal too weak. Use a more powerful radio.",
     "UI_POS_Band_Operations": "OPERATIONS",
@@ -1635,5 +1636,46 @@
     "UI_POS_PN_FragmentDiscovered_Title": "Signal Fragment",
     "UI_POS_PN_Fragment_Market": "Radio intel: {category} movement in {zone}",
     "UI_POS_PN_Fragment_Infrastructure": "Radio intel: grid status update received",
-    "UI_POS_PN_Fragment_Weather": "Radio intel: weather advisory noted"
+    "UI_POS_PN_Fragment_Weather": "Radio intel: weather advisory noted",
+
+    "UI_WBN_Forecast_Opener_Tomorrow_01": "Looking ahead to tomorrow:",
+    "UI_WBN_Forecast_Opener_Tomorrow_02": "Tomorrow's outlook:",
+    "UI_WBN_Forecast_Opener_Tomorrow_03": "For tomorrow:",
+    "UI_WBN_Forecast_Opener_TwoDays_01": "Over the next two days:",
+    "UI_WBN_Forecast_Opener_TwoDays_02": "In the coming days:",
+    "UI_WBN_Forecast_Opener_ThreeDays_01": "For the days ahead:",
+    "UI_WBN_Forecast_Opener_ThreeDays_02": "Looking ahead to the end of the week:",
+
+    "UI_WBN_Forecast_Verb_High_01": "expect",
+    "UI_WBN_Forecast_Verb_High_02": "will see",
+    "UI_WBN_Forecast_Verb_Med_01": "are likely to see",
+    "UI_WBN_Forecast_Verb_Med_02": "should expect",
+    "UI_WBN_Forecast_Verb_Med_03": "are projected to see",
+    "UI_WBN_Forecast_Verb_Low_01": "may see",
+    "UI_WBN_Forecast_Verb_Low_02": "could experience",
+    "UI_WBN_Forecast_Verb_Low_03": "might face",
+
+    "UI_WBN_Forecast_Weather_Storm": "severe storms with damaging winds",
+    "UI_WBN_Forecast_Weather_HeavyRain": "heavy rainfall and reduced visibility",
+    "UI_WBN_Forecast_Weather_Blizzard": "blizzard conditions with heavy snow",
+    "UI_WBN_Forecast_Weather_Snow": "snowfall across the region",
+    "UI_WBN_Forecast_Weather_Fog": "dense fog limiting visibility",
+    "UI_WBN_Forecast_Weather_ColdExtreme": "dangerously cold temperatures",
+    "UI_WBN_Forecast_Weather_HeatExtreme": "extreme heat across Knox County",
+    "UI_WBN_Forecast_Weather_WindStrong": "strong winds across the region",
+    "UI_WBN_Forecast_Weather_Clear": "clear skies and favourable conditions",
+    "UI_WBN_Forecast_Weather_Overcast": "overcast but dry conditions",
+
+    "UI_WBN_Forecast_Power_Failure_01": "Grid instability detected. Prepare for possible outage.",
+    "UI_WBN_Forecast_Power_Failure_02": "Power grid analysis suggests mains electricity may fail soon. Secure generator fuel.",
+    "UI_WBN_Forecast_Power_Failure_03": "Signs of grid degradation. Stock fuel and batteries.",
+
+    "UI_WBN_Forecast_Econ_Up": "%1 prices in %2 %3 rise by roughly %4 percent.",
+    "UI_WBN_Forecast_Econ_Down": "%1 availability in %2 %3 improve over the period.",
+    "UI_WBN_Forecast_Econ_Stable": "%1 markets in %2 %3 remain broadly steady.",
+    "UI_WBN_Forecast_Econ_Convoy": "A supply convoy is expected to arrive in %1 within %2 days.",
+
+    "UI_WBN_Forecast_Closer_01": "Plan accordingly.",
+    "UI_WBN_Forecast_Closer_02": "Adjust your operations as needed.",
+    "UI_WBN_Forecast_Closer_03": "This is a projection, not a guarantee."
 }

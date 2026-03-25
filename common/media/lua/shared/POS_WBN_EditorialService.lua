@@ -50,12 +50,15 @@ end
 --- @param c table Candidate to check against recent history
 --- @return boolean True if a matching bulletin was recently emitted
 local function isDuplicate(c)
-    local window = POS_Constants.WBN_EDITORIAL_REPEAT_WINDOW
+    local window = c.isForecast
+        and POS_Constants.WBN_FORECAST_REPEAT_WINDOW
+        or POS_Constants.WBN_EDITORIAL_REPEAT_WINDOW
     local start = math.max(1, #_recentBulletins - window + 1)
     for i = start, #_recentBulletins do
         local r = _recentBulletins[i]
         if r and r.domain == c.domain and r.zoneId == c.zoneId
-                and r.eventType == c.eventType then
+                and r.eventType == c.eventType
+                and (r.isForecast or false) == (c.isForecast or false) then
             return true
         end
     end
@@ -106,14 +109,16 @@ function POS_WBN_EditorialService.filter(candidates)
         -- Gate: public eligibility
         if not dominated and not c.publicEligible then dominated = true end
         -- Gate: minimum percentage change (economy domain only —
-        -- weather, power, and colour candidates have no percentChange)
+        -- weather, power, and colour candidates have no percentChange;
+        -- forecasts bypass this gate as their significance is pre-validated)
         if not dominated and c.domain == POS_Constants.WBN_DOMAIN_ECONOMY
+                and not c.isForecast
                 and (c.percentChange or 0) < POS_Constants.WBN_THRESHOLD_LIGHT then
             dominated = true
         end
-        -- Gate: deduplication (economy only — weather/power/colour should repeat
-        -- naturally like real radio; cadence timer already rate-limits emission)
-        if not dominated and c.domain == POS_Constants.WBN_DOMAIN_ECONOMY
+        -- Gate: deduplication (economy and forecasts — weather/power/colour should
+        -- repeat naturally like real radio; cadence timer already rate-limits emission)
+        if not dominated and (c.domain == POS_Constants.WBN_DOMAIN_ECONOMY or c.isForecast)
                 and isDuplicate(c) then
             dominated = true
         end
@@ -147,9 +152,10 @@ end
 --- @param bulletin table Emitted bulletin with domain, zoneId, eventType
 function POS_WBN_EditorialService.recordEmitted(bulletin)
     _recentBulletins[#_recentBulletins + 1] = {
-        domain    = bulletin.domain,
-        zoneId    = bulletin.zoneId,
-        eventType = bulletin.eventType,
+        domain     = bulletin.domain,
+        zoneId     = bulletin.zoneId,
+        eventType  = bulletin.eventType,
+        isForecast = bulletin.isForecast or false,
     }
     -- Trim to 2x window size to prevent unbounded growth
     local maxSize = POS_Constants.WBN_EDITORIAL_REPEAT_WINDOW * 2

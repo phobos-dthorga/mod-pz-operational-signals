@@ -19,6 +19,7 @@ require "POS_Constants_WBN"
 require "POS_Events"
 require "POS_MarketSimulation"
 require "POS_EventService"
+require "POS_WBN_ForecastService"
 
 local _TAG = "WBN:Harvest"
 POS_WBN_HarvestService = {}
@@ -172,6 +173,17 @@ function POS_WBN_HarvestService.onEconomyTick(data)
     -- Tier 3: world-state fallback (weather + power + flavour)
     if #_candidateQueue == 0 then
         POS_WBN_HarvestService.generateWorldStateCandidates(currentDay, worldHours)
+    end
+
+    -- Tier 4: forecast candidates (forward-looking)
+    if POS_WBN_ForecastService and POS_WBN_ForecastService.generateForecasts then
+        POS_WBN_ForecastService.generateForecasts(currentDay, worldHours)
+        local forecastCandidates = POS_WBN_ForecastService.consumeCandidates()
+        if forecastCandidates then
+            for _, fc in ipairs(forecastCandidates) do
+                _candidateQueue[#_candidateQueue + 1] = fc
+            end
+        end
     end
 end
 

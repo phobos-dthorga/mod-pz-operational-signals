@@ -919,7 +919,59 @@ notifications (atmosphere, not intelligence).
 
 ---
 
-## 16. Cross-References
+## 16. Forecast System
+
+WBN generates forward-looking broadcasts alongside current-state reports.
+Forecasts predict conditions 1–3 days ahead with randomised horizons and
+domain-specific confidence tiers.
+
+### 16.1 Data Sources
+
+| Domain | API | Confidence | Accuracy |
+|--------|-----|-----------|----------|
+| Weather | `ClimateForecaster:getForecast(days)` | 0.85 (high) | Deterministic — engine pre-computes future weather |
+| Economy | `POS_PriceEngine.getDayDrift` + zone pressure trend | 0.55 (medium) | Extrapolation from seeded drift formula |
+| Power | `SandboxVars.ElecShutModifier` vs current day | 0.35 (low) | Speculative — no engine API for future grid state |
+
+### 16.2 Candidate Schema
+
+Forecasts are tagged candidates on existing domains, not a separate domain.
+A weather forecast remains `domain = "weather"` with `isForecast = true`.
+
+Additional fields:
+- `isForecast` (boolean) — true for forecasts, nil/absent for current-state
+- `forecastHorizonDays` (number) — 1, 2, or 3 days ahead
+- `forecastConfidence` (number) — domain-specific confidence tier
+
+### 16.3 Editorial Treatment
+
+- **Percentage gate**: economy forecasts bypass the minimum `percentChange`
+  threshold (the ForecastService pre-filters internally)
+- **Deduplication**: forecasts use a wider repeat window (8 vs 5) and are
+  tracked separately from current-state reports (same domain+zone+type
+  does not suppress across forecast/non-forecast boundaries)
+- **Severity**: forecasts are dampened to 80% of equivalent real-event severity
+
+### 16.4 Composition
+
+Forecast bulletins assemble:
+`[station tag] [archetype opener] [horizon opener] [domain body] [forecast closer]`
+
+Horizon openers vary by days ahead ("Tomorrow's outlook:", "Over the next
+two days:", "For the days ahead:"). Economy forecasts include confidence
+verbs ("expect", "are likely to see", "may see") scaled to the forecast's
+confidence tier. Convoy ETA intelligence is appended when detected.
+
+### 16.5 Cadence
+
+Forecasts generate every 2nd economy tick (controlled by
+`WBN_FORECAST_CADENCE_TICKS`), capped at 2 candidates per tick
+(`WBN_FORECAST_MAX_PER_TICK`). This keeps forecasts rarer than
+current-state reports — a radio programme, not a weather channel.
+
+---
+
+## 17. Cross-References
 
 | Document                              | Relationship                                          |
 |---------------------------------------|-------------------------------------------------------|

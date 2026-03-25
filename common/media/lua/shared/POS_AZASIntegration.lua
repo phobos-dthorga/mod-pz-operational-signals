@@ -171,6 +171,20 @@ function POS_AZASIntegration.matchFrequency(tunedFreq)
     return nil
 end
 
+--- Check whether a band name represents a POSnet data band (terminal-eligible).
+---@param band string|nil Band name from matchFrequency()
+---@return boolean True if this is a data band (operations or tactical)
+function POS_AZASIntegration.isDataBand(band)
+    return band == "operations" or band == "tactical"
+end
+
+--- Check whether a band name represents a WBN broadcast band (receive-only).
+---@param band string|nil Band name from matchFrequency()
+---@return boolean True if this is a broadcast band (wbn_market or wbn_emergency)
+function POS_AZASIntegration.isBroadcastBand(band)
+    return band == "wbn_market" or band == "wbn_emergency"
+end
+
 --- Clear cached frequencies (for testing / world reload).
 function POS_AZASIntegration.clearCache()
     cachedOpsFreq = nil

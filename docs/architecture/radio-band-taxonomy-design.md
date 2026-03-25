@@ -179,6 +179,23 @@ Runtime frequency lookups are cached after first AZAS resolution via
 `POS_AZASIntegration.getWBNMarketFrequency()` /
 `POS_AZASIntegration.getWBNEmergencyFrequency()`.
 
+### 3.2 Terminal Access Restriction
+
+Only **data bands** (Civilian Data Net, Tactical Data Net) provide access
+to POSnet terminal services. WBN broadcast bands are **receive-only** —
+tuning a radio to a broadcast frequency and attempting to connect a
+terminal will display an explanatory gate message directing the player to
+tune to a data channel instead.
+
+This is enforced in `POS_ConnectionManager` via
+`POS_AZASIntegration.isBroadcastBand(band)`. The helper returns true for
+`"wbn_market"` and `"wbn_emergency"` bands, false for `"operations"` and
+`"tactical"`.
+
+This separation enforces §4: data bands carry payloads, broadcast bands
+carry interpretations. A terminal is a data processing device — it
+requires structured network traffic, not editorialised public bulletins.
+
 ---
 
 ## 4. The Translation Boundary

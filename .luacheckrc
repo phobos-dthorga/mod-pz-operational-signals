@@ -137,6 +137,7 @@ globals = {
     "POS_Screen_Assignments",
     "POS_TradeService",
     "POS_AmbientIntel",
+    "POS_WBN_ForecastService",
 }
 
 read_globals = {

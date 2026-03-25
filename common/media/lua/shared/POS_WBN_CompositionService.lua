@@ -50,6 +50,44 @@ local DEFAULT_CLOSERS = {
     },
 }
 
+-- Forecast time horizon openers
+local FORECAST_OPENERS = {
+    [1] = { "UI_WBN_Forecast_Opener_Tomorrow_01", "UI_WBN_Forecast_Opener_Tomorrow_02", "UI_WBN_Forecast_Opener_Tomorrow_03" },
+    [2] = { "UI_WBN_Forecast_Opener_TwoDays_01", "UI_WBN_Forecast_Opener_TwoDays_02" },
+    [3] = { "UI_WBN_Forecast_Opener_ThreeDays_01", "UI_WBN_Forecast_Opener_ThreeDays_02" },
+}
+
+-- Forecast confidence verbs (inserted into economy/power forecast text)
+local FORECAST_CONF_VERBS = {
+    high   = { "UI_WBN_Forecast_Verb_High_01", "UI_WBN_Forecast_Verb_High_02" },
+    medium = { "UI_WBN_Forecast_Verb_Med_01", "UI_WBN_Forecast_Verb_Med_02", "UI_WBN_Forecast_Verb_Med_03" },
+    low    = { "UI_WBN_Forecast_Verb_Low_01", "UI_WBN_Forecast_Verb_Low_02", "UI_WBN_Forecast_Verb_Low_03" },
+}
+
+-- Forecast weather condition keys
+local FORECAST_WEATHER_KEYS = {
+    forecast_storm        = "UI_WBN_Forecast_Weather_Storm",
+    forecast_rain_heavy   = "UI_WBN_Forecast_Weather_HeavyRain",
+    forecast_blizzard     = "UI_WBN_Forecast_Weather_Blizzard",
+    forecast_snow         = "UI_WBN_Forecast_Weather_Snow",
+    forecast_fog          = "UI_WBN_Forecast_Weather_Fog",
+    forecast_cold_extreme = "UI_WBN_Forecast_Weather_ColdExtreme",
+    forecast_heat_extreme = "UI_WBN_Forecast_Weather_HeatExtreme",
+    forecast_wind_strong  = "UI_WBN_Forecast_Weather_WindStrong",
+    forecast_clear        = "UI_WBN_Forecast_Weather_Clear",
+    forecast_overcast     = "UI_WBN_Forecast_Weather_Overcast",
+}
+
+-- Forecast power keys
+local FORECAST_POWER_KEYS = {
+    forecast_failure = { "UI_WBN_Forecast_Power_Failure_01", "UI_WBN_Forecast_Power_Failure_02", "UI_WBN_Forecast_Power_Failure_03" },
+}
+
+-- Forecast closers
+local FORECAST_CLOSERS = {
+    "UI_WBN_Forecast_Closer_01", "UI_WBN_Forecast_Closer_02", "UI_WBN_Forecast_Closer_03",
+}
+
 -- Each pool is { key1, key2, ... } — resolved via PhobosLib.safeGetText()
 local PHRASE_BANKS = {
     subjects = {
@@ -248,6 +286,11 @@ function POS_WBN_CompositionService.compose(candidate, archetypeId)
     local domain = c.domain or POS_Constants.WBN_DOMAIN_ECONOMY
     local direction = c.direction or POS_Constants.WBN_DIR_STABLE
     local confBand = c.confidenceBand or POS_Constants.WBN_CONF_MEDIUM
+
+    -- Delegate forecasts to specialised forecast composer
+    if c.isForecast then
+        return POS_WBN_CompositionService.composeForecast(c, arch)
+    end
 
     -- Delegate world-state domains to specialised composer
     if domain == POS_Constants.WBN_DOMAIN_WEATHER
@@ -449,6 +492,109 @@ function POS_WBN_CompositionService.composeWorldState(candidate, archetypeId)
 
     PhobosLib.debug("POS", _TAG,
         "composeWorldState [" .. domain .. "]: " .. tagText .. " " .. opener .. " " .. body)
+
+    return lines
+end
+
+---------------------------------------------------------------
+-- Forecast composer
+---------------------------------------------------------------
+
+--- Resolve confidence band label from raw forecast confidence value.
+--- @param confidence number Raw confidence 0-1
+--- @return string Band key for FORECAST_CONF_VERBS lookup
+local function resolveForecastConfBand(confidence)
+    if confidence >= 0.7 then return "high" end
+    if confidence >= 0.4 then return "medium" end
+    return "low"
+end
+
+--- Compose a forecast bulletin from an approved forecast candidate.
+--- Assembles horizon opener, domain-specific body, and forecast closer
+--- into RadioLine-ready coloured text entries.
+--- @param candidate table Approved forecast candidate with isForecast=true
+--- @param archetypeId string Voice archetype to use
+--- @return table Array of { text, r, g, b } RadioLine entries
+function POS_WBN_CompositionService.composeForecast(candidate, archetypeId)
+    local c = candidate
+    local arch = archetypeId or POS_Constants.WBN_ARCHETYPE_QUARTERMASTER
+    local domain = c.domain or POS_Constants.WBN_DOMAIN_ECONOMY
+
+    -- Resolve station tag
+    local tagKey = POS_Constants.WBN_TAG_KEY_CIVILIAN
+    if c.stationClass == POS_Constants.WBN_STATION_EMERGENCY then
+        tagKey = POS_Constants.WBN_TAG_KEY_EMERGENCY
+    end
+    local tagText = PhobosLib.safeGetText(tagKey)
+
+    -- Archetype opener (voice-pack aware)
+    local openerPool = resolveArchetypePool(arch, POS_Constants.WBN_VP_SECTION_OPENER,
+        DEFAULT_OPENERS[arch] or DEFAULT_OPENERS[POS_Constants.WBN_ARCHETYPE_QUARTERMASTER])
+    local opener = pickPhrase(openerPool)
+
+    -- Horizon opener
+    local horizon = c.forecastHorizonDays or 1
+    local horizonPool = FORECAST_OPENERS[horizon] or FORECAST_OPENERS[1]
+    local horizonOpener = pickPhrase(horizonPool)
+
+    -- Domain-specific body
+    local body = ""
+    local colour = POS_Constants.WBN_COLOUR_ECONOMY
+
+    if domain == POS_Constants.WBN_DOMAIN_WEATHER then
+        local wKey = FORECAST_WEATHER_KEYS[c.weatherKey or "forecast_clear"]
+            or "UI_WBN_Forecast_Weather_Clear"
+        body = PhobosLib.safeGetText(wKey)
+        colour = POS_Constants.WBN_COLOUR_ECONOMY
+
+    elseif domain == POS_Constants.WBN_DOMAIN_ECONOMY then
+        local confBand = resolveForecastConfBand(c.forecastConfidence or 0.55)
+        local verb = pickPhrase(FORECAST_CONF_VERBS[confBand])
+        local zoneName = resolveZoneName(c.zoneId)
+        local categoryName = resolveCategoryName(c.categoryId)
+        local pct = tostring(c.percentChange or 0)
+        local direction = c.direction or POS_Constants.WBN_DIR_STABLE
+
+        if direction == POS_Constants.WBN_DIR_UP then
+            body = PhobosLib.safeGetText("UI_WBN_Forecast_Econ_Up", categoryName, zoneName, verb, pct)
+        elseif direction == POS_Constants.WBN_DIR_DOWN then
+            body = PhobosLib.safeGetText("UI_WBN_Forecast_Econ_Down", categoryName, zoneName, verb)
+        else
+            body = PhobosLib.safeGetText("UI_WBN_Forecast_Econ_Stable", categoryName, zoneName, verb)
+        end
+
+        -- Append convoy note if present
+        if c.convoyNote then
+            local convoyText = PhobosLib.safeGetText("UI_WBN_Forecast_Econ_Convoy",
+                resolveZoneName(c.convoyNote.zoneId), tostring(c.convoyNote.etaDays))
+            body = body .. " " .. convoyText
+        end
+
+        colour = POS_Constants.WBN_COLOUR_ECONOMY
+
+    elseif domain == POS_Constants.WBN_DOMAIN_POWER then
+        local transition = c.powerTransition or "forecast_failure"
+        local pKeys = FORECAST_POWER_KEYS[transition] or FORECAST_POWER_KEYS.forecast_failure
+        body = pickPhrase(pKeys)
+        colour = POS_Constants.WBN_COLOUR_EMERGENCY
+    end
+
+    -- Forecast closer
+    local closer = pickPhrase(FORECAST_CLOSERS)
+
+    -- Assemble full body with horizon opener + body + closer
+    local fullBody = horizonOpener .. " " .. body
+    if closer and closer ~= "" then
+        fullBody = fullBody .. " " .. closer
+    end
+
+    local lines = {
+        { text = tagText .. " " .. opener, r = POS_Constants.WBN_COLOUR_TAG.r, g = POS_Constants.WBN_COLOUR_TAG.g, b = POS_Constants.WBN_COLOUR_TAG.b },
+        { text = fullBody, r = colour.r, g = colour.g, b = colour.b },
+    }
+
+    PhobosLib.debug("POS", _TAG,
+        "composeForecast [" .. domain .. "]: " .. tagText .. " " .. opener .. " " .. fullBody)
 
     return lines
 end

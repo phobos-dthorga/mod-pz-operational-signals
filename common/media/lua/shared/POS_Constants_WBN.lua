@@ -190,3 +190,15 @@ POS_Constants.WBN_AMBIENT_CONFIDENCE     = 0.5    -- base confidence for ambient
 POS_Constants.WBN_AMBIENT_FRESHNESS      = 0.8    -- freshness for ambient candidates
 POS_Constants.WBN_AMBIENT_MAX_PER_TICK   = 3      -- max ambient candidates generated per economy tick
 POS_Constants.WBN_AMBIENT_CONF_VARIANCE  = 0.1    -- +/- random variance applied to ambient confidence
+
+-- Forecast system
+POS_Constants.WBN_FORECAST_CONF_WEATHER    = 0.85  -- high: engine knows future weather
+POS_Constants.WBN_FORECAST_CONF_ECONOMY    = 0.55  -- medium: extrapolation from drift
+POS_Constants.WBN_FORECAST_CONF_POWER      = 0.35  -- low: speculative grid analysis
+POS_Constants.WBN_FORECAST_HORIZON_MIN     = 1     -- minimum days ahead
+POS_Constants.WBN_FORECAST_HORIZON_MAX     = 3     -- maximum days ahead
+POS_Constants.WBN_FORECAST_REPEAT_WINDOW   = 8     -- wider dedup window for forecasts
+POS_Constants.WBN_FORECAST_MAX_PER_TICK    = 2     -- max forecast candidates per economy tick
+POS_Constants.WBN_FORECAST_CADENCE_TICKS   = 2     -- generate forecasts every Nth economy tick
+POS_Constants.WBN_FORECAST_POWER_WARN_DAYS = 3     -- start warning N days before shutoff
+POS_Constants.WBN_FORECAST_SEVERITY_DAMPEN = 0.8   -- forecasts are 80% as severe as real events
