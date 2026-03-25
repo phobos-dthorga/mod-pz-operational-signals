@@ -32,19 +32,41 @@ require "POS_Constants_WBN"
 local _TAG = "WBN:Scheduler"
 POS_WBN_SchedulerService = {}
 
--- Station class configuration (Phase 1)
+--- Select a random archetype from a weighted table.
+--- @param weights table  Archetype weight table (sum = 100)
+--- @return string        Selected archetype ID
+local function selectWeightedArchetype(weights)
+    local total = 0
+    for _, w in pairs(weights) do total = total + w end
+    local roll = ZombRand(total)
+    local running = 0
+    for archId, w in pairs(weights) do
+        running = running + w
+        if roll < running then return archId end
+    end
+    -- Fallback (shouldn't reach here)
+    for archId, _ in pairs(weights) do return archId end
+end
+
+-- Station class configuration (Phase 1 + world-state domains)
 local STATIONS = {
     [POS_Constants.WBN_STATION_CIVILIAN_MARKET] = {
-        domains     = { POS_Constants.WBN_DOMAIN_ECONOMY },
-        cadenceMin  = POS_Constants.WBN_CADENCE_CIVILIAN_MIN,
-        maxQueue    = POS_Constants.WBN_QUEUE_MAX_CIVILIAN,
-        archetypeId = POS_Constants.WBN_ARCHETYPE_QUARTERMASTER,
+        domains    = {
+            POS_Constants.WBN_DOMAIN_ECONOMY,
+            POS_Constants.WBN_DOMAIN_WEATHER,
+            POS_Constants.WBN_DOMAIN_COLOUR,
+        },
+        cadenceMin = POS_Constants.WBN_CADENCE_CIVILIAN_MIN,
+        maxQueue   = POS_Constants.WBN_QUEUE_MAX_CIVILIAN,
     },
     [POS_Constants.WBN_STATION_EMERGENCY] = {
-        domains     = { POS_Constants.WBN_DOMAIN_INFRASTRUCTURE },
-        cadenceMin  = POS_Constants.WBN_CADENCE_EMERGENCY_MIN,
-        maxQueue    = POS_Constants.WBN_QUEUE_MAX_EMERGENCY,
-        archetypeId = POS_Constants.WBN_ARCHETYPE_FIELD_REPORTER,
+        domains    = {
+            POS_Constants.WBN_DOMAIN_INFRASTRUCTURE,
+            POS_Constants.WBN_DOMAIN_POWER,
+            POS_Constants.WBN_DOMAIN_COLOUR,
+        },
+        cadenceMin = POS_Constants.WBN_CADENCE_EMERGENCY_MIN,
+        maxQueue   = POS_Constants.WBN_QUEUE_MAX_EMERGENCY,
     },
 }
 
@@ -52,6 +74,12 @@ local STATIONS = {
 local _queues = {}
 -- Last emission timestamps per station (game-time minutes)
 local _lastEmitTime = {}
+
+-- Bulletin metadata cache: maps first-line text to candidate data.
+-- Populated on emit, consumed by ClientListener for fragment generation.
+-- Rolling cap to prevent unbounded growth.
+local _bulletinMetaCache = {}
+local _BULLETIN_META_MAX = 50
 
 --- Get the current game-time expressed as total elapsed minutes.
 --- @return number  Total game minutes since world start
@@ -121,8 +149,15 @@ function POS_WBN_SchedulerService.tick()
             local stationId = c.stationClass or POS_Constants.WBN_STATION_CIVILIAN_MARKET
             local station = STATIONS[stationId]
             if station then
+                -- Select archetype via weighted random per station class
+                local archetypeId
+                if stationId == POS_Constants.WBN_STATION_CIVILIAN_MARKET then
+                    archetypeId = selectWeightedArchetype(POS_Constants.WBN_ARCHETYPE_WEIGHTS_MARKET)
+                elseif stationId == POS_Constants.WBN_STATION_EMERGENCY then
+                    archetypeId = selectWeightedArchetype(POS_Constants.WBN_ARCHETYPE_WEIGHTS_EMERGENCY)
+                end
                 local ok, lines = PhobosLib.safecall(
-                    POS_WBN_CompositionService.compose, c, station.archetypeId)
+                    POS_WBN_CompositionService.compose, c, archetypeId)
                 if ok and lines and #lines > 0 then
                     c._composedLines = lines
                     enqueue(stationId, c)
@@ -151,6 +186,35 @@ function POS_WBN_SchedulerService.tick()
                         if POS_WBN_EditorialService and POS_WBN_EditorialService.recordEmitted then
                             POS_WBN_EditorialService.recordEmitted(bulletin)
                         end
+                        -- Cache candidate metadata for client-side fragment generation.
+                        -- Key on body text (second line) since that's what the client sees.
+                        if bulletin._composedLines[2] then
+                            local cacheKey = bulletin._composedLines[2].text or ""
+                            if cacheKey ~= "" then
+                                _bulletinMetaCache[cacheKey] = {
+                                    domain         = bulletin.domain,
+                                    zoneId         = bulletin.zoneId,
+                                    categoryId     = bulletin.categoryId,
+                                    direction      = bulletin.direction,
+                                    percentChange  = bulletin.percentChange,
+                                    confidence     = bulletin.confidence,
+                                    severity       = bulletin.severity,
+                                    weatherKey     = bulletin.weatherKey,
+                                    powerTransition = bulletin.powerTransition,
+                                    stationClass   = stationId,
+                                }
+                                -- Trim cache if over cap (remove arbitrary oldest)
+                                local count = 0
+                                local firstKey = nil
+                                for k, _ in pairs(_bulletinMetaCache) do
+                                    count = count + 1
+                                    if not firstKey then firstKey = k end
+                                end
+                                if count > _BULLETIN_META_MAX and firstKey then
+                                    _bulletinMetaCache[firstKey] = nil
+                                end
+                            end
+                        end
                         PhobosLib.debug("POS", _TAG,
                             "emitted bulletin on " .. stationId
                             .. " (queue remaining: " .. tostring(#q) .. ")")
@@ -159,6 +223,20 @@ function POS_WBN_SchedulerService.tick()
             end
         end
     end
+end
+
+--- Look up cached candidate metadata for a received broadcast line.
+--- Used by ClientListener to retrieve structured data for fragment generation.
+--- Consumes the entry (one-shot) to prevent stale reuse.
+--- @param lineText string  The broadcast body text received by the client
+--- @return table|nil       Candidate metadata table, or nil if not found
+function POS_WBN_SchedulerService.consumeBulletinMeta(lineText)
+    if not lineText or lineText == "" then return nil end
+    local meta = _bulletinMetaCache[lineText]
+    if meta then
+        _bulletinMetaCache[lineText] = nil
+    end
+    return meta
 end
 
 --- Initialise the scheduler and its dependent services.

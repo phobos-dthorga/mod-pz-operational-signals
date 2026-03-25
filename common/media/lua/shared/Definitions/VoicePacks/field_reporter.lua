@@ -4,7 +4,11 @@ return {
     archetypeId = "field_reporter",
     description = "Urgent, concise, emergency-focused broadcast voice",
     overrides = {
-        wbn_opener = "voice_wbn_field_reporter_openers",
-        wbn_closer = "voice_wbn_field_reporter_closers",
+        wbn_opener             = "voice_wbn_field_reporter_openers",
+        wbn_closer             = "voice_wbn_field_reporter_closers",
+        wbn_weather            = "voice_wbn_field_reporter_weather",
+        wbn_power              = "voice_wbn_field_reporter_power",
+        wbn_flavour_market     = "voice_wbn_field_reporter_flavour_market",
+        wbn_flavour_emergency  = "voice_wbn_field_reporter_flavour_emergency",
     },
 }

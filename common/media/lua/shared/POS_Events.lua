@@ -148,3 +148,17 @@ POS_Events.OnScreenInvalidationRequested = LuaEvent.new("POS.OnScreenInvalidatio
 --- Fired when a background process starts, progresses, or completes.
 --- Payload: { processId = string, label = string, progress = number (0-100), complete = boolean }
 POS_Events.OnBackgroundProcessChanged = LuaEvent.new("POS.OnBackgroundProcessChanged")
+
+---------------------------------------------------------------
+-- World Broadcast Network (WBN)
+---------------------------------------------------------------
+
+--- Fired when a WBN broadcast is received and processed.
+--- Payload: { domain = string, eventType = string, severity = number,
+---            confidence = number, zoneId = string?, data = table }
+POS_Events.OnBroadcastReceived = LuaEvent.new("POS.OnBroadcastReceived")
+
+--- Fired when a signal fragment is generated from a broadcast.
+--- Payload: { fragmentId = string, domain = string, confidence = number,
+---            sourceEventType = string }
+POS_Events.OnSignalFragmentGenerated = LuaEvent.new("POS.OnSignalFragmentGenerated")

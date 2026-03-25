@@ -135,6 +135,54 @@ POS_Constants.WBN_CAUSE_RECOVERY     = "recovery"
 -- Pressure is 0.0-1.0 clamped; multiply by this to get approximate % change
 POS_Constants.WBN_PRESSURE_TO_PERCENT = 25
 
+-- Weather broadcast thresholds (from ClimateManager API)
+POS_Constants.WBN_WEATHER_RAIN_MODERATE  = 0.3   -- getRainIntensity() >= this
+POS_Constants.WBN_WEATHER_RAIN_HEAVY     = 0.7
+POS_Constants.WBN_WEATHER_SNOW_THRESHOLD = 0.2   -- getSnowIntensity() >= this
+POS_Constants.WBN_WEATHER_FOG_THRESHOLD  = 0.4   -- getFogIntensity() >= this
+POS_Constants.WBN_WEATHER_WIND_STRONG_KPH = 40   -- getWindspeedKph() >= this
+POS_Constants.WBN_WEATHER_WIND_STORM_KPH  = 70
+POS_Constants.WBN_WEATHER_COLD_EXTREME_C  = 0    -- getTemperature() <= this (Celsius)
+POS_Constants.WBN_WEATHER_HEAT_EXTREME_C  = 35   -- getTemperature() >= this
+
+-- Power grid broadcast severities
+POS_Constants.WBN_POWER_SEVERITY_FAILURE   = 0.95
+POS_Constants.WBN_POWER_SEVERITY_RESTORED  = 0.80
+POS_Constants.WBN_POWER_SEVERITY_REMINDER  = 0.30
+POS_Constants.WBN_POWER_SEVERITY_STATUS    = 0.20
+
+-- World-state domains and event types
+POS_Constants.WBN_DOMAIN_WEATHER        = "weather"
+POS_Constants.WBN_DOMAIN_POWER          = "power"
+POS_Constants.WBN_DOMAIN_COLOUR         = "colour"
+POS_Constants.WBN_EVENT_WEATHER_REPORT  = "weather_report"
+POS_Constants.WBN_EVENT_POWER_STATUS    = "power_status"
+POS_Constants.WBN_EVENT_COLOUR          = "colour_broadcast"
+
+-- Signal fragment constants (Tier 0.5 intelligence)
+POS_Constants.WBN_FRAGMENT_CONF_SCALE    = 0.6   -- broadcast conf * this = fragment conf
+POS_Constants.WBN_FRAGMENT_CONF_MIN      = 0.20
+POS_Constants.WBN_FRAGMENT_CONF_MAX      = 0.60
+POS_Constants.WBN_FRAGMENT_MAX_STORED    = 30    -- rolling cap in player ModData
+POS_Constants.WBN_FRAGMENT_MODDATA_KEY   = "SignalFragments"
+
+-- Rumour confidence modifiers from broadcast corroboration
+POS_Constants.WBN_RUMOUR_REINFORCE_BOOST = 0.05  -- same-direction boost
+POS_Constants.WBN_RUMOUR_CONTRADICT_DROP = 0.10  -- contradicting penalty
+POS_Constants.WBN_RUMOUR_CONF_FLOOR      = 0.10
+
+-- PN notification throttle (game-minutes between intel toasts)
+POS_Constants.WBN_PN_INTEL_THROTTLE_MIN  = 5
+
+-- Archetype weight tables for station scheduling (sum = 100 per station)
+POS_Constants.WBN_ARCHETYPE_WEIGHTS_MARKET = {
+    quartermaster = 40, trader = 25, wholesaler = 15,
+    crafter = 10, speculator = 10,
+}
+POS_Constants.WBN_ARCHETYPE_WEIGHTS_EMERGENCY = {
+    field_reporter = 50, military = 30, scavenger = 20,
+}
+
 -- Ambient broadcast generation (fallback when no pressure deltas occur)
 POS_Constants.WBN_AMBIENT_PRESSURE_FLOOR = 0.05   -- min absolute pressure to generate ambient candidate
 POS_Constants.WBN_AMBIENT_SEVERITY       = 0.3    -- base severity for ambient market reports

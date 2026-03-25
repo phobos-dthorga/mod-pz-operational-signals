@@ -56,6 +56,15 @@ local PHRASE_BANKS = {
         [POS_Constants.WBN_DOMAIN_ECONOMY] = {
             "UI_WBN_Phrase_Subject_Econ_01", "UI_WBN_Phrase_Subject_Econ_02",
             "UI_WBN_Phrase_Subject_Econ_03", "UI_WBN_Phrase_Subject_Econ_04",
+            "UI_WBN_Phrase_Subject_Econ_05", "UI_WBN_Phrase_Subject_Econ_06",
+            "UI_WBN_Phrase_Subject_Econ_07", "UI_WBN_Phrase_Subject_Econ_08",
+            "UI_WBN_Phrase_Subject_Econ_09", "UI_WBN_Phrase_Subject_Econ_10",
+            "UI_WBN_Phrase_Subject_Econ_11", "UI_WBN_Phrase_Subject_Econ_12",
+        },
+        [POS_Constants.WBN_DOMAIN_INFRASTRUCTURE] = {
+            "UI_WBN_Phrase_Subject_Infra_01", "UI_WBN_Phrase_Subject_Infra_02",
+            "UI_WBN_Phrase_Subject_Infra_03", "UI_WBN_Phrase_Subject_Infra_04",
+            "UI_WBN_Phrase_Subject_Infra_05", "UI_WBN_Phrase_Subject_Infra_06",
         },
     },
     conditions = {
@@ -71,24 +80,46 @@ local PHRASE_BANKS = {
             "UI_WBN_Phrase_Cond_Stable_01", "UI_WBN_Phrase_Cond_Stable_02",
         },
     },
+    conditionsConfidence = {
+        [POS_Constants.WBN_DIR_UP] = {
+            [POS_Constants.WBN_CONF_HIGH] = { "UI_WBN_Phrase_Cond_UpHigh_01", "UI_WBN_Phrase_Cond_UpHigh_02" },
+            [POS_Constants.WBN_CONF_LOW]  = { "UI_WBN_Phrase_Cond_UpLow_01",  "UI_WBN_Phrase_Cond_UpLow_02" },
+        },
+        [POS_Constants.WBN_DIR_DOWN] = {
+            [POS_Constants.WBN_CONF_HIGH] = { "UI_WBN_Phrase_Cond_DownHigh_01", "UI_WBN_Phrase_Cond_DownHigh_02" },
+            [POS_Constants.WBN_CONF_LOW]  = { "UI_WBN_Phrase_Cond_DownLow_01",  "UI_WBN_Phrase_Cond_DownLow_02" },
+        },
+        [POS_Constants.WBN_DIR_STABLE] = {
+            -- extra stable variants used regardless of confidence
+            _extra = { "UI_WBN_Phrase_Cond_Stable_03", "UI_WBN_Phrase_Cond_Stable_04" },
+        },
+        [POS_Constants.WBN_DIR_MIXED] = {
+            _default = { "UI_WBN_Phrase_Cond_Mixed_01", "UI_WBN_Phrase_Cond_Mixed_02" },
+        },
+    },
     qualifiers = {
-        [POS_Constants.WBN_CONF_HIGH]   = { "UI_WBN_Phrase_Qual_High_01" },
+        [POS_Constants.WBN_CONF_HIGH]   = {
+            "UI_WBN_Phrase_Qual_High_01", "UI_WBN_Phrase_Qual_High_02",
+            "UI_WBN_Phrase_Qual_High_03",
+        },
         [POS_Constants.WBN_CONF_MEDIUM] = {
             "UI_WBN_Phrase_Qual_Med_01", "UI_WBN_Phrase_Qual_Med_02",
-            "UI_WBN_Phrase_Qual_Med_03",
+            "UI_WBN_Phrase_Qual_Med_03", "UI_WBN_Phrase_Qual_Med_04",
+            "UI_WBN_Phrase_Qual_Med_05",
         },
         [POS_Constants.WBN_CONF_LOW] = {
             "UI_WBN_Phrase_Qual_Low_01", "UI_WBN_Phrase_Qual_Low_02",
-            "UI_WBN_Phrase_Qual_Low_03",
+            "UI_WBN_Phrase_Qual_Low_03", "UI_WBN_Phrase_Qual_Low_04",
+            "UI_WBN_Phrase_Qual_Low_05",
         },
     },
     causes = {
-        [POS_Constants.WBN_CAUSE_SCARCITY]    = "UI_WBN_Phrase_Cause_Scarcity",
-        [POS_Constants.WBN_CAUSE_SURPLUS]      = "UI_WBN_Phrase_Cause_Surplus",
-        [POS_Constants.WBN_CAUSE_BLACKOUT]     = "UI_WBN_Phrase_Cause_Blackout",
-        [POS_Constants.WBN_CAUSE_CONVOY_LOSS]  = "UI_WBN_Phrase_Cause_ConvoyLoss",
-        [POS_Constants.WBN_CAUSE_PANIC]        = "UI_WBN_Phrase_Cause_Panic",
-        [POS_Constants.WBN_CAUSE_RECOVERY]     = "UI_WBN_Phrase_Cause_Recovery",
+        [POS_Constants.WBN_CAUSE_SCARCITY]    = { "UI_WBN_Phrase_Cause_Scarcity", "UI_WBN_Phrase_Cause_Scarcity_02", "UI_WBN_Phrase_Cause_Scarcity_03" },
+        [POS_Constants.WBN_CAUSE_SURPLUS]     = { "UI_WBN_Phrase_Cause_Surplus", "UI_WBN_Phrase_Cause_Surplus_02", "UI_WBN_Phrase_Cause_Surplus_03" },
+        [POS_Constants.WBN_CAUSE_BLACKOUT]    = { "UI_WBN_Phrase_Cause_Blackout", "UI_WBN_Phrase_Cause_Blackout_02", "UI_WBN_Phrase_Cause_Blackout_03" },
+        [POS_Constants.WBN_CAUSE_CONVOY_LOSS] = { "UI_WBN_Phrase_Cause_ConvoyLoss", "UI_WBN_Phrase_Cause_ConvoyLoss_02", "UI_WBN_Phrase_Cause_ConvoyLoss_03" },
+        [POS_Constants.WBN_CAUSE_PANIC]       = { "UI_WBN_Phrase_Cause_Panic", "UI_WBN_Phrase_Cause_Panic_02", "UI_WBN_Phrase_Cause_Panic_03" },
+        [POS_Constants.WBN_CAUSE_RECOVERY]    = { "UI_WBN_Phrase_Cause_Recovery", "UI_WBN_Phrase_Cause_Recovery_02", "UI_WBN_Phrase_Cause_Recovery_03" },
     },
     confidenceModifiers = {
         [POS_Constants.WBN_CONF_HIGH]   = {},  -- no modifier
@@ -218,6 +249,13 @@ function POS_WBN_CompositionService.compose(candidate, archetypeId)
     local direction = c.direction or POS_Constants.WBN_DIR_STABLE
     local confBand = c.confidenceBand or POS_Constants.WBN_CONF_MEDIUM
 
+    -- Delegate world-state domains to specialised composer
+    if domain == POS_Constants.WBN_DOMAIN_WEATHER
+        or domain == POS_Constants.WBN_DOMAIN_POWER
+        or domain == POS_Constants.WBN_DOMAIN_COLOUR then
+        return POS_WBN_CompositionService.composeWorldState(c, arch)
+    end
+
     -- Resolve display values
     local zoneName = resolveZoneName(c.zoneId)
     local categoryName = resolveCategoryName(c.categoryId)
@@ -244,7 +282,13 @@ function POS_WBN_CompositionService.compose(candidate, archetypeId)
     -- 4. Cause (optional — 50% chance to include if cause tag exists)
     local causeSuffix = ""
     if c.causeTag and PHRASE_BANKS.causes[c.causeTag] and ZombRand(2) == 0 then
-        causeSuffix = " " .. PhobosLib.safeGetText(PHRASE_BANKS.causes[c.causeTag])
+        local causePool = PHRASE_BANKS.causes[c.causeTag]
+        if type(causePool) == "table" then
+            causeSuffix = " " .. pickPhrase(causePool)
+        else
+            -- Legacy single-key fallback
+            causeSuffix = " " .. PhobosLib.safeGetText(causePool)
+        end
     end
 
     -- 5. Qualifier
@@ -283,6 +327,128 @@ function POS_WBN_CompositionService.compose(candidate, archetypeId)
 
     PhobosLib.debug("POS", _TAG,
         "compose: " .. tagText .. " " .. opener .. " " .. body)
+
+    return lines
+end
+
+---------------------------------------------------------------
+-- World-state domain composer (weather, power, colour)
+---------------------------------------------------------------
+
+-- Weather translation key mapping
+local WEATHER_KEYS = {
+    storm_wind    = "UI_WBN_Weather_Storm_Wind",
+    rain_heavy    = "UI_WBN_Weather_Rain_Heavy",
+    cold_extreme  = "UI_WBN_Weather_Cold_Extreme",
+    heat_extreme  = "UI_WBN_Weather_Heat_Extreme",
+    wind_strong   = "UI_WBN_Weather_Wind_Strong",
+    snow          = "UI_WBN_Weather_Snow",
+    fog           = "UI_WBN_Weather_Fog",
+    rain_moderate = "UI_WBN_Weather_Rain_Moderate",
+    overcast      = "UI_WBN_Weather_Overcast",
+    clear         = "UI_WBN_Weather_Clear",
+}
+
+-- Power transition translation key pools (multiple variants per transition)
+local POWER_KEYS = {
+    failed       = { "UI_WBN_Power_ShutOff_01", "UI_WBN_Power_ShutOff_02", "UI_WBN_Power_ShutOff_03" },
+    restored     = { "UI_WBN_Power_Restored_01", "UI_WBN_Power_Restored_02", "UI_WBN_Power_Restored_03" },
+    reminder_off = { "UI_WBN_Power_ReminderOff_01", "UI_WBN_Power_ReminderOff_02" },
+    status_on    = { "UI_WBN_Power_StatusOn_01", "UI_WBN_Power_StatusOn_02" },
+}
+
+-- Flavour pools by target station
+local FLAVOUR_POOLS = {
+    [POS_Constants.WBN_STATION_CIVILIAN_MARKET] = {
+        "UI_WBN_Flavour_Market_01", "UI_WBN_Flavour_Market_02",
+        "UI_WBN_Flavour_Market_03", "UI_WBN_Flavour_Market_04",
+        "UI_WBN_Flavour_Market_05", "UI_WBN_Flavour_Market_06",
+    },
+    [POS_Constants.WBN_STATION_EMERGENCY] = {
+        "UI_WBN_Flavour_Emergency_01", "UI_WBN_Flavour_Emergency_02",
+        "UI_WBN_Flavour_Emergency_03", "UI_WBN_Flavour_Emergency_04",
+        "UI_WBN_Flavour_Emergency_05", "UI_WBN_Flavour_Emergency_06",
+    },
+}
+
+--- Compose a world-state bulletin (weather, power, or colour/flavour).
+--- @param candidate table Approved candidate with domain-specific fields
+--- @param archetypeId string Voice archetype to use
+--- @return table Array of { text, r, g, b } RadioLine entries
+function POS_WBN_CompositionService.composeWorldState(candidate, archetypeId)
+    local c = candidate
+    local arch = archetypeId or POS_Constants.WBN_ARCHETYPE_QUARTERMASTER
+    local domain = c.domain
+
+    -- Resolve station tag
+    local tagKey = POS_Constants.WBN_TAG_KEY_CIVILIAN
+    if c.stationClass == POS_Constants.WBN_STATION_EMERGENCY then
+        tagKey = POS_Constants.WBN_TAG_KEY_EMERGENCY
+    end
+    local tagText = PhobosLib.safeGetText(tagKey)
+
+    -- Resolve opener/closer via voice pack (using domain-specific sections with fallback)
+    local vpSection = "wbn_weather"
+    if domain == POS_Constants.WBN_DOMAIN_POWER then
+        vpSection = "wbn_power"
+    elseif domain == POS_Constants.WBN_DOMAIN_COLOUR then
+        local ts = c.targetStation or POS_Constants.WBN_STATION_CIVILIAN_MARKET
+        vpSection = (ts == POS_Constants.WBN_STATION_EMERGENCY)
+            and "wbn_flavour_emergency"
+            or "wbn_flavour_market"
+    end
+
+    local openerPool = resolveArchetypePool(arch, vpSection .. "_opener",
+        DEFAULT_OPENERS[arch] or DEFAULT_OPENERS[POS_Constants.WBN_ARCHETYPE_QUARTERMASTER])
+    local opener = pickPhrase(openerPool)
+
+    local closerPool = resolveArchetypePool(arch, vpSection .. "_closer",
+        DEFAULT_CLOSERS[arch] or DEFAULT_CLOSERS[POS_Constants.WBN_ARCHETYPE_QUARTERMASTER])
+    local closer = pickPhrase(closerPool)
+
+    -- Build domain-specific body text
+    local body = ""
+    local colour = POS_Constants.WBN_COLOUR_ECONOMY
+
+    if domain == POS_Constants.WBN_DOMAIN_WEATHER then
+        local wKey = WEATHER_KEYS[c.weatherKey or "clear"] or "UI_WBN_Weather_Clear"
+        body = PhobosLib.safeGetText(wKey)
+        -- Substitute template variables from extraData
+        if c.extraData then
+            if c.extraData.temp then
+                body = body:gsub("{temp}", tostring(c.extraData.temp))
+            end
+            if c.extraData.wind then
+                body = body:gsub("{wind}", tostring(c.extraData.wind))
+            end
+        end
+        colour = POS_Constants.WBN_COLOUR_ECONOMY
+
+    elseif domain == POS_Constants.WBN_DOMAIN_POWER then
+        local transition = c.powerTransition or "status_on"
+        local pKeys = POWER_KEYS[transition] or POWER_KEYS.status_on
+        body = pickPhrase(pKeys)
+        colour = POS_Constants.WBN_COLOUR_EMERGENCY
+
+    elseif domain == POS_Constants.WBN_DOMAIN_COLOUR then
+        local ts = c.targetStation or POS_Constants.WBN_STATION_CIVILIAN_MARKET
+        local pool = FLAVOUR_POOLS[ts] or FLAVOUR_POOLS[POS_Constants.WBN_STATION_CIVILIAN_MARKET]
+        body = pickPhrase(pool)
+        colour = POS_Constants.WBN_COLOUR_TAG  -- subdued for flavour
+    end
+
+    -- Append closer
+    if closer and closer ~= "" then
+        body = body .. " " .. closer
+    end
+
+    local lines = {
+        { text = tagText .. " " .. opener, r = POS_Constants.WBN_COLOUR_TAG.r, g = POS_Constants.WBN_COLOUR_TAG.g, b = POS_Constants.WBN_COLOUR_TAG.b },
+        { text = body, r = colour.r, g = colour.g, b = colour.b },
+    }
+
+    PhobosLib.debug("POS", _TAG,
+        "composeWorldState [" .. domain .. "]: " .. tagText .. " " .. opener .. " " .. body)
 
     return lines
 end

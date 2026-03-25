@@ -29,6 +29,9 @@ local _previousPressure = {}
 -- Candidate queue (consumed by editorial layer each scheduler tick)
 local _candidateQueue = {}
 
+-- Power grid state tracker for transition detection (Tier 3)
+local _previousPowerState = nil
+
 --- Get and clear pending candidates.
 --- @return table Array of candidate tables accumulated since last consume
 function POS_WBN_HarvestService.consumeCandidates()
@@ -157,12 +160,18 @@ function POS_WBN_HarvestService.onEconomyTick(data)
     end
 
     if #_candidateQueue > 0 then
+        -- Tier 1: delta-driven candidates
         PhobosLib.debug("POS", _TAG,
             "onEconomyTick: generated " .. tostring(#_candidateQueue)
             .. " delta-driven candidates")
     else
-        -- Fallback: generate ambient baseline candidates from absolute pressure
+        -- Tier 2: ambient baseline candidates from absolute pressure
         POS_WBN_HarvestService.generateAmbientCandidates(currentDay, worldHours)
+    end
+
+    -- Tier 3: world-state fallback (weather + power + flavour)
+    if #_candidateQueue == 0 then
+        POS_WBN_HarvestService.generateWorldStateCandidates(currentDay, worldHours)
     end
 end
 
@@ -257,6 +266,192 @@ function POS_WBN_HarvestService.generateAmbientCandidates(currentDay, worldHours
     PhobosLib.debug("POS", _TAG,
         "generateAmbientCandidates: generated " .. tostring(count) .. " ambient candidates"
         .. " from " .. tostring(#pool) .. " eligible pairs")
+end
+
+---------------------------------------------------------------
+-- Tier 3 helpers: weather, power, flavour
+---------------------------------------------------------------
+
+--- Sample the current weather from ClimateManager and return a candidate
+--- if conditions are notable enough to report.
+--- @param climate userdata ClimateManager instance
+--- @param currentDay number The current game day
+--- @param worldHours number Total world-age hours
+--- @return table|nil A weather candidate or nil
+local function _sampleWeather(climate, currentDay, worldHours)
+    local rain = climate.getRainIntensity and climate:getRainIntensity() or 0
+    local snow = climate.getSnowIntensity and climate:getSnowIntensity() or 0
+    local fog = climate.getFogIntensity and climate:getFogIntensity() or 0
+    local wind = climate.getWindspeedKph and climate:getWindspeedKph() or 0
+    local temp = climate.getTemperature and climate:getTemperature() or 15
+
+    -- Pick the most notable condition
+    local weatherKey = nil
+    local severity = POS_Constants.WBN_AMBIENT_SEVERITY
+    local extraData = {}
+
+    if wind >= POS_Constants.WBN_WEATHER_WIND_STORM_KPH then
+        weatherKey = "storm_wind"
+        severity = 0.90
+        extraData.wind = PhobosLib.round(wind, 0)
+    elseif rain >= POS_Constants.WBN_WEATHER_RAIN_HEAVY then
+        weatherKey = "rain_heavy"
+        severity = 0.75
+    elseif temp <= POS_Constants.WBN_WEATHER_COLD_EXTREME_C then
+        weatherKey = "cold_extreme"
+        severity = 0.70
+        extraData.temp = PhobosLib.round(temp, 0)
+    elseif temp >= POS_Constants.WBN_WEATHER_HEAT_EXTREME_C then
+        weatherKey = "heat_extreme"
+        severity = 0.70
+        extraData.temp = PhobosLib.round(temp, 0)
+    elseif wind >= POS_Constants.WBN_WEATHER_WIND_STRONG_KPH then
+        weatherKey = "wind_strong"
+        severity = 0.55
+        extraData.wind = PhobosLib.round(wind, 0)
+    elseif snow >= POS_Constants.WBN_WEATHER_SNOW_THRESHOLD then
+        weatherKey = "snow"
+        severity = 0.60
+    elseif fog >= POS_Constants.WBN_WEATHER_FOG_THRESHOLD then
+        weatherKey = "fog"
+        severity = 0.50
+    elseif rain >= POS_Constants.WBN_WEATHER_RAIN_MODERATE then
+        weatherKey = "rain_moderate"
+        severity = 0.40
+    else
+        -- Mild weather — pick clear/overcast based on clouds
+        local clouds = climate.getCloudIntensity and climate:getCloudIntensity() or 0
+        weatherKey = clouds > 0.5 and "overcast" or "clear"
+        severity = 0.15
+    end
+
+    return {
+        id             = "wbn_weather_" .. tostring(currentDay) .. "_" .. tostring(ZombRand(100000)),
+        domain         = POS_Constants.WBN_DOMAIN_WEATHER,
+        eventType      = POS_Constants.WBN_EVENT_WEATHER_REPORT,
+        zoneId         = nil,
+        categoryId     = nil,
+        severity       = severity,
+        confidence     = 0.90,  -- weather is directly observable
+        freshness      = 1.0,
+        sourceType     = "climate_manager",
+        publicEligible = true,
+        expiresAt      = worldHours + POS_Constants.WBN_CANDIDATE_EXPIRY_HOURS,
+        day            = currentDay,
+        weatherKey     = weatherKey,
+        extraData      = extraData,
+    }
+end
+
+--- Check for power grid state transitions and generate a candidate on change.
+--- Tracks previous state in module-local _previousPowerState.
+--- @param currentDay number The current game day
+--- @param worldHours number Total world-age hours
+--- @return table|nil A power candidate or nil
+local function _checkPowerTransition(currentDay, worldHours)
+    local currentPower = PhobosLib.isGridPowerActive and PhobosLib.isGridPowerActive()
+    if currentPower == nil then return nil end
+
+    local transition = nil
+    if _previousPowerState == nil then
+        _previousPowerState = currentPower
+        -- First check — no transition, but generate a status report
+        transition = currentPower and "status_on" or "reminder_off"
+    elseif currentPower ~= _previousPowerState then
+        transition = currentPower and "restored" or "failed"
+        _previousPowerState = currentPower
+    else
+        -- No change — periodic reminder/status (low priority, will often be filtered by editorial)
+        transition = currentPower and "status_on" or "reminder_off"
+    end
+
+    if not transition then return nil end
+
+    local severityMap = {
+        failed       = POS_Constants.WBN_POWER_SEVERITY_FAILURE,
+        restored     = POS_Constants.WBN_POWER_SEVERITY_RESTORED,
+        reminder_off = POS_Constants.WBN_POWER_SEVERITY_REMINDER,
+        status_on    = POS_Constants.WBN_POWER_SEVERITY_STATUS,
+    }
+
+    return {
+        id              = "wbn_power_" .. tostring(currentDay) .. "_" .. tostring(ZombRand(100000)),
+        domain          = POS_Constants.WBN_DOMAIN_POWER,
+        eventType       = POS_Constants.WBN_EVENT_POWER_STATUS,
+        zoneId          = nil,
+        categoryId      = nil,
+        severity        = severityMap[transition] or 0.3,
+        confidence      = 0.95,  -- power state is directly observable
+        freshness       = 1.0,
+        sourceType      = "power_grid",
+        publicEligible  = true,
+        expiresAt       = worldHours + POS_Constants.WBN_CANDIDATE_EXPIRY_HOURS,
+        day             = currentDay,
+        powerTransition = transition,
+    }
+end
+
+--- Generate a colour/flavour candidate for a random station class.
+--- Used as a last-resort fallback when no other tier produces content.
+--- @param currentDay number The current game day
+--- @param worldHours number Total world-age hours
+--- @return table A flavour candidate (always non-nil)
+local function _generateFlavourCandidate(currentDay, worldHours)
+    local stationId = (ZombRand(2) == 0)
+        and POS_Constants.WBN_STATION_CIVILIAN_MARKET
+        or POS_Constants.WBN_STATION_EMERGENCY
+
+    return {
+        id             = "wbn_colour_" .. tostring(currentDay) .. "_" .. tostring(ZombRand(100000)),
+        domain         = POS_Constants.WBN_DOMAIN_COLOUR,
+        eventType      = POS_Constants.WBN_EVENT_COLOUR,
+        zoneId         = nil,
+        categoryId     = nil,
+        severity       = 0.10,
+        confidence     = 1.0,  -- flavour is not intelligence
+        freshness      = 1.0,
+        sourceType     = "colour_broadcast",
+        publicEligible = true,
+        expiresAt      = worldHours + POS_Constants.WBN_CANDIDATE_EXPIRY_HOURS,
+        day            = currentDay,
+        targetStation  = stationId,
+    }
+end
+
+--- Generate Tier 3 world-state candidates (weather + power + flavour).
+--- Called as the final fallback when both delta-driven and ambient candidates
+--- produce nothing. Checks weather via ClimateManager, detects power grid
+--- transitions, and falls back to colour/flavour if still empty.
+--- @param currentDay number The current game day
+--- @param worldHours number Total world-age hours
+function POS_WBN_HarvestService.generateWorldStateCandidates(currentDay, worldHours)
+    -- Weather check via ClimateManager
+    local climate = getClimateManager and getClimateManager()
+    if climate then
+        local weatherCandidate = _sampleWeather(climate, currentDay, worldHours)
+        if weatherCandidate then
+            _candidateQueue[#_candidateQueue + 1] = weatherCandidate
+        end
+    end
+
+    -- Power grid state machine check
+    local powerCandidate = _checkPowerTransition(currentDay, worldHours)
+    if powerCandidate then
+        _candidateQueue[#_candidateQueue + 1] = powerCandidate
+    end
+
+    -- Flavour fallback if still empty
+    if #_candidateQueue == 0 then
+        local flavourCandidate = _generateFlavourCandidate(currentDay, worldHours)
+        if flavourCandidate then
+            _candidateQueue[#_candidateQueue + 1] = flavourCandidate
+        end
+    end
+
+    if #_candidateQueue > 0 then
+        PhobosLib.debug("POS", _TAG,
+            "generateWorldStateCandidates: " .. tostring(#_candidateQueue) .. " tier 3 candidates")
+    end
 end
 
 --- Called when a market event fires (via Starlit OnMarketEvent).
