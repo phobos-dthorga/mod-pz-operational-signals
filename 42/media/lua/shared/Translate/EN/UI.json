@@ -970,7 +970,6 @@
     "UI_POS_Trade_Err_SIGINTReq": "Requires SIGINT Level %1.",
     "UI_POS_Trade_Err_MaxQuantity": "Maximum %1 per transaction.",
     "UI_POS_Trade_RequiresSIGINT": "Requires SIGINT Level %1 to access.",
-    "UI_POS_Trade_RequiresLivingMarket": "Requires Living Market enabled.",
     "UI_POS_Trade_ModeBuy": "Buy",
     "UI_POS_Trade_ModeSell": "Sell",
     "UI_POS_Trade_Err_NoPrice": "No sell price available for this item.",
@@ -1233,7 +1232,6 @@
     "UI_POS_Zone": "Zone",
     "UI_POS_Categories": "Categories",
 
-    "UI_POS_LivingMarket_Disabled": "Living Market is disabled. Enable it in Sandbox Options > Phobos Operational Signals to see zone pressure, wholesaler activity, and market events.",
     "UI_POS_Watchlist_HowToAdd": "Add categories from the Market Overview screen to track price changes.",
     "UI_POS_CommodityDetail_HowToGather": "Gather market intel via ambient observations, field recon, or data recording to populate this category.",
     "UI_POS_Signals_WaitForTick": "No market events yet. Signals generate automatically during economy ticks.",

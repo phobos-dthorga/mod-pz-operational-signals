@@ -429,7 +429,7 @@ function POS_SatelliteService.broadcast(player, artifact, sq)
     end
 
     -- Phase 7D: Living Market zone summaries in satellite broadcast
-    if POS_Sandbox and POS_Sandbox.isLivingMarketEnabled() then
+    do
         local ok2, POS_MarketSim = PhobosLib.safecall(require, "POS_MarketSimulation")
         if ok2 and POS_MarketSim and POS_MarketSim.getZoneState then
             local zoneSummaries = {}

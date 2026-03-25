@@ -208,21 +208,11 @@ function screen.create(contentPanel, params, _terminal)
     _lastMerged = merged  -- cache for ContextPanel
 
     if #merged == 0 then
-        -- Check if Living Market is disabled — explain why no signals
-        local livingMarketEnabled = POS_Sandbox
-            and POS_Sandbox.isLivingMarketEnabled
-            and POS_Sandbox.isLivingMarketEnabled()
-        if not livingMarketEnabled then
-            W.createLabel(ctx.panel, 8, ctx.y,
-                PhobosLib.safeGetText("UI_POS_LivingMarket_Disabled"), C.warning)
-            ctx.y = ctx.y + ctx.lineH * 2
-        else
-            local emptyKey = _activeFilter == "all"
-                and "UI_POS_Signals_WaitForTick"
-                or "UI_POS_Signals_NoMatch"
-            W.createLabel(ctx.panel, 8, ctx.y, PhobosLib.safeGetText(emptyKey), C.dim)
-            ctx.y = ctx.y + ctx.lineH
-        end
+        local emptyKey = _activeFilter == "all"
+            and "UI_POS_Signals_WaitForTick"
+            or "UI_POS_Signals_NoMatch"
+        W.createLabel(ctx.panel, 8, ctx.y, PhobosLib.safeGetText(emptyKey), C.dim)
+        ctx.y = ctx.y + ctx.lineH
     else
         local currentPage = (params and params.signalPage) or 1
         local filterCopy = _activeFilter

@@ -537,11 +537,13 @@ function POS_Sandbox.getSatelliteWiringMaxRange()
 end
 
 ---------------------------------------------------------------
--- Living Market (experimental)
+-- Living Market (always enabled — no longer experimental)
 ---------------------------------------------------------------
 
+--- Living Market is always active as of v0.9.  Retained for
+--- backward compatibility so existing callers do not break.
 function POS_Sandbox.isLivingMarketEnabled()
-    return PhobosLib.getSandboxVar("POS", "EnableLivingMarket", false) == true
+    return true
 end
 
 function POS_Sandbox.getSimulationTickInterval()

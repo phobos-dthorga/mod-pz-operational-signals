@@ -113,11 +113,8 @@ function POS_EconomyTick.processDayTick()
     end
 
     -- Phase 5.75: Living Market simulation tick
-    if POS_Sandbox and POS_Sandbox.isLivingMarketEnabled
-            and POS_Sandbox.isLivingMarketEnabled() then
-        if POS_MarketSimulation and POS_MarketSimulation.tickSimulation then
-            PhobosLib.safecall(POS_MarketSimulation.tickSimulation, currentDay)
-        end
+    if POS_MarketSimulation and POS_MarketSimulation.tickSimulation then
+        PhobosLib.safecall(POS_MarketSimulation.tickSimulation, currentDay)
     end
 
     -- Phase 5.9: Free agent state machine tick

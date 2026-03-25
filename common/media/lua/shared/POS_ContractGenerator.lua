@@ -259,12 +259,6 @@ function POS_ContractGenerator.generateFromWorldState()
         return 0
     end
 
-    -- Check if Living Market is enabled
-    if POS_Sandbox and POS_Sandbox.isLivingMarketEnabled
-            and not POS_Sandbox.isLivingMarketEnabled() then
-        return 0
-    end
-
     local zones = POS_Constants.MARKET_ZONES or {}
     local allDefs = _contractRegistry:getAll()
     local generated = 0

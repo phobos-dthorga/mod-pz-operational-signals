@@ -240,8 +240,6 @@
     "Sandbox_POS_SatelliteWiringMaxRange": "Satellite Wiring Max Range",
     "Sandbox_POS_SatelliteWiringMaxRange_tooltip": "Maximum distance (in tiles) that a satellite dish can be wired to a desktop terminal. Uses Manhattan distance with a 5-wire penalty per floor difference. Default: 100.",
 
-    "Sandbox_POS_EnableLivingMarket": "LIVING MARKET (EXPERIMENTAL):",
-    "Sandbox_POS_EnableLivingMarket_tooltip": "Enable the autonomous Living Market economy simulation. When active, market agents generate observations, wholesalers influence regional supply and prices, and economic events occur independently of player actions. <BR> <BR> <INDENT:20> This is an experimental feature under active development. <BR> Default: OFF",
     "Sandbox_POS_SimulationTickInterval": "Simulation Tick Interval (minutes):",
     "Sandbox_POS_SimulationTickInterval_tooltip": "In-game minutes between Living Market simulation ticks. Lower values produce a more responsive economy but increase server load. <BR> <BR> <INDENT:20> Only effective when Living Market is enabled. <BR> Range: 5-120. Default: 20",
 

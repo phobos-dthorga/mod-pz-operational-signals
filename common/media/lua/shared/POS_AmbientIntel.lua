@@ -81,12 +81,9 @@ local function getWorldAgeMinutes()
     return gt:getWorldAgeHours() * 60
 end
 
---- Get market zones if Living Market is enabled, nil otherwise.
+--- Get market zones (Living Market is always active).
 local function getMarketZones()
-    local ok, enabled = PhobosLib.safecall(function()
-        return POS_Sandbox.isLivingMarketEnabled()
-    end)
-    if ok and enabled and POS_Constants.MARKET_ZONES then
+    if POS_Constants.MARKET_ZONES then
         return POS_Constants.MARKET_ZONES
     end
     return nil

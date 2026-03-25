@@ -441,12 +441,6 @@ end
 ---@return boolean ok
 ---@return string|nil errorKey
 function POS_TradeService.validateBuy(player, wholesalerId, fullType, quantity)
-    -- Living Market must be enabled
-    if not (POS_Sandbox.isLivingMarketEnabled
-            and POS_Sandbox.isLivingMarketEnabled()) then
-        return false, "UI_POS_Trade_Err_MarketDisabled"
-    end
-
     -- Wholesaler must exist
     local wholesaler = getWholesaler(wholesalerId)
     if not wholesaler then
@@ -497,12 +491,6 @@ end
 ---@return boolean ok
 ---@return string|nil errorKey
 function POS_TradeService.validateSell(player, wholesalerId, fullType, quantity)
-    -- Living Market must be enabled
-    if not (POS_Sandbox.isLivingMarketEnabled
-            and POS_Sandbox.isLivingMarketEnabled()) then
-        return false, "UI_POS_Trade_Err_MarketDisabled"
-    end
-
     -- Wholesaler must exist
     local wholesaler = getWholesaler(wholesalerId)
     if not wholesaler then

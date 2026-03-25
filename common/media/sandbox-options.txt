@@ -1030,14 +1030,6 @@ option POS.SatelliteWiringMaxRange
 }
 
 
-option POS.EnableLivingMarket
-{
-    type = boolean,
-    default = false,
-    page = POS_Sandbox,
-    translation = POS_EnableLivingMarket,
-}
-
 option POS.SimulationTickInterval
 {
     type = integer,

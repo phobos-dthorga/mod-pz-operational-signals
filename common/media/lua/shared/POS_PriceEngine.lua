@@ -136,21 +136,18 @@ function POS_PriceEngine.generatePrice(fullType, categoryId, ctx)
     end
 
     -- Zone pressure bias from Living Market (additive to S/D factor)
-    if POS_Sandbox and POS_Sandbox.isLivingMarketEnabled
-            and POS_Sandbox.isLivingMarketEnabled() then
-        local zoneId = ctx and ctx.zoneId
-        if zoneId and POS_MarketSimulation
-                and POS_MarketSimulation.getZonePressure then
-            local ok, pressure = PhobosLib.safecall(
-                POS_MarketSimulation.getZonePressure, zoneId, categoryId)
-            if ok and pressure then
-                local pressureFactor = pressure
-                    * POS_Constants.PRICE_ZONE_PRESSURE_WEIGHT
-                pressureFactor = PhobosLib.clamp(pressureFactor,
-                    -POS_Constants.PRICE_ZONE_PRESSURE_CLAMP,
-                    POS_Constants.PRICE_ZONE_PRESSURE_CLAMP)
-                sdFactor = sdFactor + pressureFactor
-            end
+    local zoneId = ctx and ctx.zoneId
+    if zoneId and POS_MarketSimulation
+            and POS_MarketSimulation.getZonePressure then
+        local ok, pressure = PhobosLib.safecall(
+            POS_MarketSimulation.getZonePressure, zoneId, categoryId)
+        if ok and pressure then
+            local pressureFactor = pressure
+                * POS_Constants.PRICE_ZONE_PRESSURE_WEIGHT
+            pressureFactor = PhobosLib.clamp(pressureFactor,
+                -POS_Constants.PRICE_ZONE_PRESSURE_CLAMP,
+                POS_Constants.PRICE_ZONE_PRESSURE_CLAMP)
+            sdFactor = sdFactor + pressureFactor
         end
     end
 
@@ -172,20 +169,17 @@ function POS_PriceEngine.generatePrice(fullType, categoryId, ctx)
     -- Items flagged isLuxury in the item value registry have their
     -- price scaled by the zone's luxuryDemand.  Urban zones (Louisville
     -- = 2.5x) inflate luxury prices; rural zones (Muldraugh = 0.5x)
-    -- deflate them.  When Living Market is disabled, luxuryMult stays 1.0.
+    -- deflate them.
     local luxuryMult = 1.0
-    if POS_Sandbox and POS_Sandbox.isLivingMarketEnabled
-            and POS_Sandbox.isLivingMarketEnabled() then
-        local record = POS_ItemPool.getRecord and POS_ItemPool.getRecord(fullType)
-        if record and record.isLuxury then
-            local zoneId = ctx and ctx.zoneId
-            if zoneId and POS_MarketSimulation
-                    and POS_MarketSimulation.getZoneLuxuryDemand then
-                local ok, demand = PhobosLib.safecall(
-                    POS_MarketSimulation.getZoneLuxuryDemand, zoneId)
-                if ok and demand then
-                    luxuryMult = demand
-                end
+    local record = POS_ItemPool.getRecord and POS_ItemPool.getRecord(fullType)
+    if record and record.isLuxury then
+        local zoneId = ctx and ctx.zoneId
+        if zoneId and POS_MarketSimulation
+                and POS_MarketSimulation.getZoneLuxuryDemand then
+            local ok, demand = PhobosLib.safecall(
+                POS_MarketSimulation.getZoneLuxuryDemand, zoneId)
+            if ok and demand then
+                luxuryMult = demand
             end
         end
     end

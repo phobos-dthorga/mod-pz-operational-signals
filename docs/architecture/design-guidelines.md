@@ -1632,16 +1632,12 @@ Sandbox accessors live in `POS_SandboxIntegration.lua`.
 
 ### 24.7 Sandbox Gate
 
-All Living Market code MUST be gated behind the experimental sandbox option:
-
-```lua
-if POS_Sandbox.isLivingMarketEnabled() then
-    -- simulation code here
-end
-```
+Living Market is always active — the experimental sandbox gate has been removed.
+`POS_Sandbox.isLivingMarketEnabled()` is retained for backward compatibility
+and always returns `true`.
 
 The simulation tick is integrated into `POS_EconomyTick.lua` Phase 5.75,
-wrapped in `PhobosLib.safecall()`. When enabled, it runs every
+wrapped in `PhobosLib.safecall()`. It runs every
 `POS_Sandbox.getSimulationTickInterval()` game minutes.
 
 ### 24.8 Translation Key Conventions
@@ -1748,9 +1744,7 @@ sdFactor       = sdFactor + pressureFactor
 - The bias is **additive** to the existing `sdFactor`, not multiplicative.
   This preserves the S/D composite's bounded range and prevents runaway
   feedback loops.
-- Gated behind the `EnableLivingMarket` sandbox option. When the option is
-  OFF, the pressure term is zero and `generatePrice()` behaves identically to
-  pre-Living-Market builds.
+- Living Market is always active — the pressure term is always applied.
 - Callers pass `zoneId` in the `ctx` table. If `ctx.zoneId` is `nil`, the
   pressure term is skipped entirely (graceful fallback — no error, no bias).
 - Constants: `PRICE_ZONE_PRESSURE_WEIGHT = 0.05`,
@@ -1917,8 +1911,7 @@ summaries alongside their standard intelligence output:
 
 **Anti-patterns:**
 
-- Never award SIGINT XP without first checking `POS_Sandbox.isLivingMarketEnabled()`.
-  All Living Market XP paths are gated behind the sandbox option.
+- Living Market is always active — SIGINT XP paths no longer require a gate check.
 - Never expose raw zone pressure values in field notes or camera summaries.
   Always use qualitative descriptors (e.g. "tightening", "oversupplied")
   resolved through the stock-tier bucketing system.
@@ -3050,7 +3043,7 @@ defines when to add one, how to name it, and what to avoid.
 |---|---|---|
 | Gameplay balance | ReputationCap, OperationExpiryDays | Sandbox option |
 | Player preference | TerminalFontSize, ColourTheme | Sandbox option |
-| Experimental gate | EnableLivingMarket | Sandbox option |
+| ~~Experimental gate~~ | ~~EnableLivingMarket~~ | Always active (removed) |
 | Performance limit | MaxObservationsPerCategory | Sandbox option |
 | Core feature toggle | "EnableMarkets" on a market mod | Constant (always true) |
 | Internal tuning | WritingDamageChance, BufferSize | Constant |
@@ -3786,9 +3779,9 @@ enable it. Silently showing empty content leaves the user confused.
 
 | Screen | Gate | Message Key |
 |--------|------|------------|
-| Market Overview (Zone Pressure) | Living Market | `UI_POS_LivingMarket_Disabled` |
-| Contacts (Directory tab) | Living Market | `UI_POS_LivingMarket_Disabled` |
-| Market Signals (empty) | Living Market | `UI_POS_LivingMarket_Disabled` or `UI_POS_Signals_WaitForTick` |
+| Market Overview (Zone Pressure) | _(always active)_ | _(gate removed)_ |
+| Contacts (Directory tab) | _(always active)_ | _(gate removed)_ |
+| Market Signals (empty) | _(always active)_ | `UI_POS_Signals_WaitForTick` |
 | Watchlist (empty) | User action | `UI_POS_Watchlist_HowToAdd` |
 | Commodity Detail (no sources) | User action | `UI_POS_CommodityDetail_HowToGather` |
 | Exchange tab | Exchange option | `UI_POS_Exchange_Disabled` (already existed) |

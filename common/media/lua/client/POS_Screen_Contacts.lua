@@ -219,18 +219,6 @@ local function renderDirectory(ctx, params)
     local W = POS_TerminalWidgets
     local C = W.COLOURS
 
-    -- Check Living Market gate first
-    local livingMarketEnabled = POS_Sandbox
-        and POS_Sandbox.isLivingMarketEnabled
-        and POS_Sandbox.isLivingMarketEnabled()
-
-    if not livingMarketEnabled then
-        W.createLabel(ctx.panel, 8, ctx.y,
-            PhobosLib.safeGetText("UI_POS_LivingMarket_Disabled"), C.warning)
-        ctx.y = ctx.y + ctx.lineH * 2
-        return
-    end
-
     -- Build zone tabs dynamically with fallback chain:
     -- 1. Zone registry → zDef.name
     -- 2. Translation key → UI_POS_Zone_<zoneId>

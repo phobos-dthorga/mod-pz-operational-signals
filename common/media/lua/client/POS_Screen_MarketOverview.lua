@@ -183,56 +183,46 @@ local function renderSummary(ctx, params)
 
     ctx.y = ctx.y + 4
 
-    -- Zone pressure (brief, Living Market only)
-    local livingMarketEnabled = POS_Sandbox
-        and POS_Sandbox.isLivingMarketEnabled
-        and POS_Sandbox.isLivingMarketEnabled()
+    -- Zone pressure
+    W.createLabel(ctx.panel, 0, ctx.y,
+        "=== " .. W.safeGetText("UI_POS_MarketOverview_ZonePressure") .. " ===",
+        C.textBright)
+    ctx.y = ctx.y + ctx.lineH
 
-    if not livingMarketEnabled then
-        W.createLabel(ctx.panel, 8, ctx.y,
-            PhobosLib.safeGetText("UI_POS_LivingMarket_Disabled"), C.warning)
-        ctx.y = ctx.y + ctx.lineH * 2
-    else
-        W.createLabel(ctx.panel, 0, ctx.y,
-            "=== " .. W.safeGetText("UI_POS_MarketOverview_ZonePressure") .. " ===",
-            C.textBright)
+    local zoneRegistry = POS_MarketSimulation.getZoneRegistry()
+    local zones = {}
+    if zoneRegistry and zoneRegistry.getAll then
+        for _, def in pairs(zoneRegistry:getAll() or {}) do
+            zones[#zones + 1] = def
+        end
+    end
+    table.sort(zones, function(a, b) return (a.id or "") < (b.id or "") end)
+
+    for _, zoneDef in ipairs(zones) do
+        local zoneName = PhobosLib.getRegistryDisplayName(
+            zoneRegistry, zoneDef.id, zoneDef.id)
+        local zoneState = POS_MarketSimulation.getZoneState
+            and POS_MarketSimulation.getZoneState(zoneDef.id)
+
+        W.createLabel(ctx.panel, 8, ctx.y, zoneName, C.text)
         ctx.y = ctx.y + ctx.lineH
 
-        local zoneRegistry = POS_MarketSimulation.getZoneRegistry()
-        local zones = {}
-        if zoneRegistry and zoneRegistry.getAll then
-            for _, def in pairs(zoneRegistry:getAll() or {}) do
-                zones[#zones + 1] = def
+        local topPressures = _getTopPressures(zoneState)
+        if #topPressures > 0 then
+            local parts = {}
+            for _, entry in ipairs(topPressures) do
+                parts[#parts + 1] = entry.catId .. "=" .. W.safeGetText(_getPressureLabelKey(entry.pressure))
             end
+            W.createLabel(ctx.panel, 8, ctx.y,
+                "  " .. table.concat(parts, ", "),
+                _getPressureColour(topPressures[1].pressure, C))
+        else
+            W.createLabel(ctx.panel, 8, ctx.y,
+                "  " .. W.safeGetText("UI_POS_Zone_NoData"), C.dim)
         end
-        table.sort(zones, function(a, b) return (a.id or "") < (b.id or "") end)
-
-        for _, zoneDef in ipairs(zones) do
-            local zoneName = PhobosLib.getRegistryDisplayName(
-                zoneRegistry, zoneDef.id, zoneDef.id)
-            local zoneState = POS_MarketSimulation.getZoneState
-                and POS_MarketSimulation.getZoneState(zoneDef.id)
-
-            W.createLabel(ctx.panel, 8, ctx.y, zoneName, C.text)
-            ctx.y = ctx.y + ctx.lineH
-
-            local topPressures = _getTopPressures(zoneState)
-            if #topPressures > 0 then
-                local parts = {}
-                for _, entry in ipairs(topPressures) do
-                    parts[#parts + 1] = entry.catId .. "=" .. W.safeGetText(_getPressureLabelKey(entry.pressure))
-                end
-                W.createLabel(ctx.panel, 8, ctx.y,
-                    "  " .. table.concat(parts, ", "),
-                    _getPressureColour(topPressures[1].pressure, C))
-            else
-                W.createLabel(ctx.panel, 8, ctx.y,
-                    "  " .. W.safeGetText("UI_POS_Zone_NoData"), C.dim)
-            end
-            ctx.y = ctx.y + ctx.lineH
-        end
-        ctx.y = ctx.y + 4
+        ctx.y = ctx.y + ctx.lineH
     end
+    ctx.y = ctx.y + 4
 
     -- Health summary
     W.createLabel(ctx.panel, 0, ctx.y,

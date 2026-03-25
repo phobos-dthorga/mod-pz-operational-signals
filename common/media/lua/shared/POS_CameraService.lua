@@ -295,8 +295,6 @@ end
 ---@param artifact InventoryItem
 local function enrichWithZonePressure(artifact)
     if not artifact then return end
-    if not POS_Sandbox or not POS_Sandbox.isLivingMarketEnabled() then return end
-
     local ok, POS_MarketSimulation = PhobosLib.safecall(require, "POS_MarketSimulation")
     if not ok or not POS_MarketSimulation or not POS_MarketSimulation.getZoneState then return end
 

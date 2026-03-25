@@ -326,8 +326,7 @@ function POS_PassiveRecon.onEveryOneMinute()
     end
 
     -- Living Market zone pressure sampling (Phase 7A)
-    if POS_Sandbox and POS_Sandbox.isLivingMarketEnabled
-            and POS_Sandbox.isLivingMarketEnabled() then
+    do
         local ok, POS_MarketSimulation = PhobosLib.safecall(require, "POS_MarketSimulation")
         if ok and POS_MarketSimulation and POS_MarketSimulation.getZonePressure then
             -- Get player SIGINT level for noise scaling

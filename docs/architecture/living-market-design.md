@@ -2,7 +2,7 @@
 
 > **Status**: Phase 1 implemented — wholesaler lifecycle, zone pressure
 > aggregation, agent meter updates, and simulation tick active.
-> Signal emission remains placeholder. Gated behind `POS.EnableLivingMarket`.
+> Signal emission remains placeholder. Living Market is always active (no longer gated behind a sandbox option).
 > **Prerequisite reading**: `market-exchange-design.md` (current 3-layer architecture),
 > `design-guidelines.md` Sections 12–13, 24 (Living Market), 26 (Data-Pack Architecture).
 
@@ -713,7 +713,7 @@ naturally:
 Data-pack architecture implemented: 4 schema files, 15 definition files,
 4 templates, 3 stub modules (`POS_MarketAgent`, `POS_WholesalerService`,
 `POS_MarketSimulation`), sandbox gate, translation keys, economy tick hook
-(commented out). All gated behind `POS.EnableLivingMarket`. PhobosLib
+(commented out). Living Market is always active (the `EnableLivingMarket` sandbox gate was removed). PhobosLib
 provides `PhobosLib_Schema`, `PhobosLib_Registry`, and `PhobosLib_DataLoader`.
 
 ### Phase 1 — Foundation (3 Archetypes) ✅
