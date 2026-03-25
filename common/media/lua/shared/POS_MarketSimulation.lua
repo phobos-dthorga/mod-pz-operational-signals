@@ -511,7 +511,7 @@ function POS_MarketSimulation.tickSimulation(currentDay)
         -- positive when Java ModData had metadata keys but no wholesalers.
         local storeCount = 0
         for _, v in pairs(wholesalerStore) do
-            if type(v) == "table" then storeCount = storeCount + 1 end
+            if type(v) == "table" and v.id then storeCount = storeCount + 1 end
         end
         if storeCount == 0 then
             POS_MarketSimulation._spawnWholesalers(wholesalerStore)
@@ -524,19 +524,22 @@ function POS_MarketSimulation.tickSimulation(currentDay)
         local wsOk, wsRegistry = PhobosLib.safecall(POS_WholesalerService.getRegistry)
         if wsOk and wsRegistry and wsRegistry.get then
             for wId, w in pairs(wholesalerStore) do
-                local defOk, def = PhobosLib.safecall(wsRegistry.get, wsRegistry, wId)
-                if defOk and def then
-                    if _validateWholesalerState(w, def) then
+                -- Skip metadata keys (e.g. .entries) that are not wholesaler records
+                if type(w) == "table" and w.id then
+                    local defOk, def = PhobosLib.safecall(wsRegistry.get, wsRegistry, wId)
+                    if defOk and def then
+                        if _validateWholesalerState(w, def) then
+                            PhobosLib.debug("POS", _TAG,
+                                "Migrated wholesaler " .. tostring(wId))
+                        end
+                    elseif not defOk then
                         PhobosLib.debug("POS", _TAG,
-                            "Migrated wholesaler " .. tostring(wId))
+                            "Migration lookup failed for: " .. tostring(wId))
+                    else
+                        PhobosLib.debug("POS", _TAG,
+                            "Orphaned wholesaler in save data: " .. tostring(wId)
+                            .. " (no matching definition)")
                     end
-                elseif not defOk then
-                    PhobosLib.debug("POS", _TAG,
-                        "Migration lookup failed for: " .. tostring(wId))
-                else
-                    PhobosLib.debug("POS", _TAG,
-                        "Orphaned wholesaler in save data: " .. tostring(wId)
-                        .. " (no matching definition)")
                 end
             end
         end
@@ -547,7 +550,7 @@ function POS_MarketSimulation.tickSimulation(currentDay)
     PhobosLib.debug("POS", _TAG, "tickSimulation Phase 1: ticking wholesalers")
     local tickCount = 0
     for _, w in pairs(wholesalerStore) do
-        if w.active ~= false then
+        if type(w) == "table" and w.id and w.active ~= false then
             PhobosLib.safecall(POS_WholesalerService.tickWholesaler, w, currentDay)
             tickCount = tickCount + 1
         end

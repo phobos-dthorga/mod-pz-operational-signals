@@ -667,6 +667,26 @@ With noise (inaccuracy), bias (agent reliability), and partial visibility.
 - Rolling window caps from `market-exchange-design.md` § 13 apply
   (MAX_OBSERVATIONS_PER_CATEGORY: 24, MAX_ROLLING_CLOSES: 14)
 
+### ModData Store Iteration Safety
+
+When counting or iterating records in a ModData store that uses an
+`.entries` sub-table (e.g. wholesalers, zones), always guard with
+`v.id` or an equivalent record-specific field check. The `.entries`
+table itself passes `type(v) == "table"` and will cause false positives
+in count checks.
+
+```lua
+-- WRONG: counts .entries metadata table as a record
+for _, v in pairs(store) do
+    if type(v) == "table" then count = count + 1 end
+end
+
+-- CORRECT: only counts actual records with an id field
+for _, v in pairs(store) do
+    if type(v) == "table" and v.id then count = count + 1 end
+end
+```
+
 ---
 
 ## 15. Integration Points (Existing Modules)
