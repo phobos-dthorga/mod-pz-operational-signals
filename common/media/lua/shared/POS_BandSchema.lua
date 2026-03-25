@@ -30,7 +30,7 @@ return {
         name           = { type = "string",  required = true },
         displayNameKey = { type = "string",  required = true },
         description    = { type = "string",  default = "" },
-        azasBandType   = { type = "string",  required = true, enum = { "amateur", "tactical" } },
+        azasBandType   = { type = "string",  required = true, enum = { "amateur", "tactical", "broadcast" } },
         badgeLabel     = { type = "string",  default = "" },
         sortOrder      = { type = "number",  default = 10 },
         enabled        = { type = "boolean", default = true },

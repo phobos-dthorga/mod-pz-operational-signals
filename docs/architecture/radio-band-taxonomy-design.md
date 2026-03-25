@@ -156,6 +156,29 @@ Blank cells indicate no access.
 - *Relay / Amplify* — retransmit without editorial transformation.
 - *Route + govern* — full network control over traffic and scheduling.
 
+### 3.1 AZAS Frequency Assignment
+
+All POSnet radio stations — both data bands and broadcast bands — are
+registered with the **AZAS Frequency Index** for dynamic per-world frequency
+assignment and deconfliction with other radio mods.
+
+| AZAS Station Key          | Band Domain     | Device Type | Default Freq |
+|---------------------------|-----------------|-------------|-------------|
+| `POSnet_Operations`       | Civilian Data   | amateur     | 130.0 kHz   |
+| `POSnet_Tactical`         | Tactical Data   | military    | 155.0 kHz   |
+| `POSnet_WBN_Market`       | Public Broadcast| amateur     | 91.4 MHz    |
+| `POSnet_WBN_Emergency`    | Emergency       | amateur     | 103.8 MHz   |
+
+WBN broadcast channels use AZAS `device_type = "amateur"` because public
+broadcasts are receivable on standard civilian radios. The logical distinction
+between data bands and broadcast bands is enforced at the application layer
+(see §4), not at the frequency assignment layer.
+
+When AZAS is unavailable, all stations fall back to their default frequencies.
+Runtime frequency lookups are cached after first AZAS resolution via
+`POS_AZASIntegration.getWBNMarketFrequency()` /
+`POS_AZASIntegration.getWBNEmergencyFrequency()`.
+
 ---
 
 ## 4. The Translation Boundary

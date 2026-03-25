@@ -25,23 +25,39 @@
 require "PhobosLib"
 require "POS_Constants"
 require "POS_Constants_WBN"
+require "POS_AZASIntegration"
 
 local _TAG = "WBN:Channel"
 POS_WBN_ChannelService = {}
 
+--- Resolve the AZAS-assigned frequency for a WBN station class.
+--- Falls back to the hardcoded default if AZAS is unavailable.
+--- @param stationId string  Station class id
+--- @return number           Frequency in Hz
+local function resolveFrequency(stationId)
+    if stationId == POS_Constants.WBN_STATION_CIVILIAN_MARKET then
+        return POS_AZASIntegration.getWBNMarketFrequency()
+    elseif stationId == POS_Constants.WBN_STATION_EMERGENCY then
+        return POS_AZASIntegration.getWBNEmergencyFrequency()
+    end
+    return 0
+end
+
 -- Channel definitions (Phase 1: 2 channels)
+-- NOTE: freq is resolved dynamically via resolveFrequency() at registration
+-- time, not stored statically. The freq field here is a fallback default only.
 local CHANNEL_DEFS = {
     {
         id       = POS_Constants.WBN_STATION_CIVILIAN_MARKET,
         nameKey  = POS_Constants.WBN_CHANNEL_NAME_CIVILIAN,
-        freq     = POS_Constants.WBN_FREQ_CIVILIAN_MARKET,
+        freq     = POS_Constants.WBN_DEFAULT_FREQ_CIVILIAN_MARKET,
         uuid     = POS_Constants.WBN_UUID_CIVILIAN_MARKET,
         category = "Amateur",  -- resolved to ChannelCategory.Amateur at runtime
     },
     {
         id       = POS_Constants.WBN_STATION_EMERGENCY,
         nameKey  = POS_Constants.WBN_CHANNEL_NAME_EMERGENCY,
-        freq     = POS_Constants.WBN_FREQ_EMERGENCY,
+        freq     = POS_Constants.WBN_DEFAULT_FREQ_EMERGENCY,
         uuid     = POS_Constants.WBN_UUID_EMERGENCY,
         category = "Emergency",
     },
@@ -87,6 +103,9 @@ function POS_WBN_ChannelService.ensureChannels(scriptManager)
             goto nextDef
         end
 
+        -- Resolve AZAS-assigned frequency (falls back to default)
+        local freq = resolveFrequency(def.id)
+
         -- Avoid duplicate entries in the channel list
         local found = false
         for _, ch in ipairs(DynamicRadio.channels) do
@@ -95,7 +114,7 @@ function POS_WBN_ChannelService.ensureChannels(scriptManager)
         if not found then
             table.insert(DynamicRadio.channels, {
                 name     = PhobosLib.safeGetText(def.nameKey),
-                freq     = def.freq,
+                freq     = freq,
                 category = def.category,
                 uuid     = def.uuid,
                 register = true,
@@ -105,7 +124,7 @@ function POS_WBN_ChannelService.ensureChannels(scriptManager)
         -- Create and register the channel instance
         local cat = resolveCategoryEnum(def.category)
         local channel = DynamicRadioChannel.new(
-            PhobosLib.safeGetText(def.nameKey), def.freq, cat, def.uuid)
+            PhobosLib.safeGetText(def.nameKey), freq, cat, def.uuid)
 
         if channel then
             if channel.setAirCounterMultiplier then
@@ -117,7 +136,8 @@ function POS_WBN_ChannelService.ensureChannels(scriptManager)
             DynamicRadio.cache[def.uuid] = channel
             _channels[def.id] = channel
             PhobosLib.debug("POS", _TAG,
-                "registered channel: " .. def.id .. " at " .. tostring(def.freq) .. " Hz")
+                "registered channel: " .. def.id .. " at " .. tostring(freq) .. " Hz"
+                .. " (AZAS: " .. tostring(freq ~= def.freq) .. ")")
         end
 
         ::nextDef::
@@ -174,23 +194,26 @@ function POS_WBN_ChannelService.emit(stationClassId, bulletinLines)
     return true
 end
 
---- Get the radio frequency for a given station class.
+--- Get the AZAS-assigned radio frequency for a given station class.
 --- @param stationClassId string  Station class from POS_Constants.WBN_STATION_*
 --- @return number|nil            Frequency in Hz, or nil if not found
 function POS_WBN_ChannelService.getFrequency(stationClassId)
-    for _, def in ipairs(CHANNEL_DEFS) do
-        if def.id == stationClassId then return def.freq end
-    end
-    return nil
+    local freq = resolveFrequency(stationClassId)
+    return freq > 0 and freq or nil
 end
 
 --- Check whether a frequency belongs to a WBN channel.
+--- Uses AZAS-resolved frequencies for accurate matching.
 --- @param freq number  Frequency to check
 --- @return boolean     true if this is a WBN frequency
 --- @return string|nil  The station class id, or nil
 function POS_WBN_ChannelService.isWBNFrequency(freq)
-    for _, def in ipairs(CHANNEL_DEFS) do
-        if def.freq == freq then return true, def.id end
+    if not freq then return false, nil end
+    if freq == POS_AZASIntegration.getWBNMarketFrequency() then
+        return true, POS_Constants.WBN_STATION_CIVILIAN_MARKET
+    end
+    if freq == POS_AZASIntegration.getWBNEmergencyFrequency() then
+        return true, POS_Constants.WBN_STATION_EMERGENCY
     end
     return false, nil
 end

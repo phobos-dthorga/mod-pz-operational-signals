@@ -32,14 +32,19 @@ local _TAG = "WBN:Client"
 POS_WBN_ClientListener = {}
 
 --- Check if a device frequency belongs to a WBN channel.
+--- Uses AZAS-resolved frequencies for accurate per-world matching.
 --- @param freq number  The frequency to check
 --- @return boolean     true if this is a WBN frequency
 --- @return string|nil  The station class id, or nil
 local function isWBNFrequency(freq)
-    if freq == POS_Constants.WBN_FREQ_CIVILIAN_MARKET then
+    if not freq then return false, nil end
+    local azas = POS_AZASIntegration
+    if azas and azas.getWBNMarketFrequency
+        and freq == azas.getWBNMarketFrequency() then
         return true, POS_Constants.WBN_STATION_CIVILIAN_MARKET
     end
-    if freq == POS_Constants.WBN_FREQ_EMERGENCY then
+    if azas and azas.getWBNEmergencyFrequency
+        and freq == azas.getWBNEmergencyFrequency() then
         return true, POS_Constants.WBN_STATION_EMERGENCY
     end
     return false, nil

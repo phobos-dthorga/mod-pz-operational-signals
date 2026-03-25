@@ -23,9 +23,17 @@
 
 require "POS_Constants"
 
--- Radio channel frequencies (integer Hz — 91400 = 91.4 MHz)
-POS_Constants.WBN_FREQ_CIVILIAN_MARKET  = 91400
-POS_Constants.WBN_FREQ_EMERGENCY        = 103800
+-- AZAS station keys (registered at module-load time in POS_AZASIntegration)
+POS_Constants.AZAS_WBN_MARKET_KEY    = "POSnet_WBN_Market"
+POS_Constants.AZAS_WBN_EMERGENCY_KEY = "POSnet_WBN_Emergency"
+
+-- Default fallback frequencies (used when AZAS is unavailable)
+POS_Constants.WBN_DEFAULT_FREQ_CIVILIAN_MARKET = 91400
+POS_Constants.WBN_DEFAULT_FREQ_EMERGENCY       = 103800
+
+-- Backward-compat aliases (prefer AZAS accessors at runtime)
+POS_Constants.WBN_FREQ_CIVILIAN_MARKET = POS_Constants.WBN_DEFAULT_FREQ_CIVILIAN_MARKET
+POS_Constants.WBN_FREQ_EMERGENCY       = POS_Constants.WBN_DEFAULT_FREQ_EMERGENCY
 
 -- Channel UUIDs (must be stable for DynamicRadio persistence)
 POS_Constants.WBN_UUID_CIVILIAN_MARKET  = "POS-WBN-CMN-01"
