@@ -337,14 +337,14 @@ end
 
 -- Weather translation key mapping
 local WEATHER_KEYS = {
-    storm_wind    = "UI_WBN_Weather_Storm_Wind",
+    storm_wind    = "UI_WBN_Weather_Wind_Storm",
     rain_heavy    = "UI_WBN_Weather_Rain_Heavy",
     cold_extreme  = "UI_WBN_Weather_Cold_Extreme",
     heat_extreme  = "UI_WBN_Weather_Heat_Extreme",
     wind_strong   = "UI_WBN_Weather_Wind_Strong",
     snow          = "UI_WBN_Weather_Snow",
     fog           = "UI_WBN_Weather_Fog",
-    rain_moderate = "UI_WBN_Weather_Rain_Moderate",
+    rain_moderate = "UI_WBN_Weather_Rain_Mod",
     overcast      = "UI_WBN_Weather_Overcast",
     clear         = "UI_WBN_Weather_Clear",
 }

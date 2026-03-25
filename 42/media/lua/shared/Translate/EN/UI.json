@@ -1486,6 +1486,7 @@
     "UI_WBN_Power_ShutOff_04": "Power grid failure confirmed. Conserve fuel and battery reserves.",
     "UI_WBN_Power_Restored_01": "Grid power has been restored. Mains electricity is available again.",
     "UI_WBN_Power_Restored_02": "Power is back online. Grid access confirmed across the region.",
+    "UI_WBN_Power_Restored_03": "Mains power restored to this sector. Normal service is resuming.",
     "UI_WBN_Power_Reminder_Off": "Reminder: grid power remains offline. Generator dependency continues.",
     "UI_WBN_Power_Reminder_Off_02": "Still no grid power. Fuel conservation is strongly advised.",
     "UI_WBN_Power_Reminder_Off_03": "Grid remains down. All operations running on backup power.",
