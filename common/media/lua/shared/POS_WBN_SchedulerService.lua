@@ -28,6 +28,9 @@
 require "PhobosLib"
 require "POS_Constants"
 require "POS_Constants_WBN"
+require "POS_WBN_HarvestService"
+require "POS_WBN_EditorialService"
+require "POS_WBN_CompositionService"
 
 local _TAG = "WBN:Scheduler"
 POS_WBN_SchedulerService = {}
@@ -123,10 +126,24 @@ end
 --- composition -> enqueue -> emit pipeline.
 --- Called automatically from Events.EveryOneMinute on the server.
 function POS_WBN_SchedulerService.tick()
+    local gt = getGameTime()
+    local currentDay = gt and gt:getNightsSurvived() or 0
+    local worldHours = gt and gt:getWorldAgeHours() or 0
+
     -- 1. Harvest: consume pending candidates from the harvest layer
     local candidates = {}
     if POS_WBN_HarvestService and POS_WBN_HarvestService.consumeCandidates then
         candidates = POS_WBN_HarvestService.consumeCandidates()
+    end
+
+    -- 1b. If no candidates from economy tick, try world-state Tier 3 directly.
+    -- This ensures the radio has content even if economy ticks are infrequent.
+    if #candidates == 0 and POS_WBN_HarvestService
+            and POS_WBN_HarvestService.generateWorldStateCandidates then
+        POS_WBN_HarvestService.generateWorldStateCandidates(currentDay, worldHours)
+        if POS_WBN_HarvestService.consumeCandidates then
+            candidates = POS_WBN_HarvestService.consumeCandidates()
+        end
     end
 
     -- 2. Editorial: filter, deduplicate, and score candidates

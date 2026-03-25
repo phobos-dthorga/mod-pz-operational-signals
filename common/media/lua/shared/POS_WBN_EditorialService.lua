@@ -34,6 +34,9 @@ local function scoreCandidate(c)
     -- Economy gets slight boost as backbone of civilian listening
     if c.domain == POS_Constants.WBN_DOMAIN_ECONOMY then domainBoost = 0.5 end
     if c.domain == POS_Constants.WBN_DOMAIN_INFRASTRUCTURE then domainBoost = 0.7 end
+    if c.domain == POS_Constants.WBN_DOMAIN_POWER then domainBoost = 0.8 end
+    if c.domain == POS_Constants.WBN_DOMAIN_WEATHER then domainBoost = 0.4 end
+    if c.domain == POS_Constants.WBN_DOMAIN_COLOUR then domainBoost = 0.3 end
 
     return (c.severity  * POS_Constants.WBN_SCORE_W_SEVERITY)
          + (c.freshness * POS_Constants.WBN_SCORE_W_FRESHNESS)
@@ -63,9 +66,15 @@ end
 --- @param c table Candidate with domain field
 --- @return string Station class constant
 local function resolveStationClass(c)
-    if c.domain == POS_Constants.WBN_DOMAIN_INFRASTRUCTURE then
+    if c.domain == POS_Constants.WBN_DOMAIN_INFRASTRUCTURE
+        or c.domain == POS_Constants.WBN_DOMAIN_POWER then
         return POS_Constants.WBN_STATION_EMERGENCY
     end
+    -- Colour candidates may specify a target station
+    if c.domain == POS_Constants.WBN_DOMAIN_COLOUR and c.targetStation then
+        return c.targetStation
+    end
+    -- Weather goes to both — default to civilian market
     return POS_Constants.WBN_STATION_CIVILIAN_MARKET
 end
 
@@ -96,8 +105,10 @@ function POS_WBN_EditorialService.filter(candidates)
         end
         -- Gate: public eligibility
         if not dominated and not c.publicEligible then dominated = true end
-        -- Gate: minimum percentage change
-        if not dominated and (c.percentChange or 0) < POS_Constants.WBN_THRESHOLD_LIGHT then
+        -- Gate: minimum percentage change (economy domain only —
+        -- weather, power, and colour candidates have no percentChange)
+        if not dominated and c.domain == POS_Constants.WBN_DOMAIN_ECONOMY
+                and (c.percentChange or 0) < POS_Constants.WBN_THRESHOLD_LIGHT then
             dominated = true
         end
         -- Gate: deduplication
