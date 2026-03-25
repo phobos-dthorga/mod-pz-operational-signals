@@ -25,20 +25,27 @@
 require "PhobosLib"
 require "POS_Constants"
 require "POS_Constants_WBN"
-require "POS_AZASIntegration"
 
 local _TAG = "WBN:Channel"
 POS_WBN_ChannelService = {}
 
 --- Resolve the AZAS-assigned frequency for a WBN station class.
 --- Falls back to the hardcoded default if AZAS is unavailable.
+--- Defers to POS_AZASIntegration if loaded (shared module, available at runtime).
 --- @param stationId string  Station class id
 --- @return number           Frequency in Hz
 local function resolveFrequency(stationId)
+    local azas = POS_AZASIntegration
     if stationId == POS_Constants.WBN_STATION_CIVILIAN_MARKET then
-        return POS_AZASIntegration.getWBNMarketFrequency()
+        if azas and azas.getWBNMarketFrequency then
+            return azas.getWBNMarketFrequency()
+        end
+        return POS_Constants.WBN_DEFAULT_FREQ_CIVILIAN_MARKET
     elseif stationId == POS_Constants.WBN_STATION_EMERGENCY then
-        return POS_AZASIntegration.getWBNEmergencyFrequency()
+        if azas and azas.getWBNEmergencyFrequency then
+            return azas.getWBNEmergencyFrequency()
+        end
+        return POS_Constants.WBN_DEFAULT_FREQ_EMERGENCY
     end
     return 0
 end
@@ -100,47 +107,44 @@ function POS_WBN_ChannelService.ensureChannels(scriptManager)
         -- Skip if already cached
         if DynamicRadio.cache[def.uuid] then
             _channels[def.id] = DynamicRadio.cache[def.uuid]
-            goto nextDef
-        end
+        else
+            -- Resolve AZAS-assigned frequency (falls back to default)
+            local freq = resolveFrequency(def.id)
 
-        -- Resolve AZAS-assigned frequency (falls back to default)
-        local freq = resolveFrequency(def.id)
-
-        -- Avoid duplicate entries in the channel list
-        local found = false
-        for _, ch in ipairs(DynamicRadio.channels) do
-            if ch.uuid == def.uuid then found = true; break end
-        end
-        if not found then
-            table.insert(DynamicRadio.channels, {
-                name     = PhobosLib.safeGetText(def.nameKey),
-                freq     = freq,
-                category = def.category,
-                uuid     = def.uuid,
-                register = true,
-            })
-        end
-
-        -- Create and register the channel instance
-        local cat = resolveCategoryEnum(def.category)
-        local channel = DynamicRadioChannel.new(
-            PhobosLib.safeGetText(def.nameKey), freq, cat, def.uuid)
-
-        if channel then
-            if channel.setAirCounterMultiplier then
-                channel:setAirCounterMultiplier(1.0)
+            -- Avoid duplicate entries in the channel list
+            local found = false
+            for _, ch in ipairs(DynamicRadio.channels) do
+                if ch.uuid == def.uuid then found = true; break end
             end
-            if mgr and mgr.AddChannel then
-                mgr:AddChannel(channel, false)
+            if not found then
+                table.insert(DynamicRadio.channels, {
+                    name     = PhobosLib.safeGetText(def.nameKey),
+                    freq     = freq,
+                    category = def.category,
+                    uuid     = def.uuid,
+                    register = true,
+                })
             end
-            DynamicRadio.cache[def.uuid] = channel
-            _channels[def.id] = channel
-            PhobosLib.debug("POS", _TAG,
-                "registered channel: " .. def.id .. " at " .. tostring(freq) .. " Hz"
-                .. " (AZAS: " .. tostring(freq ~= def.freq) .. ")")
-        end
 
-        ::nextDef::
+            -- Create and register the channel instance
+            local cat = resolveCategoryEnum(def.category)
+            local channel = DynamicRadioChannel.new(
+                PhobosLib.safeGetText(def.nameKey), freq, cat, def.uuid)
+
+            if channel then
+                if channel.setAirCounterMultiplier then
+                    channel:setAirCounterMultiplier(1.0)
+                end
+                if mgr and mgr.AddChannel then
+                    mgr:AddChannel(channel, false)
+                end
+                DynamicRadio.cache[def.uuid] = channel
+                _channels[def.id] = channel
+                PhobosLib.debug("POS", _TAG,
+                    "registered channel: " .. def.id .. " at " .. tostring(freq) .. " Hz"
+                    .. " (AZAS: " .. tostring(freq ~= def.freq) .. ")")
+            end
+        end
     end
 end
 
@@ -209,10 +213,12 @@ end
 --- @return string|nil  The station class id, or nil
 function POS_WBN_ChannelService.isWBNFrequency(freq)
     if not freq then return false, nil end
-    if freq == POS_AZASIntegration.getWBNMarketFrequency() then
+    local mktFreq = resolveFrequency(POS_Constants.WBN_STATION_CIVILIAN_MARKET)
+    local emgFreq = resolveFrequency(POS_Constants.WBN_STATION_EMERGENCY)
+    if freq == mktFreq then
         return true, POS_Constants.WBN_STATION_CIVILIAN_MARKET
     end
-    if freq == POS_AZASIntegration.getWBNEmergencyFrequency() then
+    if freq == emgFreq then
         return true, POS_Constants.WBN_STATION_EMERGENCY
     end
     return false, nil

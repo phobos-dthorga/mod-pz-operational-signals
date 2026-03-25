@@ -89,28 +89,31 @@ function POS_WBN_EditorialService.filter(candidates)
 
     local approved = {}
     for _, c in ipairs(candidates) do
+        local dominated = false
         -- Gate: freshness
         if (c.freshness or 0) < POS_Constants.WBN_EDITORIAL_FRESHNESS_FLOOR then
-            goto continue
+            dominated = true
         end
         -- Gate: public eligibility
-        if not c.publicEligible then goto continue end
+        if not dominated and not c.publicEligible then dominated = true end
         -- Gate: minimum percentage change
-        if (c.percentChange or 0) < POS_Constants.WBN_THRESHOLD_LIGHT then
-            goto continue
+        if not dominated and (c.percentChange or 0) < POS_Constants.WBN_THRESHOLD_LIGHT then
+            dominated = true
         end
         -- Gate: deduplication
-        if isDuplicate(c) then goto continue end
+        if not dominated and isDuplicate(c) then dominated = true end
         -- Score
-        local score = scoreCandidate(c)
-        if score < POS_Constants.WBN_EDITORIAL_SCORE_FLOOR then goto continue end
-
-        c.score = score
-        c.stationClass = resolveStationClass(c)
-        c.confidenceBand = resolveConfidenceBand(c.confidence or 0.5)
-        approved[#approved + 1] = c
-
-        ::continue::
+        if not dominated then
+            local score = scoreCandidate(c)
+            if score < POS_Constants.WBN_EDITORIAL_SCORE_FLOOR then
+                dominated = true
+            else
+                c.score = score
+                c.stationClass = resolveStationClass(c)
+                c.confidenceBand = resolveConfidenceBand(c.confidence or 0.5)
+                approved[#approved + 1] = c
+            end
+        end
     end
 
     -- Sort by score descending
