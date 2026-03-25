@@ -388,6 +388,7 @@ read_globals = {
     "DummySoundBank",
     "DummySoundEmitter",
     "DummySoundManager",
+    "DynamicRadio",
     "DynamicRadioChannel",
     "EditStreetV1",
     "EditStreetsV1",
