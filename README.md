@@ -40,7 +40,6 @@ These mods are **not required** but POSnet detects them at runtime and enables a
 | [Phobos Industrial Pathology](https://steamcommunity.com/sharedfiles/filedetails/?id=3686101131) | Cross-mod specimen and pathology market data |
 | [Paper Trails](https://steamcommunity.com/sharedfiles/filedetails/?id=3646157770) | Street address resolution for mission briefings and map waypoints |
 | [Moodle Framework](https://steamcommunity.com/sharedfiles/filedetails/?id=3340065917) | Custom moodle display for intel gathering status |
-| [Dynamic Trading](https://steamcommunity.com/sharedfiles/filedetails/?id=3311230444) | Trader archetype integration for market vendor NPCs |
 
 ## Core Systems
 

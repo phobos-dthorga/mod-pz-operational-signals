@@ -314,11 +314,7 @@ POS_Constants.WHOLESALER_PRICE_MULTIPLIER = {
     [POS_Constants.WHOLESALER_STATE_COLLAPSING]  = 1.40,
 }
 
--- Category base prices (calibrated against Dynamic Trading mod)
--- DT ranges: food canned 137-297, medical 45-183, ammo mags 70,
--- fuel 127-215, tools 57-216, electronics wide, weapons wide,
--- armor 15-360, moveables 15-70, PCP chemicals 12-500.
--- These represent the "average street price" per category.
+-- Category base prices ("average street price" per category).
 POS_Constants.CATEGORY_BASE_PRICE = {
     food          = 120,
     medicine      = 150,

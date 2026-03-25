@@ -339,13 +339,6 @@ SIGINT levels:
 
 No direct integration. SIGINT is an information skill, not a biological one.
 
-### 8.4 Dynamic Trading
-
-High-SIGINT players (L6+) receive a passive discount on information-category
-trades via `POS_TradingIntegration.lua` (if Dynamic Trading is active). This
-represents their reputation as skilled analysts making their intelligence more
-valuable in barter.
-
 ---
 
 ## 9. Sandbox Options
