@@ -2856,6 +2856,8 @@ Voice packs use the data-pack pattern (`POS_VoicePackSchema.lua` →
 | `submission` | Mission/contract completion instructions | 8 (all archetypes) | Implemented |
 | `agentState` | Free agent state transition messages | 5 (agent archetypes) | Implemented |
 | `investment` | Investment opportunity descriptions | — | Planned |
+| `wbn_opener` | WBN bulletin opening phrases | `VOICE_SECTION_WBN_OPENER` | Planned |
+| `wbn_closer` | WBN bulletin closing phrases | `VOICE_SECTION_WBN_CLOSER` | Planned |
 
 **Fallback chain**: archetype-specific pool → default common pool.
 Voice packs are **additive** — the system works without any defined.
@@ -4112,6 +4114,14 @@ translation-key-based phrase pool:
 Template variables (`{category}`, `{zone}`, `{pct}`) are filled at
 composition time. Confidence modifiers prepend the percentage phrase
 (high: bare, medium: "about", low: "said to be").
+
+**Voice Pack Integration**: The opener and closer slots route through the
+Voice Pack Registry (`POS_VoicePackRegistry.getOverride(archetypeId, "wbn_opener")`).
+If a voice pack defines WBN sections, those phrase pools are used; otherwise
+the built-in defaults in CompositionService apply. This enables addon mods
+to add custom radio voices without modifying WBN code.
+
+See §32 for voice pack architecture.
 
 ### 55.5 Station Classes (Phase 1)
 

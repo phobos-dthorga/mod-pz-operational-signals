@@ -107,6 +107,10 @@ POS_Constants.WBN_CONF_HIGH   = "high"
 POS_Constants.WBN_CONF_MEDIUM = "medium"
 POS_Constants.WBN_CONF_LOW    = "low"
 
+-- Voice pack section names for WBN (must match VOICE_ALL_OVERRIDE_SECTIONS)
+POS_Constants.WBN_VP_SECTION_OPENER = POS_Constants.VOICE_SECTION_WBN_OPENER
+POS_Constants.WBN_VP_SECTION_CLOSER = POS_Constants.VOICE_SECTION_WBN_CLOSER
+
 -- Archetype IDs used in Phase 1
 POS_Constants.WBN_ARCHETYPE_QUARTERMASTER = "quartermaster"
 POS_Constants.WBN_ARCHETYPE_FIELD_REPORTER = "field_reporter"

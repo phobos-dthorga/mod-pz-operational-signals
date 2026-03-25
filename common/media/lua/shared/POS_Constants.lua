@@ -225,10 +225,13 @@ POS_Constants.VOICE_SECTION_SITUATION    = "situation"
 POS_Constants.VOICE_SECTION_SUBMISSION   = "submission"
 POS_Constants.VOICE_SECTION_AGENT_STATE  = "agentState"
 POS_Constants.VOICE_SECTION_INVESTMENT   = "investment"
+POS_Constants.VOICE_SECTION_WBN_OPENER  = "wbn_opener"
+POS_Constants.VOICE_SECTION_WBN_CLOSER  = "wbn_closer"
 
--- Extended voice override sections (includes agent + investment)
+-- Extended voice override sections (includes agent + investment + WBN)
 POS_Constants.VOICE_ALL_OVERRIDE_SECTIONS = {
     "situation", "submission", "agentState", "investment",
+    "wbn_opener", "wbn_closer",
 }
 
 ---------------------------------------------------------------

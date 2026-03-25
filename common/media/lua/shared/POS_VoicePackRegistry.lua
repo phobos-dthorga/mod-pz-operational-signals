@@ -56,6 +56,7 @@ local BUILTIN_PATHS = {
     "Definitions/VoicePacks/trader",
     "Definitions/VoicePacks/speculator",
     "Definitions/VoicePacks/crafter",
+    "Definitions/VoicePacks/field_reporter",
 }
 
 ---------------------------------------------------------------

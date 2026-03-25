@@ -846,6 +846,29 @@ All WBN translation keys use the `UI_WBN_*` prefix:
 | `UI_WBN_Phrase_Cause_*` | Cause framing suffixes |
 | `UI_WBN_Phrase_ConfMod_*` | Confidence modifiers |
 
+### 15.6 Voice Pack Integration
+
+The opener and closer grammar slots are resolved through the Voice Pack
+Registry rather than hardcoded phrase banks. This follows the data-pack
+extensibility pattern (§32.4).
+
+**Resolution chain**:
+1. Query `POS_VoicePackRegistry.getOverride(archetypeId, "wbn_opener")`
+2. If found: load text pool definition via `require(poolId)`
+3. Extract translation keys from pool entries
+4. If not found: fall back to `DEFAULT_OPENERS[archetypeId]`
+
+**Phase 1 voice packs**:
+
+| Archetype | Opener Pool | Closer Pool |
+|-----------|------------|------------|
+| quartermaster | `voice_wbn_quartermaster_openers` | `voice_wbn_quartermaster_closers` |
+| field_reporter | `voice_wbn_field_reporter_openers` | `voice_wbn_field_reporter_closers` |
+
+**Addon extensibility**: To add a custom radio voice (e.g., "smuggler"),
+create a voice pack definition with `wbn_opener` and `wbn_closer` overrides
+pointing to new text pool files. No changes to CompositionService required.
+
 ---
 
 ## 16. Cross-References

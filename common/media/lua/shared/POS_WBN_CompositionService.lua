@@ -17,6 +17,7 @@ require "PhobosLib"
 require "POS_Constants"
 require "POS_Constants_WBN"
 require "POS_MarketSimulation"
+require "POS_VoicePackRegistry"
 
 local _TAG = "WBN:Compose"
 POS_WBN_CompositionService = {}
@@ -25,19 +26,32 @@ POS_WBN_CompositionService = {}
 -- Phrase bank definitions (translation key pools per slot)
 ---------------------------------------------------------------
 
+-- Default opener/closer pools — used as fallback when no voice pack is registered
+local DEFAULT_OPENERS = {
+    [POS_Constants.WBN_ARCHETYPE_QUARTERMASTER] = {
+        "UI_WBN_Phrase_Opener_QM_01", "UI_WBN_Phrase_Opener_QM_02",
+        "UI_WBN_Phrase_Opener_QM_03", "UI_WBN_Phrase_Opener_QM_04",
+        "UI_WBN_Phrase_Opener_QM_05",
+    },
+    [POS_Constants.WBN_ARCHETYPE_FIELD_REPORTER] = {
+        "UI_WBN_Phrase_Opener_FR_01", "UI_WBN_Phrase_Opener_FR_02",
+        "UI_WBN_Phrase_Opener_FR_03", "UI_WBN_Phrase_Opener_FR_04",
+    },
+}
+
+local DEFAULT_CLOSERS = {
+    [POS_Constants.WBN_ARCHETYPE_QUARTERMASTER] = {
+        "UI_WBN_Phrase_Closer_QM_01", "UI_WBN_Phrase_Closer_QM_02",
+        "UI_WBN_Phrase_Closer_QM_03", "UI_WBN_Phrase_Closer_QM_04",
+    },
+    [POS_Constants.WBN_ARCHETYPE_FIELD_REPORTER] = {
+        "UI_WBN_Phrase_Closer_FR_01", "UI_WBN_Phrase_Closer_FR_02",
+        "UI_WBN_Phrase_Closer_FR_03", "UI_WBN_Phrase_Closer_FR_04",
+    },
+}
+
 -- Each pool is { key1, key2, ... } — resolved via PhobosLib.safeGetText()
 local PHRASE_BANKS = {
-    openers = {
-        [POS_Constants.WBN_ARCHETYPE_QUARTERMASTER] = {
-            "UI_WBN_Phrase_Opener_QM_01", "UI_WBN_Phrase_Opener_QM_02",
-            "UI_WBN_Phrase_Opener_QM_03", "UI_WBN_Phrase_Opener_QM_04",
-            "UI_WBN_Phrase_Opener_QM_05",
-        },
-        [POS_Constants.WBN_ARCHETYPE_FIELD_REPORTER] = {
-            "UI_WBN_Phrase_Opener_FR_01", "UI_WBN_Phrase_Opener_FR_02",
-            "UI_WBN_Phrase_Opener_FR_03", "UI_WBN_Phrase_Opener_FR_04",
-        },
-    },
     subjects = {
         [POS_Constants.WBN_DOMAIN_ECONOMY] = {
             "UI_WBN_Phrase_Subject_Econ_01", "UI_WBN_Phrase_Subject_Econ_02",
@@ -66,16 +80,6 @@ local PHRASE_BANKS = {
         [POS_Constants.WBN_CONF_LOW] = {
             "UI_WBN_Phrase_Qual_Low_01", "UI_WBN_Phrase_Qual_Low_02",
             "UI_WBN_Phrase_Qual_Low_03",
-        },
-    },
-    closers = {
-        [POS_Constants.WBN_ARCHETYPE_QUARTERMASTER] = {
-            "UI_WBN_Phrase_Closer_QM_01", "UI_WBN_Phrase_Closer_QM_02",
-            "UI_WBN_Phrase_Closer_QM_03", "UI_WBN_Phrase_Closer_QM_04",
-        },
-        [POS_Constants.WBN_ARCHETYPE_FIELD_REPORTER] = {
-            "UI_WBN_Phrase_Closer_FR_01", "UI_WBN_Phrase_Closer_FR_02",
-            "UI_WBN_Phrase_Closer_FR_03", "UI_WBN_Phrase_Closer_FR_04",
         },
     },
     causes = {
@@ -110,6 +114,37 @@ local function pickPhrase(pool)
     if not pool or #pool == 0 then return "" end
     local key = pool[ZombRand(#pool) + 1]
     return PhobosLib.safeGetText(key)
+end
+
+--- Resolve a phrase pool from voice pack registry, with fallback.
+--- Queries POS_VoicePackRegistry for an override text pool; if found, extracts
+--- translation keys from its entries. Falls back to the provided default keys.
+--- @param archetypeId string Voice archetype identifier
+--- @param sectionName string Voice pack section (e.g. "wbn_opener")
+--- @param fallbackKeys table Array of translation key strings to use as default
+--- @return table Array of translation key strings
+local function resolveArchetypePool(archetypeId, sectionName, fallbackKeys)
+    -- Try voice pack registry first
+    if POS_VoicePackRegistry and POS_VoicePackRegistry.getOverride then
+        local poolId = POS_VoicePackRegistry.getOverride(archetypeId, sectionName)
+        if poolId then
+            local ok, poolDef = PhobosLib.safecall(require, poolId)
+            if ok and poolDef and poolDef.entries and #poolDef.entries > 0 then
+                -- Convert text pool entries to translation key array
+                local keys = {}
+                for _, entry in ipairs(poolDef.entries) do
+                    if entry.text then keys[#keys + 1] = entry.text end
+                end
+                if #keys > 0 then
+                    PhobosLib.debug("POS", _TAG,
+                        "resolved voice pack pool: " .. poolId .. " (" .. #keys .. " entries)")
+                    return keys
+                end
+            end
+        end
+    end
+    -- Fallback to built-in defaults
+    return fallbackKeys
 end
 
 --- Resolve human-readable zone name from zone registry or fallback formatting.
@@ -194,8 +229,9 @@ function POS_WBN_CompositionService.compose(candidate, archetypeId)
         pct      = pctPhrase,
     }
 
-    -- 1. Opener
-    local opener = pickPhrase(PHRASE_BANKS.openers[arch])
+    -- 1. Opener (voice-pack aware)
+    local openerPool = resolveArchetypePool(arch, POS_Constants.WBN_VP_SECTION_OPENER, DEFAULT_OPENERS[arch])
+    local opener = pickPhrase(openerPool)
 
     -- 2. Subject
     local subjectPool = PHRASE_BANKS.subjects[domain] or PHRASE_BANKS.subjects[POS_Constants.WBN_DOMAIN_ECONOMY]
@@ -214,8 +250,9 @@ function POS_WBN_CompositionService.compose(candidate, archetypeId)
     -- 5. Qualifier
     local qualifier = pickPhrase(PHRASE_BANKS.qualifiers[confBand])
 
-    -- 6. Closer
-    local closer = pickPhrase(PHRASE_BANKS.closers[arch])
+    -- 6. Closer (voice-pack aware)
+    local closerPool = resolveArchetypePool(arch, POS_Constants.WBN_VP_SECTION_CLOSER, DEFAULT_CLOSERS[arch])
+    local closer = pickPhrase(closerPool)
 
     -- Assemble bulletin text
     local body = subject .. " " .. condition .. causeSuffix .. "."
