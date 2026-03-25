@@ -353,8 +353,8 @@ local WEATHER_KEYS = {
 local POWER_KEYS = {
     failed       = { "UI_WBN_Power_ShutOff_01", "UI_WBN_Power_ShutOff_02", "UI_WBN_Power_ShutOff_03" },
     restored     = { "UI_WBN_Power_Restored_01", "UI_WBN_Power_Restored_02", "UI_WBN_Power_Restored_03" },
-    reminder_off = { "UI_WBN_Power_ReminderOff_01", "UI_WBN_Power_ReminderOff_02" },
-    status_on    = { "UI_WBN_Power_StatusOn_01", "UI_WBN_Power_StatusOn_02" },
+    reminder_off = { "UI_WBN_Power_Reminder_Off", "UI_WBN_Power_Reminder_Off_02", "UI_WBN_Power_Reminder_Off_03" },
+    status_on    = { "UI_WBN_Power_Status_On", "UI_WBN_Power_Status_On_02", "UI_WBN_Power_Status_On_03" },
 }
 
 -- Flavour pools by target station

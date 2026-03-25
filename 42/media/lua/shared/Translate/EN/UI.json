@@ -1487,7 +1487,11 @@
     "UI_WBN_Power_Restored_01": "Grid power has been restored. Mains electricity is available again.",
     "UI_WBN_Power_Restored_02": "Power is back online. Grid access confirmed across the region.",
     "UI_WBN_Power_Reminder_Off": "Reminder: grid power remains offline. Generator dependency continues.",
+    "UI_WBN_Power_Reminder_Off_02": "Still no grid power. Fuel conservation is strongly advised.",
+    "UI_WBN_Power_Reminder_Off_03": "Grid remains down. All operations running on backup power.",
     "UI_WBN_Power_Status_On": "Mains power remains active across the grid. Standard operations continue.",
+    "UI_WBN_Power_Status_On_02": "Grid power holding steady. No outages reported this cycle.",
+    "UI_WBN_Power_Status_On_03": "Electrical infrastructure stable. Normal consumption levels observed.",
 
     "UI_WBN_Flavour_Market_01": "Trading conditions remain uncertain across Knox County.",
     "UI_WBN_Flavour_Market_02": "Salvage teams report slim pickings in residential zones.",

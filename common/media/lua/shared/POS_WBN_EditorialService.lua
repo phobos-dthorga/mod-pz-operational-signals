@@ -111,8 +111,12 @@ function POS_WBN_EditorialService.filter(candidates)
                 and (c.percentChange or 0) < POS_Constants.WBN_THRESHOLD_LIGHT then
             dominated = true
         end
-        -- Gate: deduplication
-        if not dominated and isDuplicate(c) then dominated = true end
+        -- Gate: deduplication (economy only — weather/power/colour should repeat
+        -- naturally like real radio; cadence timer already rate-limits emission)
+        if not dominated and c.domain == POS_Constants.WBN_DOMAIN_ECONOMY
+                and isDuplicate(c) then
+            dominated = true
+        end
         -- Score
         if not dominated then
             local score = scoreCandidate(c)
