@@ -31,6 +31,7 @@ ignore = {
 
 -- POSnet's own global namespaces
 globals = {
+    "DynamicRadio",
     "POS_Sandbox",
     "POS_MissionTemplates",
     "POS_MissionGenerator",
@@ -388,7 +389,6 @@ read_globals = {
     "DummySoundBank",
     "DummySoundEmitter",
     "DummySoundManager",
-    "DynamicRadio",
     "DynamicRadioChannel",
     "EditStreetV1",
     "EditStreetsV1",
