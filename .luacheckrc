@@ -153,6 +153,9 @@ read_globals = {
     -- PhobosNotifications (optional cross-mod)
     "PhobosNotifications",
 
+    -- PZ sandbox options (Lua table, not in JavaDocs)
+    "SandboxVars",
+
     -- PZ Lua classes and enums (not in JavaDocs — pure Lua, must stay manual)
     "Keyboard",
     "ISBaseTimedAction",
