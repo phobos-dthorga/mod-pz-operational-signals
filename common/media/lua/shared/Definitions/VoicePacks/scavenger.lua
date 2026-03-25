@@ -7,5 +7,7 @@ return {
         situation  = "voice_scavenger_situations",
         submission = "voice_scavenger_submissions",
         investment = "voice_scavenger_investments",
+        wbn_opener = "voice_wbn_scavenger_openers",
+        wbn_closer = "voice_wbn_scavenger_closers",
     },
 }

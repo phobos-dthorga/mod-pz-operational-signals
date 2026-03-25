@@ -8,5 +8,7 @@ return {
         submission = "voice_military_submissions",
         agentState = "voice_military_agent_states",
         investment = "voice_military_investments",
+        wbn_opener = "voice_wbn_military_openers",
+        wbn_closer = "voice_wbn_military_closers",
     },
 }

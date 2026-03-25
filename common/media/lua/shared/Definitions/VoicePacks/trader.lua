@@ -8,5 +8,7 @@ return {
         submission = "voice_trader_submissions",
         agentState = "voice_trader_agent_states",
         investment = "voice_trader_investments",
+        wbn_opener = "voice_wbn_trader_openers",
+        wbn_closer = "voice_wbn_trader_closers",
     },
 }

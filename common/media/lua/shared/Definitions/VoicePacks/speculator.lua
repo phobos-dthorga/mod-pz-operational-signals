@@ -7,5 +7,7 @@ return {
         situation  = "voice_speculator_situations",
         submission = "voice_speculator_submissions",
         investment = "voice_speculator_investments",
+        wbn_opener = "voice_wbn_speculator_openers",
+        wbn_closer = "voice_wbn_speculator_closers",
     },
 }

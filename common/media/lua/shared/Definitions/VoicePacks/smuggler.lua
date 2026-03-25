@@ -8,5 +8,7 @@ return {
         submission = "voice_smuggler_submissions",
         agentState = "voice_smuggler_agent_states",
         investment = "voice_smuggler_investments",
+        wbn_opener = "voice_wbn_smuggler_openers",
+        wbn_closer = "voice_wbn_smuggler_closers",
     },
 }
