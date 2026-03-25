@@ -4053,3 +4053,84 @@ POSnet uses **three radio domains** that must not be conflated:
 
 **Cross-references**: `radio-band-taxonomy-design.md`,
 `world-broadcast-network-design.md`
+
+---
+
+## 55. WBN Coding Conventions
+
+The World Broadcast Network (WBN) delivers diegetic radio bulletins to
+players via PZ Build 42's `DynamicRadio` system. All WBN services follow
+these conventions.
+
+### 55.1 Event-Driven Harvest
+
+WBN does **not** poll for state changes. The harvest layer subscribes to
+Starlit events for loose coupling:
+
+| Event | Source | WBN Action |
+|-------|--------|------------|
+| `OnStockTickClosed` | Economy tick | Compare zone pressure snapshots, generate economy candidates |
+| `OnMarketEvent` | Event service | Generate infrastructure/emergency candidates |
+
+Future phases will add: `OnFreeAgentStateChanged`, `OnConnectionStateChanged`.
+
+### 55.2 DynamicRadio API
+
+WBN uses vanilla PZ's radio system — **not** custom `sendServerCommand`
+messaging. The delivery chain is:
+
+1. `DynamicRadioChannel.new(name, freq, category, uuid)` — register channel
+2. `RadioBroadCast.new(id, -1, -1)` — create global broadcast
+3. `RadioLine.new(text, r, g, b)` — create coloured line
+4. `channel:setAiringBroadcast(bc)` — emit
+
+Players receive bulletins automatically when tuned to a WBN frequency.
+No custom client delivery code is needed for the core floating text —
+the vanilla radio system handles it.
+
+### 55.3 Constants & Translation Keys
+
+- All WBN constants live in `POS_Constants_WBN.lua` on the `POS_Constants` table
+- Prefix: `POS_Constants.WBN_*`
+- All player-facing text uses translation keys: prefix `UI_WBN_*`
+- Phrase bank keys follow: `UI_WBN_Phrase_<Slot>_<Archetype>_<Index>`
+- No magic numbers or inline strings in any WBN service
+
+### 55.4 Bulletin Grammar System
+
+Bulletins are composed from five slots, each drawn randomly from a
+translation-key-based phrase pool:
+
+| Slot | Keyed By | Example |
+|------|----------|---------|
+| Opener | archetype | "Market advisory:" |
+| Subject | domain | "{category} in {zone}" |
+| Condition | direction | "is up {pct} percent" |
+| Qualifier | confidence band | "Reports are mixed." |
+| Closer | archetype | "Trade accordingly." |
+
+Template variables (`{category}`, `{zone}`, `{pct}`) are filled at
+composition time. Confidence modifiers prepend the percentage phrase
+(high: bare, medium: "about", low: "said to be").
+
+### 55.5 Station Classes (Phase 1)
+
+| Station | Frequency | Archetype | Cadence | Domain |
+|---------|-----------|-----------|---------|--------|
+| Civilian Market | 91.4 MHz | quartermaster | 10 min | economy |
+| Emergency | 103.8 MHz | field_reporter | 5 min | infrastructure |
+
+### 55.6 File Locations
+
+| File | Layer | Purpose |
+|------|-------|---------|
+| `shared/POS_Constants_WBN.lua` | constants | All WBN named values |
+| `shared/POS_WBN_HarvestService.lua` | harvest | Event-driven candidate generation |
+| `shared/POS_WBN_EditorialService.lua` | editorial | Scoring, filtering, dedup |
+| `shared/POS_WBN_CompositionService.lua` | composition | 5-slot grammar rendering |
+| `shared/POS_WBN_SchedulerService.lua` | scheduling | Per-station queues + cadence |
+| `server/POS_WBN_ChannelService.lua` | delivery | DynamicRadio channel + emission |
+| `client/POS_WBN_ClientListener.lua` | client | OnDeviceText history capture |
+
+**Cross-references**: `world-broadcast-network-design.md`,
+`radio-band-taxonomy-design.md`

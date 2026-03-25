@@ -108,3 +108,25 @@ The POSnet terminal is fully customisable:
 - **CRT effects** -- scanline overlay and bezel for authentic retro feel.
 
 Access these options from the terminal Settings screen.
+
+---
+
+## World Broadcast Network (Radio Bulletins)
+
+POSnet includes a live radio bulletin system. Tune any in-game radio to
+one of the following frequencies to hear market and emergency updates:
+
+- **91.4 MHz** — POSnet Market Bulletin (economy updates, price movements)
+- **103.8 MHz** — POSnet Emergency Service (infrastructure alerts, grid warnings)
+
+Bulletins are generated automatically from the Living Market simulation.
+Each broadcast is voiced through a character archetype (quartermaster for
+market news, field reporter for emergencies) and includes price movement
+percentages, zone names, and confidence indicators.
+
+### Tips
+
+- Keep a radio on while looting, driving, or working at base
+- Bulletins vary in confidence — "said to be" is less reliable than a direct statement
+- Repeated bulletins about the same topic increase confidence
+- Your broadcast history is saved and can be reviewed at a POSnet terminal

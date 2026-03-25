@@ -793,7 +793,62 @@ The following patterns are explicitly prohibited in WBN implementation.
 
 ---
 
-## 14. Cross-References
+## 15. Implementation Notes (Phase 1)
+
+### 15.1 Vanilla PZ Radio API
+
+WBN Phase 1 uses PZ Build 42's `DynamicRadio` system (same pattern as
+the Unseasonal Weather mod). Key classes:
+
+- `DynamicRadioChannel.new(name, freq, category, uuid)` — channel registration
+- `RadioBroadCast.new(id, x, y)` — broadcast container (`-1, -1` for global reach)
+- `RadioLine.new(text, r, g, b)` — individual coloured text line
+- `channel:setAiringBroadcast(bc)` — emit broadcast on channel
+- `Events.OnDeviceText` — client event fired when player's radio receives text
+
+Channel categories available: `ChannelCategory.Amateur`, `.Emergency`,
+`.Military`, `.Radio`, `.Television`, `.Bandit`, `.Other`.
+
+### 15.2 Starlit Event Integration
+
+The harvest layer subscribes to Starlit `LuaEvent` instances defined in
+`POS_Events.lua` rather than polling:
+
+- `POS_Events.OnStockTickClosed` → economy candidate generation
+- `POS_Events.OnMarketEvent` → infrastructure/emergency candidates
+
+### 15.3 PhobosLib Utilities
+
+| Utility | Used For |
+|---------|----------|
+| `PhobosLib.safecall()` | Wrap DynamicRadio API calls (may be nil) |
+| `PhobosLib.safeGetText()` | All translation key resolution |
+| `PhobosLib.debug()` | Diagnostic logging |
+| `PhobosLib.clamp()` | Pressure value clamping |
+| `PhobosLib_Radio` | Device classification (future phases) |
+
+### 15.4 ModData Patterns
+
+Broadcast history is stored in player ModData at
+`player:getModData().POSNET.BroadcastHistory`. Java-table-safe access
+rules apply: string keys, `pairs()` iteration, no `#` operator or
+`table.insert()`.
+
+### 15.5 Translation Key Conventions
+
+All WBN translation keys use the `UI_WBN_*` prefix:
+
+| Pattern | Example |
+|---------|---------|
+| `UI_WBN_Channel_*` | Channel display names |
+| `UI_WBN_StationTag_*` | Broadcast prefix tags |
+| `UI_WBN_Phrase_<Slot>_<Arch>_<N>` | Grammar phrase pools |
+| `UI_WBN_Phrase_Cause_*` | Cause framing suffixes |
+| `UI_WBN_Phrase_ConfMod_*` | Confidence modifiers |
+
+---
+
+## 16. Cross-References
 
 | Document                              | Relationship                                          |
 |---------------------------------------|-------------------------------------------------------|
