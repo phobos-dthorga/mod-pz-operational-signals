@@ -107,7 +107,15 @@ function POS_WBN_SchedulerService.tick()
         approved = POS_WBN_EditorialService.filter(candidates)
     end
 
+    -- Pipeline debug logging
+    if #candidates > 0 or #approved > 0 then
+        PhobosLib.debug("POS", _TAG,
+            "tick: " .. tostring(#candidates) .. " candidates consumed, "
+            .. tostring(#approved) .. " passed editorial")
+    end
+
     -- 3. Compose radio lines and enqueue approved bulletins
+    local enqueuedCount = 0
     if #approved > 0 and POS_WBN_CompositionService and POS_WBN_CompositionService.compose then
         for _, c in ipairs(approved) do
             local stationId = c.stationClass or POS_Constants.WBN_STATION_CIVILIAN_MARKET
@@ -118,6 +126,7 @@ function POS_WBN_SchedulerService.tick()
                 if ok and lines and #lines > 0 then
                     c._composedLines = lines
                     enqueue(stationId, c)
+                    enqueuedCount = enqueuedCount + 1
                 end
             end
         end

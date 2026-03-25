@@ -134,3 +134,11 @@ POS_Constants.WBN_CAUSE_RECOVERY     = "recovery"
 -- Pressure-to-percentage conversion factor
 -- Pressure is 0.0-1.0 clamped; multiply by this to get approximate % change
 POS_Constants.WBN_PRESSURE_TO_PERCENT = 25
+
+-- Ambient broadcast generation (fallback when no pressure deltas occur)
+POS_Constants.WBN_AMBIENT_PRESSURE_FLOOR = 0.05   -- min absolute pressure to generate ambient candidate
+POS_Constants.WBN_AMBIENT_SEVERITY       = 0.3    -- base severity for ambient market reports
+POS_Constants.WBN_AMBIENT_CONFIDENCE     = 0.5    -- base confidence for ambient market reports
+POS_Constants.WBN_AMBIENT_FRESHNESS      = 0.8    -- freshness for ambient candidates
+POS_Constants.WBN_AMBIENT_MAX_PER_TICK   = 3      -- max ambient candidates generated per economy tick
+POS_Constants.WBN_AMBIENT_CONF_VARIANCE  = 0.1    -- +/- random variance applied to ambient confidence

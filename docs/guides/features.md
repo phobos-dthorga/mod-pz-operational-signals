@@ -119,10 +119,43 @@ one of the following frequencies to hear market and emergency updates:
 - **91.4 MHz** — POSnet Market Bulletin (economy updates, price movements)
 - **103.8 MHz** — POSnet Emergency Service (infrastructure alerts, grid warnings)
 
-Bulletins are generated automatically from the Living Market simulation.
-Each broadcast is voiced through a character archetype (quartermaster for
-market news, field reporter for emergencies) and includes price movement
-percentages, zone names, and confidence indicators.
+Frequencies are dynamically assigned per-world via the **AZAS Frequency
+Index**. The defaults above are used when AZAS is unavailable.
+
+### How it works
+
+Bulletins are generated automatically from the **Living Market** simulation
+through a five-layer pipeline:
+
+1. **Event Harvest** — watches economy ticks and market events for meaningful
+   changes. When no pressure deltas occur (e.g. early game), ambient baseline
+   reports are generated from absolute zone pressure.
+2. **Editorial Filter** — scores candidates for importance, freshness, and
+   uniqueness. Low-value or repetitive items are suppressed.
+3. **Voice-Pack Composition** — assembles bulletin text from composable phrase
+   templates (openers, subjects, conditions, qualifiers, closers) voiced
+   through archetype personalities. All 9 archetypes have WBN radio voices.
+4. **Channel Scheduling** — queues bulletins per station class with minimum
+   cadence intervals (10 min market, 5 min emergency).
+5. **DynamicRadio Delivery** — emits bulletins as vanilla RadioLine instances.
+   Player hears them as floating text when near an active receiver.
+
+### Broadcaster voices (9 archetypes)
+
+Each station class is voiced by a default archetype, but all 9 have
+WBN opener/closer text pools:
+
+| Archetype | Tone |
+|-----------|------|
+| Quartermaster | Official, measured, authoritative |
+| Field Reporter | Urgent, ground-level, immediate |
+| Scavenger | Scrappy, street-level, informal |
+| Wholesaler | Business-first, matter-of-fact |
+| Smuggler | Hushed, cryptic, allusive |
+| Military | Clipped, procedural, terse |
+| Trader | Pragmatic, deal-focused |
+| Speculator | Analytical, forward-looking |
+| Crafter | Practical, hands-on, grounded |
 
 ### Tips
 
@@ -130,3 +163,5 @@ percentages, zone names, and confidence indicators.
 - Bulletins vary in confidence — "said to be" is less reliable than a direct statement
 - Repeated bulletins about the same topic increase confidence
 - Your broadcast history is saved and can be reviewed at a POSnet terminal
+- Price movements are expressed as rounded percentages (e.g. "up twelve percent")
+- Cause framing may accompany movements (e.g. "following renewed shortages")

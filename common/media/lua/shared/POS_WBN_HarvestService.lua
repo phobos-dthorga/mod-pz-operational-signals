@@ -158,8 +158,105 @@ function POS_WBN_HarvestService.onEconomyTick(data)
 
     if #_candidateQueue > 0 then
         PhobosLib.debug("POS", _TAG,
-            "onEconomyTick: generated " .. tostring(#_candidateQueue) .. " candidates")
+            "onEconomyTick: generated " .. tostring(#_candidateQueue)
+            .. " delta-driven candidates")
+    else
+        -- Fallback: generate ambient baseline candidates from absolute pressure
+        POS_WBN_HarvestService.generateAmbientCandidates(currentDay, worldHours)
     end
+end
+
+--- Generate ambient market report candidates from absolute zone pressure.
+--- Called as a fallback when no delta-driven candidates are produced (e.g. when
+--- no wholesalers are active). Picks a random subset of zone/category pairs
+--- with meaningful pressure and creates low-severity "market status" candidates.
+--- Uses PhobosLib.clamp + PhobosLib.randFloat for safe variance.
+--- @param currentDay number The current game day
+--- @param worldHours number Total world-age hours
+function POS_WBN_HarvestService.generateAmbientCandidates(currentDay, worldHours)
+    local zones = POS_Constants.MARKET_ZONES
+    local categoryMultipliers = POS_Constants.CATEGORY_PRICE_MULTIPLIERS or {}
+    if not zones then return end
+
+    -- Build pool of eligible zone/category pairs
+    local pool = {}
+    for _, zoneId in ipairs(zones) do
+        for catId, _ in pairs(categoryMultipliers) do
+            local pressure = 0
+            if POS_MarketSimulation and POS_MarketSimulation.getZonePressure then
+                local ok, p = PhobosLib.safecall(
+                    POS_MarketSimulation.getZonePressure, zoneId, catId)
+                if ok and type(p) == "number" then pressure = p end
+            end
+            if math.abs(pressure) >= POS_Constants.WBN_AMBIENT_PRESSURE_FLOOR then
+                pool[#pool + 1] = { zoneId = zoneId, catId = catId, pressure = pressure }
+            end
+        end
+    end
+
+    if #pool == 0 then
+        PhobosLib.debug("POS", _TAG,
+            "generateAmbientCandidates: no zones with pressure above floor ("
+            .. tostring(POS_Constants.WBN_AMBIENT_PRESSURE_FLOOR) .. ")")
+        return
+    end
+
+    -- Shuffle and pick up to WBN_AMBIENT_MAX_PER_TICK entries
+    local count = math.min(#pool, POS_Constants.WBN_AMBIENT_MAX_PER_TICK)
+    for i = #pool, 2, -1 do
+        local j = ZombRand(i) + 1
+        pool[i], pool[j] = pool[j], pool[i]
+    end
+
+    for idx = 1, count do
+        local entry = pool[idx]
+        local pctChange = pressureToPercent(entry.pressure)
+        local direction = POS_Constants.WBN_DIR_STABLE
+        if entry.pressure > 0 then direction = POS_Constants.WBN_DIR_UP end
+        if entry.pressure < 0 then direction = POS_Constants.WBN_DIR_DOWN end
+
+        local eventType = POS_Constants.WBN_EVENT_PRICE_STABLE
+        if pctChange >= POS_Constants.WBN_THRESHOLD_LIGHT then
+            eventType = (direction == POS_Constants.WBN_DIR_DOWN)
+                and POS_Constants.WBN_EVENT_SURPLUS_NOTICE
+                or POS_Constants.WBN_EVENT_SCARCITY_ALERT
+        end
+
+        local confVariance = PhobosLib.randFloat
+            and PhobosLib.randFloat(
+                -POS_Constants.WBN_AMBIENT_CONF_VARIANCE,
+                POS_Constants.WBN_AMBIENT_CONF_VARIANCE)
+            or 0
+        local confidence = PhobosLib.clamp
+            and PhobosLib.clamp(
+                POS_Constants.WBN_AMBIENT_CONFIDENCE + confVariance, 0.0, 1.0)
+            or POS_Constants.WBN_AMBIENT_CONFIDENCE
+
+        local candidate = {
+            id             = nextCandidateId(POS_Constants.WBN_DOMAIN_ECONOMY, entry.zoneId),
+            domain         = POS_Constants.WBN_DOMAIN_ECONOMY,
+            eventType      = eventType,
+            zoneId         = entry.zoneId,
+            categoryId     = entry.catId,
+            severity       = POS_Constants.WBN_AMBIENT_SEVERITY,
+            confidence     = confidence,
+            freshness      = POS_Constants.WBN_AMBIENT_FRESHNESS,
+            sourceType     = "ambient_report",
+            publicEligible = true,
+            expiresAt      = worldHours + POS_Constants.WBN_CANDIDATE_EXPIRY_HOURS,
+            percentChange  = pctChange,
+            direction      = direction,
+            causeTag       = (direction == POS_Constants.WBN_DIR_DOWN)
+                and POS_Constants.WBN_CAUSE_SURPLUS
+                or POS_Constants.WBN_CAUSE_SCARCITY,
+            day            = currentDay,
+        }
+        _candidateQueue[#_candidateQueue + 1] = candidate
+    end
+
+    PhobosLib.debug("POS", _TAG,
+        "generateAmbientCandidates: generated " .. tostring(count) .. " ambient candidates"
+        .. " from " .. tostring(#pool) .. " eligible pairs")
 end
 
 --- Called when a market event fires (via Starlit OnMarketEvent).
