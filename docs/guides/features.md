@@ -113,14 +113,34 @@ Access these options from the terminal Settings screen.
 
 ## World Broadcast Network (Radio Bulletins)
 
-POSnet includes a live radio bulletin system. Tune any in-game radio to
-one of the following frequencies to hear market and emergency updates:
+POSnet's World Broadcast Network (WBN) converts simulation state into
+diegetic radio bulletins receivable on vanilla radios. Tune to the Market
+Broadcast Service or Emergency Broadcast Service to hear:
 
-- **91.4 MHz** — POSnet Market Bulletin (economy updates, price movements)
-- **103.8 MHz** — POSnet Emergency Service (infrastructure alerts, grid warnings)
+**Market intelligence** — price movements, supply changes, and trade
+conditions voiced by quartermaster, trader, wholesaler, crafter, and
+speculator archetypes. Each has a distinct personality.
 
-Frequencies are dynamically assigned per-world via the **AZAS Frequency
-Index**. The defaults above are used when AZAS is unavailable.
+**Weather reports** — real-time weather conditions from the game world.
+Rain, snow, fog, extreme temperatures, and storm-force winds are reported
+as they happen.
+
+**Power grid updates** — grid failure and restoration events. When mains
+power goes down, the Emergency channel broadcasts the event. When power
+is restored (including by mods), a restoration notice follows.
+
+**World atmosphere** — during quiet periods, the radio carries general
+apocalypse-world flavour: trade rumours, safety advisories, scavenging
+reports, and community updates.
+
+**Intelligence feedback** — listening to broadcasts generates Signal
+Fragments (low-confidence intelligence) that appear in your terminal's
+market data. Repeated broadcasts about the same topic build confidence;
+contradicting broadcasts reduce it. Intel discoveries trigger a
+notification toast.
+
+Frequencies are assigned dynamically via AZAS Frequency Index. Check your
+radio dial for the Market Broadcast and Emergency Broadcast channels.
 
 ### How it works
 

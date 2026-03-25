@@ -869,6 +869,54 @@ extensibility pattern (§32.4).
 create a voice pack definition with `wbn_opener` and `wbn_closer` overrides
 pointing to new text pool files. No changes to CompositionService required.
 
+### 15.7 Content Expansion (Implemented)
+
+Three-tier broadcast hierarchy ensures the radio never goes silent:
+
+| Tier | Source | Fires When |
+|------|--------|-----------|
+| 1. Delta-driven | Wholesaler pressure changes ≥ 3% | Economy tick with active wholesalers |
+| 2. Ambient | Absolute zone pressure > 0.05 | No delta candidates produced |
+| 3. World-state | Weather + power grid + flavour | No ambient candidates (all pressure = 0) |
+
+**Weather broadcasts** sample `getClimateManager()` per economy tick for rain,
+snow, fog, wind, temperature. Most notable condition is selected with severity
+scaling. Thresholds defined as `WBN_WEATHER_*` constants.
+
+**Power grid state machine** tracks ON↔OFF transitions via
+`PhobosLib.isGridPowerActive()`. Compatible with mods that restore grid power
+at semi-random intervals. Grid failure = 0.95 severity on Emergency; grid
+restored = 0.80 on both channels.
+
+**World-flavour fallback** provides atmosphere when weather is mild and power
+is stable. 12 phrases per channel, rotating slowly.
+
+**Voice pack routing** — 4 new voice pack sections (`wbn_weather`, `wbn_power`,
+`wbn_flavour_market`, `wbn_flavour_emergency`) route through
+`POS_VoicePackRegistry` so each archetype voices all content types with
+distinct personality. 24 TextPool definition files across 6 archetypes.
+
+**Weighted archetype scheduling** — Civilian Market: Quartermaster 40%,
+Trader 25%, Wholesaler 15%, Crafter 10%, Speculator 10%. Emergency:
+Field Reporter 50%, Military 30%, Scavenger 20%.
+
+**Signal Fragment integration** — broadcasts generate Tier 0.5 intelligence
+fragments in player ModData (see §7). Confidence = broadcast confidence × 0.6,
+clamped to [0.20, 0.60]. Rumour confidence reinforcement: same-direction
++0.05, contradiction −0.10.
+
+**PhobosNotifications** — intel discovery toasts on `PN_CHANNEL_INTEL`,
+throttled to one per 5 game-minutes. Flavour broadcasts produce no
+notifications (atmosphere, not intelligence).
+
+**Expanded phrase banks**:
+- Economy subjects: 4 → 12 templates
+- Infrastructure subjects: 6 new
+- Confidence-aware conditions: +12 keys
+- Causes: 6 → 18 (3 variants each)
+- Qualifiers: 7 → 13
+- ~217 total new translation keys
+
 ---
 
 ## 16. Cross-References

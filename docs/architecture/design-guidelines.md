@@ -4144,3 +4144,51 @@ See §32 for voice pack architecture.
 
 **Cross-references**: `world-broadcast-network-design.md`,
 `radio-band-taxonomy-design.md`
+
+### 55.7 Weather and Power Constants
+
+All weather broadcast thresholds are named constants in `POS_Constants_WBN.lua`:
+
+| Constant | Value | Meaning |
+|----------|-------|---------|
+| `WBN_WEATHER_RAIN_MODERATE` | 0.3 | `getRainIntensity()` ≥ triggers rain report |
+| `WBN_WEATHER_RAIN_HEAVY` | 0.7 | Heavy rain threshold |
+| `WBN_WEATHER_SNOW_THRESHOLD` | 0.2 | `getSnowIntensity()` ≥ triggers snow report |
+| `WBN_WEATHER_FOG_THRESHOLD` | 0.4 | `getFogIntensity()` ≥ triggers fog report |
+| `WBN_WEATHER_WIND_STRONG_KPH` | 40 | `getWindspeedKph()` ≥ triggers wind warning |
+| `WBN_WEATHER_WIND_STORM_KPH` | 70 | Storm-force wind threshold |
+| `WBN_WEATHER_COLD_EXTREME_C` | 0 | `getTemperature()` ≤ triggers cold warning |
+| `WBN_WEATHER_HEAT_EXTREME_C` | 35 | `getTemperature()` ≥ triggers heat warning |
+
+Power grid severities:
+
+| Constant | Value | Transition |
+|----------|-------|-----------|
+| `WBN_POWER_SEVERITY_FAILURE` | 0.95 | Grid ON → OFF |
+| `WBN_POWER_SEVERITY_RESTORED` | 0.80 | Grid OFF → ON |
+| `WBN_POWER_SEVERITY_REMINDER` | 0.30 | Steady OFF periodic |
+| `WBN_POWER_SEVERITY_STATUS` | 0.20 | Steady ON periodic |
+
+### 55.8 Signal Fragment Constants
+
+| Constant | Value | Meaning |
+|----------|-------|---------|
+| `WBN_FRAGMENT_CONF_SCALE` | 0.6 | Broadcast conf × this = fragment conf |
+| `WBN_FRAGMENT_CONF_MIN` | 0.20 | Floor for fragment confidence |
+| `WBN_FRAGMENT_CONF_MAX` | 0.60 | Ceiling (radio never exceeds) |
+| `WBN_FRAGMENT_MAX_STORED` | 30 | Rolling cap in player ModData |
+| `WBN_RUMOUR_REINFORCE_BOOST` | 0.05 | Same-direction confidence boost |
+| `WBN_RUMOUR_CONTRADICT_DROP` | 0.10 | Contradiction confidence penalty |
+
+### 55.9 Voice Pack Sections
+
+WBN uses 6 voice pack override sections (all addon-extensible):
+
+| Section | Used For |
+|---------|---------|
+| `wbn_opener` | Bulletin opener line |
+| `wbn_closer` | Bulletin closer line |
+| `wbn_weather` | Weather broadcast body |
+| `wbn_power` | Power grid broadcast body |
+| `wbn_flavour_market` | Market channel world-flavour |
+| `wbn_flavour_emergency` | Emergency channel world-flavour |
