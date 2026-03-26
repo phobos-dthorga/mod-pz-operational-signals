@@ -137,9 +137,21 @@ function POS_EventService.fireEvent(eventDef, zoneId, currentDay)
 
     -- Toast notification via PhobosNotifications
     local eventName = PhobosLib.safeGetText(eventRecord.displayNameKey) or eventDef.id
+    -- Resolve zone display name from zone registry (fallback: capitalise raw ID)
+    local zoneName = zoneId
+    if POS_MarketSimulation and POS_MarketSimulation.getZoneRegistry then
+        local okZ, zoneReg = PhobosLib.safecall(POS_MarketSimulation.getZoneRegistry)
+        if okZ and zoneReg and zoneReg.get then
+            local zEntry = zoneReg:get(zoneId)
+            if zEntry and zEntry.displayName then zoneName = zEntry.displayName end
+        end
+    end
+    if zoneName == zoneId and zoneId then
+        zoneName = zoneId:sub(1, 1):upper() .. zoneId:sub(2):gsub("_", " ")
+    end
     PhobosLib.safecall(PhobosLib.notifyOrSay, getPlayer(), {
         title   = "POSnet",
-        message = eventName .. " in " .. zoneId,
+        message = eventName .. " in " .. zoneName,
         colour  = "warning",
         channel = POS_Constants.PN_CHANNEL_MARKET,
     })

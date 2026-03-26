@@ -87,9 +87,9 @@ local function _collectHardEvents()
         for _, v in pairs(events) do
             if type(v) == "table" then
                 result[#result + 1] = {
-                    day          = v.day or 0,
+                    day          = v.firedDay or v.day or 0,
                     signalClass  = v.signalClass or POS_Constants.SIGNAL_CLASS_HARD,
-                    typeKey      = v.typeKey or v.type or "???",
+                    typeKey      = v.displayNameKey or v.typeKey or v.type or "???",
                     zone         = v.zoneId or v.zone or "???",
                     categories   = v.categories,
                     pressure     = v.pressure,
