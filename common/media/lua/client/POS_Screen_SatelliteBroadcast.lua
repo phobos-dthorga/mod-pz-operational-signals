@@ -72,8 +72,13 @@ local function _findArtifacts(player)
     local result = {}
     for i = 0, items:size() - 1 do
         local item = items:get(i)
-        if item and item.hasTag and item:hasTag("POS_Intelligence") then
-            result[#result + 1] = item
+        if item then
+            -- Use pcall for hasTag since some PZ item subclasses (Clothing,
+            -- Food, etc.) don't expose hasTag through the Kahlua bridge.
+            local ok, tagged = pcall(function() return item:hasTag("POS_Intelligence") end)
+            if ok and tagged then
+                result[#result + 1] = item
+            end
         end
     end
     return result
