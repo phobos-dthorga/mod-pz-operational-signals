@@ -167,6 +167,7 @@ assignment and deconfliction with other radio mods.
 | `POSnet_Operations`       | Civilian Data   | amateur     | 130.0 kHz   |
 | `POSnet_Tactical`         | Tactical Data   | military    | 155.0 kHz   |
 | `POSnet_WBN_Market`       | Public Broadcast| amateur     | 91.4 MHz    |
+| `POSnet_WBN_Operations`   | Operations Broadcast | amateur | 148.5 kHz   |
 | `POSnet_WBN_Emergency`    | Emergency       | amateur     | 103.8 MHz   |
 
 WBN broadcast channels use AZAS `device_type = "amateur"` because public
@@ -174,10 +175,17 @@ broadcasts are receivable on standard civilian radios. The logical distinction
 between data bands and broadcast bands is enforced at the application layer
 (see §4), not at the frequency assignment layer.
 
+The Operations Broadcast channel (`POSnet_WBN_Operations`) is positioned at
+148.5 kHz in the tactical band between the Operations Data Net (130.0 kHz)
+and Tactical Data Net (155.0 kHz). Unlike the Market and Emergency broadcast
+channels, the Operations Broadcast requires **SIGINT level 2+** to decode.
+Players below the threshold hear garbled placeholder text (no silent gating).
+
 When AZAS is unavailable, all stations fall back to their default frequencies.
 Runtime frequency lookups are cached after first AZAS resolution via
 `POS_AZASIntegration.getWBNMarketFrequency()` /
-`POS_AZASIntegration.getWBNEmergencyFrequency()`.
+`POS_AZASIntegration.getWBNEmergencyFrequency()` /
+`POS_AZASIntegration.getWBNOperationsFrequency()`.
 
 ### 3.2 Terminal Access Restriction
 
@@ -189,8 +197,8 @@ tune to a data channel instead.
 
 This is enforced in `POS_ConnectionManager` via
 `POS_AZASIntegration.isBroadcastBand(band)`. The helper returns true for
-`"wbn_market"` and `"wbn_emergency"` bands, false for `"operations"` and
-`"tactical"`.
+`"wbn_market"`, `"wbn_operations"`, and `"wbn_emergency"` bands, false for
+`"operations"` and `"tactical"`.
 
 This separation enforces §4: data bands carry payloads, broadcast bands
 carry interpretations. A terminal is a data processing device — it

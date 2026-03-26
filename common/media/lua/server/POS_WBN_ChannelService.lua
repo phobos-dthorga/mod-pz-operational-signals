@@ -46,6 +46,11 @@ local function resolveFrequency(stationId)
             return azas.getWBNEmergencyFrequency()
         end
         return POS_Constants.WBN_DEFAULT_FREQ_EMERGENCY
+    elseif stationId == POS_Constants.WBN_STATION_OPERATIONS then
+        if azas and azas.getWBNOperationsFrequency then
+            return azas.getWBNOperationsFrequency()
+        end
+        return POS_Constants.WBN_DEFAULT_FREQ_OPERATIONS
     end
     return 0
 end
@@ -67,6 +72,13 @@ local CHANNEL_DEFS = {
         freq     = POS_Constants.WBN_DEFAULT_FREQ_EMERGENCY,
         uuid     = POS_Constants.WBN_UUID_EMERGENCY,
         category = "Emergency",
+    },
+    {
+        id       = POS_Constants.WBN_STATION_OPERATIONS,
+        nameKey  = POS_Constants.WBN_CHANNEL_NAME_OPERATIONS,
+        freq     = POS_Constants.WBN_DEFAULT_FREQ_OPERATIONS,
+        uuid     = POS_Constants.WBN_UUID_OPERATIONS,
+        category = "Amateur",
     },
 }
 
@@ -215,11 +227,15 @@ function POS_WBN_ChannelService.isWBNFrequency(freq)
     if not freq then return false, nil end
     local mktFreq = resolveFrequency(POS_Constants.WBN_STATION_CIVILIAN_MARKET)
     local emgFreq = resolveFrequency(POS_Constants.WBN_STATION_EMERGENCY)
+    local opsFreq = resolveFrequency(POS_Constants.WBN_STATION_OPERATIONS)
     if freq == mktFreq then
         return true, POS_Constants.WBN_STATION_CIVILIAN_MARKET
     end
     if freq == emgFreq then
         return true, POS_Constants.WBN_STATION_EMERGENCY
+    end
+    if freq == opsFreq then
+        return true, POS_Constants.WBN_STATION_OPERATIONS
     end
     return false, nil
 end

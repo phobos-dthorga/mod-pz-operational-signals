@@ -183,6 +183,37 @@ POS_Constants.WBN_ARCHETYPE_WEIGHTS_MARKET = {
 POS_Constants.WBN_ARCHETYPE_WEIGHTS_EMERGENCY = {
     field_reporter = 50, military = 30, scavenger = 20,
 }
+POS_Constants.WBN_ARCHETYPE_WEIGHTS_OPERATIONS = {
+    field_reporter = 40, military = 35, scavenger = 25,
+}
+
+---------------------------------------------------------------
+-- Operations Net channel (Phase 2 — tactical broadcast, 148.5 kHz)
+---------------------------------------------------------------
+
+POS_Constants.AZAS_WBN_OPERATIONS_KEY        = "POSnet_WBN_Operations"
+POS_Constants.WBN_DEFAULT_FREQ_OPERATIONS    = 148500
+POS_Constants.WBN_FREQ_OPERATIONS            = POS_Constants.WBN_DEFAULT_FREQ_OPERATIONS
+POS_Constants.WBN_UUID_OPERATIONS            = "POS-WBN-OPN-01"
+POS_Constants.WBN_CHANNEL_NAME_OPERATIONS    = "UI_WBN_Channel_Operations"
+POS_Constants.WBN_STATION_OPERATIONS         = "operations"
+POS_Constants.WBN_TAG_KEY_OPERATIONS         = "UI_WBN_StationTag_OPN"
+POS_Constants.WBN_CADENCE_OPERATIONS_MIN     = 8
+POS_Constants.WBN_QUEUE_MAX_OPERATIONS       = 6
+
+-- Operations domain + event types
+POS_Constants.WBN_DOMAIN_OPERATIONS          = "operations"
+POS_Constants.WBN_EVENT_AGENT_DEPLOYED       = "agent_deployed"
+POS_Constants.WBN_EVENT_AGENT_STATE_CHANGE   = "agent_state_change"
+POS_Constants.WBN_EVENT_MISSION_COMPLETED    = "mission_completed"
+POS_Constants.WBN_EVENT_WHOLESALER_POSTURE   = "wholesaler_posture"
+POS_Constants.WBN_EVENT_ZONE_WARNING         = "zone_warning"
+
+-- SIGINT gate for Operations Net (minimum level to receive clearly)
+POS_Constants.WBN_OPS_SIGINT_MIN             = 2
+
+-- Operations severity thresholds
+POS_Constants.WBN_OPS_HIGH_SEVERITY_GATE     = 0.6   -- market events routed to ops if >= this
 
 -- Ambient broadcast generation (fallback when no pressure deltas occur)
 POS_Constants.WBN_AMBIENT_PRESSURE_FLOOR = 0.05   -- min absolute pressure to generate ambient candidate

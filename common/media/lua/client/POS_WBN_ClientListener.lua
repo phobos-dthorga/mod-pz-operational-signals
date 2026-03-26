@@ -51,6 +51,10 @@ local function isWBNFrequency(freq)
         and freq == azas.getWBNEmergencyFrequency() then
         return true, POS_Constants.WBN_STATION_EMERGENCY
     end
+    if azas and azas.getWBNOperationsFrequency
+        and freq == azas.getWBNOperationsFrequency() then
+        return true, POS_Constants.WBN_STATION_OPERATIONS
+    end
     return false, nil
 end
 

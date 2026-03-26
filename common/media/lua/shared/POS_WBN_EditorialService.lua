@@ -36,6 +36,7 @@ local function scoreCandidate(c)
     if c.domain == POS_Constants.WBN_DOMAIN_INFRASTRUCTURE then domainBoost = 0.7 end
     if c.domain == POS_Constants.WBN_DOMAIN_POWER then domainBoost = 0.8 end
     if c.domain == POS_Constants.WBN_DOMAIN_WEATHER then domainBoost = 0.4 end
+    if c.domain == POS_Constants.WBN_DOMAIN_OPERATIONS then domainBoost = 0.75 end
     if c.domain == POS_Constants.WBN_DOMAIN_COLOUR then domainBoost = 0.3 end
 
     return (c.severity  * POS_Constants.WBN_SCORE_W_SEVERITY)
@@ -69,6 +70,9 @@ end
 --- @param c table Candidate with domain field
 --- @return string Station class constant
 local function resolveStationClass(c)
+    if c.domain == POS_Constants.WBN_DOMAIN_OPERATIONS then
+        return POS_Constants.WBN_STATION_OPERATIONS
+    end
     if c.domain == POS_Constants.WBN_DOMAIN_INFRASTRUCTURE
         or c.domain == POS_Constants.WBN_DOMAIN_POWER then
         return POS_Constants.WBN_STATION_EMERGENCY
@@ -118,7 +122,9 @@ function POS_WBN_EditorialService.filter(candidates)
         end
         -- Gate: deduplication (economy and forecasts — weather/power/colour should
         -- repeat naturally like real radio; cadence timer already rate-limits emission)
-        if not dominated and (c.domain == POS_Constants.WBN_DOMAIN_ECONOMY or c.isForecast)
+        if not dominated and (c.domain == POS_Constants.WBN_DOMAIN_ECONOMY
+                or c.domain == POS_Constants.WBN_DOMAIN_OPERATIONS
+                or c.isForecast)
                 and isDuplicate(c) then
             dominated = true
         end

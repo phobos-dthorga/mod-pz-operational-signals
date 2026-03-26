@@ -1679,6 +1679,30 @@
     "UI_WBN_Forecast_Closer_02": "Adjust your operations as needed.",
     "UI_WBN_Forecast_Closer_03": "This is a projection, not a guarantee.",
 
+    "UI_WBN_Channel_Operations": "POSnet Operations Net",
+    "UI_WBN_StationTag_OPN": "[OPN]",
+
+    "UI_WBN_Ops_Garbled_01": "...garbled transmission... unable to decode... increase your signals training to receive this channel...",
+    "UI_WBN_Ops_Garbled_02": "...encrypted signal detected... training in signals intelligence required to interpret...",
+    "UI_WBN_Ops_Garbled_03": "...partial intercept... channel locked to trained operators... improve your SIGINT skill...",
+    "UI_WBN_Ops_Garbled_04": "...operational broadcast detected but unreadable... you lack the training to decode this...",
+
+    "UI_WBN_Ops_AgentState_transit": "Agent {agent} is en route. Signal nominal.",
+    "UI_WBN_Ops_AgentState_assembling": "Agent {agent} is preparing for deployment.",
+    "UI_WBN_Ops_AgentState_delayed": "Runner {agent} is behind schedule. Possible route disruption.",
+    "UI_WBN_Ops_AgentState_compromised": "Warning: Agent {agent} reports contact difficulties. Mission at risk.",
+    "UI_WBN_Ops_AgentState_completed": "Agent {agent} has returned from the field. Debriefing in progress.",
+    "UI_WBN_Ops_AgentState_negotiation": "Agent {agent} has reached the contact point. Negotiation underway.",
+    "UI_WBN_Ops_AgentState_settlement": "Agent {agent} is completing the exchange. Settlement in progress.",
+    "UI_WBN_Ops_AgentState_Generic": "Field unit {agent} status update received.",
+    "UI_WBN_Ops_UnknownAgent": "unidentified operative",
+
+    "UI_WBN_Ops_MissionSuccess": "Operation complete. Objective secured. All units accounted for.",
+    "UI_WBN_Ops_MissionFailure": "Operation terminated. Objective not achieved. Assess losses and regroup.",
+
+    "UI_WBN_Ops_WholesalerPosture": "Supply line posture change detected. Wholesaler activity shifting.",
+    "UI_WBN_Ops_GenericUpdate": "Operational status update received from the field.",
+
     "UI_POS_Fragments_Title": "Signal Fragments",
     "UI_POS_Fragments_FilterAll": "All Fragments",
     "UI_POS_Fragments_FilterMarket": "Market",

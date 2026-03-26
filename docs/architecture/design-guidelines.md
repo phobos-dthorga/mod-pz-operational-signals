@@ -4012,6 +4012,14 @@ a different class of truth.
 `broadcast-influence-design.md` §2,
 `passive-recon-design.md` §2.3
 
+> **§52.2 WBN Operations Net (148.5 kHz)**: The third WBN broadcast channel
+> — a tactical broadcast channel carrying agent state updates, mission
+> results, high-severity market events, and wholesaler posture changes.
+> Requires SIGINT level 2+ to receive. Players below the threshold hear
+> garbled placeholder text (§49 No Silent Gates). See
+> `world-broadcast-network-design.md` §2.4 and
+> `radio-band-taxonomy-design.md` §3.1.
+
 ---
 
 ## 53. Data Store Registry

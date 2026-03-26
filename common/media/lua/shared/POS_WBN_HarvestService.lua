@@ -501,5 +501,66 @@ function POS_WBN_HarvestService.init()
     if POS_Events and POS_Events.OnMarketEvent then
         POS_Events.OnMarketEvent:addListener(POS_WBN_HarvestService.onMarketEvent)
     end
+
+    -- Operations Net: agent state changes
+    if POS_Events and POS_Events.OnFreeAgentStateChanged then
+        POS_Events.OnFreeAgentStateChanged:addListener(function(data)
+            if not data or not data.newState then return end
+            local worldHours = getGameTime() and getGameTime():getWorldAgeHours() or 0
+            local severityMap = {
+                compromised = 0.80,
+                delayed     = 0.50,
+                completed   = 0.70,
+                transit     = 0.30,
+                assembling  = 0.20,
+            }
+            local severity = severityMap[data.newState] or 0.40
+            _candidateQueue[#_candidateQueue + 1] = {
+                id             = "cand_ops_agent_" .. tostring(data.agentId or ZombRand(99999)),
+                domain         = POS_Constants.WBN_DOMAIN_OPERATIONS,
+                eventType      = POS_Constants.WBN_EVENT_AGENT_STATE_CHANGE,
+                severity       = severity,
+                confidence     = 0.85,
+                freshness      = 1.0,
+                sourceType     = "agent_telemetry",
+                publicEligible = true,
+                expiresAt      = worldHours + POS_Constants.WBN_CANDIDATE_EXPIRY_HOURS,
+                agentName      = data.agentName or "unknown",
+                prevState      = data.prevState,
+                newState       = data.newState,
+                stationClass   = POS_Constants.WBN_STATION_OPERATIONS,
+            }
+            PhobosLib.debug("POS", _TAG,
+                "operations candidate: agent " .. tostring(data.agentName)
+                .. " " .. tostring(data.prevState) .. " -> " .. tostring(data.newState))
+        end)
+    end
+
+    -- Operations Net: mission completions
+    if POS_Events and POS_Events.OnMissionCompleted then
+        POS_Events.OnMissionCompleted:addListener(function(data)
+            if not data then return end
+            local worldHours = getGameTime() and getGameTime():getWorldAgeHours() or 0
+            local severity = data.success and 0.70 or 0.90
+            _candidateQueue[#_candidateQueue + 1] = {
+                id             = "cand_ops_mission_" .. tostring(data.missionId or ZombRand(99999)),
+                domain         = POS_Constants.WBN_DOMAIN_OPERATIONS,
+                eventType      = POS_Constants.WBN_EVENT_MISSION_COMPLETED,
+                severity       = severity,
+                confidence     = 0.90,
+                freshness      = 1.0,
+                sourceType     = "mission_report",
+                publicEligible = true,
+                expiresAt      = worldHours + POS_Constants.WBN_CANDIDATE_EXPIRY_HOURS,
+                missionId      = data.missionId,
+                missionSuccess = data.success,
+                stationClass   = POS_Constants.WBN_STATION_OPERATIONS,
+            }
+            PhobosLib.debug("POS", _TAG,
+                "operations candidate: mission " .. tostring(data.missionId)
+                .. " success=" .. tostring(data.success))
+        end)
+    end
+
     PhobosLib.debug("POS", _TAG, "init: subscribed to Starlit events")
 end

@@ -213,6 +213,25 @@ POSnet uses two distinct radio domains:
 Tuning a broadcast frequency while trying to connect a terminal will show
 a message explaining that data channels are required for terminal operations.
 
+### WBN Operations Net (148.5 kHz)
+
+The third WBN radio channel broadcasts tactical operational intelligence:
+
+- **Agent state updates**: deployment, transit, delays, compromises, completions
+- **Mission results**: success/failure summaries
+- **High-severity market events**: scarcity alerts and convoy losses (severity >= 0.6)
+- **Wholesaler posture changes**: supply line state transitions
+
+**SIGINT Gate**: Requires SIGINT skill level 2 to receive clearly. Players
+below this threshold hear garbled transmissions with a hint to improve
+their signals training -- they know the channel is active but cannot decode
+it yet.
+
+**Voice archetypes**: Field Reporter (40%), Military (35%), Scavenger (25%).
+
+**Frequency**: 148.5 kHz -- positioned in the tactical band between the
+Operations Data Net (130.0 kHz) and Tactical Data Net (155.0 kHz).
+
 ---
 
 ### Signal Ecology

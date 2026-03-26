@@ -71,6 +71,15 @@ local STATIONS = {
         cadenceMin = POS_Constants.WBN_CADENCE_EMERGENCY_MIN,
         maxQueue   = POS_Constants.WBN_QUEUE_MAX_EMERGENCY,
     },
+    [POS_Constants.WBN_STATION_OPERATIONS] = {
+        domains    = {
+            POS_Constants.WBN_DOMAIN_OPERATIONS,
+            POS_Constants.WBN_DOMAIN_ECONOMY,
+            POS_Constants.WBN_DOMAIN_COLOUR,
+        },
+        cadenceMin = POS_Constants.WBN_CADENCE_OPERATIONS_MIN,
+        maxQueue   = POS_Constants.WBN_QUEUE_MAX_OPERATIONS,
+    },
 }
 
 -- Per-station priority queues (keyed by station class id)
@@ -172,6 +181,8 @@ function POS_WBN_SchedulerService.tick()
                     archetypeId = selectWeightedArchetype(POS_Constants.WBN_ARCHETYPE_WEIGHTS_MARKET)
                 elseif stationId == POS_Constants.WBN_STATION_EMERGENCY then
                     archetypeId = selectWeightedArchetype(POS_Constants.WBN_ARCHETYPE_WEIGHTS_EMERGENCY)
+                elseif stationId == POS_Constants.WBN_STATION_OPERATIONS then
+                    archetypeId = selectWeightedArchetype(POS_Constants.WBN_ARCHETYPE_WEIGHTS_OPERATIONS)
                 end
                 local ok, lines = PhobosLib.safecall(
                     POS_WBN_CompositionService.compose, c, archetypeId)
@@ -208,6 +219,30 @@ function POS_WBN_SchedulerService.tick()
                         PhobosLib.debug("POS", _TAG,
                             "emit skipped on " .. stationId .. ": signal lost")
                         skipEmit = true
+                    end
+                end
+
+                -- SIGINT gate for Operations Net
+                if not skipEmit and stationId == POS_Constants.WBN_STATION_OPERATIONS then
+                    local sigintLevel = 0
+                    if POS_SIGINTSkill and POS_SIGINTSkill.getLevel then
+                        local player = getPlayer and getPlayer()
+                        if player then
+                            local ok, lvl = PhobosLib.safecall(POS_SIGINTSkill.getLevel, player)
+                            if ok and type(lvl) == "number" then sigintLevel = lvl end
+                        end
+                    end
+                    if sigintLevel < POS_Constants.WBN_OPS_SIGINT_MIN then
+                        -- Replace with garbled message
+                        local garbleKeys = {
+                            "UI_WBN_Ops_Garbled_01", "UI_WBN_Ops_Garbled_02",
+                            "UI_WBN_Ops_Garbled_03", "UI_WBN_Ops_Garbled_04",
+                        }
+                        local garbleKey = garbleKeys[ZombRand(#garbleKeys) + 1]
+                        local C = POS_Constants.WBN_COLOUR_TAG
+                        bulletin._composedLines = {
+                            { text = PhobosLib.safeGetText(garbleKey), r = C.r, g = C.g, b = C.b },
+                        }
                     end
                 end
 

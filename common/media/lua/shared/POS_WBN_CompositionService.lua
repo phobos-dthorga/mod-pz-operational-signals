@@ -292,6 +292,11 @@ function POS_WBN_CompositionService.compose(candidate, archetypeId)
         return POS_WBN_CompositionService.composeForecast(c, arch)
     end
 
+    -- Delegate operations domain to specialised composer
+    if domain == POS_Constants.WBN_DOMAIN_OPERATIONS then
+        return POS_WBN_CompositionService.composeOperations(c, arch)
+    end
+
     -- Delegate world-state domains to specialised composer
     if domain == POS_Constants.WBN_DOMAIN_WEATHER
         or domain == POS_Constants.WBN_DOMAIN_POWER
@@ -492,6 +497,65 @@ function POS_WBN_CompositionService.composeWorldState(candidate, archetypeId)
 
     PhobosLib.debug("POS", _TAG,
         "composeWorldState [" .. domain .. "]: " .. tagText .. " " .. opener .. " " .. body)
+
+    return lines
+end
+
+---------------------------------------------------------------
+-- Operations domain composer (agent state, missions)
+---------------------------------------------------------------
+
+--- Compose an operations bulletin from an agent/mission candidate.
+--- @param candidate table Operations domain candidate
+--- @param archetypeId string Voice pack archetype
+--- @return table Array of { text, r, g, b } radio lines
+function POS_WBN_CompositionService.composeOperations(candidate, archetypeId)
+    local c = candidate
+    local arch = archetypeId or POS_Constants.WBN_ARCHETYPE_QUARTERMASTER
+    local C = POS_Constants.WBN_COLOUR_ECONOMY  -- reuse economy colour for ops
+    local tagC = POS_Constants.WBN_COLOUR_TAG
+    local stationTag = PhobosLib.safeGetText(POS_Constants.WBN_TAG_KEY_OPERATIONS)
+
+    local openerPool = resolveArchetypePool(arch, POS_Constants.WBN_VP_SECTION_OPENER,
+        DEFAULT_OPENERS[arch] or DEFAULT_OPENERS[POS_Constants.WBN_ARCHETYPE_QUARTERMASTER])
+    local opener = pickPhrase(openerPool)
+
+    local closerPool = resolveArchetypePool(arch, POS_Constants.WBN_VP_SECTION_CLOSER,
+        DEFAULT_CLOSERS[arch] or DEFAULT_CLOSERS[POS_Constants.WBN_ARCHETYPE_QUARTERMASTER])
+    local closer = pickPhrase(closerPool)
+
+    local body = ""
+    local eventType = c.eventType
+
+    if eventType == POS_Constants.WBN_EVENT_AGENT_STATE_CHANGE then
+        local agentName = c.agentName or PhobosLib.safeGetText("UI_WBN_Ops_UnknownAgent")
+        local newState = c.newState or "unknown"
+        local stateKey = "UI_WBN_Ops_AgentState_" .. newState
+        local stateText = PhobosLib.safeGetText(stateKey)
+        if stateText == stateKey then
+            stateText = PhobosLib.safeGetText("UI_WBN_Ops_AgentState_Generic")
+        end
+        body = string.gsub(stateText, "{agent}", agentName)
+    elseif eventType == POS_Constants.WBN_EVENT_MISSION_COMPLETED then
+        if c.missionSuccess then
+            body = PhobosLib.safeGetText("UI_WBN_Ops_MissionSuccess")
+        else
+            body = PhobosLib.safeGetText("UI_WBN_Ops_MissionFailure")
+        end
+    elseif eventType == POS_Constants.WBN_EVENT_WHOLESALER_POSTURE then
+        body = PhobosLib.safeGetText("UI_WBN_Ops_WholesalerPosture")
+    else
+        body = PhobosLib.safeGetText("UI_WBN_Ops_GenericUpdate")
+    end
+
+    local lines = {
+        { text = "[OPN] " .. opener, r = tagC.r, g = tagC.g, b = tagC.b },
+        { text = body, r = C.r, g = C.g, b = C.b },
+        { text = closer, r = tagC.r, g = tagC.g, b = tagC.b },
+    }
+
+    PhobosLib.debug("POS", _TAG,
+        "composeOperations [" .. tostring(eventType) .. "]: " .. lines[1].text .. " " .. body .. " " .. closer)
 
     return lines
 end

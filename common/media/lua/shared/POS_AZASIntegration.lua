@@ -16,11 +16,12 @@
 
 ---------------------------------------------------------------
 -- POS_AZASIntegration.lua
--- Registers POSnet with AZAS Frequency Index as four stations:
+-- Registers POSnet with AZAS Frequency Index as five stations:
 --   - POSnet_Operations  (amateur band)  — civilian data net
 --   - POSnet_Tactical    (military band) — tactical data net
 --   - POSnet_WBN_Market  (amateur band)  — Market Broadcast Service
 --   - POSnet_WBN_Emergency (amateur band) — Emergency Broadcast Service
+--   - POSnet_WBN_Operations (amateur band) — Operations Broadcast Service
 --
 -- Must execute at module-load time (before OnGameStart) so
 -- that AZAS_FrequencyIndex.apply() picks up the stations.
@@ -69,9 +70,17 @@ AZAS_STATIONS[POS_Constants.AZAS_WBN_EMERGENCY_KEY] = {
     frequency_request = POS_Constants.WBN_DEFAULT_FREQ_EMERGENCY,
 }
 
-PhobosLib.debug("POS", _TAG, "[AZAS] Registered 4 POSnet stations:"
+AZAS_STATIONS[POS_Constants.AZAS_WBN_OPERATIONS_KEY] = {
+    id           = POS_Constants.AZAS_WBN_OPERATIONS_KEY,
+    name         = "POSnet Operations Broadcast Service",
+    device_type  = "amateur",
+    frequency_request = POS_Constants.WBN_DEFAULT_FREQ_OPERATIONS,
+}
+
+PhobosLib.debug("POS", _TAG, "[AZAS] Registered 5 POSnet stations:"
     .. " Operations (amateur, 130.0 kHz), Tactical (military, 155.0 kHz),"
-    .. " WBN_Market (amateur, 91.4 MHz), WBN_Emergency (amateur, 103.8 MHz)")
+    .. " WBN_Market (amateur, 91.4 MHz), WBN_Emergency (amateur, 103.8 MHz),"
+    .. " WBN_Operations (amateur, 148.5 kHz)")
 
 ---------------------------------------------------------------
 -- Frequency accessors (cached after first AZAS lookup)
@@ -81,6 +90,7 @@ local cachedOpsFreq = nil
 local cachedTacFreq = nil
 local cachedWbnMarketFreq = nil
 local cachedWbnEmergencyFreq = nil
+local cachedWbnOperationsFreq = nil
 
 --- Get the AZAS-assigned frequency for the Operations (amateur) station.
 ---@return number frequency in Hz
@@ -134,6 +144,22 @@ function POS_AZASIntegration.getWBNMarketFrequency()
     return POS_Constants.WBN_DEFAULT_FREQ_CIVILIAN_MARKET
 end
 
+--- Get the AZAS-assigned frequency for the WBN Operations Broadcast channel.
+---@return number frequency in Hz
+function POS_AZASIntegration.getWBNOperationsFrequency()
+    if cachedWbnOperationsFreq then return cachedWbnOperationsFreq end
+    if AZAS_FrequencyIndex and AZAS_FrequencyIndex.assignFrequency then
+        local freq = AZAS_FrequencyIndex.assignFrequency(
+            POS_Constants.AZAS_WBN_OPERATIONS_KEY, "amateur",
+            POS_Constants.WBN_DEFAULT_FREQ_OPERATIONS)
+        if freq then
+            cachedWbnOperationsFreq = freq
+            return freq
+        end
+    end
+    return POS_Constants.WBN_DEFAULT_FREQ_OPERATIONS
+end
+
 --- Get the AZAS-assigned frequency for the WBN Emergency Broadcast channel.
 ---@return number frequency in Hz
 function POS_AZASIntegration.getWBNEmergencyFrequency()
@@ -153,7 +179,7 @@ end
 --- Match a tuned frequency against all POSnet stations (data + broadcast).
 --- Returns the band name if it matches, or nil.
 ---@param tunedFreq number The radio's current tuned frequency
----@return string|nil "operations", "tactical", "wbn_market", "wbn_emergency", or nil
+---@return string|nil "operations", "tactical", "wbn_market", "wbn_emergency", "wbn_operations", or nil
 function POS_AZASIntegration.matchFrequency(tunedFreq)
     if not tunedFreq then return nil end
     if tunedFreq == POS_AZASIntegration.getOperationsFrequency() then
@@ -167,6 +193,9 @@ function POS_AZASIntegration.matchFrequency(tunedFreq)
     end
     if tunedFreq == POS_AZASIntegration.getWBNEmergencyFrequency() then
         return "wbn_emergency"
+    end
+    if tunedFreq == POS_AZASIntegration.getWBNOperationsFrequency() then
+        return "wbn_operations"
     end
     return nil
 end
@@ -182,7 +211,7 @@ end
 ---@param band string|nil Band name from matchFrequency()
 ---@return boolean True if this is a broadcast band (wbn_market or wbn_emergency)
 function POS_AZASIntegration.isBroadcastBand(band)
-    return band == "wbn_market" or band == "wbn_emergency"
+    return band == "wbn_market" or band == "wbn_emergency" or band == "wbn_operations"
 end
 
 --- Clear cached frequencies (for testing / world reload).
@@ -191,4 +220,5 @@ function POS_AZASIntegration.clearCache()
     cachedTacFreq = nil
     cachedWbnMarketFreq = nil
     cachedWbnEmergencyFreq = nil
+    cachedWbnOperationsFreq = nil
 end
