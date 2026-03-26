@@ -470,32 +470,52 @@ Signal recalculation is **not per-frame**. Computed:
 
 ---
 
-## 8. Implementation Status
+## 8. Implementation Notes (Phase ABC)
 
-### Phase ABC Complete (v0.21.0+)
+Signal Ecology Phases A, B, and C are implemented as of v0.21.0.
 
-Signal Ecology v2 is fully implemented as a **core tenet** of POSnet --
-always active, not toggleable. The v1 flat signal calculation has been
-removed.
+### 8.1 Core Service
 
-**Implemented pillars:**
-- Propagation (weather + season via ClimateManager)
-- Infrastructure (grid power state via PhobosLib.hasPower callback)
-- Clarity (terminal tier lookup)
-- Saturation (active agent count + market state)
+`POS_SignalEcologyService.lua` implements the five-pillar composite model
+with hourly recalculation and event-driven cache invalidation. The
+composite formula is:
 
-**Deferred:**
-- Phase D: full pillar breakdown UI in SignalPanel
-- Phase E: Intent pillar (Tier V bandwidth allocation)
+```
+raw = propagation × infrastructure × max(0, clarity - noise) × (1 - saturation) × intent
+composite = clamp(tierFloor, tierCeiling, raw)
+```
 
-**Data-pack architecture:** Environmental modifier profiles use the
-Schema -> Registry -> Definition pattern. Four built-in definition files
-(weather, infrastructure, market, season) with 21 total modifiers.
-Addon mods can register custom modifiers without touching core files.
+### 8.2 Data-Pack Architecture
 
-**Key files:**
-- `POS_SignalEcologyService.lua` -- core pillar calculator + cache
-- `POS_Constants_Signal.lua` -- tier baselines, state thresholds
-- `POS_SignalModifierSchema.lua` -- modifier validation schema
-- `POS_SignalModifierRegistry.lua` -- registry + definition loader
-- `Definitions/SignalModifiers/` -- 4 built-in modifier data files
+21 environmental modifiers are defined via the Schema → Registry → Definition
+pattern (`POS_SignalModifierSchema`, `POS_SignalModifierRegistry`). Four
+definition files cover weather (8), infrastructure (4), market (5), and
+season (4). Addon mods register custom modifiers via `getRegistry():register()`.
+
+### 8.3 Pillar Sources
+
+| Pillar | Source | Status |
+|--------|--------|--------|
+| Propagation | ClimateManager (rain, wind, fog, snow) + season | Active |
+| Infrastructure | Grid power via client-injected callback | Active |
+| Clarity | SIGINT skill level → tier lookup | Active |
+| Saturation | Free agent count + market state trigger | Active |
+| Intent | Stub (1.0) | Deferred to Phase E (Tier V) |
+
+### 8.4 SIGINT Tier Integration
+
+Signal tier (1-5) is derived from SIGINT skill level (0-10) via a lookup
+table (`SIGNAL_SIGINT_TIER_MAP`). Higher SIGINT levels provide wider
+floor/ceiling bands, improving both minimum and maximum achievable signal.
+
+### 8.5 WBN Text Degradation
+
+`POS_WBN_CompositionService.degradeBulletin()` applies word-level dropout
+based on qualitative signal state. The scheduler skips emission entirely
+when signal state is "lost".
+
+### 8.6 Core Tenet
+
+Signal Ecology is always active — there is no sandbox toggle to disable it.
+If the ecology service fails to initialise, it falls back to a safe default
+composite of 0.50 ("faded") rather than disabling the system.

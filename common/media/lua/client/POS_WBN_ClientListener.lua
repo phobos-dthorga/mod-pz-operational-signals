@@ -393,6 +393,26 @@ if Events and Events.OnDeviceText then
     PhobosLib.debug("POS", _TAG, "registered OnDeviceText listener")
 end
 
+-- Inject Signal Ecology power callback on game start (client-side only).
+-- The callback checks grid power at the player's current position.
+if Events and Events.OnGameStart then
+    Events.OnGameStart.Add(function()
+        if POS_SignalEcologyService and POS_SignalEcologyService.setPowerCallback then
+            POS_SignalEcologyService.setPowerCallback(function()
+                local player = getPlayer()
+                if not player then return false end
+                local sq = player:getCurrentSquare()
+                if not sq then return false end
+                if PhobosLib and PhobosLib.hasPower then
+                    return PhobosLib.hasPower(sq)
+                end
+                return false
+            end)
+            PhobosLib.debug("POS", _TAG, "injected Signal Ecology power callback")
+        end
+    end)
+end
+
 --- Get broadcast history for display on terminal screens.
 --- Returns an array of history entries sorted newest-first.
 --- @return table  Array of { text, stationClass, day, gameHours }

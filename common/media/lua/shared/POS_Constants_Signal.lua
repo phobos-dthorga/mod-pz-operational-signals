@@ -109,3 +109,33 @@ POS_Constants.SIGNAL_PILLAR_EXCELLENT_MIN = 0.80
 POS_Constants.SIGNAL_PILLAR_GOOD_MIN      = 0.60
 POS_Constants.SIGNAL_PILLAR_FAIR_MIN      = 0.40
 POS_Constants.SIGNAL_PILLAR_UNSTABLE_MIN  = 0.20
+
+---------------------------------------------------------------
+-- Market trigger thresholds (average zone pressure → market state)
+---------------------------------------------------------------
+
+POS_Constants.SIGNAL_MARKET_DEMAND_THRESHOLD    = 0.15  -- high_demand
+POS_Constants.SIGNAL_MARKET_SCARCITY_THRESHOLD  = 0.30  -- scarcity
+POS_Constants.SIGNAL_MARKET_VOLATILE_THRESHOLD  = 0.50  -- volatile
+POS_Constants.SIGNAL_MARKET_PANIC_THRESHOLD     = 0.70  -- panic
+
+---------------------------------------------------------------
+-- SIGINT skill level → signal tier mapping (level 0-10 → tier 1-5)
+---------------------------------------------------------------
+
+POS_Constants.SIGNAL_DEFAULT_TIER = 2  -- used when SIGINT is unavailable
+
+-- Index = SIGINT level (0-10), value = signal tier (1-5)
+POS_Constants.SIGNAL_SIGINT_TIER_MAP = {
+    [0]  = 1,
+    [1]  = 1,
+    [2]  = 2,
+    [3]  = 2,
+    [4]  = 3,
+    [5]  = 3,
+    [6]  = 4,
+    [7]  = 4,
+    [8]  = 5,
+    [9]  = 5,
+    [10] = 5,
+}

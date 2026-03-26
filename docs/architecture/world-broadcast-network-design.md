@@ -542,6 +542,14 @@ applies word-level dropout based on the state:
 Dropout rates are defined in `POS_Constants_Signal.lua` as
 `SIGNAL_WBN_DROPOUT_*` constants.
 
+### Implementation Reference
+
+Text degradation is implemented in `POS_WBN_CompositionService.degradeBulletin()`.
+Word dropout rates per qualitative state are defined in
+`POS_Constants_Signal.lua` (`SIGNAL_WBN_DROPOUT_*` constants). The WBN
+scheduler (`POS_WBN_SchedulerService.tick()`) applies degradation before
+emission and suppresses broadcasts entirely when signal state is "lost".
+
 ---
 
 ## 7. Signal Fragments (Tier 0.5 Intelligence)

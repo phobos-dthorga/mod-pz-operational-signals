@@ -37,6 +37,7 @@ require "PhobosLib"
 require "POS_Constants"
 require "POS_Constants_Signal"
 require "POS_Events"
+require "POS_SignalModifierRegistry"
 
 POS_SignalEcologyService = {}
 
@@ -175,8 +176,46 @@ local function _calculateClarity(tier)
     return POS_Constants.SIGNAL_CLARITY_BY_TIER[tier] or POS_Constants.SIGNAL_CLARITY_BY_TIER[1]
 end
 
+--- Resolve the active market trigger from zone volatility state.
+--- Maps aggregate zone pressure to one of 5 market state triggers.
+---@return string market trigger name
+local function _resolveMarketTrigger()
+    if not POS_MarketSimulation or not POS_MarketSimulation.getZoneRegistry then
+        return "market_stable"
+    end
+    -- Compute average zone pressure across all zones
+    local ok, zoneReg = PhobosLib.safecall(POS_MarketSimulation.getZoneRegistry)
+    if not ok or not zoneReg then return "market_stable" end
+    local totalPressure = 0
+    local zoneCount = 0
+    local zones = POS_Constants.MARKET_ZONES or {}
+    for _, zoneId in ipairs(zones) do
+        local zOk, zState = PhobosLib.safecall(zoneReg.get, zoneReg, zoneId)
+        if zOk and zState and type(zState.pressure) == "table" then
+            for _, p in pairs(zState.pressure) do
+                if type(p) == "number" then
+                    totalPressure = totalPressure + math.abs(p)
+                    zoneCount = zoneCount + 1
+                end
+            end
+        end
+    end
+    local avgPressure = zoneCount > 0 and (totalPressure / zoneCount) or 0
+    -- Map average pressure to market trigger (thresholds from design doc)
+    if avgPressure >= POS_Constants.SIGNAL_MARKET_PANIC_THRESHOLD then
+        return "market_panic"
+    elseif avgPressure >= POS_Constants.SIGNAL_MARKET_VOLATILE_THRESHOLD then
+        return "market_volatile"
+    elseif avgPressure >= POS_Constants.SIGNAL_MARKET_SCARCITY_THRESHOLD then
+        return "market_scarcity"
+    elseif avgPressure >= POS_Constants.SIGNAL_MARKET_DEMAND_THRESHOLD then
+        return "market_high_demand"
+    end
+    return "market_stable"
+end
+
 --- Calculate the saturation pillar value.
---- Combines active agent count with market state modifier.
+--- Combines active agent count with season + market state modifiers.
 ---@return number saturation value 0.0 to 1.0
 local function _calculateSaturation()
     -- Agent contribution
@@ -192,36 +231,43 @@ local function _calculateSaturation()
         POS_Constants.SIGNAL_AGENT_SAT_CAP
     )
 
-    -- Market state modifier
-    local marketSat = 0
+    -- Seasonal modifier
+    local seasonSat = 0
     local seasonTrigger = _resolveSeason()
     local seasonMods = POS_SignalModifierRegistry.getByTrigger(seasonTrigger)
     for _, mod in ipairs(seasonMods) do
+        seasonSat = seasonSat + (mod.saturation or 0)
+    end
+
+    -- Market state modifier (only the ACTIVE market trigger, not all 5)
+    local marketSat = 0
+    local marketTrigger = _resolveMarketTrigger()
+    local marketMods = POS_SignalModifierRegistry.getByTrigger(marketTrigger)
+    for _, mod in ipairs(marketMods) do
         marketSat = marketSat + (mod.saturation or 0)
     end
 
-    -- Also check all saturation-pillar modifiers that might be active
-    -- (market modifiers are triggered externally, so we check all enabled ones
-    -- with pillar == "saturation" and trust the trigger system)
-
-    return PhobosLib.clamp(POS_Constants.SIGNAL_SATURATION_BASE + agentSat + marketSat, 0, 1)
+    return PhobosLib.clamp(POS_Constants.SIGNAL_SATURATION_BASE + agentSat + seasonSat + marketSat, 0, 1)
 end
 
---- Calculate total noise from all active weather and market modifiers.
+--- Calculate total noise from active weather and market modifiers.
+--- Only the ACTIVE trigger for each source contributes noise — not all
+--- modifiers in a pillar. This prevents double-counting.
 ---@return number total noise (unbounded, subtracted from clarity)
 local function _calculateNoise()
     local totalNoise = 0
 
-    -- Weather noise
+    -- Weather noise (from the single active weather trigger)
     local weatherTrigger = _resolveWeatherTrigger()
     local weatherMods = POS_SignalModifierRegistry.getByTrigger(weatherTrigger)
     for _, mod in ipairs(weatherMods) do
         totalNoise = totalNoise + (mod.noise or 0)
     end
 
-    -- Market noise (check all saturation-pillar modifiers)
-    local allMods = POS_SignalModifierRegistry.getByPillar("saturation")
-    for _, mod in ipairs(allMods) do
+    -- Market noise (from the single active market trigger only)
+    local marketTrigger = _resolveMarketTrigger()
+    local marketMods = POS_SignalModifierRegistry.getByTrigger(marketTrigger)
+    for _, mod in ipairs(marketMods) do
         totalNoise = totalNoise + (mod.noise or 0)
     end
 
@@ -254,7 +300,18 @@ end
 local function _recalculate()
     local propagation = _calculatePropagation()
     local infrastructure = _calculateInfrastructure()
-    local tier = 2  -- TODO: get from POS_PlayerState when reputation tiers exist
+    -- Derive tier from SIGINT skill level (0-10 → tier 1-5)
+    local tier = POS_Constants.SIGNAL_DEFAULT_TIER
+    if POS_SIGINTSkill and POS_SIGINTSkill.getLevel then
+        local player = getPlayer and getPlayer()
+        if player then
+            local ok, level = PhobosLib.safecall(POS_SIGINTSkill.getLevel, player)
+            if ok and type(level) == "number" then
+                tier = POS_Constants.SIGNAL_SIGINT_TIER_MAP[level]
+                    or POS_Constants.SIGNAL_DEFAULT_TIER
+            end
+        end
+    end
     local clarity = _calculateClarity(tier)
     local saturation = _calculateSaturation()
     local noise = _calculateNoise()

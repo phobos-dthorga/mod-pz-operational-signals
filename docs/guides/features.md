@@ -217,19 +217,19 @@ a message explaining that data channels are required for terminal operations.
 
 ### Signal Ecology
 
-POSnet uses a multi-pillar environmental signal model. Your signal quality
-is not a fixed number -- it fluctuates based on:
+POSnet's signal quality is determined by a five-pillar environmental model:
 
-- **Weather**: Rain, storms, fog, and wind degrade signal propagation
-- **Infrastructure**: Grid power provides the strongest signal; generators
-  and no power progressively weaken it
-- **Terminal capability**: Higher-tier equipment provides better signal clarity
-- **Network saturation**: More active agents and volatile markets create
-  crowded airwaves
+- **Propagation** — weather and season affect signal transmission. Rain,
+  storms, and fog degrade propagation; clear skies improve it.
+- **Infrastructure** — grid power supports stronger signals. Blackouts and
+  generator-only power reduce infrastructure quality.
+- **Clarity** — higher SIGINT skill levels improve signal clarity through
+  better equipment operation and analysis capability.
+- **Saturation** — active free agents and volatile market conditions increase
+  network saturation, crowding the signal space.
+- **Intent** — (future) Tier V bandwidth allocation and relay prioritisation.
 
-Signal quality is expressed as one of six qualitative states:
-LOCKED > CLEAR > FADED > FRAGMENTED > GHOSTED > LOST
-
-Radio broadcasts (WBN) degrade at lower signal quality -- words drop out,
-numbers become vague, and names may be garbled. Better equipment and
-weather conditions mean cleaner intelligence.
+Signal quality is expressed as six qualitative states: **Locked** (excellent),
+**Clear** (good), **Faded** (moderate), **Fragmented** (poor), **Ghosted**
+(very poor), and **Lost** (no signal). These states affect WBN broadcast
+clarity, mission rewards, and connection reliability.
