@@ -4198,3 +4198,23 @@ WBN uses 6 voice pack override sections (all addon-extensible):
 | `wbn_power` | Power grid broadcast body |
 | `wbn_flavour_market` | Market channel world-flavour |
 | `wbn_flavour_emergency` | Emergency channel world-flavour |
+
+---
+
+## 56. Signal Ecology Core Tenet
+
+Signal Ecology is **always active**. Signal quality is never flat or
+optional. Weather, infrastructure, clarity, and saturation all contribute
+to a composite signal that affects every POSnet system.
+
+**Design rules:**
+- No sandbox toggle for signal ecology -- it is a core tenet
+- All signal consumers call `POS_RadioPower.calculateSignalStrength()`
+  which delegates to `POS_SignalEcologyService.getComposite()`
+- Environmental modifiers use the Schema -> Registry -> Definition
+  data-pack pattern for addon extensibility
+- The v1 flat `(power/reference)^2` calculation is permanently removed
+- Safe fallback: if ecology fails to initialise, composite = 0.5 ("faded")
+
+**Cross-references:** `signal-ecology-design.md`,
+`POS_SignalEcologyService.lua`, `POS_Constants_Signal.lua`

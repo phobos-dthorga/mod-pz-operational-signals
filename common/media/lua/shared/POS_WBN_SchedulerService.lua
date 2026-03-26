@@ -194,7 +194,25 @@ function POS_WBN_SchedulerService.tick()
             local q = _queues[stationId]
             if q and #q > 0 then
                 local bulletin = table.remove(q, 1)  -- pop highest priority
-                if bulletin._composedLines and POS_WBN_ChannelService
+
+                -- Apply signal degradation to bulletin text
+                local skipEmit = false
+                if POS_SignalEcologyService and POS_SignalEcologyService.getQualitativeState then
+                    local state = POS_SignalEcologyService.getQualitativeState()
+                    if POS_WBN_CompositionService.degradeBulletin then
+                        bulletin._composedLines = POS_WBN_CompositionService.degradeBulletin(
+                            bulletin._composedLines, state)
+                    end
+                    -- Skip emit entirely if signal is "lost"
+                    if state == "lost" then
+                        PhobosLib.debug("POS", _TAG,
+                            "emit skipped on " .. stationId .. ": signal lost")
+                        skipEmit = true
+                    end
+                end
+
+                if not skipEmit and bulletin._composedLines and #bulletin._composedLines > 0
+                        and POS_WBN_ChannelService
                         and POS_WBN_ChannelService.emit then
                     local emitted = POS_WBN_ChannelService.emit(stationId, bulletin._composedLines)
                     if emitted then

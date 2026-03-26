@@ -523,6 +523,25 @@ candidate data. It progressively removes clauses, truncates phrases, and
 replaces precise terms with ellipses. The player never knows exactly what
 was lost -- only that the signal was poor.
 
+### 6.1 Implementation
+
+WBN text degradation is implemented in
+`POS_WBN_CompositionService.degradeBulletin()`. The scheduler queries
+`POS_SignalEcologyService.getQualitativeState()` before each emit and
+applies word-level dropout based on the state:
+
+| State | Dropout Rate | Effect |
+|-------|-------------|--------|
+| Locked | 0% | Full fidelity |
+| Clear | 0% | Full fidelity |
+| Faded | 15% | Light word dropout |
+| Fragmented | 40% | Heavy dropout, numbers vague |
+| Ghosted | 70% | Most words replaced |
+| Lost | -- | No bulletin delivered |
+
+Dropout rates are defined in `POS_Constants_Signal.lua` as
+`SIGNAL_WBN_DROPOUT_*` constants.
+
 ---
 
 ## 7. Signal Fragments (Tier 0.5 Intelligence)

@@ -1677,5 +1677,32 @@
 
     "UI_WBN_Forecast_Closer_01": "Plan accordingly.",
     "UI_WBN_Forecast_Closer_02": "Adjust your operations as needed.",
-    "UI_WBN_Forecast_Closer_03": "This is a projection, not a guarantee."
+    "UI_WBN_Forecast_Closer_03": "This is a projection, not a guarantee.",
+
+    "UI_POS_Signal_State_Locked": "LOCKED",
+    "UI_POS_Signal_State_Clear": "CLEAR",
+    "UI_POS_Signal_State_Faded": "FADED",
+    "UI_POS_Signal_State_Fragmented": "FRAGMENTED",
+    "UI_POS_Signal_State_Ghosted": "GHOSTED",
+    "UI_POS_Signal_State_Lost": "LOST",
+    "UI_POS_Signal_Pillar_Propagation": "Propagation",
+    "UI_POS_Signal_Pillar_Infrastructure": "Infrastructure",
+    "UI_POS_Signal_Pillar_Clarity": "Clarity",
+    "UI_POS_Signal_Pillar_Saturation": "Saturation",
+    "UI_POS_Signal_Quality_Excellent": "EXCELLENT",
+    "UI_POS_Signal_Quality_Good": "GOOD",
+    "UI_POS_Signal_Quality_Fair": "FAIR",
+    "UI_POS_Signal_Quality_Unstable": "UNSTABLE",
+    "UI_POS_Signal_Quality_Critical": "CRITICAL",
+    "UI_POS_Signal_Hint_ClearSkies": "clear skies",
+    "UI_POS_Signal_Hint_Rain": "rain",
+    "UI_POS_Signal_Hint_Storm": "storm",
+    "UI_POS_Signal_Hint_Fog": "fog",
+    "UI_POS_Signal_Hint_Snow": "snow",
+    "UI_POS_Signal_Hint_Wind": "high winds",
+    "UI_POS_Signal_Hint_GridOn": "grid power",
+    "UI_POS_Signal_Hint_Generator": "generator",
+    "UI_POS_Signal_Hint_NoPower": "no power",
+    "UI_POS_Signal_Hint_ColdExtreme": "extreme cold",
+    "UI_POS_Signal_Hint_HeatExtreme": "extreme heat"
 }

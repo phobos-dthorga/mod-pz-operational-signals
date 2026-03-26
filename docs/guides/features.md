@@ -212,3 +212,24 @@ POSnet uses two distinct radio domains:
 
 Tuning a broadcast frequency while trying to connect a terminal will show
 a message explaining that data channels are required for terminal operations.
+
+---
+
+### Signal Ecology
+
+POSnet uses a multi-pillar environmental signal model. Your signal quality
+is not a fixed number -- it fluctuates based on:
+
+- **Weather**: Rain, storms, fog, and wind degrade signal propagation
+- **Infrastructure**: Grid power provides the strongest signal; generators
+  and no power progressively weaken it
+- **Terminal capability**: Higher-tier equipment provides better signal clarity
+- **Network saturation**: More active agents and volatile markets create
+  crowded airwaves
+
+Signal quality is expressed as one of six qualitative states:
+LOCKED > CLEAR > FADED > FRAGMENTED > GHOSTED > LOST
+
+Radio broadcasts (WBN) degrade at lower signal quality -- words drop out,
+numbers become vague, and names may be garbled. Better equipment and
+weather conditions mean cleaner intelligence.

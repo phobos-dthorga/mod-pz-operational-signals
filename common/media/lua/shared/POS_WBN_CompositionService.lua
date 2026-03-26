@@ -598,3 +598,110 @@ function POS_WBN_CompositionService.composeForecast(candidate, archetypeId)
 
     return lines
 end
+
+---------------------------------------------------------------
+-- WBN text degradation (Signal Ecology v2)
+---------------------------------------------------------------
+
+--- Dropout rate lookup keyed by qualitative signal state.
+local WBN_DROPOUT_RATES = {
+    locked      = POS_Constants.SIGNAL_WBN_DROPOUT_LOCKED,
+    clear       = POS_Constants.SIGNAL_WBN_DROPOUT_CLEAR,
+    faded       = POS_Constants.SIGNAL_WBN_DROPOUT_FADED,
+    fragmented  = POS_Constants.SIGNAL_WBN_DROPOUT_FRAGMENTED,
+    ghosted     = POS_Constants.SIGNAL_WBN_DROPOUT_GHOSTED,
+}
+
+--- Pattern to detect number-like tokens (digits, optionally with decimal point or percent).
+local NUMBER_PATTERN = "^%d+%.?%d*%%?$"
+
+--- Degrade a single word based on the qualitative state and dropout rate.
+--- For "fragmented" and worse, numbers become "???" and zone-like capitalised
+--- words become "[garbled]". Otherwise dropped words become "...".
+--- @param word string  The word to potentially degrade
+--- @param dropoutRate number  Probability [0,1] of degrading this word
+--- @param state string  Qualitative signal state
+--- @return string  Original word or degraded replacement
+local function degradeWord(word, dropoutRate, state)
+    -- Roll for dropout
+    local roll = PhobosLib.randFloat(0.0, 1.0)
+    if roll >= dropoutRate then
+        return word  -- survives
+    end
+
+    -- State-specific replacements for fragmented / ghosted
+    if state == "fragmented" or state == "ghosted" then
+        -- Numbers become vague
+        if word:match(NUMBER_PATTERN) then
+            return "???"
+        end
+        -- Capitalised multi-char words (likely zone or proper names) become garbled
+        if #word > 2 and word:sub(1,1):match("%u") then
+            return "[garbled]"
+        end
+    end
+
+    return "..."
+end
+
+--- Degrade bulletin lines based on signal quality state.
+--- Applies word-level dropout to each line's text, preserving colour data.
+--- "lost" state returns an empty table (no bulletin delivered).
+--- "locked" and "clear" states pass through unchanged.
+--- @param lines table  Array of { text, r, g, b } composed bulletin lines
+--- @param qualitativeState string  Signal state (locked/clear/faded/fragmented/ghosted/lost)
+--- @return table  Degraded lines array (may be empty for "lost")
+function POS_WBN_CompositionService.degradeBulletin(lines, qualitativeState)
+    if not lines or #lines == 0 then return lines or {} end
+
+    local state = qualitativeState or "clear"
+
+    -- "lost" — no bulletin delivered
+    if state == "lost" then
+        PhobosLib.debug("POS", _TAG, "degradeBulletin: signal lost, bulletin suppressed")
+        return {}
+    end
+
+    local dropoutRate = WBN_DROPOUT_RATES[state] or 0.00
+
+    -- No degradation needed for locked / clear
+    if dropoutRate <= 0.0 then return lines end
+
+    local degraded = {}
+    for i, line in ipairs(lines) do
+        local text = line.text or ""
+        local words = {}
+        for w in text:gmatch("%S+") do
+            words[#words + 1] = w
+        end
+
+        -- Apply per-word dropout
+        local out = {}
+        local prevWasEllipsis = false
+        for _, w in ipairs(words) do
+            local result = degradeWord(w, dropoutRate, state)
+            -- Collapse consecutive "..." into a single one
+            if result == "..." then
+                if not prevWasEllipsis then
+                    out[#out + 1] = result
+                end
+                prevWasEllipsis = true
+            else
+                out[#out + 1] = result
+                prevWasEllipsis = false
+            end
+        end
+
+        degraded[#degraded + 1] = {
+            text = table.concat(out, " "),
+            r = line.r,
+            g = line.g,
+            b = line.b,
+        }
+    end
+
+    PhobosLib.debug("POS", _TAG,
+        "degradeBulletin: state=" .. state .. " dropout=" .. tostring(dropoutRate))
+
+    return degraded
+end

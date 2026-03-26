@@ -18,11 +18,12 @@
 -- POS_RadioPower.lua
 -- Signal strength calculation for POSnet radio connections.
 --
--- Uses inverse square law: signal = clamp(0, 1, (power / ref)^2)
+-- Delegates signal composite to POS_SignalEcologyService.
 -- Delegates hardware detection to PhobosLib_Radio.
 ---------------------------------------------------------------
 
 require "PhobosLib"
+require "POS_Constants"
 
 POS_RadioPower = {}
 
@@ -41,18 +42,16 @@ function POS_RadioPower.getPower(radioObj)
     return 0
 end
 
---- Calculate signal strength using inverse square law.
---- Formula: signal = clamp(0, 1, (radioPower / referencePower)^2)
----@param radioPower number TransmitRange of the radio
+--- Calculate signal strength via the Signal Ecology service.
+--- Delegates to POS_SignalEcologyService for the five-pillar composite value.
+--- Falls back to SIGNAL_FALLBACK_COMPOSITE if the ecology service is unavailable.
+---@param _radioPower number (unused — retained for API compatibility)
 ---@return number signalStrength 0.0 to 1.0
-function POS_RadioPower.calculateSignalStrength(radioPower)
-    if not POS_Sandbox.isSignalStrengthEnabled() then
-        return 1.0
+function POS_RadioPower.calculateSignalStrength(_radioPower)
+    if POS_SignalEcologyService and POS_SignalEcologyService.getComposite then
+        return POS_SignalEcologyService.getComposite()
     end
-    local refPower = POS_Sandbox.getSignalReferencePower()
-    if refPower <= 0 then return 1.0 end
-    local ratio = (radioPower or 0) / refPower
-    return math.min(1.0, math.max(0, ratio * ratio))
+    return POS_Constants.SIGNAL_FALLBACK_COMPOSITE
 end
 
 --- Check if a signal strength meets the minimum connection threshold.
@@ -78,17 +77,16 @@ function POS_RadioPower.getRewardMultiplier(signalStrength)
     return 0.5 + 0.5 * clamped
 end
 
---- Signal quality thresholds.
-local SIGNAL_EXCELLENT = 0.8
-local SIGNAL_GOOD = 0.5
-local SIGNAL_WEAK = 0.25
-
---- Get a translation key describing signal quality.
----@param signalStrength number 0.0 to 1.0
+--- Get a translation key describing signal quality via the 6-state ecology model.
+--- Delegates to POS_SignalEcologyService for qualitative state resolution.
+--- Falls back to "UI_POS_Signal_State_Faded" if the ecology service is unavailable.
+---@param signalStrength number (unused — retained for API compatibility)
 ---@return string translationKey
 function POS_RadioPower.getQualityKey(signalStrength)
-    if signalStrength >= SIGNAL_EXCELLENT then return "UI_POS_Signal_Excellent" end
-    if signalStrength >= SIGNAL_GOOD then return "UI_POS_Signal_Good" end
-    if signalStrength >= SIGNAL_WEAK then return "UI_POS_Signal_Weak" end
-    return "UI_POS_Signal_Critical"
+    if POS_SignalEcologyService and POS_SignalEcologyService.getQualitativeState then
+        local state = POS_SignalEcologyService.getQualitativeState()
+        return "UI_POS_Signal_State_" .. state:sub(1, 1):upper() .. state:sub(2)
+    end
+    -- Fallback
+    return "UI_POS_Signal_State_Faded"
 end

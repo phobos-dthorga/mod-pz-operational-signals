@@ -467,3 +467,35 @@ Signal recalculation is **not per-frame**. Computed:
 5. The emergent loop (weather -> signal -> agents -> markets -> signal)
    creates a living, breathing communications layer
 6. Tier V manages chaos; it does not eliminate it
+
+---
+
+## 8. Implementation Status
+
+### Phase ABC Complete (v0.21.0+)
+
+Signal Ecology v2 is fully implemented as a **core tenet** of POSnet --
+always active, not toggleable. The v1 flat signal calculation has been
+removed.
+
+**Implemented pillars:**
+- Propagation (weather + season via ClimateManager)
+- Infrastructure (grid power state via PhobosLib.hasPower callback)
+- Clarity (terminal tier lookup)
+- Saturation (active agent count + market state)
+
+**Deferred:**
+- Phase D: full pillar breakdown UI in SignalPanel
+- Phase E: Intent pillar (Tier V bandwidth allocation)
+
+**Data-pack architecture:** Environmental modifier profiles use the
+Schema -> Registry -> Definition pattern. Four built-in definition files
+(weather, infrastructure, market, season) with 21 total modifiers.
+Addon mods can register custom modifiers without touching core files.
+
+**Key files:**
+- `POS_SignalEcologyService.lua` -- core pillar calculator + cache
+- `POS_Constants_Signal.lua` -- tier baselines, state thresholds
+- `POS_SignalModifierSchema.lua` -- modifier validation schema
+- `POS_SignalModifierRegistry.lua` -- registry + definition loader
+- `Definitions/SignalModifiers/` -- 4 built-in modifier data files
