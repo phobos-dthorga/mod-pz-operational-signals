@@ -17,47 +17,44 @@
 ---------------------------------------------------------------
 -- Definitions/SignalModifiers/infrastructure.lua
 -- Power grid and infrastructure signal modifiers.
+-- Returns an array of records for PhobosLib.loadDefinition().
 ---------------------------------------------------------------
 
-local registry = POS_SignalModifierRegistry and POS_SignalModifierRegistry.getRegistry()
-if not registry then return end
-
-registry:register({
-    schemaVersion = 1,
-    id = "grid_on",
-    pillar = "infrastructure",
-    trigger = "grid_on",
-    infrastructure = 0.20,
-    severity = 0.0,
-    description = "Grid power is active, boosting infrastructure pillar",
-})
-
-registry:register({
-    schemaVersion = 1,
-    id = "grid_failing",
-    pillar = "infrastructure",
-    trigger = "grid_failing",
-    infrastructure = 0.05,
-    severity = 0.5,
-    description = "Grid power is failing, marginal infrastructure benefit",
-})
-
-registry:register({
-    schemaVersion = 1,
-    id = "grid_off",
-    pillar = "infrastructure",
-    trigger = "grid_off",
-    infrastructure = -0.15,
-    severity = 0.8,
-    description = "Grid power is offline, significant infrastructure penalty",
-})
-
-registry:register({
-    schemaVersion = 1,
-    id = "generator_only",
-    pillar = "infrastructure",
-    trigger = "generator_only",
-    infrastructure = -0.05,
-    severity = 0.4,
-    description = "Running on generator only, minor infrastructure penalty",
-})
+return {
+    {
+        schemaVersion = 1,
+        id = "grid_on",
+        pillar = "infrastructure",
+        trigger = "grid_on",
+        infrastructure = 0.20,
+        severity = 0.0,
+        description = "Grid power is active, boosting infrastructure pillar",
+    },
+    {
+        schemaVersion = 1,
+        id = "grid_failing",
+        pillar = "infrastructure",
+        trigger = "grid_failing",
+        infrastructure = 0.05,
+        severity = 0.5,
+        description = "Grid power is failing, marginal infrastructure benefit",
+    },
+    {
+        schemaVersion = 1,
+        id = "grid_off",
+        pillar = "infrastructure",
+        trigger = "grid_off",
+        infrastructure = -0.15,
+        severity = 0.8,
+        description = "Grid power is offline, significant infrastructure penalty",
+    },
+    {
+        schemaVersion = 1,
+        id = "generator_only",
+        pillar = "infrastructure",
+        trigger = "generator_only",
+        infrastructure = -0.05,
+        severity = 0.4,
+        description = "Running on generator only, minor infrastructure penalty",
+    },
+}
