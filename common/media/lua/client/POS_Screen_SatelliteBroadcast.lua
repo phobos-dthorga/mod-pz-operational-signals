@@ -62,6 +62,14 @@ end
 --- Find compiled intelligence artifacts in player inventory.
 --- @param player IsoPlayer
 --- @return table Array of InventoryItem with POS_Intelligence tag
+-- Known artifact fullType strings (avoids hasTag which crashes on
+-- Clothing/HandWeapon/etc in PZ Build 42's Kahlua bridge).
+local ARTIFACT_TYPES = {
+    ["PhobosOperationalSignals.CompiledSiteSurvey"]  = true,
+    ["PhobosOperationalSignals.CompiledMarketReport"] = true,
+    ["PhobosOperationalSignals.MarketBulletin"]       = true,
+}
+
 local function _findArtifacts(player)
     if not player then return {} end
     local inv = player:getInventory()
@@ -72,11 +80,9 @@ local function _findArtifacts(player)
     local result = {}
     for i = 0, items:size() - 1 do
         local item = items:get(i)
-        if item then
-            -- Use pcall for hasTag since some PZ item subclasses (Clothing,
-            -- Food, etc.) don't expose hasTag through the Kahlua bridge.
-            local ok, tagged = pcall(function() return item:hasTag("POS_Intelligence") end)
-            if ok and tagged then
+        if item and item.getFullType then
+            local fullType = item:getFullType()
+            if fullType and ARTIFACT_TYPES[fullType] then
                 result[#result + 1] = item
             end
         end
