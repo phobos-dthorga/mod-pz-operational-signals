@@ -211,16 +211,18 @@ end
 screen.getContextData = function(params)
     local data = {}
     if params and params.categoryId then
-        local summary = POS_MarketService.getCommoditySummary(params.categoryId)
-        table.insert(data, { type = "header", text = summary.labelKey })
-        if summary.avgPrice then
-            table.insert(data, { type = "kv", key = "UI_POS_Market_AveragePrice",
-                value = "$" .. string.format("%.2f", summary.avgPrice) })
+        local ok, summary = PhobosLib.safecall(POS_MarketService.getCommoditySummary, params.categoryId)
+        if ok and summary then
+            table.insert(data, { type = "header", text = summary.labelKey or "UI_POS_Market_Summary" })
+            if summary.avgPrice then
+                table.insert(data, { type = "kv", key = "UI_POS_Market_AveragePrice",
+                    value = "$" .. string.format("%.2f", summary.avgPrice) })
+            end
+            table.insert(data, { type = "kv", key = "UI_POS_Market_Sources",
+                value = tostring(summary.sourceCount or 0) })
+            table.insert(data, { type = "kv", key = "UI_POS_Market_Trend",
+                value = PhobosLib.safeGetText(summary.trendKey or "UI_POS_Market_TrendUnknown") })
         end
-        table.insert(data, { type = "kv", key = "UI_POS_Market_Sources",
-            value = tostring(summary.sourceCount) })
-        table.insert(data, { type = "kv", key = "UI_POS_Market_Trend",
-            value = PhobosLib.safeGetText(summary.trendKey) })
     end
     return data
 end
