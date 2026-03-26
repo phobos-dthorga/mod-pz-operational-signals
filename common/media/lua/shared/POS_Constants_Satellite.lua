@@ -76,3 +76,80 @@ POS_Constants.SATELLITE_DISH_CONDITION_BONUS_MIN = 80
 
 -- SIGINT XP from satellite operations
 POS_Constants.SIGINT_XP_SATELLITE_CALIBRATE  = 2
+POS_Constants.SIGINT_XP_SATELLITE_BROADCAST  = 3
+
+---------------------------------------------------------------
+-- Broadcast modes (Tier IV — 5 modes per design doc §5)
+---------------------------------------------------------------
+
+POS_Constants.SAT_MODE_SCARCITY      = "scarcity_alert"
+POS_Constants.SAT_MODE_SURPLUS       = "surplus_notice"
+POS_Constants.SAT_MODE_ROUTE_WARNING = "route_warning"
+POS_Constants.SAT_MODE_CONTACT       = "contact_bulletin"
+POS_Constants.SAT_MODE_RUMOUR        = "strategic_rumour"
+
+-- Ordered list for UI display
+POS_Constants.SAT_MODES = {
+    POS_Constants.SAT_MODE_SCARCITY,
+    POS_Constants.SAT_MODE_SURPLUS,
+    POS_Constants.SAT_MODE_ROUTE_WARNING,
+    POS_Constants.SAT_MODE_CONTACT,
+    POS_Constants.SAT_MODE_RUMOUR,
+}
+
+-- Mode → display name translation key
+POS_Constants.SAT_MODE_KEYS = {
+    [POS_Constants.SAT_MODE_SCARCITY]      = "UI_POS_Satellite_Mode_Scarcity",
+    [POS_Constants.SAT_MODE_SURPLUS]       = "UI_POS_Satellite_Mode_Surplus",
+    [POS_Constants.SAT_MODE_ROUTE_WARNING] = "UI_POS_Satellite_Mode_RouteWarning",
+    [POS_Constants.SAT_MODE_CONTACT]       = "UI_POS_Satellite_Mode_Contact",
+    [POS_Constants.SAT_MODE_RUMOUR]        = "UI_POS_Satellite_Mode_Rumour",
+}
+
+-- Mode → WBN event type mapping (for WBN bridge)
+POS_Constants.SAT_MODE_EVENT_MAP = {
+    [POS_Constants.SAT_MODE_SCARCITY]      = "scarcity_alert",
+    [POS_Constants.SAT_MODE_SURPLUS]       = "surplus_notice",
+    [POS_Constants.SAT_MODE_ROUTE_WARNING] = "route_warning",
+    [POS_Constants.SAT_MODE_CONTACT]       = "contact_bulletin",
+    [POS_Constants.SAT_MODE_RUMOUR]        = "strategic_rumour",
+}
+
+-- Mode → WBN direction mapping
+POS_Constants.SAT_MODE_DIRECTION = {
+    [POS_Constants.SAT_MODE_SCARCITY]      = "up",
+    [POS_Constants.SAT_MODE_SURPLUS]       = "down",
+    [POS_Constants.SAT_MODE_ROUTE_WARNING] = "mixed",
+    [POS_Constants.SAT_MODE_CONTACT]       = "stable",
+    [POS_Constants.SAT_MODE_RUMOUR]        = "mixed",
+}
+
+-- Mode → WBN cause tag mapping
+POS_Constants.SAT_MODE_CAUSE = {
+    [POS_Constants.SAT_MODE_SCARCITY]      = "scarcity",
+    [POS_Constants.SAT_MODE_SURPLUS]       = "surplus",
+    [POS_Constants.SAT_MODE_ROUTE_WARNING] = "convoy_loss",
+    [POS_Constants.SAT_MODE_CONTACT]       = "recovery",
+    [POS_Constants.SAT_MODE_RUMOUR]        = "panic",
+}
+
+-- Trust impact per mode (positive = trust gain, negative = trust loss)
+POS_Constants.SAT_TRUST_IMPACT = {
+    [POS_Constants.SAT_MODE_SCARCITY]      =  0.03,
+    [POS_Constants.SAT_MODE_SURPLUS]       =  0.02,
+    [POS_Constants.SAT_MODE_ROUTE_WARNING] =  0.01,
+    [POS_Constants.SAT_MODE_CONTACT]       =  0.04,
+    [POS_Constants.SAT_MODE_RUMOUR]        = -0.08,  -- trust risk!
+}
+
+-- Trust initial value for new zones
+POS_Constants.SAT_TRUST_INITIAL = 0.50
+-- Trust bounds
+POS_Constants.SAT_TRUST_MIN     = 0.0
+POS_Constants.SAT_TRUST_MAX     = 1.0
+-- Trust ModData key prefix
+POS_Constants.SAT_TRUST_KEY_PREFIX = "POS_SatTrust_"
+
+-- Broadcast history ModData key
+POS_Constants.SAT_HISTORY_KEY      = "POS_SatBroadcastHistory"
+POS_Constants.SAT_HISTORY_MAX      = 10

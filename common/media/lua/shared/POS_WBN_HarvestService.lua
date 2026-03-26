@@ -493,6 +493,19 @@ function POS_WBN_HarvestService.onMarketEvent(data)
     _candidateQueue[#_candidateQueue + 1] = candidate
 end
 
+--- Inject a pre-formed candidate directly into the queue.
+--- Used by Tier IV satellite broadcasts to bridge the data plane to the
+--- broadcast plane. The candidate bypasses economy tick generation but
+--- still passes through editorial filtering and composition.
+--- @param candidate table Pre-formed WBN candidate table
+function POS_WBN_HarvestService.injectCandidate(candidate)
+    if not candidate then return end
+    _candidateQueue[#_candidateQueue + 1] = candidate
+    PhobosLib.debug("POS", _TAG,
+        "injectCandidate: " .. tostring(candidate.sourceType or "unknown")
+        .. " [" .. tostring(candidate.domain) .. "/" .. tostring(candidate.eventType) .. "]")
+end
+
 --- Subscribe to Starlit events. Called once at game start.
 function POS_WBN_HarvestService.init()
     if POS_Events and POS_Events.OnStockTickClosed then
