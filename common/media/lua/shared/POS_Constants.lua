@@ -231,12 +231,18 @@ POS_Constants.VOICE_SECTION_WBN_WEATHER        = "wbn_weather"
 POS_Constants.VOICE_SECTION_WBN_POWER          = "wbn_power"
 POS_Constants.VOICE_SECTION_WBN_FLAVOUR_MARKET = "wbn_flavour_market"
 POS_Constants.VOICE_SECTION_WBN_FLAVOUR_EMERGENCY = "wbn_flavour_emergency"
+POS_Constants.VOICE_SECTION_WBN_OPS_AGENT   = "wbn_ops_agent"
+POS_Constants.VOICE_SECTION_WBN_OPS_MISSION = "wbn_ops_mission"
 
 -- Extended voice override sections (includes agent + investment + WBN)
 POS_Constants.VOICE_ALL_OVERRIDE_SECTIONS = {
     "situation", "submission", "agentState", "investment",
     "wbn_opener", "wbn_closer",
     "wbn_weather", "wbn_power", "wbn_flavour_market", "wbn_flavour_emergency",
+    "wbn_ops_agent_transit", "wbn_ops_agent_delayed",
+    "wbn_ops_agent_compromised", "wbn_ops_agent_completed",
+    "wbn_ops_mission_success", "wbn_ops_mission_failure",
+    "wbn_ops_wholesaler_posture", "wbn_ops_generic",
 }
 
 ---------------------------------------------------------------

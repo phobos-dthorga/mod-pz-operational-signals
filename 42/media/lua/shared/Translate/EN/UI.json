@@ -1703,6 +1703,16 @@
     "UI_WBN_Ops_WholesalerPosture": "Supply line posture change detected. Wholesaler activity shifting.",
     "UI_WBN_Ops_GenericUpdate": "Operational status update received from the field.",
 
+    "UI_WBN_Ops_WS_Posture_01": "Supply chain posture shifting. Wholesaler routes are being redrawn.",
+    "UI_WBN_Ops_WS_Posture_02": "Movement detected along wholesaler corridors. Expect changes in availability.",
+    "UI_WBN_Ops_WS_Posture_03": "Wholesaler network recalibrating. Trade lines may be affected.",
+    "UI_WBN_Ops_WS_Posture_04": "Our sources report wholesaler activity changing. Adjust procurement plans.",
+
+    "UI_WBN_Ops_Generic_01": "Operational status update received from the field.",
+    "UI_WBN_Ops_Generic_02": "Field report logged. Situation developing, details pending.",
+    "UI_WBN_Ops_Generic_03": "Update received via operations channel. Assessment ongoing.",
+    "UI_WBN_Ops_Generic_04": "New intelligence registered. Review terminal for details.",
+
     "UI_WBN_Ops_Transit_01": "Agent {agent} is en route to the contact point. Signal nominal.",
     "UI_WBN_Ops_Transit_02": "Field operative {agent} has departed. Tracking signal steady.",
     "UI_WBN_Ops_Transit_03": "Runner {agent} is moving through the corridor. All clear so far.",

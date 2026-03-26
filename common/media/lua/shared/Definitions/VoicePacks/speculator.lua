@@ -9,5 +9,13 @@ return {
         investment = "voice_speculator_investments",
         wbn_opener = "voice_wbn_speculator_openers",
         wbn_closer = "voice_wbn_speculator_closers",
+        wbn_ops_agent_transit       = "voice_wbn_ops_agent_transit",
+        wbn_ops_agent_delayed       = "voice_wbn_ops_agent_delayed",
+        wbn_ops_agent_compromised   = "voice_wbn_ops_agent_compromised",
+        wbn_ops_agent_completed     = "voice_wbn_ops_agent_completed",
+        wbn_ops_mission_success     = "voice_wbn_ops_mission_success",
+        wbn_ops_mission_failure     = "voice_wbn_ops_mission_failure",
+        wbn_ops_wholesaler_posture  = "voice_wbn_ops_wholesaler_posture",
+        wbn_ops_generic             = "voice_wbn_ops_generic",
     },
 }

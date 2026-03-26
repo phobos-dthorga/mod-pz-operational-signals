@@ -14,5 +14,13 @@ return {
         wbn_power              = "voice_wbn_trader_power",
         wbn_flavour_market     = "voice_wbn_trader_flavour_market",
         wbn_flavour_emergency  = "voice_wbn_trader_flavour_emergency",
+        wbn_ops_agent_transit       = "voice_wbn_ops_agent_transit",
+        wbn_ops_agent_delayed       = "voice_wbn_ops_agent_delayed",
+        wbn_ops_agent_compromised   = "voice_wbn_ops_agent_compromised",
+        wbn_ops_agent_completed     = "voice_wbn_ops_agent_completed",
+        wbn_ops_mission_success     = "voice_wbn_ops_mission_success",
+        wbn_ops_mission_failure     = "voice_wbn_ops_mission_failure",
+        wbn_ops_wholesaler_posture  = "voice_wbn_ops_wholesaler_posture",
+        wbn_ops_generic             = "voice_wbn_ops_generic",
     },
 }

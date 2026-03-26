@@ -505,36 +505,21 @@ end
 -- Operations domain composer (agent state, missions)
 ---------------------------------------------------------------
 
---- Load a text pool file and extract translation keys from its entries.
---- Returns an array of translation key strings for use with pickPhrase().
---- Falls back to the provided static keys if the pool file fails to load.
---- @param poolPath string Require path for the text pool definition file
---- @param fallbackKeys table Array of translation key strings
---- @return table Array of translation key strings
-local function loadTextPool(poolPath, fallbackKeys)
-    local ok, poolDef = PhobosLib.safecall(require, poolPath)
-    if ok and poolDef and poolDef.entries then
-        local keys = {}
-        for _, entry in ipairs(poolDef.entries) do
-            if entry.text then keys[#keys + 1] = entry.text end
-        end
-        if #keys > 0 then return keys end
-    end
-    return fallbackKeys or {}
-end
-
--- Agent state → text pool path mapping
-local OPS_AGENT_POOLS = {
-    transit     = "Definitions/TextPools/voice_wbn_ops_agent_transit",
-    assembling  = "Definitions/TextPools/voice_wbn_ops_agent_transit",  -- reuse transit pool
-    negotiation = "Definitions/TextPools/voice_wbn_ops_agent_transit",  -- reuse transit pool
-    settlement  = "Definitions/TextPools/voice_wbn_ops_agent_completed", -- reuse completed pool
-    delayed     = "Definitions/TextPools/voice_wbn_ops_agent_delayed",
-    compromised = "Definitions/TextPools/voice_wbn_ops_agent_compromised",
-    completed   = "Definitions/TextPools/voice_wbn_ops_agent_completed",
+-- Agent state → voice pack section suffix mapping.
+-- Maps agent states to section names for resolveArchetypePool lookup.
+-- States that share semantics (assembling/negotiation → transit, settlement → completed)
+-- are mapped to the same section to reuse phrase pools.
+local OPS_AGENT_SECTION_MAP = {
+    transit     = "wbn_ops_agent_transit",
+    assembling  = "wbn_ops_agent_transit",      -- reuse transit pool
+    negotiation = "wbn_ops_agent_transit",       -- reuse transit pool
+    settlement  = "wbn_ops_agent_completed",     -- reuse completed pool
+    delayed     = "wbn_ops_agent_delayed",
+    compromised = "wbn_ops_agent_compromised",
+    completed   = "wbn_ops_agent_completed",
 }
 
--- Static fallback keys (used if text pool files fail to load)
+-- Static fallback keys (used if voice pack registry + text pool both fail)
 local OPS_AGENT_FALLBACKS = {
     transit     = { "UI_WBN_Ops_AgentState_transit" },
     delayed     = { "UI_WBN_Ops_AgentState_delayed" },
@@ -542,10 +527,13 @@ local OPS_AGENT_FALLBACKS = {
     completed   = { "UI_WBN_Ops_AgentState_completed" },
 }
 
-local OPS_MISSION_SUCCESS_POOL = "Definitions/TextPools/voice_wbn_ops_mission_success"
-local OPS_MISSION_FAILURE_POOL = "Definitions/TextPools/voice_wbn_ops_mission_failure"
-local OPS_MISSION_SUCCESS_FALLBACK = { "UI_WBN_Ops_MissionSuccess" }
-local OPS_MISSION_FAILURE_FALLBACK = { "UI_WBN_Ops_MissionFailure" }
+local OPS_MISSION_FALLBACKS = {
+    success = { "UI_WBN_Ops_MissionSuccess" },
+    failure = { "UI_WBN_Ops_MissionFailure" },
+}
+
+local OPS_WHOLESALER_FALLBACK = { "UI_WBN_Ops_WholesalerPosture" }
+local OPS_GENERIC_FALLBACK    = { "UI_WBN_Ops_GenericUpdate" }
 
 --- Compose an operations bulletin from an agent/mission candidate.
 --- Uses voice packs for opener/closer (archetype personality) and text pool
@@ -568,30 +556,35 @@ function POS_WBN_CompositionService.composeOperations(candidate, archetypeId)
         DEFAULT_CLOSERS[arch] or DEFAULT_CLOSERS[POS_Constants.WBN_ARCHETYPE_QUARTERMASTER])
     local closer = pickPhrase(closerPool)
 
-    -- Body text from text pool files (phrase randomisation per event type)
+    -- Body text via voice pack registry (resolveArchetypePool → pickPhrase).
+    -- Archetype personality comes from opener/closer; body text varies by
+    -- event type through phrase pool randomisation. Addon mods can override
+    -- per-archetype body text via the voice pack registry.
     local body = ""
     local eventType = c.eventType
 
     if eventType == POS_Constants.WBN_EVENT_AGENT_STATE_CHANGE then
         local agentName = c.agentName or PhobosLib.safeGetText("UI_WBN_Ops_UnknownAgent")
         local newState = c.newState or "unknown"
-        local poolPath = OPS_AGENT_POOLS[newState]
+        local section = OPS_AGENT_SECTION_MAP[newState] or "wbn_ops_agent_transit"
         local fallback = OPS_AGENT_FALLBACKS[newState] or { "UI_WBN_Ops_AgentState_Generic" }
-        local pool = poolPath and loadTextPool(poolPath, fallback) or fallback
+        local pool = resolveArchetypePool(arch, section, fallback)
         body = pickPhrase(pool)
         body = string.gsub(body, "{agent}", agentName)
 
     elseif eventType == POS_Constants.WBN_EVENT_MISSION_COMPLETED then
-        local poolPath = c.missionSuccess and OPS_MISSION_SUCCESS_POOL or OPS_MISSION_FAILURE_POOL
-        local fallback = c.missionSuccess and OPS_MISSION_SUCCESS_FALLBACK or OPS_MISSION_FAILURE_FALLBACK
-        local pool = loadTextPool(poolPath, fallback)
+        local section = c.missionSuccess and "wbn_ops_mission_success" or "wbn_ops_mission_failure"
+        local fallback = c.missionSuccess and OPS_MISSION_FALLBACKS.success or OPS_MISSION_FALLBACKS.failure
+        local pool = resolveArchetypePool(arch, section, fallback)
         body = pickPhrase(pool)
 
     elseif eventType == POS_Constants.WBN_EVENT_WHOLESALER_POSTURE then
-        body = PhobosLib.safeGetText("UI_WBN_Ops_WholesalerPosture")
+        local pool = resolveArchetypePool(arch, "wbn_ops_wholesaler_posture", OPS_WHOLESALER_FALLBACK)
+        body = pickPhrase(pool)
 
     else
-        body = PhobosLib.safeGetText("UI_WBN_Ops_GenericUpdate")
+        local pool = resolveArchetypePool(arch, "wbn_ops_generic", OPS_GENERIC_FALLBACK)
+        body = pickPhrase(pool)
     end
 
     local lines = {
