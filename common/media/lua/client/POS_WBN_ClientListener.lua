@@ -413,6 +413,29 @@ if Events and Events.OnGameStart then
     end)
 end
 
+--- Get all stored signal fragments for display on terminal screens.
+--- Returns an array of fragment records sorted newest-first (by receivedDay).
+--- Uses pairs() iteration for Java ModData safety.
+--- @return table  Array of fragment records
+function POS_WBN_ClientListener.getAllFragments()
+    local player = getPlayer()
+    if not player then return {} end
+    local md = player:getModData()
+    if not md or not md.POSNET then return {} end
+    local store = md.POSNET[POS_Constants.WBN_FRAGMENT_MODDATA_KEY]
+    if not store then return {} end
+
+    local result = {}
+    for k, v in pairs(store) do
+        if type(v) == "table" and v.type then
+            v._sortIdx = tonumber(k) or 0
+            result[#result + 1] = v
+        end
+    end
+    table.sort(result, function(a, b) return (a._sortIdx or 0) > (b._sortIdx or 0) end)
+    return result
+end
+
 --- Get broadcast history for display on terminal screens.
 --- Returns an array of history entries sorted newest-first.
 --- @return table  Array of { text, stationClass, day, gameHours }

@@ -626,6 +626,17 @@ The intelligence loop for radio-sourced fragments:
 This forms a **closed intelligence loop** -- the radio is not a one-way
 information dump but the first stage of an active intelligence cycle.
 
+### 7.5 Review Screen
+
+The Signal Fragment Review Screen (`pos.bbs.fragments`) provides a
+terminal UI for browsing accumulated fragments. It follows the standard
+POSnet screen pattern with filter tabs (All/Market/Weather/Infrastructure),
+paginated list, and ContextPanel detail view.
+
+Implemented in `POS_Screen_SignalFragments.lua`. The public accessor
+`POS_WBN_ClientListener.getAllFragments()` provides sorted fragment
+data from player ModData.
+
 ---
 
 ## 8. Tier IV/V Interaction

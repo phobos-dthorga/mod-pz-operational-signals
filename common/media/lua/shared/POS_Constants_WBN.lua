@@ -165,6 +165,7 @@ POS_Constants.WBN_FRAGMENT_CONF_MIN      = 0.20
 POS_Constants.WBN_FRAGMENT_CONF_MAX      = 0.60
 POS_Constants.WBN_FRAGMENT_MAX_STORED    = 30    -- rolling cap in player ModData
 POS_Constants.WBN_FRAGMENT_MODDATA_KEY   = "SignalFragments"
+POS_Constants.FRAGMENTS_PAGE_SIZE        = 8
 
 -- Rumour confidence modifiers from broadcast corroboration
 POS_Constants.WBN_RUMOUR_REINFORCE_BOOST = 0.05  -- same-direction boost

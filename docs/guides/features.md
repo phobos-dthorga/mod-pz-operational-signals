@@ -233,3 +233,21 @@ Signal quality is expressed as six qualitative states: **Locked** (excellent),
 **Clear** (good), **Faded** (moderate), **Fragmented** (poor), **Ghosted**
 (very poor), and **Lost** (no signal). These states affect WBN broadcast
 clarity, mission rewards, and connection reliability.
+
+---
+
+### Signal Fragment Review
+
+The POSnet terminal includes a dedicated Signal Fragments screen
+(`BULLETIN BOARD > Signal Fragments`) for reviewing intelligence
+gathered passively from WBN radio broadcasts.
+
+- **Filter tabs**: All Fragments, Market, Weather, Infrastructure
+- **Per-fragment display**: type badge, received day, confidence/freshness percentages, zone, category, direction
+- **Detail panel**: full fragment metadata including estimated change, station source, and verification status
+- **Summary counts**: type breakdown when no fragment is selected
+
+Fragments are generated automatically when the player's radio receives
+WBN broadcasts. Confidence is capped at 60% (radio intelligence is
+never definitive) and decays over time. Repeated broadcasts on the
+same topic reinforce confidence; contradictory broadcasts reduce it.

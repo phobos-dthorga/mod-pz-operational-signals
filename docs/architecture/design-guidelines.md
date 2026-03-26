@@ -2917,6 +2917,7 @@ Main Menu (pos.main)
  │    │    ├── Negotiate        (pos.bbs.negotiate)        [programmatic]
  │    │    └── Agent Deploy     (pos.bbs.agents.deploy)    [programmatic]
  │    ├── Field Agents          (pos.bbs.agents)           — DualTab: archetype × status
+ │    ├── Signal Fragments      (pos.bbs.fragments)        — Intelligence fragment review with type filter tabs
  │    ├── Investments           (pos.bbs.investments)
  │    └── Intelligence Analysis (pos.data.analysis)
  ├── Markets Hub (pos.markets)
