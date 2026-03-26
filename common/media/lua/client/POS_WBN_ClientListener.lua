@@ -286,12 +286,12 @@ local function notifyIntelDiscovery(fragment)
         end
     end
     if fragment.zoneId then
-        local zoneName = PhobosLib.safeGetText("UI_POS_Zone_" .. tostring(fragment.zoneId))
-        if zoneName and zoneName ~= ("UI_POS_Zone_" .. tostring(fragment.zoneId)) then
-            message = string.gsub(message, "{zone}", zoneName)
-        else
-            message = string.gsub(message, "{zone}", tostring(fragment.zoneId))
-        end
+        local keySuffix = POS_Constants.ZONE_DISPLAY_KEY
+            and POS_Constants.ZONE_DISPLAY_KEY[fragment.zoneId]
+        local zoneName = keySuffix
+            and PhobosLib.safeGetText("UI_POS_Zone_" .. keySuffix)
+            or tostring(fragment.zoneId)
+        message = string.gsub(message, "{zone}", zoneName)
     end
 
     PhobosLib.safecall(PhobosLib.notifyOrSay, player, {

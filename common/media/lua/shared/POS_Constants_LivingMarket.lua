@@ -99,6 +99,18 @@ POS_Constants.MARKET_ZONES = {
     POS_Constants.MARKET_ZONE_RURAL_EAST,
 }
 
+-- Zone ID → translation key suffix mapping.
+-- Zone IDs are snake_case; translation keys use PascalCase.
+-- Usage: PhobosLib.safeGetText("UI_POS_Zone_" .. ZONE_DISPLAY_KEY[zoneId])
+POS_Constants.ZONE_DISPLAY_KEY = {
+    [POS_Constants.MARKET_ZONE_MULDRAUGH]         = "Muldraugh",
+    [POS_Constants.MARKET_ZONE_WEST_POINT]        = "WestPoint",
+    [POS_Constants.MARKET_ZONE_RIVERSIDE]          = "Riverside",
+    [POS_Constants.MARKET_ZONE_LOUISVILLE_EDGE]   = "LouisvilleEdge",
+    [POS_Constants.MARKET_ZONE_MILITARY_CORRIDOR] = "MilitaryCorridor",
+    [POS_Constants.MARKET_ZONE_RURAL_EAST]        = "RuralEast",
+}
+
 ---------------------------------------------------------------
 -- Living Market: Event Types
 ---------------------------------------------------------------
