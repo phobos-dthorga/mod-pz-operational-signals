@@ -213,7 +213,7 @@ POSnet uses two distinct radio domains:
 Tuning a broadcast frequency while trying to connect a terminal will show
 a message explaining that data channels are required for terminal operations.
 
-### WBN Operations Net (148.5 kHz)
+### WBN Operations Net (148.5 MHz)
 
 The third WBN radio channel broadcasts tactical operational intelligence:
 
@@ -229,8 +229,8 @@ it yet.
 
 **Voice archetypes**: Field Reporter (40%), Military (35%), Scavenger (25%).
 
-**Frequency**: 148.5 kHz -- positioned in the tactical band between the
-Operations Data Net (130.0 kHz) and Tactical Data Net (155.0 kHz).
+**Frequency**: 148.5 MHz -- positioned in the tactical band between the
+Operations Data Net (130.0 MHz) and Tactical Data Net (155.0 MHz).
 
 ---
 

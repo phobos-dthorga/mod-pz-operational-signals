@@ -188,7 +188,7 @@ POS_Constants.WBN_ARCHETYPE_WEIGHTS_OPERATIONS = {
 }
 
 ---------------------------------------------------------------
--- Operations Net channel (Phase 2 — tactical broadcast, 148.5 kHz)
+-- Operations Net channel (Phase 2 — tactical broadcast, 148.5 MHz)
 ---------------------------------------------------------------
 
 POS_Constants.AZAS_WBN_OPERATIONS_KEY        = "POSnet_WBN_Operations"

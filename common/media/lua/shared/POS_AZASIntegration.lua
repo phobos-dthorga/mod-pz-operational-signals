@@ -78,9 +78,9 @@ AZAS_STATIONS[POS_Constants.AZAS_WBN_OPERATIONS_KEY] = {
 }
 
 PhobosLib.debug("POS", _TAG, "[AZAS] Registered 5 POSnet stations:"
-    .. " Operations (amateur, 130.0 kHz), Tactical (military, 155.0 kHz),"
+    .. " Operations (amateur, 130.0 MHz), Tactical (military, 155.0 MHz),"
     .. " WBN_Market (amateur, 91.4 MHz), WBN_Emergency (amateur, 103.8 MHz),"
-    .. " WBN_Operations (amateur, 148.5 kHz)")
+    .. " WBN_Operations (amateur, 148.5 MHz)")
 
 ---------------------------------------------------------------
 -- Frequency accessors (cached after first AZAS lookup)

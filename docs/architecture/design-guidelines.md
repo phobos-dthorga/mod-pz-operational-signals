@@ -2897,6 +2897,23 @@ alongside built-in ones via `PhobosLib.createRegistry()`.
 | `Definitions/Missions/*.lua` | Mission data files |
 | `Definitions/TextPools/*.lua` | Shared text fragments |
 
+### 32.8 Voice Pack Preference Rule
+
+Any system that generates human-readable text for radio broadcasts,
+notifications, mission briefings, or terminal displays should use the
+voice pack system (`resolveArchetypePool` → `pickPhrase`) rather than
+static translation keys, whenever the content benefits from tonal variety
+across archetypes or phrase-level randomisation.
+
+Static translation keys are acceptable only for:
+- Fixed UI labels and field names
+- System messages and error text
+- UI chrome (button labels, headers, separators)
+
+If a future feature produces player-facing prose (radio bulletins, agent
+reports, contact messages, forecast text), it **must** use the voice pack
+pipeline to ensure tonal consistency and natural variation.
+
 ---
 
 ## 33. Terminal Screen Architecture
@@ -4012,7 +4029,7 @@ a different class of truth.
 `broadcast-influence-design.md` §2,
 `passive-recon-design.md` §2.3
 
-> **§52.2 WBN Operations Net (148.5 kHz)**: The third WBN broadcast channel
+> **§52.2 WBN Operations Net (148.5 MHz)**: The third WBN broadcast channel
 > — a tactical broadcast channel carrying agent state updates, mission
 > results, high-severity market events, and wholesaler posture changes.
 > Requires SIGINT level 2+ to receive. Players below the threshold hear

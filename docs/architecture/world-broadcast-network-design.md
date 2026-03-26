@@ -256,10 +256,10 @@ pace and audience.
 | 4 | Military / Restricted Net  | Requisitions, secure movement, controlled releases, tactical      | Low         |
 | 5 | Grey / Whisper Net         | Smugglers, rumours, low-confidence leads, black-market activity   | Variable    |
 
-**WBN Operations Net (148.5 kHz)**: Station class #2 is implemented as a
-dedicated broadcast channel at 148.5 kHz (AZAS key `POSnet_WBN_Operations`),
-positioned between the Operations Data Net (130.0 kHz) and Tactical Data Net
-(155.0 kHz). Content scope: agent state updates, mission results,
+**WBN Operations Net (148.5 MHz)**: Station class #2 is implemented as a
+dedicated broadcast channel at 148.5 MHz (AZAS key `POSnet_WBN_Operations`),
+positioned between the Operations Data Net (130.0 MHz) and Tactical Data Net
+(155.0 MHz). Content scope: agent state updates, mission results,
 high-severity market events (severity >= 0.6), and wholesaler posture changes.
 Minimum cadence: 8 minutes. Voice archetypes: Field Reporter (40%),
 Military (35%), Scavenger (25%).

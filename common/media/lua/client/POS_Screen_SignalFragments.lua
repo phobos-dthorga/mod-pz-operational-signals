@@ -178,10 +178,10 @@ function screen.create(contentPanel, params, _terminal)
     if #fragments == 0 then
         -- Empty state
         W.createLabel(ctx.panel, 8, ctx.y,
-            PhobosLib.safeGetText("UI_POS_Fragments_Empty"), C.dim)
+            PhobosLib.safeGetText("UI_POS_Fragments_NoData"), C.dim)
         ctx.y = ctx.y + ctx.lineH
         W.createLabel(ctx.panel, 8, ctx.y,
-            PhobosLib.safeGetText("UI_POS_Fragments_EmptyHint"), C.dim)
+            PhobosLib.safeGetText("UI_POS_Fragments_NoData_Hint"), C.dim)
         ctx.y = ctx.y + ctx.lineH
     else
         -- Paginated fragment list
@@ -271,7 +271,7 @@ screen.getContextData = function(_params)
         -- Summary view: counts per type
         table.insert(data, { type = "header", text = "UI_POS_Fragments_Title" })
         table.insert(data, { type = "kv",
-            key = "", value = PhobosLib.safeGetText("UI_POS_Fragments_NoDetail") })
+            key = "", value = PhobosLib.safeGetText("UI_POS_Fragments_NoSelection") })
         table.insert(data, { type = "separator" })
 
         local allFragments = _getAllFragments()

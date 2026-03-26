@@ -164,10 +164,10 @@ assignment and deconfliction with other radio mods.
 
 | AZAS Station Key          | Band Domain     | Device Type | Default Freq |
 |---------------------------|-----------------|-------------|-------------|
-| `POSnet_Operations`       | Civilian Data   | amateur     | 130.0 kHz   |
-| `POSnet_Tactical`         | Tactical Data   | military    | 155.0 kHz   |
+| `POSnet_Operations`       | Civilian Data   | amateur     | 130.0 MHz   |
+| `POSnet_Tactical`         | Tactical Data   | military    | 155.0 MHz   |
 | `POSnet_WBN_Market`       | Public Broadcast| amateur     | 91.4 MHz    |
-| `POSnet_WBN_Operations`   | Operations Broadcast | amateur | 148.5 kHz   |
+| `POSnet_WBN_Operations`   | Operations Broadcast | amateur | 148.5 MHz   |
 | `POSnet_WBN_Emergency`    | Emergency       | amateur     | 103.8 MHz   |
 
 WBN broadcast channels use AZAS `device_type = "amateur"` because public
@@ -176,8 +176,8 @@ between data bands and broadcast bands is enforced at the application layer
 (see §4), not at the frequency assignment layer.
 
 The Operations Broadcast channel (`POSnet_WBN_Operations`) is positioned at
-148.5 kHz in the tactical band between the Operations Data Net (130.0 kHz)
-and Tactical Data Net (155.0 kHz). Unlike the Market and Emergency broadcast
+148.5 MHz in the tactical band between the Operations Data Net (130.0 MHz)
+and Tactical Data Net (155.0 MHz). Unlike the Market and Emergency broadcast
 channels, the Operations Broadcast requires **SIGINT level 2+** to decode.
 Players below the threshold hear garbled placeholder text (no silent gating).
 

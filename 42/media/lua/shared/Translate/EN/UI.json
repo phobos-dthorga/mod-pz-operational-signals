@@ -1703,6 +1703,36 @@
     "UI_WBN_Ops_WholesalerPosture": "Supply line posture change detected. Wholesaler activity shifting.",
     "UI_WBN_Ops_GenericUpdate": "Operational status update received from the field.",
 
+    "UI_WBN_Ops_Transit_01": "Agent {agent} is en route to the contact point. Signal nominal.",
+    "UI_WBN_Ops_Transit_02": "Field operative {agent} has departed. Tracking signal steady.",
+    "UI_WBN_Ops_Transit_03": "Runner {agent} is moving through the corridor. All clear so far.",
+    "UI_WBN_Ops_Transit_04": "Unit {agent} confirmed in transit. Estimated arrival within the window.",
+
+    "UI_WBN_Ops_Delayed_01": "Runner {agent} is behind schedule. Possible route disruption.",
+    "UI_WBN_Ops_Delayed_02": "Agent {agent} has missed the check-in window. Monitoring continues.",
+    "UI_WBN_Ops_Delayed_03": "Operative {agent} reports delays. Route may be compromised.",
+    "UI_WBN_Ops_Delayed_04": "Field unit {agent} is overdue. No hostile contact reported yet.",
+
+    "UI_WBN_Ops_Compromised_01": "Warning: Agent {agent} reports contact difficulties. Mission at risk.",
+    "UI_WBN_Ops_Compromised_02": "Alert: Operative {agent} has encountered resistance. Situation developing.",
+    "UI_WBN_Ops_Compromised_03": "Field unit {agent} signals distress. Extraction may be required.",
+    "UI_WBN_Ops_Compromised_04": "Agent {agent} has gone dark after reporting hostile contact. Stand by.",
+
+    "UI_WBN_Ops_Completed_01": "Agent {agent} has returned from the field. Debriefing in progress.",
+    "UI_WBN_Ops_Completed_02": "Operative {agent} back at base. Mission debrief underway.",
+    "UI_WBN_Ops_Completed_03": "Runner {agent} has completed the assignment. Assets recovered.",
+    "UI_WBN_Ops_Completed_04": "Field unit {agent} reporting in. Operation concluded.",
+
+    "UI_WBN_Ops_MissionOK_01": "Operation complete. Objective secured. All units accounted for.",
+    "UI_WBN_Ops_MissionOK_02": "Mission success confirmed. Package delivered as contracted.",
+    "UI_WBN_Ops_MissionOK_03": "Objective achieved. Resources secured. Good work out there.",
+    "UI_WBN_Ops_MissionOK_04": "Operation concluded successfully. Awaiting next tasking.",
+
+    "UI_WBN_Ops_MissionFail_01": "Operation terminated. Objective not achieved. Assess losses and regroup.",
+    "UI_WBN_Ops_MissionFail_02": "Mission failure confirmed. Assets lost in the field.",
+    "UI_WBN_Ops_MissionFail_03": "Objective not secured. Recommend reassessment before next deployment.",
+    "UI_WBN_Ops_MissionFail_04": "Operation failed. Review operational parameters before retasking.",
+
     "UI_POS_Fragments_Title": "Signal Fragments",
     "UI_POS_Fragments_FilterAll": "All Fragments",
     "UI_POS_Fragments_FilterMarket": "Market",
