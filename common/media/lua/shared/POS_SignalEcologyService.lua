@@ -90,10 +90,14 @@ local function _resolveWeatherTrigger()
     local climate = getClimateManager()
     if not climate then return "clear_skies" end
 
-    local rain = PhobosLib.safecall(function() return climate:getRainIntensity() end) or 0
-    local snow = PhobosLib.safecall(function() return climate:getSnowIntensity() end) or 0
-    local fog = PhobosLib.safecall(function() return climate:getFogIntensity() end) or 0
-    local wind = PhobosLib.safecall(function() return climate:getWindIntensity() end) or 0
+    local okR, rainVal = PhobosLib.safecall(function() return climate:getRainIntensity() end)
+    local rain = (okR and type(rainVal) == "number") and rainVal or 0
+    local okS, snowVal = PhobosLib.safecall(function() return climate:getSnowIntensity() end)
+    local snow = (okS and type(snowVal) == "number") and snowVal or 0
+    local okF, fogVal = PhobosLib.safecall(function() return climate:getFogIntensity() end)
+    local fog = (okF and type(fogVal) == "number") and fogVal or 0
+    local okW, windVal = PhobosLib.safecall(function() return climate:getWindIntensity() end)
+    local wind = (okW and type(windVal) == "number") and windVal or 0
 
     -- Check storm first (high rain + high wind)
     if rain > 0.6 and wind > 0.5 then return "storm" end
@@ -148,10 +152,10 @@ local function _calculateInfrastructure()
     local trigger = "grid_on"
 
     if _powerCallback then
-        local hasPower = PhobosLib.safecall(_powerCallback)
-        if hasPower then
+        local ok, hasPower = PhobosLib.safecall(_powerCallback)
+        if ok and hasPower then
             trigger = "grid_on"
-        else
+        elseif ok then
             trigger = "grid_off"
         end
     end
@@ -178,9 +182,9 @@ local function _calculateSaturation()
     -- Agent contribution
     local agentCount = 0
     if POS_FreeAgentService and POS_FreeAgentService.getActive then
-        local agents = PhobosLib.safecall(POS_FreeAgentService.getActive)
-        if agents then
-            agentCount = #agents
+        local ok, agents = PhobosLib.safecall(POS_FreeAgentService.getActive)
+        if ok and type(agents) == "table" then
+            for _ in pairs(agents) do agentCount = agentCount + 1 end
         end
     end
     local agentSat = math.min(
