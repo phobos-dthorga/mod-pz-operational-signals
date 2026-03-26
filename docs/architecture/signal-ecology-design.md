@@ -508,6 +508,30 @@ Signal tier (1-5) is derived from SIGINT skill level (0-10) via a lookup
 table (`SIGNAL_SIGINT_TIER_MAP`). Higher SIGINT levels provide wider
 floor/ceiling bands, improving both minimum and maximum achievable signal.
 
+#### Clarity-by-Tier Values
+
+Clarity is a **multiplicative** factor in the composite formula, so its
+value directly caps the maximum achievable composite. Values must be high
+enough that good conditions produce reasonable signal states.
+
+| Tier | SIGINT Level | Clarity | Best Composite | Best State |
+|------|-------------|---------|----------------|------------|
+| 1    | 0-1         | 0.70    | ~0.49          | Faded      |
+| 2    | 2-3         | 0.85    | ~0.61          | Faded      |
+| 3    | 4-5         | 0.92    | ~0.66          | Clear      |
+| 4    | 6-7         | 0.97    | ~0.69          | Clear      |
+| 5    | 8-10        | 1.00    | ~0.71          | Clear      |
+
+Best composite assumes: clear skies, grid power, minimal saturation, no noise.
+
+> **Tuning note**: The original values (`0.40, 0.55, 0.65, 0.75, 0.85`)
+> were calibrated for an additive model. In the multiplicative composite
+> formula, they crushed the result so severely that even tier 5 players
+> could never reach "clear" signal during perfect conditions. The revised
+> values (`0.70, 0.85, 0.92, 0.97, 1.00`) create a meaningful progression
+> where weather and power degradation are felt at every tier, but SIGINT
+> investment is rewarded with better baseline signal quality.
+
 ### 8.5 WBN Text Degradation
 
 `POS_WBN_CompositionService.degradeBulletin()` applies word-level dropout

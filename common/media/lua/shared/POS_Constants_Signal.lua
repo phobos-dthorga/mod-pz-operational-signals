@@ -52,6 +52,13 @@ POS_Constants.SIGNAL_STATES = { "locked", "clear", "faded", "fragmented", "ghost
 
 ---------------------------------------------------------------
 -- Clarity contribution per reputation tier (index = tier)
+-- Clarity is multiplicative in the composite formula, so these
+-- values cap the maximum achievable signal. Tuned so that:
+--   Tier 1 (SIGINT 0-1): best ~0.49 (faded)
+--   Tier 2 (SIGINT 2-3): best ~0.61 (faded, approaching clear)
+--   Tier 3 (SIGINT 4-5): best ~0.66 (clear)
+--   Tier 4 (SIGINT 6-7): best ~0.69 (clear)
+--   Tier 5 (SIGINT 8+):  best ~0.71 (clear)
 ---------------------------------------------------------------
 
 POS_Constants.SIGNAL_CLARITY_BY_TIER = { 0.70, 0.85, 0.92, 0.97, 1.00 }
