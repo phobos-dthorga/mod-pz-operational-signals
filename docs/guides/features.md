@@ -270,3 +270,25 @@ Fragments are generated automatically when the player's radio receives
 WBN broadcasts. Confidence is capped at 60% (radio intelligence is
 never definitive) and decays over time. Repeated broadcasts on the
 same topic reinforce confidence; contradictory broadcasts reduce it.
+
+---
+
+### Active Satellite Scanning
+
+Connect a calibrated satellite dish to your terminal and initiate active
+reconnaissance scans. While scanning:
+
+- Download signal intercepts at satellite-grade quality
+- Watch animated progress bars as data accumulates
+- Discover rare intelligence: military convoy routes, hidden supply caches,
+  faction movements, encrypted transmissions, and more
+- Monitor power consumption — active scanning drains generator fuel faster
+- Higher SIGINT skill means faster scan cycles and better discovery chances
+- Weather and signal conditions affect download quality in real-time
+
+### Passive Recon Signal Quality
+
+Scanner radio intercepts now reflect live signal conditions. Weather,
+power grid state, and market volatility all affect the quality of
+RF-based reconnaissance data. Clear skies and stable power produce
+higher-confidence intercepts; storms and blackouts degrade them.

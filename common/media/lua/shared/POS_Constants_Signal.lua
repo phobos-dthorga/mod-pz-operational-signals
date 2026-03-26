@@ -132,6 +132,15 @@ POS_Constants.SIGNAL_MARKET_PANIC_THRESHOLD     = 0.70  -- panic
 
 POS_Constants.SIGNAL_DEFAULT_TIER = 2  -- used when SIGINT is unavailable
 
+---------------------------------------------------------------
+-- Signal Ecology BPS scaling for passive recon chunks.
+-- Maps composite signal (0-1) deviation from 0.5 midpoint to BPS bonus.
+-- At 0.5 (faded): +0 BPS. At 0.85 (locked): +1400 BPS.
+-- At 0.1 (ghosted): -1600 BPS.
+---------------------------------------------------------------
+
+POS_Constants.SIGNAL_ECOLOGY_BPS_SCALE = 4000
+
 -- Index = SIGINT level (0-10), value = signal tier (1-5)
 POS_Constants.SIGNAL_SIGINT_TIER_MAP = {
     [0]  = 1,

@@ -153,3 +153,69 @@ POS_Constants.SAT_TRUST_KEY_PREFIX = "POS_SatTrust_"
 -- Broadcast history ModData key
 POS_Constants.SAT_HISTORY_KEY      = "POS_SatBroadcastHistory"
 POS_Constants.SAT_HISTORY_MAX      = 10
+
+---------------------------------------------------------------
+-- Active Satellite Scanning (Tier IV/V reconnaissance)
+---------------------------------------------------------------
+
+-- Scan cycle timing (game seconds)
+POS_Constants.SAT_SCAN_CYCLE_SECONDS_BASE    = 30   -- base seconds per scan cycle
+POS_Constants.SAT_SCAN_CYCLE_SIGINT_REDUCTION = 2   -- seconds faster per SIGINT level
+POS_Constants.SAT_SCAN_CYCLE_MIN_SECONDS     = 15   -- minimum cycle duration (floor)
+
+-- Buffer and session limits
+POS_Constants.SAT_SCAN_BUFFER_MAX            = 40   -- max chunks before buffer full
+POS_Constants.SAT_SCAN_SESSION_MODDATA_KEY   = "POS_SatScanSession"
+
+-- Power consumption during active scanning
+POS_Constants.SAT_SCAN_POWER_DRAIN           = 1.2  -- additional kW/h draw
+
+-- Confidence for satellite intercepts (BPS — higher than handheld)
+POS_Constants.SAT_SCAN_CONFIDENCE_BASE       = 6000
+
+-- Rare discovery system
+POS_Constants.SAT_SCAN_RARE_BASE_CHANCE      = 0.01  -- 1% base per cycle
+POS_Constants.SAT_SCAN_RARE_SIGINT_BONUS     = 0.005 -- +0.5% per SIGINT level
+POS_Constants.SAT_SCAN_RARE_MAX_CHANCE       = 0.10  -- 10% cap
+
+-- SIGINT XP from active scanning
+POS_Constants.SIGINT_XP_SATELLITE_SCAN_CHUNK    = 1
+POS_Constants.SIGINT_XP_SATELLITE_SCAN_DISCOVERY = 5
+
+-- Satellite discovery types
+POS_Constants.SAT_DISCOVERY_CONVOY          = "convoy_route"
+POS_Constants.SAT_DISCOVERY_CACHE           = "supply_cache"
+POS_Constants.SAT_DISCOVERY_FACTION         = "faction_movement"
+POS_Constants.SAT_DISCOVERY_ENCRYPTED       = "encrypted_transmission"
+POS_Constants.SAT_DISCOVERY_INFRASTRUCTURE  = "infrastructure_assessment"
+POS_Constants.SAT_DISCOVERY_SUPPLY_DROP     = "supply_drop_schedule"
+
+-- Discovery type list (for random selection)
+POS_Constants.SAT_DISCOVERY_TYPES = {
+    POS_Constants.SAT_DISCOVERY_CONVOY,
+    POS_Constants.SAT_DISCOVERY_CACHE,
+    POS_Constants.SAT_DISCOVERY_FACTION,
+    POS_Constants.SAT_DISCOVERY_ENCRYPTED,
+    POS_Constants.SAT_DISCOVERY_INFRASTRUCTURE,
+    POS_Constants.SAT_DISCOVERY_SUPPLY_DROP,
+}
+
+-- Discovery type → translation key
+POS_Constants.SAT_DISCOVERY_KEYS = {
+    [POS_Constants.SAT_DISCOVERY_CONVOY]          = "UI_POS_SatScan_Discovery_Convoy",
+    [POS_Constants.SAT_DISCOVERY_CACHE]           = "UI_POS_SatScan_Discovery_Cache",
+    [POS_Constants.SAT_DISCOVERY_FACTION]         = "UI_POS_SatScan_Discovery_Faction",
+    [POS_Constants.SAT_DISCOVERY_ENCRYPTED]       = "UI_POS_SatScan_Discovery_Encrypted",
+    [POS_Constants.SAT_DISCOVERY_INFRASTRUCTURE]  = "UI_POS_SatScan_Discovery_Infrastructure",
+    [POS_Constants.SAT_DISCOVERY_SUPPLY_DROP]     = "UI_POS_SatScan_Discovery_SupplyDrop",
+}
+
+-- Encrypted discovery SIGINT gate
+POS_Constants.SAT_DISCOVERY_ENCRYPTED_SIGINT_MIN = 6
+
+-- New chunk types for satellite scanning
+POS_Constants.CHUNK_TYPE_SATELLITE_INTERCEPT = "satellite_intercept"
+POS_Constants.CHUNK_TYPE_SATELLITE_DISCOVERY = "satellite_discovery"
+
+-- Screen ID
+POS_Constants.SCREEN_SATELLITE_SCAN = "pos.network.satellite_scan"

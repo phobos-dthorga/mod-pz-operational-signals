@@ -1178,3 +1178,38 @@ The Broadcast Influence Layer is a perception engine, not a command system.
 It shapes what markets believe and what agents prioritise — but never
 overrides their autonomous logic. The player's power is narrative, not
 mechanical. This is the line that must never be crossed.
+
+---
+
+## 23. Active Satellite Scanning
+
+Active scanning is a terminal-based gameplay loop that extends the satellite
+system beyond one-shot broadcasts. The player connects to a satellite dish
+and performs repetitive, looping reconnaissance work.
+
+### 23.1 Session Lifecycle
+
+1. Open Satellite Scan screen with calibrated dish connected
+2. Click START SCAN — animated progress bars begin
+3. Every cycle (30s base, reduced by SIGINT): chunk generated + discovery roll
+4. Player must remain at terminal — leaving aborts the session
+5. Buffer full (40 chunks) or manual ABORT ends the session
+
+### 23.2 Power Consumption
+
+Active scanning adds 1.2 kW/h draw (`SAT_SCAN_POWER_DRAIN`). Generator
+fuel drains faster, creating a meaningful resource cost for intelligence
+gathering. Power loss aborts the scan.
+
+### 23.3 Discovery System
+
+Each completed scan cycle rolls for a rare satellite-exclusive discovery
+(1% base + 0.5% per SIGINT level, capped at 10%). Six discovery types
+provide unique intelligence not available through other recon methods.
+
+### 23.4 Signal Ecology Integration
+
+The Signal Ecology composite directly affects satellite intercept quality.
+Storms degrade satellite downloads; clear skies produce better data. The
+scan screen's signal quality bar updates in real-time from the ecology
+service.

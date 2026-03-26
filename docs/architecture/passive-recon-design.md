@@ -462,3 +462,33 @@ Total: 9 icons, estimated cost ~$1.62.
 - The scanner radio (§2.3) is uniquely positioned: it both passively receives AND can be used to send crude observation bursts. This dual role makes it the most versatile Tier I device.
 - Signal ecology impact: passive recon generates zero outbound saturation by default. Only explicit player-initiated sends create network traffic.
 - Cross-reference: `signal-ecology-design.md`, `data-recorder-design.md`, `design-guidelines.md §20.4`.
+
+---
+
+## Signal Ecology Integration
+
+As of v0.23.0, radio intercept and satellite intercept chunks incorporate
+the live Signal Ecology composite value via the `signalMod` BPS field.
+This means weather, power grid state, market volatility, and SIGINT tier
+all affect the quality of RF-based passive reconnaissance.
+
+Building scans remain unaffected (visual devices operate independently of
+RF propagation conditions).
+
+## Active Satellite Scanning
+
+The Satellite Scan terminal screen (`pos.network.satellite_scan`) enables
+Tier IV/V active reconnaissance. When a calibrated satellite dish is
+connected, the player can initiate a looping scan session that downloads
+signal intercepts at satellite-grade confidence.
+
+Key properties:
+- Player must remain at the terminal during scanning
+- Scan cycles produce standard satellite intercept chunks plus rare discoveries
+- Signal Ecology affects download quality in real-time
+- Active scanning increases power consumption
+- SIGINT level affects cycle speed and rare discovery probability
+
+Six rare satellite discovery types: convoy routes, supply caches, faction
+movements, encrypted transmissions (SIGINT 6+ gate), infrastructure
+assessments, and supply drop schedules.

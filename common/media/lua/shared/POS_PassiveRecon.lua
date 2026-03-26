@@ -124,23 +124,43 @@ local function generateBuildingScanChunk(player, deviceDef, bldg, day, confidenc
 end
 
 --- Generate a radio intercept chunk.
+--- Signal Ecology composite is wired into signalMod so that weather, power,
+--- market volatility, and SIGINT tier all affect intercept quality at capture
+--- time. Building scans are excluded (visual devices, not RF-based).
 local function generateRadioInterceptChunk(player, radioItem, tier, bldg, day)
     local roomType = (bldg.rooms and bldg.rooms[1]) or "unknown"
-    local confidenceMod = TIER_CONFIDENCE[tier] or POS_Constants.RADIO_CONFIDENCE_TIER2
+    local tierConf = TIER_CONFIDENCE[tier] or POS_Constants.RADIO_CONFIDENCE_TIER2
     local baseBps = POS_Constants.CONFIDENCE_BASE_EFFECTIVE * POS_Constants.CONFIDENCE_BPS_DIVISOR
+
+    -- Signal Ecology bonus: maps composite (0-1) deviation from 0.5 midpoint
+    -- to a BPS bonus/penalty. At 0.5 (faded): +0. At 0.85 (locked): +1400.
+    -- At 0.1 (ghosted): -1600. Scale defined by SIGNAL_ECOLOGY_BPS_SCALE.
+    local ecologyBonus = 0
+    local signalState = nil
+    if POS_SignalEcologyService and POS_SignalEcologyService.getComposite then
+        local ok, composite = PhobosLib.safecall(POS_SignalEcologyService.getComposite)
+        if ok and type(composite) == "number" then
+            ecologyBonus = math.floor(
+                (composite - 0.5) * POS_Constants.SIGNAL_ECOLOGY_BPS_SCALE)
+        end
+        local okS, state = PhobosLib.safecall(POS_SignalEcologyService.getQualitativeState)
+        if okS and state then signalState = state end
+    end
+
     return {
-        type       = POS_Constants.CHUNK_TYPE_RADIO_INTERCEPT,
-        entityId   = roomType,
-        category   = POS_RoomCategoryMap and POS_RoomCategoryMap.getCategory(roomType) or nil,
-        x          = bldg.x,
-        y          = bldg.y,
-        region     = bldg.region or "",
-        day        = day,
-        confidence = baseBps + confidenceMod,
-        mediaMod   = 0,
-        carryMod   = 0,
-        signalMod  = confidenceMod,
-        scanType   = "signal",
+        type        = POS_Constants.CHUNK_TYPE_RADIO_INTERCEPT,
+        entityId    = roomType,
+        category    = POS_RoomCategoryMap and POS_RoomCategoryMap.getCategory(roomType) or nil,
+        x           = bldg.x,
+        y           = bldg.y,
+        region      = bldg.region or "",
+        day         = day,
+        confidence  = baseBps + tierConf + ecologyBonus,
+        mediaMod    = 0,
+        carryMod    = 0,
+        signalMod   = tierConf + ecologyBonus,
+        signalState = signalState,
+        scanType    = "signal",
     }
 end
 
@@ -406,6 +426,92 @@ function POS_PassiveRecon.getCarryConfidenceBonus(player)
     end
 
     return totalBonus
+end
+
+---------------------------------------------------------------
+-- Satellite scanning (called from POS_Screen_SatelliteScan)
+---------------------------------------------------------------
+
+--- Generate a satellite intercept chunk with Signal Ecology integration.
+--- Higher quality than handheld radio (satellite-grade base confidence).
+--- Zone and category are randomised (satellite covers wide area).
+---@param player userdata  The player character
+---@param day number       Current game day
+---@return table chunk     The generated chunk table
+function POS_PassiveRecon.generateSatelliteChunk(player, day)
+    -- Pick random zone and category
+    local zones = POS_Constants.MARKET_ZONES or {}
+    local categories = {}
+    local catMults = POS_Constants.CATEGORY_PRICE_MULTIPLIERS or {}
+    for catId, _ in pairs(catMults) do
+        categories[#categories + 1] = catId
+    end
+
+    local zoneId = #zones > 0 and zones[ZombRand(#zones) + 1] or "muldraugh"
+    local categoryId = #categories > 0 and categories[ZombRand(#categories) + 1] or "miscellaneous"
+
+    -- Signal Ecology bonus (same pattern as radio intercepts)
+    local ecologyBonus = 0
+    local signalState = nil
+    if POS_SignalEcologyService and POS_SignalEcologyService.getComposite then
+        local ok, composite = PhobosLib.safecall(POS_SignalEcologyService.getComposite)
+        if ok and type(composite) == "number" then
+            ecologyBonus = math.floor(
+                (composite - 0.5) * POS_Constants.SIGNAL_ECOLOGY_BPS_SCALE)
+        end
+        local okS, state = PhobosLib.safecall(POS_SignalEcologyService.getQualitativeState)
+        if okS and state then signalState = state end
+    end
+
+    return {
+        type        = POS_Constants.CHUNK_TYPE_SATELLITE_INTERCEPT,
+        entityId    = zoneId,
+        category    = categoryId,
+        region      = zoneId,
+        x           = player and player:getX() or 0,
+        y           = player and player:getY() or 0,
+        day         = day,
+        confidence  = POS_Constants.SAT_SCAN_CONFIDENCE_BASE + ecologyBonus,
+        mediaMod    = 0,
+        carryMod    = 0,
+        signalMod   = ecologyBonus,
+        signalState = signalState,
+        scanType    = "satellite",
+    }
+end
+
+--- Generate a satellite discovery chunk (rare find).
+---@param player userdata     The player character
+---@param day number          Current game day
+---@param discoveryType string  Discovery type from SAT_DISCOVERY_TYPES
+---@return table chunk        The generated discovery chunk
+function POS_PassiveRecon.generateSatelliteDiscovery(player, day, discoveryType)
+    local zones = POS_Constants.MARKET_ZONES or {}
+    local zoneId = #zones > 0 and zones[ZombRand(#zones) + 1] or "muldraugh"
+
+    local signalState = nil
+    if POS_SignalEcologyService and POS_SignalEcologyService.getQualitativeState then
+        local ok, state = PhobosLib.safecall(POS_SignalEcologyService.getQualitativeState)
+        if ok and state then signalState = state end
+    end
+
+    local descKey = POS_Constants.SAT_DISCOVERY_KEYS
+        and POS_Constants.SAT_DISCOVERY_KEYS[discoveryType]
+        or "UI_POS_SatScan_Discovery_Unknown"
+
+    return {
+        type          = POS_Constants.CHUNK_TYPE_SATELLITE_DISCOVERY,
+        discoveryType = discoveryType,
+        entityId      = zoneId,
+        region        = zoneId,
+        x             = player and player:getX() or 0,
+        y             = player and player:getY() or 0,
+        day           = day,
+        confidence    = POS_Constants.SAT_SCAN_CONFIDENCE_BASE + 2000, -- high confidence
+        signalState   = signalState,
+        description   = descKey,
+        scanType      = "satellite_discovery",
+    }
 end
 
 -- Hook into game events
