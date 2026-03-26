@@ -54,7 +54,7 @@ POS_Constants.SIGNAL_STATES = { "locked", "clear", "faded", "fragmented", "ghost
 -- Clarity contribution per reputation tier (index = tier)
 ---------------------------------------------------------------
 
-POS_Constants.SIGNAL_CLARITY_BY_TIER = { 0.40, 0.55, 0.65, 0.75, 0.85 }
+POS_Constants.SIGNAL_CLARITY_BY_TIER = { 0.70, 0.85, 0.92, 0.97, 1.00 }
 
 ---------------------------------------------------------------
 -- Agent saturation scaling
