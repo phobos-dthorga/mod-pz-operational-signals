@@ -79,8 +79,31 @@ local function getAllWorldKeys()
         end
     end
 
+    -- Tier V Strategic Relay registry
+    if POS_Constants.RELAY_REGISTRY_KEY then
+        keys[#keys + 1] = POS_Constants.RELAY_REGISTRY_KEY
+    end
+
+    -- Satellite system world ModData (POS_Satellite container)
+    keys[#keys + 1] = "POS_Satellite"
+
     return keys
 end
+
+--- Prefixes for scattered world ModData keys that need cleanup.
+--- These are indexed by entity/location ID and can't be enumerated
+--- from a single container — they must be scanned from the global
+--- ModData table.
+local WORLD_PREFIX_CLEANUP = {
+    "POS_Relay_",
+    "POS_SatelliteVisit_",
+    "POS_SatelliteCalibrated_",
+    "POS_SatelliteWiring_",
+    "POS_SatTrust_",
+    "POS_CameraVisit_",
+    "POS_AnalysisVisit_",
+    "POS_IntelVisit_",
+}
 
 ---------------------------------------------------------------
 -- Player-level ModData keys to clear
@@ -105,6 +128,11 @@ local function getAllPlayerKeys()
         keys[#keys + 1] = k
     end
     if POS_Constants.DISCOVERY_NAMESPACE then keys[#keys + 1] = POS_Constants.DISCOVERY_NAMESPACE end
+
+    -- Satellite broadcast history + scan session (player ModData)
+    if POS_Constants.SAT_HISTORY_KEY then keys[#keys + 1] = POS_Constants.SAT_HISTORY_KEY end
+    if POS_Constants.SAT_SCAN_SESSION_MODDATA_KEY then keys[#keys + 1] = POS_Constants.SAT_SCAN_SESSION_MODDATA_KEY end
+
     return keys
 end
 
@@ -117,6 +145,8 @@ end
 --- @return number count of keys cleared
 function POS_DataResetService.resetWorldData()
     local cleared = 0
+
+    -- 1. Clear named containers
     local worldKeys = getAllWorldKeys()
     for _, key in ipairs(worldKeys) do
         local data = PhobosLib.getWorldModData(key)
@@ -129,6 +159,31 @@ function POS_DataResetService.resetWorldData()
             PhobosLib.debug("POS", _TAG, "Cleared world ModData: " .. tostring(key))
         end
     end
+
+    -- 2. Clear prefix-indexed scattered keys (relay, satellite, visits).
+    -- These are stored at the top level of POS_Satellite or other containers.
+    -- Scan the POS_Satellite container for matching prefix keys.
+    local satData = PhobosLib.getWorldModData("POS_Satellite")
+    if satData then
+        local prefixCleared = 0
+        for key, _ in pairs(satData) do
+            if type(key) == "string" then
+                for _, prefix in ipairs(WORLD_PREFIX_CLEANUP) do
+                    if key:sub(1, #prefix) == prefix then
+                        satData[key] = nil
+                        prefixCleared = prefixCleared + 1
+                        break
+                    end
+                end
+            end
+        end
+        if prefixCleared > 0 then
+            PhobosLib.debug("POS", _TAG,
+                "Cleared " .. tostring(prefixCleared) .. " prefix-indexed satellite/relay keys")
+            cleared = cleared + prefixCleared
+        end
+    end
+
     return cleared
 end
 
