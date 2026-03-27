@@ -204,6 +204,53 @@ function POS_StrategicRelayService.isRelayLinked(siteId, terminalSq)
     return false
 end
 
+--- Establish a remote data link between a relay and the player's terminal.
+--- For Tier V, "wiring" is a digital data link — the player doesn't need
+--- to physically run cable to the rooftop. They initiate from the terminal.
+--- Uses Tier IV wiring format for compatibility with the existing system.
+---@param siteId string  Relay site ID
+---@param player userdata  The player at a terminal
+---@return boolean success
+---@return string|nil errorKey  Translation key if failed
+function POS_StrategicRelayService.wireRemote(siteId, player)
+    if not siteId or not player then return false, "UI_POS_Relay_WiringFailed" end
+
+    local relay = POS_StrategicRelayService.getRelay(siteId)
+    if not relay then return false, "UI_POS_Relay_NoRelay" end
+
+    local playerSq = player:getCurrentSquare()
+    if not playerSq then return false, "UI_POS_Relay_WiringFailed" end
+
+    -- Get the relay's square
+    local relaySq = getSquare and getSquare(relay.x, relay.y, relay.z)
+    if not relaySq then return false, "UI_POS_Relay_WiringFailed" end
+
+    -- Store wiring using Tier IV format (building-key based) for compatibility.
+    -- This is a data link, not physical cable — no wire consumption needed.
+    if POS_SatelliteService and POS_SatelliteService.setWiringData then
+        local currentDay = 0
+        local gt = getGameTime and getGameTime()
+        if gt then currentDay = math.floor((gt:getWorldAgeHours() or 0) / 24) end
+
+        local ok = PhobosLib.safecall(POS_SatelliteService.setWiringData,
+            relaySq, {
+                targetX    = playerSq:getX(),
+                targetY    = playerSq:getY(),
+                targetZ    = playerSq:getZ(),
+                wireCount  = 0,  -- remote data link, no physical wire
+                createdDay = currentDay,
+                linkType   = "relay_data_link",
+            })
+        if ok then
+            PhobosLib.debug("POS", _TAG,
+                "wireRemote: data link established for " .. tostring(siteId))
+            return true
+        end
+    end
+
+    return false, "UI_POS_Relay_WiringFailed"
+end
+
 ---------------------------------------------------------------
 -- Calibration
 ---------------------------------------------------------------

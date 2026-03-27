@@ -569,7 +569,12 @@ function POS_SatelliteService.validateWiredLink(sq)
 end
 
 --- Find desktop computers within wiring range of a satellite dish.
--- @return table Array of {x, y, z, wireCount} sorted by wireCount ascending
+--- Scans ALL Z-levels from ground (z=0) to the dish floor, because
+--- satellite dishes are often on rooftops (z=2+) while desktop computers
+--- are on ground/first floor (z=0/1).
+--- @param sq IsoGridSquare  The satellite dish square
+--- @param maxRange number   Maximum wiring range in tiles (default from constants)
+--- @return table Array of {x, y, z, wireCount} sorted by wireCount ascending
 function POS_SatelliteService.findDesktopTargets(sq, maxRange)
     if not sq then return {} end
     maxRange = maxRange or POS_Constants.SATELLITE_WIRING_MAX_RANGE_DEFAULT
@@ -577,8 +582,11 @@ function POS_SatelliteService.findDesktopTargets(sq, maxRange)
     if not desktopSprites then return {} end
     local targets = {}
     local sx, sy, sz = sq:getX(), sq:getY(), sq:getZ()
+    local cell = getCell()
+    if not cell then return {} end
 
-    local found = PhobosLib.scanNearbySquares(sq, maxRange, function(scanSq)
+    -- Desktop detection callback (reused per Z-level scan)
+    local function checkForDesktops(scanSq)
         for i = 0, scanSq:getObjects():size() - 1 do
             local obj = scanSq:getObjects():get(i)
             local sprite = obj:getSprite()
@@ -590,16 +598,25 @@ function POS_SatelliteService.findDesktopTargets(sq, maxRange)
                         sx, sy, sz, tx, ty, tz,
                         POS_Constants.SATELLITE_WIRING_Z_PENALTY)
                     if wireCount <= maxRange then
-                        table.insert(targets, {
+                        targets[#targets + 1] = {
                             x = tx, y = ty, z = tz,
                             wireCount = wireCount,
-                        })
+                        }
                     end
                 end
             end
         end
         return false -- keep scanning
-    end)
+    end
+
+    -- Scan each Z-level from ground up to the dish floor.
+    -- This ensures rooftop dishes (z=2+) can find ground-floor desktops.
+    for z = 0, sz do
+        local floorSq = cell:getGridSquare(sx, sy, z)
+        if floorSq then
+            PhobosLib.scanNearbySquares(floorSq, maxRange, checkForDesktops)
+        end
+    end
 
     table.sort(targets, function(a, b) return a.wireCount < b.wireCount end)
     return targets

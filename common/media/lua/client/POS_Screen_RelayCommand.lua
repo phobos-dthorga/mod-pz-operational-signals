@@ -139,8 +139,27 @@ function screen.create(contentPanel, params, _terminal)
     -- Check wired link (Tier V requires wired)
     if not _hasWiredLink(siteId) then
         W.createLabel(ctx.panel, 8, ctx.y,
-            W.safeGetText("UI_POS_Relay_NoWiredLink"), C.error)
-        ctx.y = ctx.y + ctx.lineH
+            W.safeGetText("UI_POS_Relay_NoWiredLink"), C.warning)
+        ctx.y = ctx.y + ctx.lineH + 4
+
+        -- Offer remote wiring button (Tier V terminal-first paradigm)
+        local wireSiteId = siteId
+        W.createButton(ctx.panel, ctx.btnX, ctx.y, ctx.btnW, ctx.btnH,
+            W.safeGetText("UI_POS_Relay_WireRemote"), nil,
+            function()
+                local p = getSpecificPlayer(0)
+                if p and POS_StrategicRelayService and POS_StrategicRelayService.wireRemote then
+                    local ok2, err = POS_StrategicRelayService.wireRemote(wireSiteId, p)
+                    if ok2 then
+                        POS_ScreenManager.replaceCurrent(screen.id)
+                    else
+                        PhobosLib.debug("POS", "[Relay]",
+                            "wireRemote failed: " .. tostring(err))
+                    end
+                end
+            end)
+        ctx.y = ctx.y + ctx.btnH + 4
+
         W.drawFooter(ctx)
         return
     end
