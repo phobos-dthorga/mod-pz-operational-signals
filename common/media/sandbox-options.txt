@@ -105,14 +105,6 @@ option POS.InvestmentMinReturnPct
     translation = POS_InvestmentMinReturnPct,
 }
 
-option POS.EnableSignalStrength
-{
-    type = boolean,
-    default = true,
-    page = POS_Sandbox,
-    translation = POS_EnableSignalStrength,
-}
-
 option POS.SignalReferencePower
 {
     type = integer,
@@ -427,14 +419,6 @@ option POS.TerminalPowerDrainRate
 }
 
 
-option POS.EnableExchange
-{
-    type = boolean,
-    default = false,
-    page = POS_Sandbox,
-    translation = POS_EnableExchange,
-}
-
 option POS.IntelFreshnessDecayDays
 {
     type = integer,
@@ -464,16 +448,6 @@ option POS.MarketNoteActionTime
     page = POS_Sandbox,
     translation = POS_MarketNoteActionTime,
 }
-
-option POS.EnableMarketBroadcasts
-{
-    type = boolean,
-    default = true,
-    page = POS_Sandbox,
-    translation = POS_EnableMarketBroadcasts,
-}
-
-
 
 option POS.ItemSelectionPoolSize
 {
@@ -861,14 +835,6 @@ option POS.SIGINTConfidenceBonus
     translation = POS_SIGINTConfidenceBonus,
 }
 
-option POS.SIGINTTraitsEnabled
-{
-    type = boolean,
-    default = true,
-    page = POS_Sandbox,
-    translation = POS_SIGINTTraitsEnabled,
-}
-
 option POS.SIGINTBookSpawns
 {
     type = boolean,
@@ -1001,14 +967,6 @@ option POS.SatelliteLinkRange
     translation = POS_SatelliteLinkRange,
 }
 
-option POS.SatelliteMarketCoupling
-{
-    type = boolean,
-    default = true,
-    page = POS_Sandbox,
-    translation = POS_SatelliteMarketCoupling,
-}
-
 option POS.SatelliteDecalibrationDays
 {
     type = integer,
@@ -1079,4 +1037,14 @@ option POS.AmbientIntelInterval
     default = 30,
     page = POS_Sandbox,
     translation = POS_AmbientIntelInterval,
+}
+
+option POS.RelayDiscoveryRange
+{
+    type = integer,
+    min = 3,
+    max = 50,
+    default = 5,
+    page = POS_Sandbox,
+    translation = POS_RelayDiscoveryRange,
 }

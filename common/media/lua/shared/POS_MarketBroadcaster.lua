@@ -154,12 +154,6 @@ end
 function POS_MarketBroadcaster.broadcast()
     if not broadcasterActive then return false end
 
-    -- Check if market broadcasts are enabled
-    if POS_Sandbox and POS_Sandbox.getEnableMarketBroadcasts
-       and not POS_Sandbox.getEnableMarketBroadcasts() then
-        return false
-    end
-
     local packet = POS_MarketBroadcaster.generatePacket()
     if not packet then
         PhobosLib.debug("POS", _TAG, "Failed to generate market packet")

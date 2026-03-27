@@ -146,7 +146,10 @@ function POS_RelayDetection.canDiscover(player, sq)
     if not ok3 or not dist then
         return false, "invalid_args"
     end
-    if dist > POS_Constants.RELAY_DISCOVERY_RANGE then
+    local maxRange = POS_Sandbox and POS_Sandbox.getRelayDiscoveryRange
+        and POS_Sandbox.getRelayDiscoveryRange()
+        or POS_Constants.RELAY_DISCOVERY_RANGE
+    if dist > maxRange then
         return false, "UI_POS_Relay_TooFar"
     end
 

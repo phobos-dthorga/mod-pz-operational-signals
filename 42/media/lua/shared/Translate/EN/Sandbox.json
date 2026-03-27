@@ -20,8 +20,6 @@
     "Sandbox_POS_InvestmentMinReturnPct": "Investment Minimum Return",
     "Sandbox_POS_InvestmentMinReturnPct_tooltip": "Minimum return multiplier for investments (as integer %, e.g. 110 = 1.1x). <BR> <BR> <INDENT:20> Set to 100 for a chance to lose everything. 110 = always at least 10% profit. <BR> Range: 100–150. Default: 110",
 
-    "Sandbox_POS_EnableSignalStrength": "Enable Signal Strength",
-    "Sandbox_POS_EnableSignalStrength_tooltip": "When enabled, radio hardware quality affects POSnet connection quality. <BR> <BR> <INDENT:20> Weaker radios reduce mission rewards (50-100% scaling). <BR> Very weak radios cannot connect at all. <BR> When disabled, all radios work equally. <BR> Default: ON",
     "Sandbox_POS_SignalReferencePower": "Signal Reference Power",
     "Sandbox_POS_SignalReferencePower_tooltip": "The TransmitRange value used as the 100% signal reference point. <BR> <BR> <INDENT:20> Radios at or above this power get full signal strength. <BR> Lower-power radios are scaled via inverse square law. <BR> Range: 1000-30000. Default: 10000",
     "Sandbox_POS_MinSignalThreshold": "Minimum Signal Threshold",
@@ -93,8 +91,6 @@
     "Sandbox_POS_TerminalPowerDrainRate": "Terminal Power Drain Rate",
     "Sandbox_POS_TerminalPowerDrainRate_tooltip": "Generator fuel drain rate while the desktop terminal is active (as hundredths of % per real-time minute). <BR> <BR> <INDENT:20> Only applies when grid power is off. Grid power is free. <BR> Set to 0 to disable power drain entirely. <BR> Range: 0–100. Default: 15 (0.15%/min, ~11 hours per full generator)",
 
-    "Sandbox_POS_EnableExchange": "Enable Commodity Exchange",
-    "Sandbox_POS_EnableExchange_tooltip": "Master toggle for the commodity exchange system. <BR> <BR> <INDENT:20> Provides commodity indices, trends, and portfolio tracking. <BR> Currently experimental — disabled by default. <BR> Default: OFF",
     "Sandbox_POS_IntelFreshnessDecayDays": "Intel Freshness Decay (days)",
     "Sandbox_POS_IntelFreshnessDecayDays_tooltip": "Number of in-game days before market intel records expire and are purged. <BR> <BR> <INDENT:20> Shorter values force more frequent field reconnaissance. <BR> Range: 3–60. Default: 14",
     "Sandbox_POS_MarketBroadcastInterval": "Market Broadcast Interval (minutes)",
@@ -102,8 +98,6 @@
 
     "Sandbox_POS_MarketNoteActionTime": "Market Note Action Time (ticks)",
     "Sandbox_POS_MarketNoteActionTime_tooltip": "Duration of the 'Gather Market Intel' timed action in game ticks. <BR> <BR> <INDENT:20> Lower values = faster note-taking. <BR> Range: 100–600. Default: 300",
-    "Sandbox_POS_EnableMarketBroadcasts": "Enable Market Broadcasts",
-    "Sandbox_POS_EnableMarketBroadcasts_tooltip": "When enabled, the server periodically broadcasts market intel data to all players. <BR> <BR> <INDENT:20> Broadcast data is lower quality than field-gathered notes. <BR> Default: ON",
     "Sandbox_POS_ItemSelectionPoolSize": "Items Per Recon Note",
     "Sandbox_POS_ItemSelectionPoolSize_tooltip": "Number of specific items recorded per field reconnaissance note. <BR> <BR> <INDENT:20> Higher values give more detailed market intelligence per action. <BR> Range: 1-5. Default: 3",
 
@@ -201,8 +195,6 @@
     "Sandbox_POS_SIGINTCrossCorrelationLevel_tooltip": "Minimum SIGINT level required to unlock cross-correlation during Terminal Analysis. <BR> <BR> <INDENT:20> Cross-correlation detects emergent patterns across diverse inputs. <BR> Range: 3-10. Default: 6",
     "Sandbox_POS_SIGINTConfidenceBonus": "SIGINT Confidence Bonus",
     "Sandbox_POS_SIGINTConfidenceBonus_tooltip": "Scaling of the per-level confidence bonus from SIGINT skill. <BR> <BR> <INDENT:20> 1 = None, 2 = Low, 3 = Standard, 4 = High. <BR> Default: 3 (Standard)",
-    "Sandbox_POS_SIGINTTraitsEnabled": "SIGINT Traits Enabled",
-    "Sandbox_POS_SIGINTTraitsEnabled_tooltip": "When enabled, SIGINT-related traits appear at character creation. <BR> <BR> <INDENT:20> Includes Analytical Mind, Radio Hobbyist, Systems Thinker (positive) and Impatient, Disorganised Thinker, Signal Blindness (negative). <BR> Default: ON",
     "Sandbox_POS_SIGINTBookSpawns": "SIGINT Book Spawns",
     "Sandbox_POS_SIGINTBookSpawns_tooltip": "When enabled, SIGINT skill books appear in world loot (libraries, military bases, electronics stores). <BR> <BR> <INDENT:20> Default: ON",
 
@@ -233,8 +225,6 @@
     "Sandbox_POS_SatelliteCalibrationTime_tooltip": "Duration of the satellite dish calibration timed action in seconds. <BR> <BR> <INDENT:20> Range: 60-600. Default: 300",
     "Sandbox_POS_SatelliteLinkRange": "Satellite Link Range (tiles)",
     "Sandbox_POS_SatelliteLinkRange_tooltip": "Maximum tile range for the satellite-to-terminal link. <BR> <BR> <INDENT:20> Terminal must be within this range of a calibrated dish for enhancement bonuses. <BR> Range: 20-100. Default: 50",
-    "Sandbox_POS_SatelliteMarketCoupling": "Satellite Market Coupling",
-    "Sandbox_POS_SatelliteMarketCoupling_tooltip": "When enabled, satellite broadcasts cause price propagation in the regional market economy. <BR> <BR> <INDENT:20> Default: ON",
     "Sandbox_POS_SatelliteDecalibrationDays": "Satellite Decalibration (days)",
     "Sandbox_POS_SatelliteDecalibrationDays_tooltip": "Days without power before a calibrated dish requires recalibration. <BR> <BR> <INDENT:20> 0 = dishes never decalibrate once set up. <BR> Range: 0-30. Default: 7",
     "Sandbox_POS_SatelliteWiringMaxRange": "Satellite Wiring Max Range",
@@ -252,5 +242,8 @@
     "Sandbox_POS_TradeTerminalSIGINTReq_tooltip": "Minimum SIGINT skill level required to access the Trade Terminal. Default: 1.",
 
     "Sandbox_POS_AmbientIntelInterval": "Ambient Intel Interval",
-    "Sandbox_POS_AmbientIntelInterval_tooltip": "Minutes between passive market intelligence observations. Lower = more data but noisier. <BR> <BR> <INDENT:20> Range: 10-120. Default: 30."
+    "Sandbox_POS_AmbientIntelInterval_tooltip": "Minutes between passive market intelligence observations. Lower = more data but noisier. <BR> <BR> <INDENT:20> Range: 10-120. Default: 30.",
+
+    "Sandbox_POS_RelayDiscoveryRange": "Relay Discovery Range",
+    "Sandbox_POS_RelayDiscoveryRange_tooltip": "Maximum distance (in tiles) from a Tier V relay dish required to discover and register it as a relay site. Default: 5 tiles."
 }

@@ -853,6 +853,9 @@
     "UI_POS_Relay_Discovered": "Relay site discovered! Access via Network terminal.",
     "UI_POS_Relay_AlreadyDiscovered": "This relay site has already been discovered.",
     "UI_POS_Relay_NotARelay": "This dish does not qualify as a strategic relay site.",
+    "UI_POS_Relay_TooFar": "Too far from this relay dish to discover it.",
+    "UI_POS_Relay_ContextMenu_DiscoverTip": "Discover and register this strategic relay site for remote terminal control.",
+    "UI_POS_SubMenu": "POSnet",
 
     "UI_POS_Market_GatherIntel_MultiLocation": "Multiple commodity sources detected at this location.",
 

@@ -342,17 +342,6 @@ local function renderExchange(ctx, params)
     local W = POS_TerminalWidgets
     local C = W.COLOURS
 
-    local exchangeEnabled = POS_Sandbox
-        and POS_Sandbox.getEnableExchange
-        and POS_Sandbox.getEnableExchange()
-
-    if not exchangeEnabled then
-        W.createLabel(ctx.panel, 8, ctx.y,
-            W.safeGetText("UI_POS_Exchange_Disabled"), C.dim)
-        ctx.y = ctx.y + ctx.lineH
-        return
-    end
-
     local overview = POS_MarketService.getExchangeOverview()
 
     -- Sentiment

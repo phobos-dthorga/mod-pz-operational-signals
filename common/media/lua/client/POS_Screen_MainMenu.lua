@@ -70,18 +70,16 @@ function screen.create(contentPanel, _params, terminal)
 
     -- Signal strength display
     local signal = terminal and terminal.signalStrength or 1.0
-    if POS_Sandbox.isSignalStrengthEnabled() then
-        local signalPct = string.format("%.0f%%", signal * 100)
-        local qualityKey = POS_RadioPower.getQualityKey(signal)
-        local signalColour = signal >= 0.8 and C.textBright
-            or signal >= 0.5 and C.text
-            or signal >= 0.25 and C.warn
-            or C.error
-        W.createLabel(ctx.panel, 0, ctx.y,
-            "> " .. W.safeGetText("UI_POS_TerminalSignal", signalPct, W.safeGetText(qualityKey)),
-            signalColour)
-        ctx.y = ctx.y + ctx.lineH
-    end
+    local signalPct = string.format("%.0f%%", signal * 100)
+    local qualityKey = POS_RadioPower.getQualityKey(signal)
+    local signalColour = signal >= 0.8 and C.textBright
+        or signal >= 0.5 and C.text
+        or signal >= 0.25 and C.warn
+        or C.error
+    W.createLabel(ctx.panel, 0, ctx.y,
+        "> " .. W.safeGetText("UI_POS_TerminalSignal", signalPct, W.safeGetText(qualityKey)),
+        signalColour)
+    ctx.y = ctx.y + ctx.lineH
 
     -- Reputation display
     local player = getSpecificPlayer(0)

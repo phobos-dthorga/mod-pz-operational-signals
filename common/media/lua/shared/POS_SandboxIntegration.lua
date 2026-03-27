@@ -77,10 +77,6 @@ end
 -- Signal strength sandbox accessors
 ---------------------------------------------------------------
 
-function POS_Sandbox.isSignalStrengthEnabled()
-    return PhobosLib.getSandboxVar("POS", "EnableSignalStrength", true)
-end
-
 function POS_Sandbox.getSignalReferencePower()
     return PhobosLib.getSandboxVar("POS", "SignalReferencePower", 10000)
 end
@@ -240,10 +236,6 @@ end
 -- Market / exchange sandbox accessors
 ---------------------------------------------------------------
 
-function POS_Sandbox.getEnableExchange()
-    return PhobosLib.getSandboxVar("POS", "EnableExchange", false)
-end
-
 function POS_Sandbox.getIntelFreshnessDecayDays()
     return PhobosLib.getSandboxVar("POS", "IntelFreshnessDecayDays", 14)
 end
@@ -254,10 +246,6 @@ end
 
 function POS_Sandbox.getMarketNoteActionTime()
     return PhobosLib.getSandboxVar("POS", "MarketNoteActionTime", 300)
-end
-
-function POS_Sandbox.getEnableMarketBroadcasts()
-    return PhobosLib.getSandboxVar("POS", "EnableMarketBroadcasts", true)
 end
 
 function POS_Sandbox.getItemSelectionPoolSize()
@@ -447,10 +435,6 @@ function POS_Sandbox.getSIGINTConfidenceBonus()
     return PhobosLib.getSandboxVar("POS", "SIGINTConfidenceBonus", 3)
 end
 
-function POS_Sandbox.getSIGINTTraitsEnabled()
-    return PhobosLib.getSandboxVar("POS", "SIGINTTraitsEnabled", true)
-end
-
 function POS_Sandbox.getSIGINTBookSpawns()
     return PhobosLib.getSandboxVar("POS", "SIGINTBookSpawns", true)
 end
@@ -522,10 +506,6 @@ function POS_Sandbox.getSatelliteLinkRange()
         POS_Constants.SATELLITE_LINK_RANGE)
 end
 
-function POS_Sandbox.getSatelliteMarketCoupling()
-    return PhobosLib.getSandboxVar("POS", "SatelliteMarketCoupling", true)
-end
-
 function POS_Sandbox.getSatelliteDecalibrationDays()
     return PhobosLib.getSandboxVar("POS", "SatelliteDecalibrationDays",
         POS_Constants.SATELLITE_DECALIBRATION_DAYS)
@@ -534,6 +514,12 @@ end
 function POS_Sandbox.getSatelliteWiringMaxRange()
     return PhobosLib.getSandboxVar("POS", "SatelliteWiringMaxRange",
         POS_Constants.SATELLITE_WIRING_MAX_RANGE_DEFAULT)
+end
+
+--- Get the maximum distance for Tier V relay discovery.
+---@return number distance in tiles (default 5)
+function POS_Sandbox.getRelayDiscoveryRange()
+    return PhobosLib.getSandboxVar("POS", "RelayDiscoveryRange", 5)
 end
 
 ---------------------------------------------------------------

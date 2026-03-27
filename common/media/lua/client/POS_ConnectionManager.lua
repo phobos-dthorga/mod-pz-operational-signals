@@ -234,14 +234,12 @@ function POS_ConnectionManager.canConnect(player, radioObj)
         }
     end
 
-    -- Check signal strength (if enabled)
-    if POS_Sandbox.isSignalStrengthEnabled() then
-        local power = POS_RadioPower.getPower(radioObj)
-        local signal = POS_RadioPower.calculateSignalStrength(power)
-        if not POS_RadioPower.meetsThreshold(signal) then
-            local pct = string.format("%.0f", signal * 100)
-            return false, "UI_POS_SignalTooWeak", { signalPct = pct }
-        end
+    -- Check signal strength
+    local power = POS_RadioPower.getPower(radioObj)
+    local signal = POS_RadioPower.calculateSignalStrength(power)
+    if not POS_RadioPower.meetsThreshold(signal) then
+        local pct = string.format("%.0f", signal * 100)
+        return false, "UI_POS_SignalTooWeak", { signalPct = pct }
     end
 
     -- Check for computer access (desktop nearby OR portable in inventory)

@@ -58,9 +58,6 @@ end
 ---@param signalStrength number 0.0 to 1.0
 ---@return boolean
 function POS_RadioPower.meetsThreshold(signalStrength)
-    if not POS_Sandbox.isSignalStrengthEnabled() then
-        return true
-    end
     local threshold = POS_Sandbox.getMinSignalThreshold()
     return (signalStrength or 0) >= threshold
 end
@@ -70,9 +67,6 @@ end
 ---@param signalStrength number 0.0 to 1.0
 ---@return number multiplier 0.5 to 1.0
 function POS_RadioPower.getRewardMultiplier(signalStrength)
-    if not POS_Sandbox.isSignalStrengthEnabled() then
-        return 1.0
-    end
     local clamped = math.min(1.0, math.max(0, signalStrength or 0))
     return 0.5 + 0.5 * clamped
 end

@@ -37,12 +37,6 @@ POS_SIGINTTraits = {}
 function POS_SIGINTTraits.getXPModifier(player)
     if not player then return 1.0 end
 
-    -- Sandbox gate: if traits are disabled, no modifiers
-    if POS_Sandbox and POS_Sandbox.getSIGINTTraitsEnabled
-        and not POS_Sandbox.getSIGINTTraitsEnabled() then
-        return 1.0
-    end
-
     local modifier = 1.0
 
     -- Analytical Mind: +25% SIGINT XP
@@ -69,11 +63,6 @@ end
 function POS_SIGINTTraits.getNoisePenalty(player)
     if not player then return 0 end
 
-    if POS_Sandbox and POS_Sandbox.getSIGINTTraitsEnabled
-        and not POS_Sandbox.getSIGINTTraitsEnabled() then
-        return 0
-    end
-
     if PhobosLib.hasTrait(player, POS_Constants.TRAIT_DISORGANISED_THINKER) then
         return POS_Constants.TRAIT_DISORGANISED_NOISE_PENALTY
     end
@@ -90,11 +79,6 @@ end
 ---@return number Time penalty fraction
 function POS_SIGINTTraits.getTimePenalty(player)
     if not player then return 0 end
-
-    if POS_Sandbox and POS_Sandbox.getSIGINTTraitsEnabled
-        and not POS_Sandbox.getSIGINTTraitsEnabled() then
-        return 0
-    end
 
     if PhobosLib.hasTrait(player, POS_Constants.TRAIT_IMPATIENT) then
         return POS_Constants.TRAIT_IMPATIENT_TIME_PENALTY
@@ -113,11 +97,6 @@ end
 function POS_SIGINTTraits.getCrossCorrelationLevel(player)
     if not player then return nil end
 
-    if POS_Sandbox and POS_Sandbox.getSIGINTTraitsEnabled
-        and not POS_Sandbox.getSIGINTTraitsEnabled() then
-        return nil
-    end
-
     if PhobosLib.hasTrait(player, POS_Constants.TRAIT_SYSTEMS_THINKER) then
         return POS_Constants.TRAIT_SYSTEMS_THINKER_CROSSCOR
     end
@@ -133,11 +112,6 @@ end
 ---@return boolean
 function POS_SIGINTTraits.isLevelCapped(player)
     if not player then return false end
-
-    if POS_Sandbox and POS_Sandbox.getSIGINTTraitsEnabled
-        and not POS_Sandbox.getSIGINTTraitsEnabled() then
-        return false
-    end
 
     return PhobosLib.hasTrait(player, POS_Constants.TRAIT_SIGNAL_BLINDNESS)
 end
@@ -163,11 +137,6 @@ end
 ---@return number Scan radius bonus fraction
 function POS_SIGINTTraits.getRadioScanBonus(player)
     if not player then return 0 end
-
-    if POS_Sandbox and POS_Sandbox.getSIGINTTraitsEnabled
-        and not POS_Sandbox.getSIGINTTraitsEnabled() then
-        return 0
-    end
 
     if PhobosLib.hasTrait(player, POS_Constants.TRAIT_RADIO_HOBBYIST) then
         return POS_Constants.TRAIT_RADIO_HOBBYIST_SCAN_BONUS
