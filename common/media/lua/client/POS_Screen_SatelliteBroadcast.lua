@@ -29,11 +29,22 @@ require "POS_TerminalWidgets"
 require "POS_SatelliteService"
 require "POS_SIGINTSkill"
 require "POS_SignalEcologyService"
+require "POS_Events"
 require "POS_API"
 
 ---------------------------------------------------------------
 
 local _TAG = "[POS:SatBroadcast]"
+
+-- Refresh subscription tracking (§58 Screen Refresh Pattern)
+local _refreshListeners = {}
+
+local function _subscribe(event, fn)
+    if event and event.addListener then
+        event:addListener(fn)
+        _refreshListeners[#_refreshListeners + 1] = { event = event, fn = fn }
+    end
+end
 
 -- State tracking
 local _selectedMode = nil
@@ -478,6 +489,13 @@ function screen.create(contentPanel, params, _terminal)
         ctx.y = ctx.y + ctx.btnH + 8
     end
 
+    -- Subscribe to live-update events (§58 Screen Refresh Pattern)
+    _refreshListeners = {}
+    local function _onRefresh()
+        POS_ScreenManager.markDirty()
+    end
+    _subscribe(POS_Events.OnBackgroundProgressUpdated, _onRefresh)
+
     -- Footer
     W.drawFooter(ctx)
 end
@@ -486,13 +504,20 @@ end
 -- Lifecycle
 ---------------------------------------------------------------
 
+local _origDestroy = POS_TerminalWidgets.defaultDestroy
 function screen.destroy()
+    for _, entry in ipairs(_refreshListeners) do
+        if entry.event and entry.event.removeListener then
+            entry.event:removeListener(entry.fn)
+        end
+    end
+    _refreshListeners = {}
     _selectedMode = nil
     _selectedArtifactIdx = nil
     _isTransmitting = false
     _transmitProgress = 0
     _transmitStartTime = 0
-    POS_TerminalWidgets.defaultDestroy()
+    _origDestroy()
 end
 
 function screen.refresh(params)

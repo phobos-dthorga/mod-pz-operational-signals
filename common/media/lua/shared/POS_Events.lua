@@ -174,3 +174,12 @@ POS_Events.OnRelayDiscovered = LuaEvent.new("POS.OnRelayDiscovered")
 --- Fired when relay calibration completes (reaches 1.0).
 --- Payload: { siteId = string }
 POS_Events.OnRelayCalibrated = LuaEvent.new("POS.OnRelayCalibrated")
+
+---------------------------------------------------------------
+-- Background Process Progress (generic, for live UI updates)
+---------------------------------------------------------------
+
+--- Fired when any background process updates its progress.
+--- Screens subscribe to this to refresh live-updating displays.
+--- Payload: { processId = string, progress = number (0-1), label = string }
+POS_Events.OnBackgroundProgressUpdated = LuaEvent.new("POS.OnBackgroundProgressUpdated")

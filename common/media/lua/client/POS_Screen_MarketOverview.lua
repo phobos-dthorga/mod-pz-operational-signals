@@ -41,12 +41,23 @@ require "POS_EventService"
 require "POS_ExchangeEngine"
 require "POS_WorldState"
 require "PhobosLib_Pagination"
+require "POS_Events"
 require "POS_API"
 
 ---------------------------------------------------------------
 
 local _TAG = "[POS:MarketOverview]"
 local _activeTab = "summary"
+
+-- Refresh subscription tracking (§58 Screen Refresh Pattern)
+local _refreshListeners = {}
+
+local function _subscribe(event, fn)
+    if event and event.addListener then
+        event:addListener(fn)
+        _refreshListeners[#_refreshListeners + 1] = { event = event, fn = fn }
+    end
+end
 
 local TAB_DEFS = {
     { id = "summary",  labelKey = "UI_POS_MarketOverview_TabSummary" },
@@ -473,6 +484,14 @@ function screen.create(contentPanel, params, _terminal)
         renderExchange(ctx, params)
     end
 
+    -- Subscribe to live-update events (§58 Screen Refresh Pattern)
+    _refreshListeners = {}
+    local function _onRefresh()
+        POS_ScreenManager.markDirty()
+    end
+    _subscribe(POS_Events.OnStockTickClosed, _onRefresh)
+    if POS_Events.OnMarketEvent then _subscribe(POS_Events.OnMarketEvent, _onRefresh) end
+
     -- Footer
     ctx.panel = origPanel
     W.drawFooter(ctx)
@@ -482,7 +501,16 @@ end
 -- Lifecycle
 ---------------------------------------------------------------
 
-screen.destroy = POS_TerminalWidgets.defaultDestroy
+local _origDestroy = POS_TerminalWidgets.defaultDestroy
+screen.destroy = function()
+    for _, entry in ipairs(_refreshListeners) do
+        if entry.event and entry.event.removeListener then
+            entry.event:removeListener(entry.fn)
+        end
+    end
+    _refreshListeners = {}
+    _origDestroy()
+end
 
 function screen.refresh(params)
     POS_TerminalWidgets.dynamicRefresh(screen, params)
@@ -511,28 +539,6 @@ screen.getContextData = function(_params)
             value = tostring(#categories) })
     end
     return data
-end
-
----------------------------------------------------------------
--- Starlit event listeners (reactive refresh)
----------------------------------------------------------------
-
-local function _refreshIfActive()
-    if POS_ScreenManager.currentScreen == screen.id then
-        POS_ScreenManager.refreshCurrentScreen()
-    end
-end
-
-if POS_Events then
-    if POS_Events.OnMarketEvent then
-        POS_Events.OnMarketEvent:addListener(_refreshIfActive)
-    end
-    if POS_Events.OnMarketSnapshotUpdated then
-        POS_Events.OnMarketSnapshotUpdated:addListener(_refreshIfActive)
-    end
-    if POS_Events.OnStockTickClosed then
-        POS_Events.OnStockTickClosed:addListener(_refreshIfActive)
-    end
 end
 
 ---------------------------------------------------------------

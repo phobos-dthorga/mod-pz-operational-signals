@@ -26,10 +26,21 @@ require "POS_ScreenManager"
 require "POS_TerminalWidgets"
 require "POS_Reputation"
 require "POS_RadioPower"
+require "POS_Events"
 require "POS_API"
 require "POS_MenuBuilder"
 
 local C = POS_TerminalWidgets.COLOURS
+
+-- Refresh subscription tracking (§58 Screen Refresh Pattern)
+local _refreshListeners = {}
+
+local function _subscribe(event, fn)
+    if event and event.addListener then
+        event:addListener(fn)
+        _refreshListeners[#_refreshListeners + 1] = { event = event, fn = fn }
+    end
+end
 
 ---------------------------------------------------------------
 
@@ -122,11 +133,28 @@ function screen.create(contentPanel, _params, terminal)
         ctx.y = ctx.y + ctx.btnH + 4
     end
 
+    -- Subscribe to live-update events (§58 Screen Refresh Pattern)
+    _refreshListeners = {}
+    local function _onRefresh()
+        POS_ScreenManager.markDirty()
+    end
+    _subscribe(POS_Events.OnSignalStateChanged, _onRefresh)
+    _subscribe(POS_Events.OnStockTickClosed, _onRefresh)
+
     -- Exit footer (root screen — closes terminal)
     W.drawExitFooter(ctx)
 end
 
-screen.destroy = POS_TerminalWidgets.defaultDestroy
+local _origDestroy = POS_TerminalWidgets.defaultDestroy
+screen.destroy = function()
+    for _, entry in ipairs(_refreshListeners) do
+        if entry.event and entry.event.removeListener then
+            entry.event:removeListener(entry.fn)
+        end
+    end
+    _refreshListeners = {}
+    _origDestroy()
+end
 
 function screen.refresh(_params)
     -- Static screen — no dynamic data to refresh

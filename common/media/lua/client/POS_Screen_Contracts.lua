@@ -37,11 +37,22 @@ require "POS_ContractService"
 require "POS_MarketRegistry"
 require "POS_ItemPool"
 require "PhobosLib_Pagination"
+require "POS_Events"
 require "POS_API"
 
 ---------------------------------------------------------------
 
 local _TAG = "[POS:ContractsScreen]"
+
+-- Refresh subscription tracking (§58 Screen Refresh Pattern)
+local _refreshListeners = {}
+
+local function _subscribe(event, fn)
+    if event and event.addListener then
+        event:addListener(fn)
+        _refreshListeners[#_refreshListeners + 1] = { event = event, fn = fn }
+    end
+end
 
 -- Currently selected contract ID (for ContextPanel detail)
 local _selectedContractId = nil
@@ -274,6 +285,14 @@ function screen.create(contentPanel, params, _terminal)
         "Balance: $" .. string.format("%.2f", balance), C.dim)
     ctx.y = ctx.y + ctx.lineH
 
+    -- Subscribe to live-update events (§58 Screen Refresh Pattern)
+    _refreshListeners = {}
+    local function _onRefresh()
+        POS_ScreenManager.markDirty()
+    end
+    if POS_Events.OnContractPosted then _subscribe(POS_Events.OnContractPosted, _onRefresh) end
+    _subscribe(POS_Events.OnStockTickClosed, _onRefresh)
+
     W.drawFooter(ctx)
 end
 
@@ -442,10 +461,17 @@ end
 
 ---------------------------------------------------------------
 
+local _origDestroy = POS_TerminalWidgets.defaultDestroy
 screen.destroy = function()
+    for _, entry in ipairs(_refreshListeners) do
+        if entry.event and entry.event.removeListener then
+            entry.event:removeListener(entry.fn)
+        end
+    end
+    _refreshListeners = {}
     _selectedContractId = nil
     _activeFilter = "all"
-    POS_TerminalWidgets.defaultDestroy()
+    _origDestroy()
 end
 
 function screen.refresh(params)

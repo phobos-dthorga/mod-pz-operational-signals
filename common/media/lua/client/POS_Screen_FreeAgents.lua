@@ -32,9 +32,20 @@ require "POS_ScreenManager"
 require "POS_TerminalWidgets"
 require "POS_FreeAgentService"
 require "PhobosLib_Pagination"
+require "POS_Events"
 require "POS_API"
 
 ---------------------------------------------------------------
+
+-- Refresh subscription tracking (§58 Screen Refresh Pattern)
+local _refreshListeners = {}
+
+local function _subscribe(event, fn)
+    if event and event.addListener then
+        event:addListener(fn)
+        _refreshListeners[#_refreshListeners + 1] = { event = event, fn = fn }
+    end
+end
 
 local _activeArchetype = "all"
 local _activeStatus = "active"
@@ -209,12 +220,27 @@ function screen.create(contentPanel, params, _terminal)
         })
     end
 
+    -- Subscribe to live-update events (§58 Screen Refresh Pattern)
+    _refreshListeners = {}
+    local function _onRefresh()
+        POS_ScreenManager.markDirty()
+    end
+    _subscribe(POS_Events.OnFreeAgentStateChanged, _onRefresh)
+    _subscribe(POS_Events.OnFreeAgentDeployed, _onRefresh)
+
     W.drawFooter(ctx)
 end
 
+local _origDestroy = POS_TerminalWidgets.defaultDestroy
 function screen.destroy()
+    for _, entry in ipairs(_refreshListeners) do
+        if entry.event and entry.event.removeListener then
+            entry.event:removeListener(entry.fn)
+        end
+    end
+    _refreshListeners = {}
     _selectedAgentId = nil
-    POS_TerminalWidgets.defaultDestroy()
+    _origDestroy()
 end
 
 function screen.refresh(params)

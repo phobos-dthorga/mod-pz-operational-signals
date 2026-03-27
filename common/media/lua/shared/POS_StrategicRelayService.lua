@@ -462,6 +462,17 @@ function POS_StrategicRelayService.calibrationTick()
 
             relay.calibrationProgress = PhobosLib.clamp(relay.calibrationProgress, 0.0, 1.0)
             _saveRelay(relay.siteId, relay)
+
+            -- Fire progress event for live UI updates
+            if POS_Events and POS_Events.OnBackgroundProgressUpdated then
+                PhobosLib.safecall(
+                    POS_Events.OnBackgroundProgressUpdated.trigger,
+                    POS_Events.OnBackgroundProgressUpdated, {
+                        processId = "relay_calibration",
+                        progress  = relay.calibrationProgress,
+                        label     = relay.siteId,
+                    })
+            end
         end
     end
 end

@@ -4239,3 +4239,53 @@ composite signal that affects every POSnet system.
 
 **Cross-references**: `signal-ecology-design.md`, `POS_Constants_Signal.lua`,
 `POS_SignalEcologyService.lua`
+
+---
+
+## 57. Screen Refresh Pattern
+
+Screens displaying live-changing data **must** subscribe to relevant
+Starlit events in `screen.create()` and call `POS_ScreenManager.markDirty()`
+on updates. Unsubscribe in `screen.destroy()`.
+
+**Never use raw `Events.OnTick`** for data that changes at game-minute
+intervals. The terminal's 30-frame throttled refresh cycle handles the
+actual re-render — event listeners only need to set the dirty flag.
+
+### Pattern
+
+```lua
+local _refreshListeners = {}
+
+local function _subscribe(event, fn)
+    if event and event.addListener then
+        event:addListener(fn)
+        _refreshListeners[#_refreshListeners + 1] = { event = event, fn = fn }
+    end
+end
+
+-- In screen.create():
+_refreshListeners = {}
+local function _onRefresh() POS_ScreenManager.markDirty() end
+_subscribe(POS_Events.OnSomeEvent, _onRefresh)
+
+-- In screen.destroy():
+for _, entry in ipairs(_refreshListeners) do
+    entry.event:removeListener(entry.fn)
+end
+_refreshListeners = {}
+```
+
+### Event → Screen Mapping
+
+| Screen | Events |
+|--------|--------|
+| RelayCommand | `OnBackgroundProgressUpdated`, `OnRelayCalibrated` |
+| SatelliteBroadcast | `OnBackgroundProgressUpdated` |
+| MarketOverview | `OnStockTickClosed`, `OnMarketEvent` |
+| MainMenu | `OnSignalStateChanged`, `OnStockTickClosed` |
+| Contracts | `OnContractPosted`, `OnStockTickClosed` |
+| FreeAgents | `OnFreeAgentStateChanged`, `OnFreeAgentDeployed` |
+
+For background processes (calibration, scanning), fire
+`OnBackgroundProgressUpdated` with `{ processId, progress, label }`.
