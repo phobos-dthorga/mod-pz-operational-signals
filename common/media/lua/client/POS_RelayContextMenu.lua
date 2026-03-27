@@ -122,7 +122,8 @@ local function onFillWorldObjectContextMenu(playerNum, context, worldobjects, te
     -- 2. Wire to Terminal (discovered + not wired)
     ---------------------------------------------------------------
     if isDiscovered then
-        local isWired = PhobosLib.safecall(POS_SatelliteService.isWired, sq)
+        local okW, isWired = PhobosLib.safecall(POS_SatelliteService.isWired, sq)
+        isWired = okW and isWired
 
         if not isWired then
             -- Reuse Tier IV wiring logic via POS_SatelliteService

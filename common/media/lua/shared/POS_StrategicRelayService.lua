@@ -177,32 +177,31 @@ end
 ---@param terminalSq IsoGridSquare
 ---@return boolean
 function POS_StrategicRelayService.isRelayLinked(siteId, terminalSq)
-    if not siteId or not terminalSq then return false end
+    if not siteId then return false end
 
     local relay = POS_StrategicRelayService.getRelay(siteId)
     if not relay then return false end
 
-    -- Attempt to reuse POS_SatelliteService.validateWiredLink if available
-    local ok, satService = PhobosLib.safecall(require, "POS_SatelliteService")
-    if ok and satService and satService.validateWiredLink then
-        local relaySq = PhobosLib.safecall(getSquare, relay.x, relay.y, relay.z)
-        if relaySq then
-            local ok2, linked = PhobosLib.safecall(satService.validateWiredLink, relaySq)
-            if ok2 then return linked end
-        end
+    -- Get the relay's square from stored coordinates
+    local relaySq = getSquare and getSquare(relay.x, relay.y, relay.z) or nil
+
+    -- Primary: delegate to Tier IV wiring system (building-key based).
+    -- POS_SatelliteService.isWired(sq) checks if wiring data exists for the
+    -- building containing this square — works for both Tier IV and Tier V
+    -- since the wiring action stores data by building key.
+    if relaySq and POS_SatelliteService and POS_SatelliteService.isWired then
+        local ok, wired = PhobosLib.safecall(POS_SatelliteService.isWired, relaySq)
+        if ok and wired then return true end
     end
 
-    -- Fallback: check world ModData wiring record
-    local ok3, result = PhobosLib.safecall(function()
-        local reg = PhobosLib.getWorldModData(POS_Constants.RELAY_REGISTRY_KEY)
-        local wiringKey = POS_Constants.RELAY_MODDATA_PREFIX .. siteId .. "_wiring"
-        local wiringData = reg[wiringKey]
-        if not wiringData then return false end
-        return wiringData.targetX == terminalSq:getX()
-            and wiringData.targetY == terminalSq:getY()
-            and wiringData.targetZ == terminalSq:getZ()
-    end)
-    return ok3 and result == true
+    -- Fallback for unloaded chunks: log warning
+    if not relaySq then
+        PhobosLib.debug("POS", _TAG,
+            "isRelayLinked: relay square unloaded for " .. tostring(siteId)
+            .. " — cannot verify wiring")
+    end
+
+    return false
 end
 
 ---------------------------------------------------------------

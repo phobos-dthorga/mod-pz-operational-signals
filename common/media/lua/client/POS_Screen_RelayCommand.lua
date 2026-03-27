@@ -91,12 +91,10 @@ end
 --- @param siteId string
 --- @return boolean
 local function _hasWiredLink(siteId)
-    local player = getSpecificPlayer(0)
-    if not player then return false end
-    local sq = player:getSquare()
-    if not sq then return false end
+    -- Delegate to the service which uses Tier IV wiring validation
+    -- via the relay's stored coordinates → getSquare → isWired
     local ok, linked = PhobosLib.safecall(
-        POS_StrategicRelayService.isRelayLinked, siteId, sq)
+        POS_StrategicRelayService.isRelayLinked, siteId, nil)
     return ok and linked == true
 end
 
