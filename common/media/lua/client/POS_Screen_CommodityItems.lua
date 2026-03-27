@@ -70,19 +70,29 @@ local function executeBuyAction(fullType, categoryId, qty, avgPrice)
         return
     end
 
-    -- Deduct money
-    local okPay = PhobosLib.safecall(PhobosLib.removeMoney, player, totalCost)
-    if not okPay then
-        PhobosLib.warn("POS", "[Trade]", "Failed to deduct payment")
+    -- Deduct money (safecall returns ok, result — check BOTH)
+    local scOk, payResult = PhobosLib.safecall(PhobosLib.removeMoney, player, totalCost)
+    if not scOk or not payResult then
+        PhobosLib.safecall(PhobosLib.notifyOrSay, player, {
+            title   = "POSnet",
+            message = PhobosLib.safeGetText("UI_POS_Trade_Err_PaymentFailed"),
+            colour  = "error",
+            channel = POS_Constants.PN_CHANNEL_TRADE,
+        })
         return
     end
 
     -- Grant items (exceed weight is OK per design)
-    local okGrant = PhobosLib.safecall(PhobosLib.grantItems, player, fullType, qty)
-    if not okGrant then
+    local grOk, grantResult = PhobosLib.safecall(PhobosLib.grantItems, player, fullType, qty)
+    if not grOk or not grantResult then
         -- Rollback: refund money
         PhobosLib.safecall(PhobosLib.addMoney, player, totalCost)
-        PhobosLib.warn("POS", "[Trade]", "Failed to grant items, refunded payment")
+        PhobosLib.safecall(PhobosLib.notifyOrSay, player, {
+            title   = "POSnet",
+            message = PhobosLib.safeGetText("UI_POS_Trade_Err_GrantFailed"),
+            colour  = "error",
+            channel = POS_Constants.PN_CHANNEL_TRADE,
+        })
         return
     end
 

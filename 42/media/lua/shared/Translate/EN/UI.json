@@ -1225,6 +1225,8 @@
     "UI_POS_Contract_Err_Fulfil": "Cannot fulfil contract.",
     "UI_POS_Trade_Purchased": "Purchased",
     "UI_POS_Trade_Sold": "Sold",
+    "UI_POS_Trade_Err_PaymentFailed": "Payment failed. Unable to deduct funds.",
+    "UI_POS_Trade_Err_GrantFailed": "Item delivery failed. Payment has been refunded.",
 
     "UI_POS_AgentDeploy_Title": "Deploy Field Agent",
     "UI_POS_AgentDeploy_SelectArchetype": "Select Agent Type",
