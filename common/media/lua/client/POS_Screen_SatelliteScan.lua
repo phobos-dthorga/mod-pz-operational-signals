@@ -346,7 +346,7 @@ function screen.create(contentPanel, params, _terminal)
         ctx.y = ctx.y + ctx.lineH
         W.createButton(ctx.panel, ctx.btnX, ctx.y, ctx.btnW, ctx.btnH,
             "[0] " .. W.safeGetText("UI_POS_SatScan_Back"), nil,
-            function() POS_ScreenManager.back() end)
+            function() POS_ScreenManager.goBack() end)
         ctx.y = ctx.y + ctx.btnH + 4
         return
     end
@@ -357,7 +357,7 @@ function screen.create(contentPanel, params, _terminal)
         ctx.y = ctx.y + ctx.lineH
         W.createButton(ctx.panel, ctx.btnX, ctx.y, ctx.btnW, ctx.btnH,
             "[0] " .. W.safeGetText("UI_POS_SatScan_Back"), nil,
-            function() POS_ScreenManager.back() end)
+            function() POS_ScreenManager.goBack() end)
         ctx.y = ctx.y + ctx.btnH + 4
         return
     end
