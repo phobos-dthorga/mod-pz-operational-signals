@@ -28,11 +28,13 @@ require "POS_Constants"
 
 -- Relay dish sprites — large commercial/institutional satellite dishes
 -- found on civic building rooftops (fire stations, police stations, etc.).
--- These are DISTINCT from Tier IV portable dishes (appliances_com_01_20/21)
--- which are the smaller residential-sized dishes.
+-- These are DISTINCT from Tier IV portable dishes (appliances_com_01_20/21).
+-- Verified against PZ Build 42 map data: _36/_37/_38 appear in 29 locations
+-- (multi-tile satellite dish assembly). _39 has zero placements.
 POS_Constants.RELAY_DISH_SPRITES = {
-    "appliances_com_01_38",   -- large commercial dish (south-facing)
-    "appliances_com_01_39",   -- large commercial dish (east-facing)
+    "appliances_com_01_36",   -- large commercial dish tile (part of multi-tile assembly)
+    "appliances_com_01_37",   -- large commercial dish tile (part of multi-tile assembly)
+    "appliances_com_01_38",   -- large commercial dish tile (part of multi-tile assembly)
 }
 
 -- Building types that can host relay sites (PZ room definitions)
