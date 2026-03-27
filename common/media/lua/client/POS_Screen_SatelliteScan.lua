@@ -249,16 +249,34 @@ local function _onScanTick()
         return
     end
 
-    -- Check satellite still connected
+    -- Check satellite still connected (Tier IV or Tier V)
+    local stillCalibrated = false
     local ok, status = PhobosLib.safecall(POS_SatelliteService.getStatus)
-    if not ok or not status or not status.calibrated then
+    if ok and status and status.calibrated then
+        stillCalibrated = true
+    end
+    if not stillCalibrated and POS_StrategicRelayService
+            and POS_StrategicRelayService.getAllRelays then
+        local okR, relays = PhobosLib.safecall(POS_StrategicRelayService.getAllRelays)
+        if okR and relays then
+            for _, relay in ipairs(relays) do
+                local okS, rs = PhobosLib.safecall(
+                    POS_StrategicRelayService.getRelayStatus, relay.siteId)
+                if okS and rs and rs.isOperational then
+                    stillCalibrated = true
+                    break
+                end
+            end
+        end
+    end
+    if not stillCalibrated then
         _abortScan()
         POS_ScreenManager.replaceCurrent(POS_Constants.SCREEN_SATELLITE_SCAN)
         return
     end
 
     -- Check power
-    if status.powered == false then
+    if status and status.powered == false then
         _abortScan()
         POS_ScreenManager.replaceCurrent(POS_Constants.SCREEN_SATELLITE_SCAN)
         return
@@ -338,9 +356,34 @@ function screen.create(contentPanel, params, _terminal)
         return
     end
 
-    -- Check satellite status
+    -- Check satellite status (Tier IV portable dish OR Tier V strategic relay)
+    local isCalibrated = false
+    local hasDish = false
+
+    -- Tier IV: portable satellite dish
     local ok, status = PhobosLib.safecall(POS_SatelliteService.getStatus)
-    if not ok or not status then
+    if ok and status then
+        hasDish = true
+        if status.calibrated then isCalibrated = true end
+    end
+
+    -- Tier V: strategic relay (calibrated = calibrationState >= operational threshold)
+    if not isCalibrated and POS_StrategicRelayService and POS_StrategicRelayService.getAllRelays then
+        local okR, relays = PhobosLib.safecall(POS_StrategicRelayService.getAllRelays)
+        if okR and relays then
+            for _, relay in ipairs(relays) do
+                hasDish = true
+                local okS, relayStatus = PhobosLib.safecall(
+                    POS_StrategicRelayService.getRelayStatus, relay.siteId)
+                if okS and relayStatus and relayStatus.isOperational then
+                    isCalibrated = true
+                    break
+                end
+            end
+        end
+    end
+
+    if not hasDish then
         W.createLabel(ctx.panel, 8, ctx.y,
             W.safeGetText("UI_POS_SatScan_NoDish"), C.error)
         ctx.y = ctx.y + ctx.lineH
@@ -351,7 +394,7 @@ function screen.create(contentPanel, params, _terminal)
         return
     end
 
-    if not status.calibrated then
+    if not isCalibrated then
         W.createLabel(ctx.panel, 8, ctx.y,
             W.safeGetText("UI_POS_SatScan_NotCalibrated"), C.warning)
         ctx.y = ctx.y + ctx.lineH
