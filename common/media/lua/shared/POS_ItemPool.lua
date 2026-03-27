@@ -415,26 +415,24 @@ local function calculateBasePrice(fullType, itemWeight, categoryId, hasCondition
     local catMult = (mults and mults[categoryId]) or 1.0
 
     -- Property-bonus: read item script data for utility-driven price differentiation.
-    -- ScriptManager.instance:getItem() returns the item SCRIPT definition (safe, not
-    -- an InventoryItem instance — no hasTag crash risk). Additive bonuses: 1.0 base
-    -- + property contributions. Only applies to uncurated items.
+    -- IMPORTANT: ScriptItem methods (getCalories, getMaxDamage, etc.) only exist on
+    -- specific subclasses. Calling a missing method crashes PZ's Kahlua VM with a Java
+    -- exception that pcall CANNOT catch. We must check method existence BEFORE calling.
     local bonus = 1.0
-    local smOk, script = pcall(function()
-        if ScriptManager and ScriptManager.instance then
-            return ScriptManager.instance:getItem(fullType)
-        end
-        return nil
-    end)
-    if smOk and script then
+    local script = nil
+    if ScriptManager and ScriptManager.instance and ScriptManager.instance.getItem then
+        script = ScriptManager.instance:getItem(fullType)
+    end
+    if script then
         -- Damage bonus (weapons + tools): higher damage = more valuable
-        local dmgOk, maxDmg = pcall(function() return script:getMaxDamage() end)
-        if dmgOk and type(maxDmg) == "number" and maxDmg > 0 then
+        local maxDmg = script.getMaxDamage and script:getMaxDamage() or 0
+        if type(maxDmg) == "number" and maxDmg > 0 then
             bonus = bonus + (maxDmg * POS_Constants.PRICING_DAMAGE_SCALE)
         end
 
         -- Calorie bonus (food): higher calorie content = more survival value
-        local calOk, cal = pcall(function() return script:getCalories() end)
-        if calOk and type(cal) == "number" and cal > 0 then
+        local cal = script.getCalories and script:getCalories() or 0
+        if type(cal) == "number" and cal > 0 then
             local calBonus = cal / POS_Constants.PRICING_CALORIE_DIVISOR
             if calBonus > POS_Constants.PRICING_CALORIE_CAP then
                 calBonus = POS_Constants.PRICING_CALORIE_CAP
@@ -443,25 +441,25 @@ local function calculateBasePrice(fullType, itemWeight, categoryId, hasCondition
         end
 
         -- Medical potency bonus: pain reduction + infection treatment
-        local painOk, painRed = pcall(function() return script:getPainReduction() end)
-        if painOk and type(painRed) == "number" and painRed > 0 then
+        local painRed = script.getPainReduction and script:getPainReduction() or 0
+        if type(painRed) == "number" and painRed > 0 then
             bonus = bonus + (painRed * POS_Constants.PRICING_PAIN_SCALE)
         end
-        local infOk, infRed = pcall(function() return script:getReduceInfectionPower() end)
-        if infOk and type(infRed) == "number" and infRed > 0 then
+        local infRed = script.getReduceInfectionPower and script:getReduceInfectionPower() or 0
+        if type(infRed) == "number" and infRed > 0 then
             bonus = bonus + (infRed * POS_Constants.PRICING_INFECTION_SCALE)
         end
 
         -- Condition durability bonus: high-durability items are more valuable
-        local condOk, condMax = pcall(function() return script:getConditionMax() end)
-        if condOk and type(condMax) == "number"
+        local condMax = script.getConditionMax and script:getConditionMax() or 0
+        if type(condMax) == "number"
                 and condMax > POS_Constants.PRICING_CONDITION_THRESHOLD then
             bonus = bonus + (condMax / POS_Constants.PRICING_CONDITION_DIVISOR)
         end
 
         -- Range bonus (ranged weapons): longer range = higher tactical value
-        local rngOk, maxRng = pcall(function() return script:getMaxRange() end)
-        if rngOk and type(maxRng) == "number"
+        local maxRng = script.getMaxRange and script:getMaxRange() or 0
+        if type(maxRng) == "number"
                 and maxRng > POS_Constants.PRICING_RANGE_THRESHOLD then
             bonus = bonus + (maxRng * POS_Constants.PRICING_RANGE_SCALE)
         end
