@@ -26,12 +26,13 @@ require "POS_Constants"
 -- Tier V Strategic Relay constants
 ---------------------------------------------------------------
 
--- Relay dish sprites (same physical sprites as Tier IV -- distinction
--- is by discovery context: relays are pre-existing on civic buildings,
--- not player-placed. The relay detection system checks building type.)
+-- Relay dish sprites — large commercial/institutional satellite dishes
+-- found on civic building rooftops (fire stations, police stations, etc.).
+-- These are DISTINCT from Tier IV portable dishes (appliances_com_01_20/21)
+-- which are the smaller residential-sized dishes.
 POS_Constants.RELAY_DISH_SPRITES = {
-    "appliances_com_01_20",
-    "appliances_com_01_21",
+    "appliances_com_01_38",   -- large commercial dish (south-facing)
+    "appliances_com_01_39",   -- large commercial dish (east-facing)
 }
 
 -- Building types that can host relay sites (PZ room definitions)
