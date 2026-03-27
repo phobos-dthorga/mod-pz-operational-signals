@@ -38,7 +38,8 @@ local function registerCrossModCategories()
     local mods = getActivatedMods()
     if not mods then return end
 
-    -- PhobosChemistryPathways — chemicals, agriculture, biofuel
+    -- PhobosChemistryPathways — chemicals, biofuel
+    -- NOTE: agriculture is now a core category (always registered in POS_MarketRegistry)
     if mods:contains("PhobosChemistryPathways") then
         POS_MarketRegistry.registerCategory({
             id = "chemicals",
@@ -46,17 +47,12 @@ local function registerCrossModCategories()
             sortOrder = 70,
         })
         POS_MarketRegistry.registerCategory({
-            id = "agriculture",
-            labelKey = "UI_POS_Market_Cat_Agriculture",
-            sortOrder = 80,
-        })
-        POS_MarketRegistry.registerCategory({
             id = "biofuel",
             labelKey = "UI_POS_Market_Cat_Biofuel",
             sortOrder = 90,
         })
         PhobosLib.debug("POS", _TAG,
-            "PCP detected — registered chemicals/agriculture/biofuel categories")
+            "PCP detected — registered chemicals/biofuel categories")
     end
 
     -- PhobosIndustrialPathology — specimens, biohazard

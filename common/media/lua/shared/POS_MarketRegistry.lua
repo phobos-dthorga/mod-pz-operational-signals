@@ -209,9 +209,11 @@ POS_MarketRegistry.registerCategory({ id = "survival",   labelKey = "UI_POS_Mark
 POS_MarketRegistry.registerCategory({ id = "ammunition", labelKey = "UI_POS_Market_Cat_Ammunition", sortOrder = 40, weight = 1.3, volatility = 1.5, broadcastFrequencyMult = 0.8, isEssential = false })
 POS_MarketRegistry.registerCategory({ id = "tools",      labelKey = "UI_POS_Market_Cat_Tools",      sortOrder = 50, weight = 0.9, volatility = 0.7, broadcastFrequencyMult = 0.7, isEssential = false })
 POS_MarketRegistry.registerCategory({ id = "vehicles",   labelKey = "UI_POS_Market_Cat_Vehicles",   sortOrder = 52, weight = 0.8, volatility = 0.9, broadcastFrequencyMult = 0.6, isEssential = false })
+POS_MarketRegistry.registerCategory({ id = "automotive", labelKey = "UI_POS_Market_Cat_Automotive", sortOrder = 53, weight = 0.9, volatility = 1.0, broadcastFrequencyMult = 0.7, isEssential = false })
 POS_MarketRegistry.registerCategory({ id = "clothing",   labelKey = "UI_POS_Market_Cat_Clothing",   sortOrder = 55, weight = 0.5, volatility = 0.5, isEssential = false })
 POS_MarketRegistry.registerCategory({ id = "radio",      labelKey = "UI_POS_Market_Cat_Radio",      sortOrder = 60, weight = 0.6, volatility = 1.0, broadcastFrequencyMult = 0.5, isEssential = false })
 POS_MarketRegistry.registerCategory({ id = "literature", labelKey = "UI_POS_Market_Cat_Literature", sortOrder = 65, weight = 0.3, volatility = 0.3, isEssential = false })
+POS_MarketRegistry.registerCategory({ id = "agriculture", labelKey = "UI_POS_Market_Cat_Agriculture", sortOrder = 75, weight = 0.7, volatility = 0.6, isEssential = false })
 POS_MarketRegistry.registerCategory({ id = "miscellaneous", labelKey = "UI_POS_Market_Cat_Misc",    sortOrder = 99, weight = 0.1, volatility = 0.5, isEssential = false })
 
 ---------------------------------------------------------------

@@ -61,8 +61,8 @@ local DISPLAY_CATEGORY_MAP = {
     ToolWeapon          = "tools",
     Material            = "tools",
     RecipeResource      = "tools",
-    VehicleMaintenance  = "vehicles",
-    Gardening           = "tools",
+    VehicleMaintenance  = "automotive",
+    Gardening           = "agriculture",
     Household           = "tools",
     Paint               = "tools",
     Security            = "tools",
@@ -201,7 +201,7 @@ local SUB_CATEGORY_DEFS = {
     },
     {
         id = "vehicle_parts",
-        parentCategory = "vehicles",
+        parentCategory = "automotive",
         labelKey = "UI_POS_SubCat_VehicleParts",
         weight = 0.9,
         displayCategories = { "VehicleMaintenance" },
@@ -209,7 +209,7 @@ local SUB_CATEGORY_DEFS = {
     },
     {
         id = "gardening",
-        parentCategory = "tools",
+        parentCategory = "agriculture",
         labelKey = "UI_POS_SubCat_Gardening",
         weight = 0.7,
         displayCategories = { "Gardening" },

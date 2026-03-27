@@ -268,13 +268,15 @@ POS_Constants.CATEGORY_PRICE_MULTIPLIERS = {
     medicine      = 2.5,    -- no hospitals, antibiotics are gold
     weapons       = 2.2,    -- defence is paramount
     literature    = 2.0,    -- knowledge is survival: skill books, recipe books
+    automotive    = 2.0,    -- vehicle parts: hard to find, essential for mobility
     radio         = 1.8,    -- communication = coordination
     survival      = 1.6,    -- water/camping gear essential
-    vehicles      = 1.6,    -- vehicle parts scarce and heavy; mobility is survival
-    tools         = 2.0,    -- build, repair, survive (raised from 1.5: range is wrench→generator)
+    vehicles      = 1.6,    -- complete vehicles / vehicle-level items
+    tools         = 2.0,    -- build, repair, survive (wrench→generator range)
     food          = 1.4,    -- caloric necessity
+    agriculture   = 1.2,    -- seeds, trowels, watering cans: long-term value
     clothing      = 0.8,    -- weather/armour protection
-    miscellaneous = 0.5,    -- low-value items, but not worthless (raised from 0.2)
+    miscellaneous = 0.5,    -- low-value items, but not worthless
 }
 
 ---------------------------------------------------------------

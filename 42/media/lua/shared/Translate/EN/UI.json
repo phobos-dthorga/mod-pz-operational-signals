@@ -290,7 +290,8 @@
     "UI_POS_Market_Cat_Food": "Food",
     "UI_POS_Market_Cat_Ammunition": "Ammunition",
     "UI_POS_Market_Cat_Tools": "Tools",
-    "UI_POS_Market_Cat_Vehicles": "Vehicles & Parts",
+    "UI_POS_Market_Cat_Vehicles": "Vehicles",
+    "UI_POS_Market_Cat_Automotive": "Automotive",
     "UI_POS_Market_Cat_Radio": "Radio Equipment",
     "UI_POS_Market_Fresh": "Fresh",
     "UI_POS_Market_Stale": "Stale",
@@ -1301,8 +1302,6 @@
     "UI_POS_Trade_BuySuccess": "Purchase complete.",
     "UI_POS_Trade_SellSuccess": "Sale complete.",
     "UI_POS_Trade_NoReceipt": "No receipt data.",
-    "UI_POS_Trade_Err_GrantFailed": "Failed to grant items.",
-    "UI_POS_Trade_Err_PaymentFailed": "Payment failed.",
     "UI_POS_Trade_Err_WholesalerNotFound": "Wholesaler not found.",
 
     "UI_POS_Assignments_FilterSuspended": "Suspended",
