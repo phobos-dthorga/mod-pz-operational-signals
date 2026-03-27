@@ -107,9 +107,14 @@ function POS_EconomyTick.processDayTick()
         POS_EventLog.purgeOldLogs(retention)
     end
 
-    -- Phase 5.5: Satellite decalibration check
+    -- Phase 5.5: Satellite decalibration check (Tier IV)
     if POS_SatelliteService and POS_SatelliteService.checkDecalibration then
         POS_SatelliteService.checkDecalibration()
+    end
+
+    -- Phase 5.55: Strategic relay calibration drift (Tier V)
+    if POS_StrategicRelayService and POS_StrategicRelayService.tick then
+        PhobosLib.safecall(POS_StrategicRelayService.tick)
     end
 
     -- Phase 5.75: Living Market simulation tick

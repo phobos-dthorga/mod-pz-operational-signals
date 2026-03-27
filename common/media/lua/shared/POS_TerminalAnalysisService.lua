@@ -319,12 +319,27 @@ function POS_TerminalAnalysisService.processIntelligence(player, inputs)
         end
     end
 
-    -- 6b. Satellite link enhancement
+    -- 6b. Satellite/relay link enhancement (Tier IV or Tier V)
     local hasSatelliteLink = false
     if POS_SatelliteService and POS_SatelliteService.hasTerminalLink then
         local sq = player:getSquare()
         if sq then
             hasSatelliteLink = POS_SatelliteService.hasTerminalLink(sq)
+        end
+    end
+    -- Tier V relay link also grants the satellite confidence bonus
+    if not hasSatelliteLink and POS_StrategicRelayService
+            and POS_StrategicRelayService.getAllRelays then
+        local okR, relays = PhobosLib.safecall(POS_StrategicRelayService.getAllRelays)
+        if okR and relays then
+            for _, relay in ipairs(relays) do
+                local okS, rs = PhobosLib.safecall(
+                    POS_StrategicRelayService.getRelayStatus, relay.siteId)
+                if okS and rs and rs.isOperational then
+                    hasSatelliteLink = true
+                    break
+                end
+            end
         end
     end
 

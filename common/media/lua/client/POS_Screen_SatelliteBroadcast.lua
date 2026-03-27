@@ -158,13 +158,40 @@ function screen.create(contentPanel, params, _terminal)
         return
     end
 
+    -- Check satellite status (Tier IV portable dish OR Tier V strategic relay)
     local ok, status = PhobosLib.safecall(POS_SatelliteService.getStatus)
     if not ok or not status then
-        W.createLabel(ctx.panel, 8, ctx.y,
-            W.safeGetText("UI_POS_Satellite_NoDish"), C.error)
-        ctx.y = ctx.y + ctx.lineH
-        W.drawFooter(ctx)
-        return
+        -- Tier IV not available — try Tier V relay as fallback
+        local hasRelay = false
+        if POS_StrategicRelayService and POS_StrategicRelayService.getAllRelays then
+            local okR, relays = PhobosLib.safecall(POS_StrategicRelayService.getAllRelays)
+            if okR and relays then
+                for _, relay in ipairs(relays) do
+                    local okS, rs = PhobosLib.safecall(
+                        POS_StrategicRelayService.getRelayStatus, relay.siteId)
+                    if okS and rs and rs.isOperational then
+                        -- Synthesise a compatible status table from relay state
+                        status = {
+                            calibrated = true,
+                            powered = true,
+                            hasLink = true,
+                            onCooldown = false,
+                            relayMode = true,
+                            relaySiteId = relay.siteId,
+                        }
+                        hasRelay = true
+                        break
+                    end
+                end
+            end
+        end
+        if not hasRelay then
+            W.createLabel(ctx.panel, 8, ctx.y,
+                W.safeGetText("UI_POS_Satellite_NoDish"), C.error)
+            ctx.y = ctx.y + ctx.lineH
+            W.drawFooter(ctx)
+            return
+        end
     end
 
     -----------------------------------------------------------

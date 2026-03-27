@@ -327,15 +327,11 @@ function screen.create(contentPanel, params, _terminal)
                 local ft = item.fullType
                 local name = getItemDisplayName(ft) or ft
 
-                -- Per-item pricing via PriceEngine (uses curated overrides + zone multipliers)
+                -- Use stable market average price (cached per item).
+                -- PriceEngine.generatePrice uses ZombRand variance and must NOT
+                -- be called on every UI render — it produces different values each
+                -- time. PriceEngine is for simulation/trade contexts only.
                 local itemPrice = item.avgPrice or 0
-                if POS_PriceEngine and POS_PriceEngine.generatePrice then
-                    local ok, engPrice = PhobosLib.safecall(
-                        POS_PriceEngine.generatePrice, ft, categoryId, nil)
-                    if ok and type(engPrice) == "number" and engPrice > 0 then
-                        itemPrice = engPrice
-                    end
-                end
                 local priceStr = itemPrice > 0
                     and string.format("$%.2f", itemPrice) or "?"
                 local obsCount = item.priceCount or 0
@@ -367,12 +363,13 @@ function screen.create(contentPanel, params, _terminal)
                     -- [-] button
                     local catCopy = categoryId
                     local modeCopy = _tradeMode
+                    local pageCopy = currentPage
                     W.createButton(parent, bx, ry, btnSize, ctx.btnH,
                         "-", nil,
                         function()
                             _quantities[ft] = math.max(1, (_quantities[ft] or 1) - 1)
                             POS_ScreenManager.replaceCurrent(screen.id,
-                                { categoryId = catCopy, tradeMode = modeCopy })
+                                { categoryId = catCopy, tradeMode = modeCopy, itemPage = pageCopy })
                         end)
                     bx = bx + btnSize + 2
 
@@ -387,7 +384,7 @@ function screen.create(contentPanel, params, _terminal)
                         function()
                             _quantities[ft] = math.min(maxQty, (_quantities[ft] or 1) + 1)
                             POS_ScreenManager.replaceCurrent(screen.id,
-                                { categoryId = catCopy, tradeMode = modeCopy })
+                                { categoryId = catCopy, tradeMode = modeCopy, itemPage = pageCopy })
                         end)
                     bx = bx + btnSize + 8
 
@@ -444,7 +441,17 @@ function screen.create(contentPanel, params, _terminal)
 end
 
 screen.destroy = function()
-    _quantities = {}
+    -- Do NOT reset _quantities here — replaceCurrent() calls destroy()
+    -- then create(), which would lose the incremented values.
+    -- _quantities persists as a module-level local across redraws.
+    -- It naturally resets when the player navigates to a different
+    -- category (screen.create checks if categoryId changed).
+    for _, entry in ipairs(_refreshListeners) do
+        if entry.event and entry.event.removeListener then
+            entry.event:removeListener(entry.fn)
+        end
+    end
+    _refreshListeners = {}
     POS_TerminalWidgets.defaultDestroy()
 end
 
