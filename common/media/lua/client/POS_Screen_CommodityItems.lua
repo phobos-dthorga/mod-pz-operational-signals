@@ -446,12 +446,6 @@ screen.destroy = function()
     -- _quantities persists as a module-level local across redraws.
     -- It naturally resets when the player navigates to a different
     -- category (screen.create checks if categoryId changed).
-    for _, entry in ipairs(_refreshListeners) do
-        if entry.event and entry.event.removeListener then
-            entry.event:removeListener(entry.fn)
-        end
-    end
-    _refreshListeners = {}
     POS_TerminalWidgets.defaultDestroy()
 end
 
