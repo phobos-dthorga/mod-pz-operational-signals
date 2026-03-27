@@ -162,3 +162,15 @@ POS_Events.OnBroadcastReceived = LuaEvent.new("POS.OnBroadcastReceived")
 --- Payload: { fragmentId = string, domain = string, confidence = number,
 ---            sourceEventType = string }
 POS_Events.OnSignalFragmentGenerated = LuaEvent.new("POS.OnSignalFragmentGenerated")
+
+---------------------------------------------------------------
+-- Tier V Strategic Relay
+---------------------------------------------------------------
+
+--- Fired when a new relay site is discovered.
+--- Payload: { siteId = string, x = number, y = number, z = number }
+POS_Events.OnRelayDiscovered = LuaEvent.new("POS.OnRelayDiscovered")
+
+--- Fired when relay calibration completes (reaches 1.0).
+--- Payload: { siteId = string }
+POS_Events.OnRelayCalibrated = LuaEvent.new("POS.OnRelayCalibrated")
