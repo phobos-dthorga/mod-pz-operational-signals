@@ -232,7 +232,7 @@ POS_Constants.CONVOY_OVERDUE_TOLERANCE_DAYS = 1
 ---------------------------------------------------------------
 
 POS_Constants.MARKET_CATEGORIES = {
-    "food", "medicine", "ammunition", "fuel", "tools", "radio", "weapons",
+    "food", "medicine", "ammunition", "fuel", "tools", "radio", "weapons", "vehicles",
 }
 
 ---------------------------------------------------------------
@@ -344,6 +344,7 @@ POS_Constants.CATEGORY_BASE_PRICE = {
     biofuel       = 120,
     specimens     = 200,
     biohazard     = 300,
+    vehicles      = 180,
 }
 
 -- Price noise range (+/-%) applied to each emitted observation

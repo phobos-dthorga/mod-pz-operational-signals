@@ -122,14 +122,42 @@ local function renderContacts(ctx, params)
         end
     end
 
+    -- Filter by category if navigated from "Known Sellers" on Commodity Detail
+    local filterCat = params and params.filterCategory
+    if filterCat then
+        local filtered = {}
+        for _, e in ipairs(entries) do
+            local w = e.wholesaler
+            if w and w.categoryWeights and w.categoryWeights[filterCat]
+                    and w.categoryWeights[filterCat] > 0 then
+                filtered[#filtered + 1] = e
+            end
+        end
+        entries = filtered
+
+        -- Show filter header
+        local catLabel = filterCat
+        if POS_MarketRegistry and POS_MarketRegistry.getCategory then
+            local catDef = POS_MarketRegistry.getCategory(filterCat)
+            if catDef and catDef.labelKey then
+                catLabel = W.safeGetText(catDef.labelKey)
+            end
+        end
+        W.createLabel(ctx.panel, 8, ctx.y,
+            W.safeGetText("UI_POS_Contacts_SellersOf") .. " " .. catLabel, C.textBright)
+        ctx.y = ctx.y + ctx.lineH
+    end
+
     table.sort(entries, function(a, b)
         if a.isRevealed ~= b.isRevealed then return a.isRevealed end
         return (a.id or "") < (b.id or "")
     end)
 
     if #entries == 0 then
+        local emptyKey = filterCat and "UI_POS_Contacts_NoSellersForCategory"
+            or "UI_POS_Contacts_NoContacts"
         W.createLabel(ctx.panel, 8, ctx.y,
-            W.safeGetText("UI_POS_Contacts_NoContacts"), C.dim)
+            W.safeGetText(emptyKey), C.dim)
         ctx.y = ctx.y + ctx.lineH
         return
     end

@@ -61,7 +61,7 @@ local DISPLAY_CATEGORY_MAP = {
     ToolWeapon          = "tools",
     Material            = "tools",
     RecipeResource      = "tools",
-    VehicleMaintenance  = "tools",
+    VehicleMaintenance  = "vehicles",
     Gardening           = "tools",
     Household           = "tools",
     Paint               = "tools",
@@ -201,7 +201,7 @@ local SUB_CATEGORY_DEFS = {
     },
     {
         id = "vehicle_parts",
-        parentCategory = "tools",
+        parentCategory = "vehicles",
         labelKey = "UI_POS_SubCat_VehicleParts",
         weight = 0.9,
         displayCategories = { "VehicleMaintenance" },

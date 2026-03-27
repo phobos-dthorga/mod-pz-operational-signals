@@ -238,6 +238,7 @@ POS_Constants.CATEGORY_PRICE_MULTIPLIERS = {
     literature    = 2.0,    -- knowledge is survival: skill books, recipe books
     radio         = 1.8,    -- communication = coordination
     survival      = 1.6,    -- water/camping gear essential
+    vehicles      = 1.6,    -- vehicle parts scarce and heavy; mobility is survival
     tools         = 1.5,    -- build, repair, survive
     food          = 1.4,    -- caloric necessity
     clothing      = 0.8,    -- weather/armour protection

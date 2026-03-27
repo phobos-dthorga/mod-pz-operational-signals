@@ -326,8 +326,18 @@ function screen.create(contentPanel, params, _terminal)
             renderItem = function(parent, rx, ry, rw, item, _idx)
                 local ft = item.fullType
                 local name = getItemDisplayName(ft) or ft
-                local priceStr = item.avgPrice
-                    and string.format("$%.2f", item.avgPrice) or "?"
+
+                -- Per-item pricing via PriceEngine (uses curated overrides + zone multipliers)
+                local itemPrice = item.avgPrice or 0
+                if POS_PriceEngine and POS_PriceEngine.generatePrice then
+                    local ok, engPrice = PhobosLib.safecall(
+                        POS_PriceEngine.generatePrice, ft, categoryId, nil)
+                    if ok and type(engPrice) == "number" and engPrice > 0 then
+                        itemPrice = engPrice
+                    end
+                end
+                local priceStr = itemPrice > 0
+                    and string.format("$%.2f", itemPrice) or "?"
                 local obsCount = item.priceCount or 0
 
                 -- Row 1: Item name + price + observations
@@ -355,11 +365,14 @@ function screen.create(contentPanel, params, _terminal)
                     local bx = rx
 
                     -- [-] button
+                    local catCopy = categoryId
+                    local modeCopy = _tradeMode
                     W.createButton(parent, bx, ry, btnSize, ctx.btnH,
                         "-", nil,
                         function()
                             _quantities[ft] = math.max(1, (_quantities[ft] or 1) - 1)
-                            POS_ScreenManager.markDirty()
+                            POS_ScreenManager.replaceCurrent(screen.id,
+                                { categoryId = catCopy, tradeMode = modeCopy })
                         end)
                     bx = bx + btnSize + 2
 
@@ -373,12 +386,13 @@ function screen.create(contentPanel, params, _terminal)
                         "+", nil,
                         function()
                             _quantities[ft] = math.min(maxQty, (_quantities[ft] or 1) + 1)
-                            POS_ScreenManager.markDirty()
+                            POS_ScreenManager.replaceCurrent(screen.id,
+                                { categoryId = catCopy, tradeMode = modeCopy })
                         end)
                     bx = bx + btnSize + 8
 
                     -- [Buy $X.XX] button
-                    local totalCost = math.floor(item.avgPrice * qty * 100 + 0.5) / 100
+                    local totalCost = math.floor(itemPrice * qty * 100 + 0.5) / 100
                     local canAfford = balanceCopy >= totalCost
                     local buyLabel = W.safeGetText("UI_POS_Trade_BuyBtn")
                         .. " $" .. string.format("%.2f", totalCost)
