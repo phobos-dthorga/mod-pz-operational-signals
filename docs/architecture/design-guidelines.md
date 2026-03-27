@@ -4303,8 +4303,12 @@ Item prices are resolved through a **three-tier fallback system**:
    `_Boxed`, `_Crate` suffixes automatically get their base item's price
    multiplied by a packaging factor (`PRICING_*_MULT` constants).
    Falls back to weight × packaging mult if base item has no curated price.
-3. **Weight fallback** — `weight × ITEM_POOL_WEIGHT_MULTIPLIER × categoryMult × condMult`.
-   Lowest priority, used for uncurated non-packaged items.
+3. **Weight fallback with property bonuses** —
+   `weight × WEIGHT_MULT × categoryMult × condMult × propertyBonus`.
+   Property bonuses read item script data (damage, calories, pain reduction,
+   durability, range) to differentiate items within a category.
+   A 3000-calorie canned meal costs more than a salt packet; an axe costs
+   more than a spoon; antibiotics cost more than a tongue depressor.
 
 > **Design rule**: Curated overrides take absolute priority. The packaging
 > detection layer handles bulk containers automatically. The weight fallback
@@ -4320,6 +4324,20 @@ Item prices are resolved through a **three-tier fallback system**:
 | `_Case` | 5.0× | Mid-size container |
 | `_Carton` | 8.0× | Bulk wholesale (12+ boxes) |
 | `_Crate` | 10.0× | Large shipping container |
+
+**Property-bonus scales** (from `POS_Constants_Market.lua`):
+
+| Property | Scale/Divisor | Example Effect |
+|----------|--------------|----------------|
+| MaxDamage | ×1.5 | 0.8 damage → 2.2× price |
+| Calories | ÷500 (cap 3.0) | 1000 cal → 3.0× price |
+| PainReduction | ×0.5 | High pain relief → 1.5× |
+| ReduceInfectionPower | ×2.0 | Antibiotics → 3.0× |
+| ConditionMax | ÷20 (threshold 5) | 15 durability → 1.75× |
+| MaxRange | ×0.1 (threshold 2) | Range 10 → 2.0× |
+
+Bonuses are additive from a 1.0 base and can stack (e.g., a weapon with
+high damage AND long range gets both bonuses).
 
 **Cross-references**: `POS_ItemPool.lua`, `POS_Constants_Market.lua`,
 `POS_ItemValueRegistry.lua`, `Definitions/ItemValues/*.lua`

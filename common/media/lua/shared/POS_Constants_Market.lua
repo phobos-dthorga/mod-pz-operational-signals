@@ -148,6 +148,19 @@ POS_Constants.PACKAGING_SUFFIXES = {
     { suffix = "_Box",     mult = POS_Constants.PRICING_BOX_MULT },
 }
 
+-- Property-bonus pricing scales (Tier 3: §58)
+-- Applied to uncurated items in the weight-fallback path to differentiate
+-- items within a category based on their actual utility/effectiveness.
+POS_Constants.PRICING_DAMAGE_SCALE        = 1.5   -- MaxDamage × this = additive bonus
+POS_Constants.PRICING_CALORIE_DIVISOR     = 500   -- calories / this = additive bonus (capped)
+POS_Constants.PRICING_CALORIE_CAP         = 3.0   -- max calorie bonus multiplier
+POS_Constants.PRICING_PAIN_SCALE          = 0.5   -- PainReduction × this = additive bonus
+POS_Constants.PRICING_INFECTION_SCALE     = 2.0   -- ReduceInfectionPower × this = additive bonus
+POS_Constants.PRICING_CONDITION_THRESHOLD = 5     -- conditionMax must exceed this for bonus
+POS_Constants.PRICING_CONDITION_DIVISOR   = 20    -- conditionMax / this = additive bonus
+POS_Constants.PRICING_RANGE_THRESHOLD     = 2.0   -- maxRange must exceed this for bonus
+POS_Constants.PRICING_RANGE_SCALE         = 0.1   -- maxRange × this = additive bonus
+
 ---------------------------------------------------------------
 -- Item pool curation: excluded DisplayCategories
 -- Items with these DisplayCategories are NEVER included in
