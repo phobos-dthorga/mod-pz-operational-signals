@@ -39,5 +39,21 @@ return {
         -- ── Screwdrivers ───────────────────────────────────────
         { id = "Base.Screwdriver",       basePrice = 15.00, reason = "Phillips/flat screwdriver" },
         { id = "Base.Screwdriver_Old",   basePrice = 12.00, reason = "Worn screwdriver" },
+
+        -- ── Hardware Boxes & Cartons ──────────────────────────
+        { id = "Base.NailsBox",              basePrice = 8.00 },
+        { id = "Base.NailsCarton",           basePrice = 40.00 },
+        { id = "Base.ScrewsBox",             basePrice = 10.00 },
+        { id = "Base.ScrewsCarton",          basePrice = 50.00 },
+        { id = "Base.DuctTapeBox",           basePrice = 15.00 },
+        { id = "Base.BatteryBox",            basePrice = 20.00 },
+        { id = "Base.LightBulbBox",          basePrice = 12.00 },
+        { id = "Base.FishingHookBox",        basePrice = 8.00 },
+        { id = "Base.BoxOfJars",             basePrice = 10.00 },
+        { id = "Base.TrapBox",               basePrice = 18.00 },
+        { id = "Base.TrapCrate",             basePrice = 45.00 },
+        { id = "Base.GloveBox1",             basePrice = 6.00 },
+        { id = "Base.GloveBox2",             basePrice = 8.00 },
+        { id = "Base.GloveBox3",             basePrice = 10.00 },
     },
 }

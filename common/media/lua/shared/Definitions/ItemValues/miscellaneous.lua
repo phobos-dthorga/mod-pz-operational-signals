@@ -20,5 +20,10 @@ return {
         { id = "Base.HollowBook_Whiskey",   basePrice = 15.00, reason = "Hidden whiskey stash — morale" },
         { id = "Base.HollowBook_Kids",      basePrice = 5.00,  reason = "Children's book — morale only" },
         { id = "Base.HollowBook_Prison",    basePrice = 8.00,  reason = "Prison literature" },
+
+        -- ── Specialty Containers ──────────────────────────────
+        { id = "Base.CigaretteCarton",       basePrice = 35.00, isLuxury = true },
+        { id = "Base.CandleBox",             basePrice = 8.00 },
+        { id = "Base.CapGunCapBox",          basePrice = 3.00 },
     },
 }

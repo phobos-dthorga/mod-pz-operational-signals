@@ -129,6 +129,25 @@ POS_Constants.ITEM_POOL_MIN_BASE_PRICE       = 0.50
 POS_Constants.ITEM_POOL_WEIGHT_MULTIPLIER    = 2.0
 POS_Constants.ITEM_POOL_CONDITION_MULTIPLIER = 1.5
 
+-- Packaging suffix → price multiplier (Tier 1 pricing: §59)
+-- Items ending in these suffixes get their base item's price × multiplier.
+-- If the base item has no curated override, weight fallback × multiplier is used.
+POS_Constants.PRICING_BOX_MULT    = 3.0    -- Box: ~6-12 individual items
+POS_Constants.PRICING_CARTON_MULT = 8.0    -- Carton: ~12+ boxes (bulk wholesale)
+POS_Constants.PRICING_CASE_MULT   = 5.0    -- Case: mid-size container
+POS_Constants.PRICING_PACK_MULT   = 2.0    -- Pack: small pack (2-6 items)
+POS_Constants.PRICING_CRATE_MULT  = 10.0   -- Crate: large shipping container
+
+-- Packaging suffix detection table (ordered longest-first for greedy matching)
+POS_Constants.PACKAGING_SUFFIXES = {
+    { suffix = "_Carton",  mult = POS_Constants.PRICING_CARTON_MULT },
+    { suffix = "_Boxed",   mult = POS_Constants.PRICING_BOX_MULT },
+    { suffix = "_Crate",   mult = POS_Constants.PRICING_CRATE_MULT },
+    { suffix = "_Case",    mult = POS_Constants.PRICING_CASE_MULT },
+    { suffix = "_Pack",    mult = POS_Constants.PRICING_PACK_MULT },
+    { suffix = "_Box",     mult = POS_Constants.PRICING_BOX_MULT },
+}
+
 ---------------------------------------------------------------
 -- Item pool curation: excluded DisplayCategories
 -- Items with these DisplayCategories are NEVER included in
@@ -239,10 +258,10 @@ POS_Constants.CATEGORY_PRICE_MULTIPLIERS = {
     radio         = 1.8,    -- communication = coordination
     survival      = 1.6,    -- water/camping gear essential
     vehicles      = 1.6,    -- vehicle parts scarce and heavy; mobility is survival
-    tools         = 1.5,    -- build, repair, survive
+    tools         = 2.0,    -- build, repair, survive (raised from 1.5: range is wrench→generator)
     food          = 1.4,    -- caloric necessity
     clothing      = 0.8,    -- weather/armour protection
-    miscellaneous = 0.2,    -- decorative junk worth even less
+    miscellaneous = 0.5,    -- low-value items, but not worthless (raised from 0.2)
 }
 
 ---------------------------------------------------------------

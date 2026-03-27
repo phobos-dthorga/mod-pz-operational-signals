@@ -364,6 +364,51 @@ local function calculateBasePrice(fullType, itemWeight, categoryId, hasCondition
         end
     end
 
+    -- Packaging detection (Tier 1 pricing: §59):
+    -- Items ending in _Box, _Carton, _Case, _Pack, _Boxed, _Crate get their
+    -- base item's price × packaging multiplier. This automatically handles
+    -- bulk containers without needing per-item curation for every variant.
+    local suffixes = POS_Constants.PACKAGING_SUFFIXES
+    if suffixes then
+        -- Extract the short name (strip module prefix, e.g. "Base.Bullets9mmBox" → "Bullets9mmBox")
+        local shortName = fullType:match("%.(.+)$") or fullType
+        for _, pkg in ipairs(suffixes) do
+            local suf = pkg.suffix
+            if shortName:sub(-#suf) == suf then
+                -- Strip suffix to find base item name, reconstruct fullType
+                local baseName = shortName:sub(1, -#suf - 1)
+                local modulePrefix = fullType:match("^(.+%.)") or ""
+                local baseFullType = modulePrefix .. baseName
+
+                -- Try curated base item price first
+                local basePrice = nil
+                if POS_ItemValueRegistry then
+                    local baseOverride = POS_ItemValueRegistry.getOverride(baseFullType)
+                    if baseOverride then
+                        basePrice = baseOverride.basePrice
+                    end
+                end
+
+                -- If base item has a curated price, multiply it
+                if basePrice and basePrice > 0 then
+                    return math.max(
+                        POS_Constants.ITEM_POOL_MIN_BASE_PRICE,
+                        basePrice * pkg.mult * condMult
+                    ), false
+                end
+
+                -- No curated base item — use weight fallback with packaging multiplier
+                local w = itemWeight or 1.0
+                local mults = POS_Constants.CATEGORY_PRICE_MULTIPLIERS
+                local catMult = (mults and mults[categoryId]) or 1.0
+                return math.max(
+                    POS_Constants.ITEM_POOL_MIN_BASE_PRICE,
+                    w * POS_Constants.ITEM_POOL_WEIGHT_MULTIPLIER * catMult * condMult * pkg.mult
+                ), false
+            end
+        end
+    end
+
     -- Fallback: weight-based formula with apocalypse-tuned category multipliers
     local w = itemWeight or 1.0
     local mults = POS_Constants.CATEGORY_PRICE_MULTIPLIERS

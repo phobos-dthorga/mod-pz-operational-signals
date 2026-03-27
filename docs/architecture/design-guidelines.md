@@ -4289,3 +4289,37 @@ _refreshListeners = {}
 
 For background processes (calibration, scanning), fire
 `OnBackgroundProgressUpdated` with `{ processId, progress, label }`.
+
+---
+
+## 58. Item Pricing Tiers
+
+Item prices are resolved through a **three-tier fallback system**:
+
+1. **Curated override** — explicit per-item `basePrice` in
+   `Definitions/ItemValues/*.lua`. ~266 items (215 base + 51 bulk containers).
+   Highest priority.
+2. **Packaging detection** — items with `_Box`, `_Carton`, `_Case`, `_Pack`,
+   `_Boxed`, `_Crate` suffixes automatically get their base item's price
+   multiplied by a packaging factor (`PRICING_*_MULT` constants).
+   Falls back to weight × packaging mult if base item has no curated price.
+3. **Weight fallback** — `weight × ITEM_POOL_WEIGHT_MULTIPLIER × categoryMult × condMult`.
+   Lowest priority, used for uncurated non-packaged items.
+
+> **Design rule**: Curated overrides take absolute priority. The packaging
+> detection layer handles bulk containers automatically. The weight fallback
+> is the safety net. New high-value items should be curated; new bulk
+> variants are handled automatically by suffix detection.
+
+**Packaging multipliers** (from `POS_Constants_Market.lua`):
+
+| Suffix | Multiplier | Typical Contents |
+|--------|-----------|-----------------|
+| `_Pack` | 2.0× | Small pack (2-6 items) |
+| `_Box` / `_Boxed` | 3.0× | Box (~6-12 items) |
+| `_Case` | 5.0× | Mid-size container |
+| `_Carton` | 8.0× | Bulk wholesale (12+ boxes) |
+| `_Crate` | 10.0× | Large shipping container |
+
+**Cross-references**: `POS_ItemPool.lua`, `POS_Constants_Market.lua`,
+`POS_ItemValueRegistry.lua`, `Definitions/ItemValues/*.lua`

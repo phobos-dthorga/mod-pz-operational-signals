@@ -22,5 +22,14 @@ return {
         { id = "Base.Disinfectant",        basePrice = 30.00,  reason = "Wound/surface disinfection" },
         { id = "Base.Tweezers",            basePrice = 20.00,  reason = "Foreign body removal" },
         { id = "Base.Tweezers_Forged",     basePrice = 18.00,  reason = "Improvised tweezers" },
+
+        -- ── Medical Supply Boxes ──────────────────────────────
+        { id = "Base.BandageBox",             basePrice = 25.00 },
+        { id = "Base.AdhesiveBandageBox",     basePrice = 20.00 },
+        { id = "Base.ColdpackBox",            basePrice = 15.00 },
+        { id = "Base.CottonBallsBox",         basePrice = 8.00 },
+        { id = "Base.TongueDepressorBox",     basePrice = 5.00 },
+        { id = "Base.PaperclipBox",           basePrice = 2.00 },
+        { id = "Base.AdhesiveTapeBox",        basePrice = 10.00 },
     },
 }
