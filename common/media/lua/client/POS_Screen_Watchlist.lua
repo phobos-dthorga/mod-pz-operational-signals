@@ -184,7 +184,7 @@ end
 if POS_Events and POS_Events.OnTradeCompleted then
     POS_Events.OnTradeCompleted:addListener(function()
         if POS_ScreenManager.currentScreen == screen.id then
-            POS_ScreenManager.refreshCurrentScreen()
+            POS_ScreenManager.markDirty()
         end
     end)
 end

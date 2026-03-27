@@ -790,7 +790,7 @@ local function renderMissionRow(ctx, op, parent, rx, ry, rw, _idx)
         nil,
         function()
             _selectedMissionId = opId
-            POS_ScreenManager.refreshCurrentScreen()
+            POS_ScreenManager.markDirty()
         end)
     ry = ry + ctx.btnH + 4
 

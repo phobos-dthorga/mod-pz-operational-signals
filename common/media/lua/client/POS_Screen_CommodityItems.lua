@@ -112,7 +112,7 @@ local function executeBuyAction(fullType, categoryId, qty, avgPrice)
     _quantities[fullType] = 1
 
     -- Refresh screen
-    POS_ScreenManager.refreshCurrentScreen()
+    POS_ScreenManager.markDirty()
 end
 
 ---------------------------------------------------------------
@@ -171,7 +171,7 @@ local function executeSellAction(fullType, categoryId, qty)
     end
 
     _quantities[fullType] = 1
-    POS_ScreenManager.refreshCurrentScreen()
+    POS_ScreenManager.markDirty()
 end
 
 --- Current trade mode: "buy" or "sell"
@@ -359,7 +359,7 @@ function screen.create(contentPanel, params, _terminal)
                         "-", nil,
                         function()
                             _quantities[ft] = math.max(1, (_quantities[ft] or 1) - 1)
-                            POS_ScreenManager.refreshCurrentScreen()
+                            POS_ScreenManager.markDirty()
                         end)
                     bx = bx + btnSize + 2
 
@@ -373,7 +373,7 @@ function screen.create(contentPanel, params, _terminal)
                         "+", nil,
                         function()
                             _quantities[ft] = math.min(maxQty, (_quantities[ft] or 1) + 1)
-                            POS_ScreenManager.refreshCurrentScreen()
+                            POS_ScreenManager.markDirty()
                         end)
                     bx = bx + btnSize + 8
 

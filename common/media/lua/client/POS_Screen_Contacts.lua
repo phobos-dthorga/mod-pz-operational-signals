@@ -416,7 +416,7 @@ end
 if POS_Events and POS_Events.OnStockTickClosed then
     POS_Events.OnStockTickClosed:addListener(function()
         if POS_ScreenManager.currentScreen == screen.id then
-            POS_ScreenManager.refreshCurrentScreen()
+            POS_ScreenManager.markDirty()
         end
     end)
 end

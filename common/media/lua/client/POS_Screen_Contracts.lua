@@ -171,7 +171,7 @@ local function renderContractRow(ctx, contract, parent, rx, ry, rw, _idx)
             label, labelColour,
             function()
                 _selectedContractId = contractId
-                POS_ScreenManager.refreshCurrentScreen()
+                POS_ScreenManager.markDirty()
             end)
         ry = ry + ctx.btnH + 4
     else
@@ -398,7 +398,7 @@ screen.getContextData = function(_params)
             callback = function()
                 local ok, err = POS_ContractService.accept(cId)
                 if ok then
-                    POS_ScreenManager.refreshCurrentScreen()
+                    POS_ScreenManager.markDirty()
                 else
                     PhobosLib.safecall(PhobosLib.notifyOrSay, getPlayer(), {
                         title   = "POSnet",
@@ -418,7 +418,7 @@ screen.getContextData = function(_params)
                 local ok, err = POS_ContractService.fulfil(cId)
                 if ok then
                     _selectedContractId = nil
-                    POS_ScreenManager.refreshCurrentScreen()
+                    POS_ScreenManager.markDirty()
                 else
                     PhobosLib.safecall(PhobosLib.notifyOrSay, getPlayer(), {
                         title   = "POSnet",
@@ -435,7 +435,7 @@ screen.getContextData = function(_params)
             callback = function()
                 POS_ContractService.abandon(cId)
                 _selectedContractId = nil
-                POS_ScreenManager.refreshCurrentScreen()
+                POS_ScreenManager.markDirty()
             end,
         })
         -- Send Agent button — delegates contract fulfilment to a free agent

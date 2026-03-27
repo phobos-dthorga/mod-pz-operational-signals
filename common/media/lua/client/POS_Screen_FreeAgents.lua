@@ -206,7 +206,7 @@ function screen.create(contentPanel, params, _terminal)
                     selectLabel, nil,
                     function()
                         _selectedAgentId = agentId
-                        POS_ScreenManager.refreshCurrentScreen()
+                        POS_ScreenManager.markDirty()
                     end)
                 ry = ry + ctx.btnH + 4
 
@@ -354,7 +354,7 @@ screen.getContextData = function()
             callback = function()
                 POS_FreeAgentService.recall(agentId)
                 _selectedAgentId = nil
-                POS_ScreenManager.refreshCurrentScreen()
+                POS_ScreenManager.markDirty()
             end,
         })
     end
