@@ -1945,5 +1945,20 @@
 
     "UI_POS_NoRadioInRange": "No radio in range",
 
-    "UI_POS_Tiles": "tiles"
+    "UI_POS_Tiles": "tiles",
+
+    "UI_POS_Entropy_Clear": "Market picture clear",
+    "UI_POS_Entropy_Ageing": "Market picture ageing",
+    "UI_POS_Entropy_Conflicting": "Conflicting field readings",
+    "UI_POS_Entropy_Distorted": "High distortion suspected",
+    "UI_POS_Entropy_Cold": "Cold market -- verification overdue",
+
+    "UI_POS_Entropy_PN_ColdTitle": "Market Alert",
+    "UI_POS_Entropy_PN_Cold": "%1 market in %2 is SILENT -- data may be unreliable",
+    "UI_POS_Entropy_PN_ContradictionTitle": "Data Integrity Warning",
+    "UI_POS_Entropy_PN_Contradiction": "Conflicting intel on %1 in %2",
+    "UI_POS_Entropy_PN_TransitionTitle": "Market Outlook",
+    "UI_POS_Entropy_PN_Transition": "Intelligence on %1: %2",
+    "UI_POS_Entropy_PN_RecoveryTitle": "Intelligence Update",
+    "UI_POS_Entropy_PN_Recovery": "Fresh data received for %1 in %2"
 }

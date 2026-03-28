@@ -120,6 +120,7 @@ local function _ensureZoneState(zoneId)
         demand     = {},
         volatility = volatility,
         pressure   = {},
+        intelState = {},
     }
 
     -- Initialise pressure to 0 for all categories
@@ -138,6 +139,14 @@ local function _ensureZoneState(zoneId)
         if persisted.pressure then
             for catId, val in pairs(persisted.pressure) do
                 state.pressure[catId] = val
+            end
+        end
+        if persisted.intelState then
+            for catId, fields in pairs(persisted.intelState) do
+                state.intelState[catId] = state.intelState[catId] or {}
+                for k, v in pairs(fields) do
+                    state.intelState[catId][k] = v
+                end
             end
         end
         PhobosLib.debug("POS", _TAG, "Restored zone state for " .. zoneId)
@@ -362,6 +371,14 @@ end
 --- Get the supply pressure for a specific category in a zone.
 --- Aggregates pressure contributions from all wholesalers in the zone.
 --- Positive = scarcity, negative = surplus.
+--- Get the zone state table for a zone (read-only accessor).
+--- Used by POS_EntropyService for fog-of-market queries.
+---@param zoneId string  Market zone ID
+---@return table|nil     Zone state table, or nil if not initialised
+function POS_MarketSimulation._getZoneState(zoneId)
+    return _zoneStates[zoneId]
+end
+
 ---@param zoneId     string  Market zone ID
 ---@param categoryId string  Category key
 ---@return number            Pressure value
@@ -579,6 +596,15 @@ function POS_MarketSimulation.tickSimulation(currentDay)
         end
     end
 
+    -- Entropy: update fog-of-market state per zone
+    for _, zoneId in ipairs(POS_Constants.MARKET_ZONES) do
+        local zoneState = _ensureZoneState(zoneId)
+        if POS_EntropyService and POS_EntropyService.tickZoneEntropy then
+            PhobosLib.safecall(POS_EntropyService.tickZoneEntropy,
+                zoneState, zoneId, currentDay)
+        end
+    end
+
     -- Update agent hidden state meters
     PhobosLib.debug("POS", _TAG, "tickSimulation Phase 3: updating agent meters")
     PhobosLib.safecall(_updateAgentMeters, _zoneStates)
@@ -625,6 +651,7 @@ function POS_MarketSimulation.tickSimulation(currentDay)
                 zonesModData.entries[zoneId] = {
                     pressure   = zoneState.pressure,
                     volatility = zoneState.volatility,
+                    intelState = zoneState.intelState,
                 }
             end
         end

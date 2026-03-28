@@ -248,6 +248,13 @@ local function reinforceRumours(fragment)
                         POS_Constants.WBN_RUMOUR_CONF_FLOOR)
                     PhobosLib.debug("POS", _TAG, "rumour contradicted: " .. tostring(r.id)
                         .. " -> " .. string.format("%.2f", r.confidenceNumeric))
+                    -- Write contradiction to fog-of-market entropy state
+                    if fragment.zoneId and fragment.categoryId
+                            and POS_EntropyService and POS_EntropyService.addContradiction then
+                        POS_EntropyService.addContradiction(
+                            fragment.zoneId, fragment.categoryId,
+                            POS_Constants.WBN_RUMOUR_CONTRADICT_DROP)
+                    end
                 end
             end
         end

@@ -130,6 +130,12 @@ function POS_MarketDatabase.addRecord(record)
     PhobosLib.pushRolling(catData.observations, obs, maxObs)
     POS_MarketFileStore.markDirty()
 
+    -- Notify entropy system: fresh observation fights information decay
+    if record.zoneId and POS_EntropyService and POS_EntropyService.recordObservation then
+        POS_EntropyService.recordObservation(
+            record.zoneId, record.categoryId, record.confidence or 0.5)
+    end
+
     -- Also log to event log
     if POS_EventLog and POS_EventLog.append then
         POS_EventLog.append(POS_Constants.EVENT_SYSTEM_ECONOMY, "observation",

@@ -37,6 +37,7 @@ require "POS_MarketRegistry"
 require "POS_MarketDatabase"
 require "POS_MarketService"
 require "POS_MarketSimulation"
+require "POS_EntropyService"
 require "POS_EventService"
 require "POS_ExchangeEngine"
 require "POS_WorldState"
@@ -162,6 +163,7 @@ local function renderSummary(ctx, params)
                 local freshnessStr = ""
                 local sourceStr = ""
 
+                local entropyStr = ""
                 if summary then
                     if summary.avgPrice and summary.avgPrice > 0 then
                         priceStr = "$" .. tostring(math.floor(summary.avgPrice + 0.5))
@@ -174,8 +176,26 @@ local function renderSummary(ctx, params)
                         .. W.safeGetText("UI_POS_Market_Sources")
                 end
 
+                -- Fog-of-market atmospheric label (from entropy system)
+                if POS_EntropyService and POS_EntropyService.getIntelState then
+                    local defaultZone = POS_Constants.MARKET_ZONES
+                        and POS_Constants.MARKET_ZONES[1]
+                    if defaultZone then
+                        local intelState = POS_EntropyService.getIntelState(
+                            defaultZone, cat.id)
+                        if intelState and intelState.certainty
+                                and intelState.certainty < POS_Constants.ENTROPY_LABEL_CLEAR then
+                            local band = POS_EntropyService.getAtmosphericBand(
+                                intelState.certainty)
+                            if band and band.key then
+                                entropyStr = " {" .. W.safeGetText(band.key) .. "}"
+                            end
+                        end
+                    end
+                end
+
                 local label = catLabel .. " \226\128\148 " .. priceStr
-                    .. " " .. arrow .. freshnessStr .. "  " .. sourceStr
+                    .. " " .. arrow .. freshnessStr .. entropyStr .. "  " .. sourceStr
                 local catId = cat.id
                 W.createButton(parent, rx, ry, rw, ctx.btnH, label, nil,
                     function()

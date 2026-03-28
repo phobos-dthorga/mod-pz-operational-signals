@@ -4450,7 +4450,15 @@ Concealment attacks intel quality, not just supply. Gated behind
 `POS.EnableConcealmentEffects` sandbox option (default: true). Detection
 is SIGINT-gated (level 3+ reveals indicators on the terminal).
 
-### 59.5 Anti-Patterns
+### 59.5 Price Engine Integration
+
+Do not call `getZonePressure()` without entropy attenuation for
+player-visible pricing. `POS_PriceEngine.generatePrice()` wraps raw
+pressure via `POS_EntropyService.getEffectivePressure()` which applies
+the fog-of-market formula:
+`effectivePressure = rawPressure * certainty * trust * (1 - rumourLoad * noiseWeight)`
+
+### 59.6 Anti-Patterns
 
 - Treating negative influencers as just "price down" -- they should
   damage clarity, confidence, timeliness, trust, and consistency
@@ -4458,5 +4466,7 @@ is SIGINT-gated (level 3+ reveals indicators on the terminal).
 - Duplicating weather detection -- read from Signal Ecology
 - Storing entropy state per-record -- use the fog-of-market layer
 - Hardcoding decay rates -- use `POS_Constants.ENTROPY_*`
+- Calling `getZonePressure()` without entropy attenuation for
+  player-visible pricing
 
 **Full design**: `docs/architecture/entropy-system-design.md`

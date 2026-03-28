@@ -142,7 +142,15 @@ function POS_PriceEngine.generatePrice(fullType, categoryId, ctx)
         local ok, pressure = PhobosLib.safecall(
             POS_MarketSimulation.getZonePressure, zoneId, categoryId)
         if ok and pressure then
-            local pressureFactor = pressure
+            -- Apply fog-of-market entropy attenuation
+            local effectivePressure = pressure
+            if POS_EntropyService and POS_EntropyService.getEffectivePressure then
+                local ok_ep, ep = PhobosLib.safecall(
+                    POS_EntropyService.getEffectivePressure,
+                    zoneId, categoryId, pressure)
+                if ok_ep and ep then effectivePressure = ep end
+            end
+            local pressureFactor = effectivePressure
                 * POS_Constants.PRICE_ZONE_PRESSURE_WEIGHT
             pressureFactor = PhobosLib.clamp(pressureFactor,
                 -POS_Constants.PRICE_ZONE_PRESSURE_CLAMP,
