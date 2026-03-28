@@ -4401,3 +4401,62 @@ high damage AND long range gets both bonuses).
 
 **Cross-references**: `POS_ItemPool.lua`, `POS_Constants_Market.lua`,
 `POS_ItemValueRegistry.lua`, `Definitions/ItemValues/*.lua`
+
+---
+
+## 59. Market Entropy Doctrine
+
+> **Core doctrine**: Every information source in POSnet should have both
+> a yield path and a loss path. The world should trend toward
+> informational decay unless effort, infrastructure, and verification
+> actively resist it.
+
+> **Practical rule**: Every market signal should have a birth, a
+> distortion phase, a stale phase, and a death.
+
+### 59.1 The Three Kinds of Decay
+
+1. **Information decay** -- what you know becomes stale
+2. **Interpretation decay** -- confidence in what data means degrades
+3. **Market memory decay** -- prices drift back toward neutral without
+   fresh reinforcement
+
+### 59.2 The Fog-of-Market Layer
+
+A hidden per-zone/category state bundle (`certainty`, `freshness`,
+`rumourLoad`, `contradiction`, `trust`, `silenceDays`, `concealment`)
+that every system reads from and writes to. This is the single
+authoritative place where information quality lives.
+
+Raw zone pressure is attenuated by fog-of-market state before reaching
+the price engine:
+```
+effectivePressure = rawPressure * certainty * trust * (1 - noise * weight)
+```
+
+### 59.3 Weather and Seasonal Entropy
+
+Weather governs signal integrity. Seasons govern systemic entropy.
+Markets react not to reality -- but to what survives transmission.
+
+Weather modifiers are read from the Signal Ecology propagation pillar
+(do not duplicate weather detection). Seasonal baselines define the
+entropy floor: Spring (noisy recovery), Summer (saturated, deceptive
+clarity), Autumn (tightening, concealment), Winter (maximum entropy).
+
+### 59.4 Wholesaler Concealment
+
+Concealment attacks intel quality, not just supply. Gated behind
+`POS.EnableConcealmentEffects` sandbox option (default: true). Detection
+is SIGINT-gated (level 3+ reveals indicators on the terminal).
+
+### 59.5 Anti-Patterns
+
+- Treating negative influencers as just "price down" -- they should
+  damage clarity, confidence, timeliness, trust, and consistency
+- Making decay too harsh -- calibration drift, not punishment
+- Duplicating weather detection -- read from Signal Ecology
+- Storing entropy state per-record -- use the fog-of-market layer
+- Hardcoding decay rates -- use `POS_Constants.ENTROPY_*`
+
+**Full design**: `docs/architecture/entropy-system-design.md`
