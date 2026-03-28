@@ -1943,5 +1943,7 @@
     "UI_POS_Signal_Hint_ColdExtreme": "extreme cold",
     "UI_POS_Signal_Hint_HeatExtreme": "extreme heat",
 
-    "UI_POS_NoRadioInRange": "No radio in range"
+    "UI_POS_NoRadioInRange": "No radio in range",
+
+    "UI_POS_Tiles": "tiles"
 }
