@@ -28,10 +28,20 @@ require "POS_Constants"
 require "POS_MarketDatabase"
 require "POS_WorldState"
 require "POS_WatchlistService"
+require "POS_RadioProximity"
 
 POS_RadioInterception = {}
 
 local _TAG = "[POS:RadioInt]"
+
+--- Check whether the local player is near a powered, unmuted radio tuned
+--- to a POSnet data band. Used to gate intelligence intercept delivery.
+---@return boolean inRange
+local function isRadioInRange()
+    local player = getSpecificPlayer(0)
+    if not player then return false end
+    return POS_RadioProximity.isPlayerNearTunedRadio(player)
+end
 
 --- Whether the POSnet channel has been registered.
 local channelRegistered = false
@@ -77,6 +87,12 @@ function POS_RadioInterception.onTransmissionReceived(transmission)
     local player = getSpecificPlayer(0)
     if not player then return end
 
+    -- Proximity filter: require a powered, unmuted, tuned radio in range
+    if not isRadioInRange() then
+        PhobosLib.debug("POS", _TAG, "Transmission dropped — no radio in range")
+        return
+    end
+
     PhobosLib.debug("POS", _TAG, "Transmission received")
 
     if transmission.operationData and POS_OperationLog then
@@ -97,7 +113,10 @@ local function onServerCommand(module, command, args)
     if command == POS_Constants.CMD_NEW_OPERATION and args and args.operationData then
         POS_RadioInterception.onTransmissionReceived(args)
     elseif command == POS_Constants.CMD_NEW_INVESTMENT and args and args.investmentData then
-        if POS_InvestmentLog then
+        -- Proximity filter: same as operations — require nearby radio
+        if not isRadioInRange() then
+            PhobosLib.debug("POS", _TAG, "Investment dropped — no radio in range")
+        elseif POS_InvestmentLog then
             local added = POS_InvestmentLog.addOpportunity(args.investmentData)
             if added then
                 PhobosLib.debug("POS", _TAG, "Investment opportunity received: "

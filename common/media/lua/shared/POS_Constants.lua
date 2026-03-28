@@ -905,3 +905,15 @@ POS_Constants.TUTORIAL_SIGINT_THRESHOLD_L9      = 9
 
 -- Legacy modData key (backward compat migration)
 POS_Constants.MD_RECORDER_TUTORIAL_SHOWN_LEGACY = "MD_RECORDER_TUTORIAL_SHOWN"
+
+---------------------------------------------------------------
+-- Radio proximity filtering (intercept hearing range)
+---------------------------------------------------------------
+
+--- Maximum tile radius to search for world-placed radios when checking
+--- whether the player can hear intelligence intercepts.
+POS_Constants.WORLD_RADIO_SCAN_RADIUS     = 20
+
+--- Minimum DeviceData:getDeviceVolume() for a radio to count as hearable.
+--- Muted radios (volume 0) do not deliver intercepts.
+POS_Constants.RADIO_MIN_VOLUME_THRESHOLD  = 0.01

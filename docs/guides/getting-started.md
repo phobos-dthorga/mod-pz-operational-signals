@@ -84,9 +84,11 @@ Screens you cannot access yet appear greyed out with a reason (e.g.,
 
 ## Tips for Beginners
 
-- **Leave a radio on** near your base computer. Ambient intel accumulates
-  even when the terminal is closed, as long as the radio is powered and
-  tuned to an AZAS frequency.
+- **Leave a radio on** near your base computer. Intelligence intercepts
+  (operations and investment opportunities) only arrive when you are within
+  hearing range of a powered radio tuned to a POSnet frequency. Carrying a
+  walkie-talkie tuned to the right frequency lets you receive intercepts on
+  the go — but muting the radio for stealth also stops intercepts.
 - **Check the BBS** (Bulletin Board System) for available operations and
   delivery missions. These are your primary source of income and reputation.
 - **Invest in SIGINT early.** The Signal Intelligence skill gates access to

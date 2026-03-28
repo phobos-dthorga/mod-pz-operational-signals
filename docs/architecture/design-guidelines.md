@@ -332,6 +332,41 @@ Where `SATELLITE_WIRING_Z_PENALTY = 5` (extra wires per floor difference).
 
 **Implementation references:** `POS_SatelliteService.lua` (wiring CRUD, validation), `POS_SatelliteWiringAction.lua` (timed action), `POS_SatelliteContextMenu.lua` (menu options).
 
+### 5.7 Radio Proximity Filtering
+
+Intelligence intercepts (`CMD_NEW_OPERATION`, `CMD_NEW_INVESTMENT`) are only
+delivered to players within hearing range of a powered radio tuned to a POSnet
+frequency. This uses `PhobosLib_Radio.findNearbyTunedRadio()` which delegates
+to vanilla PZ's `HasPlayerInRange()` on world radios — inherently respecting
+volume, player hearing multipliers, weather effects, and worn equipment
+modifiers.
+
+**Three-source search (short-circuit on first match):**
+1. **Inventory radios** — powered + tuned + volume > `RADIO_MIN_VOLUME_THRESHOLD`.
+   Muted radios do not count (players can silence their walkie-talkie for stealth
+   at the cost of losing intercepts).
+2. **World radios** — `PhobosLib.scanNearbySquares()` within
+   `WORLD_RADIO_SCAN_RADIUS` (20 tiles), then `HasPlayerInRange()` per candidate.
+3. **Vehicle radios** — player seated in vehicle with powered + tuned + unmuted
+   radio.
+
+**Infrastructure commands are NOT gated** — market snapshots, economy ticks,
+building/mailbox cache syncs, and investment resolution flow unconditionally.
+
+**PhobosLib integration:** The generic radio proximity API lives in
+`PhobosLib_Radio.findNearbyTunedRadio(player, opts)`. POSnet wraps it via
+`POS_RadioProximity.isPlayerNearTunedRadio()` with AZAS frequency matching.
+
+**Anti-patterns:**
+- Calling `square:haveElectricity()` directly — use `PhobosLib.hasPower()`
+- Hardcoding scan radius — use `POS_Constants.WORLD_RADIO_SCAN_RADIUS`
+- Gating market data delivery — only gate intelligence intercepts
+- Treating inventory radios as always in range — volume threshold applies
+
+**Implementation references:** `POS_RadioProximity.lua` (POSnet wrapper),
+`PhobosLib_Radio.lua` (generic API), `POS_RadioInterception.lua` (filter
+integration).
+
 ---
 
 ## 6. Location Display

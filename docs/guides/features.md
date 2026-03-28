@@ -31,8 +31,11 @@ feeds. Higher-quality sources give more accurate and detailed information.
 The **SIGINT skill** is a custom perk with 10 levels. It represents your
 character's ability to intercept, decode, and analyse radio signals.
 
-- **Passive recon** -- ambient intelligence gathered automatically while a
-  radio is tuned to AZAS frequencies. Requires no special equipment.
+- **Passive recon** -- ambient intelligence gathered automatically while you
+  are within hearing range of a powered radio tuned to AZAS frequencies.
+  Vanilla PZ hearing mechanics apply: volume, hearing traits, weather, and
+  worn equipment all affect reception. Muting a radio stops intercepts.
+  Requires no special equipment.
 - **Active recon** -- use a **Data Recorder** near a radio to actively scan
   for detailed market and operational intelligence. Yields more XP and
   better data.
