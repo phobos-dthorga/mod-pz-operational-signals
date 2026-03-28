@@ -1,320 +1,217 @@
 # POSnet Expansion Roadmap
 
 > Living document. No implementation dates. Updated as features are
-> completed or reprioritised. Last audit: 2026-03-24.
+> completed or reprioritised. Last audit: 2026-03-28.
 
 ---
 
 ## Status Overview
 
-| # | Feature | Status | Tier | Complexity | Design Ref |
-|---|---------|--------|------|------------|------------|
-| 1 | Living Market Phase 2-3 (4 archetypes) | **DONE** | High | Medium-High | living-market-design.md |
-| 2 | Mission Content Expansion | **15 of 15** | High | Low | mission-system-design.md |
-| 3 | Market Event System (rumours) | **DONE** | High | High | living-market-design.md Phase 4 |
-| 4 | Contract System Phase 2-3 | **ALL DONE** | Medium | Medium | design-guidelines.md §42-43, §46 |
-| 5 | Camera Workstation Phase 2-4 | **Phase 2 DONE** | Medium | Medium | camera-workstation-design.md |
-| 6 | Data Recorder Phase 2-4 | **Phase 2 DONE** | Medium | Medium | data-recorder-design.md |
-| 7 | Signal Strength affects Missions | **DONE** | Medium | Low | design-guidelines.md §5.4 |
-| 8 | Terminal Screen Consolidation | **DONE** (1 deferred) | Polish | Medium | design-guidelines.md §33 |
-| 9 | Building Target Name Resolution | **DONE** | Polish | Trivial | POS_MissionGenerator.lua |
-| 10 | Market Recon Repeat Visit Discount | **DONE** | Polish | Low | POS_MarketReconAction.lua |
-| 11 | Physical Item Trading (Contacts) | Designed, 0% | Polish | Medium | design-guidelines.md §1.3 |
-| 12 | Cross-Mod Missions (PCP/PIP) | **DONE** | Content | Low | interoperability-matrix.md |
-| 13 | Archetype Voice Packs (4 remaining) | **7 of 7** | Content | Low | design-guidelines.md §32 |
-| 14 | Satellite Passive Collection | Design only | Future | High | satellite-passive-collection-design.md |
+| # | Feature | Status | Complexity | Design Ref |
+|---|---------|--------|------------|------------|
+| 1 | Living Market (7 archetypes) | **DONE** | High | living-market-design.md |
+| 2 | Mission Content (18 definitions) | **DONE** | Low | mission-system-design.md |
+| 3 | Market Event System (rumours) | **DONE** | High | living-market-design.md |
+| 4 | Contract System (spot sell + free agents) | **DONE** | Medium | design-guidelines.md |
+| 5 | Camera Workstation Phase 1-2 | **DONE** | Medium | camera-workstation-design.md |
+| 6 | Data Recorder Phase 1-2 | **DONE** | Medium | data-recorder-design.md |
+| 7 | Signal Strength affects Missions | **DONE** | Low | design-guidelines.md 5.4 |
+| 8 | Terminal Screen Consolidation | **DONE** | Medium | design-guidelines.md 33 |
+| 9 | Building Target Name Resolution | **DONE** | Trivial | POS_BuildingCache.lua |
+| 10 | Market Recon Repeat Visit Discount | **DONE** | Low | POS_MarketReconAction.lua |
+| 11 | Cross-Mod Missions (PCP/PIP) | **DONE** | Low | interoperability-matrix.md |
+| 12 | Archetype Voice Packs (9/9) | **DONE** | Low | design-guidelines.md 32 |
+| 13 | Satellite Uplink (Tier IV) | **DONE** | High | satellite-uplink-design.md |
+| 14 | Strategic Relay (Tier V) | **DONE** | High | tier-v-strategic-relay-design.md |
+| 15 | Passive Recon System | **DONE** | Medium | passive-recon-design.md |
+| 16 | Tutorial & Milestone System | **DONE** | Low | design-guidelines.md 23 |
+| 17 | SIGINT Skill (10 levels) | **DONE** | Medium | sigint-skill-design.md |
+| 18 | WBN Radio Pipeline | **DONE** | High | world-broadcast-network-design.md |
+| 19 | Radio Proximity Filtering | **DONE** | Medium | design-guidelines.md 5.7 |
+| 20 | Event-to-Market Price Coupling | **DONE** | Low | design-guidelines.md 55.1 |
+| 21 | Fragment-to-MarketDatabase Bridge | **DONE** | Low | design-guidelines.md 55.1 |
+| 22 | Item Spawn Expansion + SIGINT Books | **DONE** | Low | POS_Distributions.lua |
+| 23 | Entropy System (Fog-of-Market) | Design complete | Very High | entropy-system-design.md |
+| 24 | Broadcast Influence System | Design complete | High | broadcast-influence-design.md |
+| 25 | Signal Ecology v2 | Partial (stub) | Very High | signal-ecology-design.md |
+| 26 | Physical Item Trading (Contacts) | Designed, 0% | Medium | design-guidelines.md 1.3 |
+| 27 | Satellite Passive Collection | Design only | High | satellite-passive-collection-design.md |
 
 ---
 
-## Tier 1: High Impact
+## Completed Features (v0.23.0)
 
-### 1. Living Market Phase 2-3 — Additional Archetypes
+### Core Systems (All Operational)
 
-**Status**: Phase 1 (3 archetypes: Scavenger, Quartermaster, Wholesaler)
-implemented. 4 more designed but not instantiated.
+- **Living Market**: 7 archetypes (Scavenger, Quartermaster, Wholesaler,
+  Smuggler, Military Logistician, Speculator, Specialist Crafter), 6
+  market zones, zone pressure, supply/demand simulation, price drift
+- **Mission System**: 18 definitions across 6 categories + 2 cross-mod.
+  Band-gated visibility. Signal-based difficulty cap + briefing garble.
+  Negotiation, cancellation penalties, barter system.
+- **Contract System**: World-originated contracts, spot selling, free
+  agent system (5 archetypes, state machine, signal feed)
+- **Passive Recon**: Camcorder, field logger, scanner radio. VHS/
+  microcassette/floppy media pipeline.
+- **Camera Workstation**: Compile Site Survey, Tape Review, Market
+  Bulletin actions. Confidence calculation.
+- **Data Recorder**: VHS cassettes, microcassettes, floppy disks. Passive
+  scan data routes through equipped recorder.
+- **Satellite Uplink (Tier IV)**: Broadcast modes, signal strength
+  preview, calibration, fuel drain, wired connection.
+- **Strategic Relay (Tier V)**: Discovery, remote calibration, bandwidth
+  allocation, operational dashboard.
+- **SIGINT Skill**: Custom perk, 10 levels, affects data quality not
+  access. 5 skill books with loot distribution.
+- **Tutorial System**: 14 milestones, progressive toasts, legacy migration.
 
-**What's missing**:
-- Phase 2 — **Smuggler** (creates market distortion, grey-market supply,
-  betrayal risk) + **Speculator** (creates price spikes, buys low/sells
-  high, volatility injection)
-- Phase 3 — **Military Logistician** (controlled distribution, strict
-  specs, reliable but inflexible) + **Specialist Crafter** (produces
-  niche goods, recipe-gated availability)
+### Radio & Broadcast Systems (All Operational)
 
-**What exists**: `POS_ArchetypeSchema.lua`, `Definitions/Archetypes/`
-directory with 3 files, `POS_MarketAgent.lua` agent lifecycle.
+- **WBN Radio Pipeline**: Harvest -> Editorial -> Composition ->
+  Scheduling -> Delivery. 3 channels, 9 voice packs, 415 translation
+  keys, signal degradation. Players hear market bulletins on vanilla
+  radios.
+- **Radio Proximity Filtering**: Intelligence intercepts gated by hearing
+  range of powered, unmuted, tuned radio. Vanilla PZ hearing mechanics
+  apply. Generic API in PhobosLib (`findNearbyTunedRadio`).
+- **Event-to-Market Coupling**: Zone-level events (theft raids, bulk
+  arrivals, convoy delays) directly affect prices via
+  `POS_EventService.getEventPressure()` summed into zone pressure.
+- **Fragment-to-MarketDatabase Bridge**: Radio-sourced signal fragments
+  feed into `POS_MarketDatabase.addRecord()` as broadcast-tier
+  observations. Passive radio listening = passive market intelligence.
 
-**Dependencies**: Each archetype = 1 definition file + optional text pool
-additions for voice packs. No schema changes needed.
+### Content & Polish (All Complete)
 
-**Design ref**: `living-market-design.md` Phases 2-3.
-
----
-
-### 2. Mission Content Expansion
-
-**Status**: 5 mission definitions (recon_basic, recon_targeted,
-delivery_standard, trade_procurement, signal_intercept).
-
-**What's missing**:
-- Recovery missions (salvage/rescue)
-- Survey missions (map charting, area assessment)
-- Supply missions (vendor restocking on behalf of wholesalers)
-- Combat-adjacent recon (reconnaissance under zombie threat)
-- Cross-mod missions (PCP chemistry supply runs, PIP specimen collection)
-
-**What exists**: `POS_MissionSchema.lua`, `POS_MissionBriefingResolver.lua`
-(8-step compositor), `Definitions/Missions/` + `Definitions/TextPools/`.
-
-**Dependencies**: Each mission type = 1 definition file + 0-N text pool
-entries. No schema changes needed. Compositor pipeline handles everything.
-
-**Design ref**: `mission-system-design.md`.
-
----
-
-### 3. Market Event System (Rumours)
-
-**Status**: `POS_EventSchema.lua` exists. Signal emission is placeholder.
-
-**What's missing**:
-- Soft-class event emission during economy ticks (bulk arrivals, convoy
-  delays, warehouse fires, controlled releases)
-- Event-to-rumour translation (event → human-readable gossip)
-- Event-to-market-effect propagation (event → price/stock changes)
-- Integration with delivery mission generation (events trigger missions)
-
-**What exists**: Event schema + registry pattern, `POS_RumourGenerator.lua`
-(generates rumours), `POS_MarketSignals` screen (merged event/rumour feed).
-
-**Dependencies**: Requires Living Market enabled. Event definitions follow
-data-pack pattern.
-
-**Design ref**: `living-market-design.md` Phase 4+.
+- 18 mission definitions, 9 voice pack definitions, 60+ text pool files
+- 66 custom items, 40 icons, 5 SIGINT skill books
+- Expanded item spawn locations (v0.23.0)
+- Terminal screen consolidation (22 screens)
+- Market recon repeat visit discount, building target name resolution
 
 ---
 
-## Tier 2: Medium Impact
+## Active Development Queue
 
-### 4. Contract System Phase 2-3
+### Priority 1: Entropy System (Fog-of-Market)
 
-**Status**: Phase 1 (world-originated contracts) implemented.
+**Status**: Design complete, implementation not started.
+**Complexity**: Very High (estimated 80-120 hours across 3 phases).
 
-**What's missing**:
-- Phase 2 — **Spot Sell**: player initiates sale to a wholesaler (sell tab
-  on CommodityItems screen, 65% of buy price baseline, wholesaler state
-  modifiers)
-- Phase 3 — **Free Agent System**: delegate selling to runners/brokers who
-  operate autonomously. State machine: drafted → assembling → transit →
-  negotiation → settlement. 5 visibility layers. Intervention buttons.
+The single most impactful remaining feature. Introduces negative
+influencers at every layer of the economy so information decays, markets
+become uncertain, and the player must actively maintain their
+intelligence network.
 
-**What exists**: `POS_ContractService.lua` (lifecycle), `POS_TradeService.lua`
-(executeSell already exists), `POS_Screen_Contracts.lua`.
+**Phase 1 -- Foundational Entropy**:
+- Per-zone/category fog-of-market state bundle (`certainty`, `freshness`,
+  `rumourLoad`, `contradiction`, `trust`, `silenceDays`, `concealment`)
+- Certainty decay by silence
+- Contradiction damage from disagreeing sources
+- Effective pressure formula (raw pressure * certainty * trust * noise)
+- Atmospheric state labels on terminal UI
 
-**Dependencies**: Phase 2 is low complexity (sell tab). Phase 3 requires
-new schemas, agent pool, and 2 new screens.
+**Phase 2 -- Actor-Based Distortion**:
+- Wholesaler concealment affecting intel quality (sandbox-gated, SIGINT-
+  detectable)
+- Blackout state degrading authoritative signal quality
+- Weather modifier integration via Signal Ecology propagation pillar
 
-**Design ref**: `design-guidelines.md` §42-43.
+**Phase 3 -- Downstream Consequences**:
+- Seasonal entropy baselines
+- Trust erosion from failed broadcast predictions
+- Information shadow zones in severe weather
+- Speculative overreaction, false scarcity waves
 
----
-
-### 5. Camera Workstation Phase 2-4
-
-**Status**: Phase 1 (Compile Site Survey) implemented.
-
-**What's missing**:
-- Phase 2 — Tape Review + Market Bulletin actions (2 more action types)
-- Phase 3 — Camera output gates missions; mission success photos
-- Phase 4 — Advanced metadata, confidence decay, archival system
-
-**What exists**: `POS_CameraService.lua`, `POS_CameraCompileAction.lua`,
-`POS_CameraContextMenu.lua`, entity definitions.
-
-**Design ref**: `camera-workstation-design.md`.
+**Design ref**: `entropy-system-design.md`, `design-guidelines.md` 59.
 
 ---
 
-### 6. Data Recorder Phase 2-4
+### Priority 2: Broadcast Influence System
 
-**Status**: Phase 1 (VHS cassettes) implemented.
+**Status**: Design complete, implementation not started.
+**Complexity**: High (estimated 50-80 hours).
+**Blocked by**: WBN pipeline (now operational), Entropy Phase 1 (for
+trust/influence attenuation).
 
-**What's missing**:
-- Phase 2 — Microcassettes, 3.5" floppy disks as new media types
-- Phase 3 — Noise reduction, cross-validation, conflict resolution
-- Phase 4 — Degradation, re-recording, compression
+Makes Tier IV satellite broadcasts actually affect markets and agent
+behaviour. Without this, broadcasting feels cosmetic.
 
-**What exists**: `POS_DataRecorderService.lua`, item definitions for all
-media types, recipes for review/salvage.
+**Key features**:
+- Five broadcast classes (Scarcity Alert, Surplus Notice, Route Warning,
+  Contact Bulletin, Strategic Rumour)
+- Regional trust scores affect broadcast effectiveness
+- Wholesaler posture nudging from broadcasts
+- Rumour echo generation
+- Broadcast consequences (saturation, misinformation penalties)
 
-**Design ref**: `data-recorder-design.md`.
-
----
-
-### 7. Signal Strength Affects Mission Quality
-
-**Status**: Designed, sandbox-gated (`POS.SignalAffectsMissionRange`),
-zero implementation.
-
-**What's missing**:
-- Distance calculation weighted by signal percentage
-- Briefing text clarity/obscuration based on signal
-- Mission pool filtering based on signal range
-
-**What exists**: Signal strength calculation in `POS_ConnectionManager.lua`,
-reward scaling (50-100%) already uses signal.
-
-**Dependencies**: Trivial to implement. Pairs well with radio hardware
-progression (WalkieTalkie1 → HamRadio2).
-
-**Design ref**: `design-guidelines.md` §5.4.
+**Design ref**: `broadcast-influence-design.md`.
 
 ---
 
-## Tier 3: Polish & Content
+### Priority 3: Signal Ecology v2
 
-### 8. Terminal Screen Consolidation
+**Status**: Design complete, SIGNAL_INTENT_STUB placeholder in code.
+**Complexity**: Very High (estimated 80-120 hours for full migration).
 
-**Status**: Phase 1 (20→12) and Phase 2 (25→22) **DONE**.
+Replace flat signal-strength percentage with five-pillar composite model:
+Propagation (weather/terrain), Infrastructure (power/hardware), Clarity
+(noise/encoding), Saturation (agents/market), Intent (bandwidth/priority).
+Qualitative signal states (Locked, Clear, Faded, Fragmented, Ghosted,
+Lost) replace raw percentages.
 
-Absorbed screens:
-- Zone Overview → Market Overview Tab 2 "Zones"
-- Stockmarket → Market Overview Tab 3 "Exchange"
-- Wholesaler Directory → Contacts Tab 2 "Directory"
+**Note**: The Entropy System's weather integration (Phase 2) provides a
+natural on-ramp. Phase 1 of Signal Ecology (wire Intent pillar to free
+agent risk + satellite range) can proceed independently.
 
-Only `SCREEN_EVENT_LOG` (pos.markets.events) remains unimplemented.
-Low priority — Market Signals screen covers most of this functionality.
-
----
-
-### 9. Building Target Name Resolution
-
-**Status**: `POS_MissionGenerator.lua` line 132 hardcodes `"target site"`.
-
-**Fix**: Wire `POS_BuildingCache.getBuildingName(buildingKey)` into mission
-context token table. Trivial change, meaningful immersion improvement.
-
----
-
-### 10. Market Recon Repeat Visit Discount
-
-**Status**: TODO comment in `POS_MarketReconAction.lua:96`.
-
-**Feature**: Player revisits a location within 7 days, action time reduced
-by 50%. Rewards strategic planning and location knowledge.
-
-**Dependencies**: modData tracking of last visit per location.
-
----
-
-### 11. Physical Item Trading (Contacts)
-
-**Status**: Designed in §1.3, sandbox-gated (`EnableContactTrading`),
-zero implementation.
-
-**Feature**: Before accepting delivery missions, player visits a contact
-location in-world (right-click context menu), meets the contact, and
-trades directly rather than via terminal.
-
-**Dependencies**: Mission definition schema extension, context menu
-integration, trade panel UI.
-
----
-
-## Cross-Mod Opportunities
-
-### 12. PCP/PIP Cross-Mod Missions
-
-- **PCP**: Chemistry supply run missions (acquire reagents, deliver to
-  lab). Compounds as high-value trade goods in contracts.
-- **PIP**: Biological specimen collection contracts (deliver specimens
-  to research facilities). Pathology equipment as mission rewards.
-
-**Implementation**: Optional cross-mod mission definitions that only
-activate when both mods are detected via `getActivatedMods():contains()`.
-
----
-
-### 13. Archetype Voice Packs
-
-**Status**: 3 of 7 archetypes have voice packs (smuggler, military,
-trader).
-
-**Missing**: Scavenger, Quartermaster, Wholesaler, Speculator voice packs.
-Each is a text pool definition file with 5-10 entries.
+**Design ref**: `signal-ecology-design.md`, `design-guidelines.md` 56.
 
 ---
 
 ## Future (Long-Term)
 
-### 14. Satellite Passive Background Data Acquisition
+### Physical Item Trading (Contacts)
 
-**Status**: Design document only. Prerequisite: satellite wiring connection
-(§5.6).
+**Status**: Designed (design-guidelines.md 1.3), sandbox-gated, 0% impl.
 
-**Feature**: Satellite dish as an always-on intelligence appliance. Three
-operating states: Idle, Passive Collection (heavy power drain), Deep Sweep
-(extremely high power, rare intercepts). Generates intermediate resources
-(raw signal logs, traffic fragments) that require terminal processing.
+Player visits contact in-world, right-click context menu, trades
+directly rather than via terminal. Medium complexity.
 
-**Dependencies**: Satellite wiring system, power model, data pipeline.
+### Satellite Passive Collection
+
+**Status**: Design document only.
+
+Satellite dish as always-on intelligence appliance. Three states: Idle,
+Passive Collection, Deep Sweep. Generates raw signal logs and traffic
+fragments requiring terminal processing.
 
 **Design ref**: `satellite-passive-collection-design.md`.
 
 ---
 
-### 15. Tier V Strategic Relay / Regional Command Node
+## Dependencies Graph
 
-**Status**: Design document complete.
-
-**Feature**: Permanent large satellite dishes at civic infrastructure (fire
-stations, military outposts) become Tier V command installations. Unlike Tier IV
-(broadcast), Tier V coordinates the network itself: relay queuing, agent backhaul,
-signal fusion, intercept sweeps, bandwidth allocation. Transforms the player from
-intelligence gatherer to network operator.
-
-**Key distinction**: Tier IV speaks loudly. Tier V listens, judges, routes, and
-commands.
-
-**Dependencies**: Tier IV satellite system, free agent service, living market,
-signal ecology (§16).
-
-**Design ref**: `tier-v-strategic-relay-design.md`, `design-guidelines.md §51`.
+```
+Entropy Phase 1 (fog-of-market)
+    |
+    +---> Entropy Phase 2 (weather + concealment)
+    |         |
+    |         +---> Signal Ecology v2 (weather pillar shared)
+    |
+    +---> Broadcast Influence (trust attenuation)
+              |
+              +---> Entropy Phase 3 (downstream consequences)
+```
 
 ---
 
-### 16. Signal Ecology (v2 Signal Model)
+## Session Log (2026-03-28)
 
-**Status**: Design document complete. Future architecture.
-
-**Feature**: Replace flat signal-strength percentage with a five-pillar composite
-model: Propagation (weather/terrain), Infrastructure (power/hardware), Clarity
-(noise/encoding), Saturation (agents/market), Intent (bandwidth/priority).
-Qualitative signal states (Locked, Clear, Faded, Fragmented, Ghosted, Lost)
-replace raw percentages. Creates a closed emergent loop: weather affects signal,
-signal affects agents, agents affect markets, markets affect signal.
-
-**Migration**: Five-phase incremental transition from v1 to v2. Backward
-compatible via `getSignalStrength()` returning composite float.
-
-**Dependencies**: Weather API (vanilla PZ), PhobosLib power system, living market.
-
-**Design ref**: `signal-ecology-design.md`, `design-guidelines.md §50`.
-
----
-
-### 17. Tier IV Broadcast Influence Layer
-
-**Status**: Design document complete.
-
-**Feature**: Tier IV redefined as the "influence layer" -- broadcasts alter the
-informational climate in which markets and agents make decisions. Five broadcast
-classes (Scarcity Alert, Surplus Notice, Route Warning, Contact Bulletin,
-Strategic Rumour), four broadcast modes (Local Pulse, Regional, Emergency Burst,
-Whisper Cast), regional trust scores, and market/agent integration via
-`market_signal` and `agent_advisory` records. Wholesaler posture nudging, rumour
-echo generation, and broadcast consequences (saturation, misinformation).
-
-**Dependencies**: Satellite service, wholesaler service, free agent service,
-rumour system.
-
-**Design ref**: `satellite-uplink-design.md §25`.
+Features shipped this session:
+1. Expanded item spawns + SIGINT skill book distribution
+2. Radio proximity filtering for intercepts (PhobosLib v1.65.0)
+3. WBN radio pipeline wired (3 integration bugs fixed)
+4. Event-to-market price coupling (getEventPressure wired)
+5. Fragment-to-MarketDatabase bridge (radio listening = market intel)
+6. Entropy system design document codified
+7. WBN magic number extraction (8 constants)
