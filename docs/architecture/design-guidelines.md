@@ -4458,7 +4458,49 @@ pressure via `POS_EntropyService.getEffectivePressure()` which applies
 the fog-of-market formula:
 `effectivePressure = rawPressure * certainty * trust * (1 - rumourLoad * noiseWeight)`
 
-### 59.6 Anti-Patterns
+### 59.6 Seasonal Entropy (Phase 3)
+
+Seasonal modifiers are **schema-driven** via `POS_SignalModifierSchema`
+(fields: `entropyDecayMult`, `entropyNoiseMult`, `entropyTrustDrift`).
+Defined in `Definitions/SignalModifiers/season.lua`. Addon mods can
+override seasonal entropy by registering definitions through the
+`POS_SignalModifierRegistry`. The entropy tick reads the current season
+from Signal Ecology and applies the matching definition's multipliers.
+
+### 59.7 Information Shadows (Phase 3)
+
+`shadowState` (0-1) accumulates during severe weather + blackout combo
+(propagation < `ENTROPY_SHADOW_PROPAGATION_MIN` AND infrastructure <
+`ENTROPY_BLACKOUT_INFRA_THRESHOLD`). Broadcasts from shadowed zones get
+confidence degraded; pressure signals are attenuated. Terminal shows
+"Information shadow" label when shadow > `ENTROPY_SHADOW_LABEL_THRESHOLD`.
+
+### 59.8 Speculative Rumours (Phase 3)
+
+When `certainty < ENTROPY_SPECULATION_THRESHOLD`, speculative rumours
+spawn autonomously from schema-validated templates in
+`Definitions/Speculation/`. Uses `POS_SpeculationSchema` +
+`POS_SpeculationRegistry` (PhobosLib data-pack pattern). Spawn chance
+scales with `(1 - certainty) * spawnMult * (1 + desperation * despMult)`.
+Lifespan extended by uncertainty. Tagged with `sourceHint = "speculation"`.
+
+### 59.9 Trust Erosion (Phase 3)
+
+Non-broadcast observations validate recent broadcast predictions. If a
+broadcast fragment's direction matches the observed direction, trust
+gains `ENTROPY_TRUST_ACCURACY_GAIN` (0.02). If it contradicts, trust
+loses `ENTROPY_TRUST_MISINFO_LOSS` (0.05). Lookback window:
+`ENTROPY_BROADCAST_LOOKBACK_DAYS` (3). Only non-broadcast observations
+can validate (to avoid circular trust).
+
+### 59.10 Desperation Index (Phase 3)
+
+Computed on-demand: `desperation = weighted_sum(|pressure|, 1-certainty,
+1-trust, contradiction)`. Applied as amplifier to contradiction damage,
+speculative rumour spawn, and rumour confidence swings. Does not require
+new persistent state — reads existing fog-of-market fields.
+
+### 59.11 Anti-Patterns
 
 - Treating negative influencers as just "price down" -- they should
   damage clarity, confidence, timeliness, trust, and consistency
@@ -4468,5 +4510,10 @@ the fog-of-market formula:
 - Hardcoding decay rates -- use `POS_Constants.ENTROPY_*`
 - Calling `getZonePressure()` without entropy attenuation for
   player-visible pricing
+- Hardcoding speculation templates -- use POS_SpeculationSchema data-pack
+- Computing seasonal modifiers outside the definition system -- extend
+  `POS_SignalModifierSchema` with entropy fields instead
 
 **Full design**: `docs/architecture/entropy-system-design.md`
+**Cross-references**: `signal-ecology-design.md` (propagation pillar),
+`world-broadcast-network-design.md` (WBN fragment pipeline)

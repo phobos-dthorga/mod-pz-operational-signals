@@ -191,6 +191,12 @@ local function renderSummary(ctx, params)
                                 entropyStr = " {" .. W.safeGetText(band.key) .. "}"
                             end
                         end
+                        -- Information shadow indicator
+                        if intelState and (intelState.shadowState or 0)
+                                > POS_Constants.ENTROPY_SHADOW_LABEL_THRESHOLD then
+                            entropyStr = entropyStr .. " {"
+                                .. W.safeGetText("UI_POS_Entropy_Shadow") .. "}"
+                        end
                         -- SIGINT-gated concealment indicator
                         if intelState and intelState.concealment
                                 and intelState.concealment > POS_Constants.ENTROPY_CONCEALMENT_LABEL_THRESHOLD then

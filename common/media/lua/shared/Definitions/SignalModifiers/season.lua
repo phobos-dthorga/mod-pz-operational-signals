@@ -30,6 +30,10 @@ return {
         saturation = 0.10,
         severity = 0.1,
         description = "Summer improves propagation, increases trade saturation",
+        -- Entropy: signal-rich but truth-poor — loud, saturated
+        entropyDecayMult  = 0.90,
+        entropyNoiseMult  = 1.30,
+        entropyTrustDrift = 0.000,
     },
     {
         schemaVersion = 1,
@@ -40,6 +44,10 @@ return {
         saturation = 0.00,
         severity = 0.2,
         description = "Autumn slightly degrades propagation conditions",
+        -- Entropy: stabilisation and hoarding — tightening systems
+        entropyDecayMult  = 0.95,
+        entropyNoiseMult  = 0.80,
+        entropyTrustDrift = 0.010,
     },
     {
         schemaVersion = 1,
@@ -50,6 +58,10 @@ return {
         saturation = -0.10,
         severity = 0.5,
         description = "Winter degrades propagation and reduces trade activity",
+        -- Entropy: maximum entropy — "ghosts and guesses"
+        entropyDecayMult  = 1.40,
+        entropyNoiseMult  = 1.50,
+        entropyTrustDrift = -0.010,
     },
     {
         schemaVersion = 1,
@@ -60,5 +72,9 @@ return {
         saturation = 0.05,
         severity = 0.1,
         description = "Spring slightly increases trade activity",
+        -- Entropy: recovery and noise — chaotic, rebuilding
+        entropyDecayMult  = 1.00,
+        entropyNoiseMult  = 1.20,
+        entropyTrustDrift = 0.005,
     },
 }

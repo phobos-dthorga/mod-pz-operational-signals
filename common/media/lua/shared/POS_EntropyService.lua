@@ -111,11 +111,39 @@ function POS_EntropyService.tickZoneEntropy(zoneState, zoneId, currentDay)
         end
     end
 
+    -- Phase 3: Seasonal baseline modifiers (schema-driven via SignalModifierRegistry)
+    local seasonDecayMult = 1.0
+    local seasonNoiseMult = 1.0
+    local seasonTrustDrift = 0.0
+    if POS_SignalEcologyService and POS_SignalEcologyService._resolveSeason then
+        local ok_season, seasonTrigger = PhobosLib.safecall(
+            POS_SignalEcologyService._resolveSeason)
+        if ok_season and seasonTrigger and POS_SignalModifierRegistry then
+            local seasonMods = POS_SignalModifierRegistry.getByTrigger(seasonTrigger)
+            if seasonMods and #seasonMods > 0 then
+                local sm = seasonMods[1]
+                seasonDecayMult  = sm.entropyDecayMult or 1.0
+                seasonNoiseMult  = sm.entropyNoiseMult or 1.0
+                seasonTrustDrift = sm.entropyTrustDrift or 0.0
+            end
+        end
+    end
+
+    -- Propagation value for shadow detection (reuse from weather block)
+    local propagation = 1.0
+    if POS_SignalEcologyService and POS_SignalEcologyService.getSignalState then
+        local ok2, ss = PhobosLib.safecall(POS_SignalEcologyService.getSignalState)
+        if ok2 and ss and ss.pillars then propagation = ss.pillars.propagation or 1.0 end
+    end
+
     for categoryId, state in pairs(zoneState.intelState) do
-        -- Freshness decay (multiplicative, scaled by weather)
+        -- Ensure shadowState field exists (Phase 3 addition)
+        state.shadowState = state.shadowState or 0.0
+
+        -- Freshness decay (multiplicative, scaled by weather × season)
         state.freshness = PhobosLib.decayMultiplicative(
             state.freshness,
-            POS_Constants.ENTROPY_FRESHNESS_DECAY * weatherDecayMult, 0)
+            POS_Constants.ENTROPY_FRESHNESS_DECAY * weatherDecayMult * seasonDecayMult, 0)
 
         -- Silence tracking
         if state._observedThisTick then
@@ -146,11 +174,13 @@ function POS_EntropyService.tickZoneEntropy(zoneState, zoneId, currentDay)
             state.rumourLoad,
             POS_Constants.ENTROPY_RUMOUR_LOAD_DECAY, 0)
 
-        -- Phase 2: Weather-driven rumour injection + trust drift
+        -- Phase 2+3: Weather + seasonal rumour injection + trust drift
+        local combinedNoise = weatherNoiseMult * seasonNoiseMult
+        local combinedTrust = weatherTrustDrift + seasonTrustDrift
         state.rumourLoad = PhobosLib.clamp(
-            state.rumourLoad + weatherNoiseMult, 0, 1)
+            state.rumourLoad + combinedNoise, 0, 1)
         state.trust = PhobosLib.clamp(
-            state.trust + weatherTrustDrift,
+            state.trust + combinedTrust,
             POS_Constants.ENTROPY_TRUST_MIN,
             POS_Constants.ENTROPY_TRUST_MAX)
 
@@ -172,6 +202,29 @@ function POS_EntropyService.tickZoneEntropy(zoneState, zoneId, currentDay)
         state.concealment = PhobosLib.decayMultiplicative(
             state.concealment,
             POS_Constants.ENTROPY_CONCEALMENT_DECAY, 0)
+
+        -- Phase 3: Information shadow zones
+        if propagation < POS_Constants.ENTROPY_SHADOW_PROPAGATION_MIN and isBlackout then
+            state.shadowState = math.min(
+                state.shadowState + POS_Constants.ENTROPY_SHADOW_ACCUMULATION, 1.0)
+        else
+            state.shadowState = PhobosLib.decayMultiplicative(
+                state.shadowState, POS_Constants.ENTROPY_SHADOW_DECAY, 0)
+        end
+
+        -- Phase 3: Speculative rumour spawn when certainty is low
+        if state.certainty < POS_Constants.ENTROPY_SPECULATION_THRESHOLD then
+            local desperation = POS_EntropyService._getDesperationRaw(state, zoneId, categoryId)
+            local spawnChance = (1.0 - state.certainty)
+                * POS_Constants.ENTROPY_SPECULATION_SPAWN_MULT
+                * (1.0 + desperation * POS_Constants.ENTROPY_DESPERATION_SPAWN_MULT)
+            if ZombRand and ZombRand(100) < math.floor(spawnChance * 100) then
+                if POS_RumourGenerator and POS_RumourGenerator.generateSpeculativeRumour then
+                    PhobosLib.safecall(POS_RumourGenerator.generateSpeculativeRumour,
+                        zoneId, categoryId, state.certainty, currentDay)
+                end
+            end
+        end
 
         -- Detect atmospheric band transitions for notifications
         local band = POS_EntropyService._resolveBand(state.certainty)
@@ -214,8 +267,12 @@ function POS_EntropyService.getEffectivePressure(zoneId, categoryId, rawPressure
     local certaintyMod = PhobosLib.clamp(state.certainty, 0.1, 1.0)
     local trustMod     = PhobosLib.clamp(state.trust, 0.1, 1.0)
     local noiseMod     = 1.0 - state.rumourLoad * POS_Constants.ENTROPY_NOISE_WEIGHT
+    -- Phase 3: shadow attenuation
+    local shadowMod    = 1.0 - (state.shadowState or 0)
+        * POS_Constants.ENTROPY_SHADOW_PRESSURE_ATTENUATION
 
-    return rawPressure * certaintyMod * trustMod * math.max(0.1, noiseMod)
+    return rawPressure * certaintyMod * trustMod
+        * math.max(0.1, noiseMod) * math.max(0.1, shadowMod)
 end
 
 ---------------------------------------------------------------
@@ -230,11 +287,16 @@ function POS_EntropyService.addContradiction(zoneId, categoryId, damage)
     local state = POS_EntropyService._getOrCreateState(zoneId, categoryId)
     if not state then return end
 
+    -- Phase 3: Desperation amplifies contradiction damage
+    local desperation = POS_EntropyService._getDesperationRaw(state, zoneId, categoryId)
+    local amplifier = 1.0 + desperation * POS_Constants.ENTROPY_DESPERATION_DAMAGE_MULT
+    local amplifiedDamage = (damage or 0) * amplifier
+
     state.contradiction = PhobosLib.clamp(
-        state.contradiction + (damage or 0), 0, 1)
+        state.contradiction + amplifiedDamage, 0, 1)
     -- Contradiction also reduces certainty
     state.certainty = PhobosLib.clamp(
-        state.certainty - (damage or 0) * 0.5, 0, 1)
+        state.certainty - amplifiedDamage * 0.5, 0, 1)
 
     PhobosLib.debug("POS", _TAG,
         "addContradiction: " .. tostring(zoneId) .. "/" .. tostring(categoryId)
@@ -528,4 +590,127 @@ function POS_EntropyService._notifyConcealment(zoneId, categoryId)
         priority = "normal",
         channel  = POS_Constants.PN_CHANNEL_INTEL,
     })
+end
+
+--- Notify: information shadow detected (per zone, throttled).
+function POS_EntropyService._notifyShadow(zoneId, categoryId)
+    local key = "shadow:" .. tostring(zoneId) .. ":" .. tostring(categoryId)
+    if not POS_EntropyService._canNotify(key) then return end
+
+    local player = getSpecificPlayer and getSpecificPlayer(0)
+    if not player then return end
+
+    PhobosLib.notifyOrSay(player, {
+        title    = PhobosLib.safeGetText("UI_POS_Entropy_PN_ShadowTitle"),
+        message  = PhobosLib.safeGetText("UI_POS_Entropy_PN_Shadow",
+            tostring(categoryId), tostring(zoneId)),
+        colour   = "error",
+        priority = "high",
+        channel  = POS_Constants.PN_CHANNEL_MARKET,
+    })
+end
+
+---------------------------------------------------------------
+-- Phase 3: Desperation index
+---------------------------------------------------------------
+
+--- Compute raw desperation from an intelState + zone pressure.
+--- Used internally; for public access use getDesperationIndex().
+---@param state      table  intelState bundle
+---@param zoneId     string
+---@param categoryId string
+---@return number    Desperation index (0-1)
+function POS_EntropyService._getDesperationRaw(state, zoneId, categoryId)
+    if not state then return 0 end
+
+    local pressure = 0
+    if POS_MarketSimulation and POS_MarketSimulation.getZonePressure then
+        local ok_p, p = PhobosLib.safecall(
+            POS_MarketSimulation.getZonePressure, zoneId, categoryId)
+        if ok_p and p then pressure = math.abs(p) end
+    end
+
+    local pressureFactor      = PhobosLib.clamp(pressure, 0, 1)
+    local certaintyFactor     = 1.0 - (state.certainty or 0.5)
+    local trustFactor         = 1.0 - (state.trust or 0.5)
+    local contradictionFactor = state.contradiction or 0
+
+    return PhobosLib.clamp(
+        pressureFactor      * POS_Constants.ENTROPY_DESPERATION_PRESSURE_WEIGHT
+        + certaintyFactor   * POS_Constants.ENTROPY_DESPERATION_CERTAINTY_WEIGHT
+        + trustFactor       * POS_Constants.ENTROPY_DESPERATION_TRUST_WEIGHT
+        + contradictionFactor * POS_Constants.ENTROPY_DESPERATION_CONTRADICTION_WEIGHT,
+        0, 1)
+end
+
+--- Get the desperation index for a zone/category (public API).
+---@param zoneId     string
+---@param categoryId string
+---@return number    Desperation index (0-1)
+function POS_EntropyService.getDesperationIndex(zoneId, categoryId)
+    local state = POS_EntropyService.getIntelState(zoneId, categoryId)
+    if not state then return 0 end
+    return POS_EntropyService._getDesperationRaw(state, zoneId, categoryId)
+end
+
+---------------------------------------------------------------
+-- Phase 3: Trust erosion from broadcast prediction validation
+---------------------------------------------------------------
+
+--- Validate broadcast accuracy when a new observation arrives.
+--- Compares recent broadcast fragment directions with the actual
+--- observation direction, adjusting trust accordingly.
+---@param zoneId     string
+---@param categoryId string
+---@param obsDirection string "up" or "down" from the fresh observation
+---@param currentDay number
+function POS_EntropyService.validateBroadcastAccuracy(zoneId, categoryId, obsDirection, currentDay)
+    if not obsDirection or not zoneId or not categoryId then return end
+
+    local state = POS_EntropyService._getOrCreateState(zoneId, categoryId)
+    if not state then return end
+
+    -- Look for recent broadcast fragments in player ModData
+    local player = getSpecificPlayer and getSpecificPlayer(0)
+    if not player then return end
+
+    local okMd, md = PhobosLib.safecall(function()
+        return player:getModData()
+    end)
+    if not okMd or not md then return end
+
+    local posnet = md.POSNET
+    if not posnet or not posnet.SignalFragments then return end
+
+    local lookback = POS_Constants.ENTROPY_BROADCAST_LOOKBACK_DAYS
+    local found = false
+    for _, frag in pairs(posnet.SignalFragments) do
+        if frag and frag.categoryId == categoryId
+                and frag.zoneId == zoneId
+                and frag.receivedDay
+                and (currentDay - frag.receivedDay) <= lookback then
+            found = true
+            if frag.direction == obsDirection then
+                -- Broadcast was correct
+                state.trust = PhobosLib.clamp(
+                    state.trust + POS_Constants.ENTROPY_TRUST_ACCURACY_GAIN,
+                    POS_Constants.ENTROPY_TRUST_MIN,
+                    POS_Constants.ENTROPY_TRUST_MAX)
+            else
+                -- Broadcast was wrong
+                state.trust = PhobosLib.clamp(
+                    state.trust - POS_Constants.ENTROPY_TRUST_MISINFO_LOSS,
+                    POS_Constants.ENTROPY_TRUST_MIN,
+                    POS_Constants.ENTROPY_TRUST_MAX)
+            end
+            break  -- validate against first matching fragment
+        end
+    end
+
+    if found then
+        PhobosLib.debug("POS", _TAG,
+            "validateBroadcastAccuracy: " .. tostring(zoneId) .. "/" .. tostring(categoryId)
+            .. " obs=" .. tostring(obsDirection)
+            .. " trust=" .. string.format("%.2f", state.trust))
+    end
 end
