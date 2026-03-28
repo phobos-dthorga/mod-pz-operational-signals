@@ -446,11 +446,14 @@ function POS_WBN_CompositionService.composeWorldState(candidate, archetypeId)
             or "wbn_flavour_market"
     end
 
-    local openerPool = resolveArchetypePool(arch, vpSection .. "_opener",
+    -- Opener/closer from archetype personality (wbn_opener / wbn_closer),
+    -- consistent with composeEconomy and composeOperations. Domain-specific
+    -- voice pack sections (wbn_weather, wbn_power, etc.) provide body text.
+    local openerPool = resolveArchetypePool(arch, POS_Constants.WBN_VP_SECTION_OPENER,
         DEFAULT_OPENERS[arch] or DEFAULT_OPENERS[POS_Constants.WBN_ARCHETYPE_QUARTERMASTER])
     local opener = pickPhrase(openerPool)
 
-    local closerPool = resolveArchetypePool(arch, vpSection .. "_closer",
+    local closerPool = resolveArchetypePool(arch, POS_Constants.WBN_VP_SECTION_CLOSER,
         DEFAULT_CLOSERS[arch] or DEFAULT_CLOSERS[POS_Constants.WBN_ARCHETYPE_QUARTERMASTER])
     local closer = pickPhrase(closerPool)
 

@@ -130,10 +130,10 @@ function POS_WBN_HarvestService.onEconomyTick(data)
                 end
 
                 -- Severity scales with threshold band
-                local severity = 0.3
-                if pctChange >= POS_Constants.WBN_THRESHOLD_HEADLINE then severity = 1.0
-                elseif pctChange >= POS_Constants.WBN_THRESHOLD_STRONG then severity = 0.8
-                elseif pctChange >= POS_Constants.WBN_THRESHOLD_NORMAL then severity = 0.6
+                local severity = POS_Constants.WBN_SEVERITY_BASE_LIGHT
+                if pctChange >= POS_Constants.WBN_THRESHOLD_HEADLINE then severity = POS_Constants.WBN_SEVERITY_HEADLINE
+                elseif pctChange >= POS_Constants.WBN_THRESHOLD_STRONG then severity = POS_Constants.WBN_SEVERITY_STRONG
+                elseif pctChange >= POS_Constants.WBN_THRESHOLD_NORMAL then severity = POS_Constants.WBN_SEVERITY_NORMAL
                 end
 
                 local candidate = {
@@ -143,7 +143,7 @@ function POS_WBN_HarvestService.onEconomyTick(data)
                     zoneId         = zoneId,
                     categoryId     = catId,
                     severity       = severity,
-                    confidence     = 0.65,
+                    confidence     = POS_Constants.WBN_CONFIDENCE_MARKET_SIM,
                     freshness      = 1.0,
                     sourceType     = "market_simulation",
                     publicEligible = true,
@@ -392,7 +392,7 @@ local function _checkPowerTransition(currentDay, worldHours)
         eventType       = POS_Constants.WBN_EVENT_POWER_STATUS,
         zoneId          = nil,
         categoryId      = nil,
-        severity        = severityMap[transition] or 0.3,
+        severity        = severityMap[transition] or POS_Constants.WBN_SEVERITY_POWER_DEFAULT,
         confidence      = 0.95,  -- power state is directly observable
         freshness       = 1.0,
         sourceType      = "power_grid",
@@ -479,7 +479,7 @@ function POS_WBN_HarvestService.onMarketEvent(data)
         eventType      = POS_Constants.WBN_EVENT_SCARCITY_ALERT,
         zoneId         = data.zoneId,
         categoryId     = (data.categories and data.categories[1]) or "miscellaneous",
-        severity       = math.abs(data.pressure or 0.5),
+        severity       = math.abs(data.pressure or POS_Constants.WBN_PRESSURE_DEFAULT),
         confidence     = 0.55,
         freshness      = 1.0,
         sourceType     = "market_event",

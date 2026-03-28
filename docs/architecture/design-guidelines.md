@@ -4260,6 +4260,19 @@ WBN uses 6 voice pack override sections (all addon-extensible):
 | `wbn_flavour_market` | Market channel world-flavour |
 | `wbn_flavour_emergency` | Emergency channel world-flavour |
 
+Opener and closer personality framing always uses `wbn_opener` / `wbn_closer`.
+Domain-specific sections (`wbn_weather`, `wbn_power`, etc.) provide body text
+only. Do **not** construct section names by concatenation — section names must
+exactly match entries in `VOICE_ALL_OVERRIDE_SECTIONS`.
+
+### 55.10 Anti-Patterns
+
+- Constructing section names via string concatenation (`section .. "_opener"`)
+  — section names must match `VOICE_ALL_OVERRIDE_SECTIONS` exactly
+- Hardcoding severity or confidence values — use `POS_Constants.WBN_*`
+- Using `sendServerCommand` for WBN delivery — use DynamicRadio API
+- Calling `POS_VoicePackRegistry` without ensuring `init()` has run
+
 ---
 
 ## 56. Signal Ecology Core Tenet

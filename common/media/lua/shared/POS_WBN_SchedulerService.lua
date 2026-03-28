@@ -91,7 +91,7 @@ local _lastEmitTime = {}
 -- Populated on emit, consumed by ClientListener for fragment generation.
 -- Rolling cap to prevent unbounded growth.
 local _bulletinMetaCache = {}
-local _BULLETIN_META_MAX = 50
+local _BULLETIN_META_MAX = POS_Constants.WBN_BULLETIN_META_MAX
 
 --- Get the current game-time expressed as total elapsed minutes.
 --- @return number  Total game minutes since world start
@@ -312,6 +312,11 @@ end
 --- Initialise the scheduler and its dependent services.
 --- Called automatically on Events.OnGameStart.
 function POS_WBN_SchedulerService.init()
+    -- Initialise voice pack registry (must be ready before first composition)
+    if POS_VoicePackRegistry and POS_VoicePackRegistry.init then
+        POS_VoicePackRegistry.init()
+    end
+
     -- Initialise harvest layer event subscriptions
     if POS_WBN_HarvestService and POS_WBN_HarvestService.init then
         POS_WBN_HarvestService.init()

@@ -234,3 +234,15 @@ POS_Constants.WBN_FORECAST_MAX_PER_TICK    = 2     -- max forecast candidates pe
 POS_Constants.WBN_FORECAST_CADENCE_TICKS   = 2     -- generate forecasts every Nth economy tick
 POS_Constants.WBN_FORECAST_POWER_WARN_DAYS = 3     -- start warning N days before shutoff
 POS_Constants.WBN_FORECAST_SEVERITY_DAMPEN = 0.8   -- forecasts are 80% as severe as real events
+
+-- Delta-driven candidate severity bands (HarvestService economy tick)
+POS_Constants.WBN_SEVERITY_BASE_LIGHT    = 0.3   -- default severity for light pressure changes
+POS_Constants.WBN_SEVERITY_NORMAL        = 0.6   -- severity for normal-threshold changes
+POS_Constants.WBN_SEVERITY_STRONG        = 0.8   -- severity for strong-threshold changes
+POS_Constants.WBN_SEVERITY_HEADLINE      = 1.0   -- severity for headline-threshold events
+POS_Constants.WBN_CONFIDENCE_MARKET_SIM  = 0.65  -- confidence for market simulation candidates
+POS_Constants.WBN_SEVERITY_POWER_DEFAULT = 0.3   -- fallback severity for unrecognised power transitions
+POS_Constants.WBN_PRESSURE_DEFAULT       = 0.5   -- fallback absolute pressure for market events
+
+-- Scheduler bulletin metadata cache
+POS_Constants.WBN_BULLETIN_META_MAX      = 50    -- rolling cap for bulletin → candidate metadata cache

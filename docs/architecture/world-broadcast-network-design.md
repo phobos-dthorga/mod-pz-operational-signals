@@ -17,9 +17,9 @@
 
 # POSnet World Broadcast Network -- Design Document
 
-**Branch**: `dev/world-broadcast-network` (future)
-**Date**: 2026-03-25
-**Status**: Design phase -- implementation not started
+**Branch**: `main`
+**Date**: 2026-03-28
+**Status**: Phase 1 (Foundation) implemented — full pipeline operational
 **Prerequisites**: Living Market active (see `living-market-design.md`),
 Signal Ecology layer registered (see `signal-ecology-design.md`),
 Free Agent System registered (see `free-agent-system.md`)
