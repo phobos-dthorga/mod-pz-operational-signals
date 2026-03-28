@@ -202,7 +202,15 @@ function POS_EntropyService.recordObservation(zoneId, categoryId, confidence)
     local state = POS_EntropyService._getOrCreateState(zoneId, categoryId)
     if not state then return end
 
-    confidence = confidence or 0.5
+    -- Confidence may arrive as a string tier ("high"/"medium"/"low") or
+    -- a number. Normalise to numeric 0-1 for arithmetic.
+    if type(confidence) == "string" then
+        if confidence == "high" then confidence = 0.80
+        elseif confidence == "medium" then confidence = 0.50
+        elseif confidence == "low" then confidence = 0.25
+        else confidence = 0.50 end
+    end
+    confidence = tonumber(confidence) or 0.5
 
     -- Boost freshness
     state.freshness = PhobosLib.clamp(
