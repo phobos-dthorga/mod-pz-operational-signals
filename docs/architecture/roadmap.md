@@ -32,7 +32,7 @@
 | 21 | Fragment-to-MarketDatabase Bridge | **DONE** | design-guidelines.md 55.1 |
 | 22 | Item Spawn Expansion + SIGINT Books | **DONE** | POS_Distributions.lua |
 | 23 | Entropy System (all 3 phases) | **DONE** | entropy-system-design.md |
-| 24 | Broadcast Influence System | Design complete | broadcast-influence-design.md |
+| 24 | Broadcast Influence System | **Phase A: DONE** | broadcast-influence-design.md |
 | 25 | Signal Ecology v2 | Partial (stub) | signal-ecology-design.md |
 | 26 | Physical Item Trading (Contacts) | Designed, 0% | design-guidelines.md 1.3 |
 | 27 | Satellite Passive Collection | Design only | satellite-passive-collection-design.md |
@@ -98,19 +98,18 @@
 
 ### Priority 1: Broadcast Influence System
 
-**Status**: Design complete, implementation not started.
-**Complexity**: High (estimated 50-80 hours).
+**Status**: Phase A complete. Phases B (wholesaler nudging + rumour echoes)
+and C (screen UI completion) pending.
 
-Makes Tier IV satellite broadcasts actually affect markets and agent
-behaviour. Now unblocked by the entropy system (trust attenuation ready).
+Phase A delivers: broadcast record persistence, perceived pressure
+generation, entropy trust mutation, Starlit events, decay lifecycle,
+and PN notifications.
 
-**Key features**:
-- Five broadcast classes (Scarcity Alert, Surplus Notice, Route Warning,
-  Contact Bulletin, Strategic Rumour)
-- Regional trust scores affect broadcast effectiveness
+**Remaining (Phase B/C)**:
 - Wholesaler posture nudging from broadcasts
 - Rumour echo generation
 - Broadcast consequences (saturation, misinformation penalties)
+- Terminal UI for broadcast influence state
 
 **Design ref**: `broadcast-influence-design.md`.
 

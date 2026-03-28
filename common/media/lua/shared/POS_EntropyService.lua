@@ -264,6 +264,15 @@ function POS_EntropyService.getEffectivePressure(zoneId, categoryId, rawPressure
     local state = POS_EntropyService.getIntelState(zoneId, categoryId)
     if not state then return rawPressure end
 
+    -- Broadcast Influence: perceived pressure layer (Phase A)
+    local perceivedPressure = 0
+    if POS_BroadcastInfluenceService
+            and POS_BroadcastInfluenceService.getPerceivedPressure then
+        local okP, pp = PhobosLib.safecall(
+            POS_BroadcastInfluenceService.getPerceivedPressure, zoneId, categoryId)
+        if okP and pp then perceivedPressure = pp end
+    end
+
     local certaintyMod = PhobosLib.clamp(state.certainty, 0.1, 1.0)
     local trustMod     = PhobosLib.clamp(state.trust, 0.1, 1.0)
     local noiseMod     = 1.0 - state.rumourLoad * POS_Constants.ENTROPY_NOISE_WEIGHT
@@ -271,7 +280,7 @@ function POS_EntropyService.getEffectivePressure(zoneId, categoryId, rawPressure
     local shadowMod    = 1.0 - (state.shadowState or 0)
         * POS_Constants.ENTROPY_SHADOW_PRESSURE_ATTENUATION
 
-    return rawPressure * certaintyMod * trustMod
+    return (rawPressure + perceivedPressure) * certaintyMod * trustMod
         * math.max(0.1, noiseMod) * math.max(0.1, shadowMod)
 end
 

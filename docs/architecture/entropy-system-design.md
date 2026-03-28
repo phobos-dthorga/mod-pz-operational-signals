@@ -140,15 +140,22 @@ Where:
 ### 3.3 Effective Pressure Formula
 
 Raw zone pressure is attenuated by the fog-of-market state before
-reaching the price engine:
+reaching the price engine. Satellite broadcast influence adds a
+**perceived pressure** layer to raw pressure before attenuation
+(see `broadcast-influence-design.md`):
 
 ```
 effectivePressure =
-    rawPressure
+    (rawPressure + perceivedPressure)
     * certaintyModifier
     * trustModifier
     * (1.0 - rumourLoad * ENTROPY_NOISE_WEIGHT)
+    * shadowModifier
 ```
+
+`perceivedPressure` is computed by `POS_BroadcastInfluenceService` from
+active broadcast records (direction * strength * freshness * mult),
+clamped to [-0.40, +0.40]. It is zero when no broadcasts are active.
 
 This does not erase raw pressure -- it determines how **believably** it
 manifests in player-visible prices.

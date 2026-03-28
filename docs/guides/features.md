@@ -73,6 +73,30 @@ hidden intelligence state that decays over time unless actively maintained.
 
 ---
 
+## Broadcast Influence
+
+When you transmit intelligence from a satellite dish, the broadcast
+ripples through the market. Different broadcast modes affect regional
+prices in different ways:
+
+- **Scarcity alerts** push prices upward in the target zone.
+- **Surplus notices** push prices downward.
+- **Route warnings** create mild upward pressure (supply disruption).
+- **Contact bulletins** build network trust without affecting prices.
+- **Strategic rumours** create mild panic pressure but erode trust --
+  a high-risk, high-reward manipulation tool.
+
+Broadcast influence decays over time. Each broadcast creates a record
+that fades as freshness drops, eventually dissipating entirely. The
+fog-of-market system attenuates broadcast effects: zones with low trust
+or high uncertainty see smaller price shifts from your broadcasts.
+
+Repeated accurate broadcasts build trust in a zone, making future
+broadcasts more effective. Spreading misinformation (strategic rumours)
+erodes trust, reducing your influence over time.
+
+---
+
 ## Trading
 
 Once you reach **SIGINT Level 3**, the **Known Contacts** screen becomes

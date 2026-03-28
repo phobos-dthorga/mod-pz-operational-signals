@@ -386,8 +386,10 @@ end
 ---@param player IsoPlayer
 ---@param artifact InventoryItem Intelligence artifact to broadcast
 ---@param sq IsoGridSquare Dish square
+---@param mode string? Optional broadcast mode (e.g. "scarcity_alert")
+---@param zoneId string? Optional target zone override
 ---@return table results { strength, reputation, staleness, consumed }
-function POS_SatelliteService.broadcast(player, artifact, sq)
+function POS_SatelliteService.broadcast(player, artifact, sq, mode, zoneId)
     local results = {
         strength = 0,
         reputation = 0,
@@ -450,6 +452,19 @@ function POS_SatelliteService.broadcast(player, artifact, sq)
                     "Zone summaries included in broadcast (" .. zoneCount .. " zones)")
             end
         end
+    end
+
+    -- Phase 7E: Broadcast Influence System
+    if POS_BroadcastInfluenceService and POS_BroadcastInfluenceService.onBroadcast then
+        local md = PhobosLib.getModData(artifact)
+        local cats = { (md and md.POS_Category) or "mixed" }
+        if cats[1] == "mixed" then cats = POS_Constants.MARKET_CATEGORIES or {} end
+        local targetZone = zoneId
+            or (results.zoneSummaries and next(results.zoneSummaries))
+            or (POS_Constants.MARKET_ZONES and POS_Constants.MARKET_ZONES[1])
+        local currentDay = getGameTime and getGameTime():getNightsSurvived() or 0
+        PhobosLib.safecall(POS_BroadcastInfluenceService.onBroadcast,
+            results, mode, targetZone, cats, currentDay)
     end
 
     -- Grant reputation

@@ -4517,3 +4517,54 @@ new persistent state — reads existing fog-of-market fields.
 **Full design**: `docs/architecture/entropy-system-design.md`
 **Cross-references**: `signal-ecology-design.md` (propagation pillar),
 `world-broadcast-network-design.md` (WBN fragment pipeline)
+
+---
+
+## 60. Broadcast Influence
+
+Tier IV satellite broadcasts create a **perceived pressure layer** that
+adds to raw zone pressure before entropy attenuation. This is distinct
+from raw zone pressure (which comes from wholesalers and market events).
+
+### 60.1 Doctrine
+
+- Broadcasts generate **perceived pressure**, never mutate raw zone
+  pressure directly. Raw pressure belongs to wholesalers + events.
+- Perceived pressure is added to raw pressure **before** the
+  fog-of-market formula applies (certainty * trust * noise * shadow).
+  Low-trust zones naturally dampen broadcast influence.
+- Each broadcast record decays multiplicatively per economy tick.
+  Records below the freshness floor are resolved and removed.
+- Trust mutation per broadcast follows `SAT_TRUST_IMPACT` values from
+  `POS_Constants_Satellite.lua`. Strategic Rumour intentionally erodes
+  trust as a chaos advantage trade-off.
+
+### 60.2 Pressure Direction
+
+Each broadcast mode has a signed direction multiplier:
+
+| Mode | Direction | Effect |
+|------|-----------|--------|
+| scarcity_alert | +1.0 | Prices up |
+| surplus_notice | -1.0 | Prices down |
+| route_warning | +0.5 | Mild scarcity |
+| contact_bulletin | 0.0 | Trust-only, no pressure |
+| strategic_rumour | +0.3 | Panic-induced mild scarcity |
+
+### 60.3 Anti-Patterns
+
+- **Directly modifying zone pressure from broadcasts** -- broadcasts
+  affect perceived pressure only; raw zone pressure is owned by
+  wholesalers and events
+- **Bypassing entropy attenuation** -- perceived pressure must always
+  go through the fog-of-market formula so that trust/certainty/noise
+  attenuate broadcast effects
+- **Hardcoding mode directions** -- use
+  `POS_Constants.BROADCAST_MODE_PRESSURE_DIRECTION` table
+- **Mutating trust outside SAT_TRUST_IMPACT** -- trust mutation rates
+  are defined per mode in `POS_Constants_Satellite.lua`
+
+**Full design**: `docs/architecture/broadcast-influence-design.md`
+**Cross-references**: `entropy-system-design.md` (effective pressure formula),
+`signal-ecology-design.md` (propagation pillar),
+`satellite-uplink-design.md` (broadcast mechanics)
