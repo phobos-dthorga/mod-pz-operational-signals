@@ -359,6 +359,9 @@ local function processIntelFromBroadcast(lineText, stationClassId, currentDay)
         if fragment.categoryId and fragment.zoneId
                 and POS_MarketDatabase and POS_MarketDatabase.addRecord then
             PhobosLib.safecall(POS_MarketDatabase.addRecord, {
+                id          = "frag_" .. tostring(fragment.categoryId)
+                    .. "_" .. tostring(fragment.receivedDay)
+                    .. "_" .. tostring(ZombRand(100000)),
                 categoryId  = fragment.categoryId,
                 zoneId      = fragment.zoneId,
                 direction   = fragment.direction,
