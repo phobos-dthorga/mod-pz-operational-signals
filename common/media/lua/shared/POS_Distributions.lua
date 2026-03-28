@@ -21,12 +21,14 @@
 -- Items distributed here:
 --   Devices:  PortableComputer, ReconCamcorder, FieldSurveyLogger,
 --             DataCalculator, DataRecorder
---   Tapes:    BlankVHSCTape, DamagedVHSTape, MagneticTapeScrap
---   Media:    Microcassette, SpentMicrocassette, BlankFloppyDisk, CorruptFloppyDisk
+--   Tapes:    BlankVHSCTape, DamagedVHSTape, WornVHSTape, MagneticTapeScrap
+--   Media:    Microcassette, SpentMicrocassette, BlankFloppyDisk,
+--             CorruptFloppyDisk, WornFloppyDisk
+--   Books:    SIGINTBook1-5 (skill books, 5 tiers)
 --
 -- Items NOT distributed (crafted/mission-generated only):
 --   RawMarketNote, CompiledMarketReport, FieldReport,
---   ReconPhotograph, POSnetPackage
+--   ReconPhotograph, POSnetPackage, all Recorded/Refurbished media
 --
 -- NOTE: Must run inside OnPreDistributionMerge because
 -- ProceduralDistributions.list is not populated during
@@ -47,6 +49,8 @@ local function dist(listName, itemType, chance)
     end
 end
 
+require "POS_Constants_Media"
+
 local function registerDistributions()
     -- Shorthand references
     local PC       = POS_Constants.ITEM_PORTABLE_COMPUTER
@@ -55,12 +59,15 @@ local function registerDistributions()
     local CALC     = POS_Constants.ITEM_DATA_CALCULATOR
     local BLANK    = POS_Constants.ITEM_BLANK_VHS_TAPE
     local DAMAGED  = POS_Constants.ITEM_DAMAGED_VHS_TAPE
+    local WORN_VHS = POS_Constants.ITEM_WORN_VHS_TAPE
     local SCRAP    = POS_Constants.ITEM_MAGNETIC_TAPE_SCRAP
     local RECORDER = POS_Constants.ITEM_DATA_RECORDER
     local MICRO    = POS_Constants.ITEM_MICROCASSETTE
     local MICRO_S  = POS_Constants.ITEM_SPENT_MICROCASSETTE
     local FLOPPY   = POS_Constants.ITEM_BLANK_FLOPPY_DISK
     local FLOPPY_C = POS_Constants.ITEM_CORRUPT_FLOPPY_DISK
+    local WORN_FLP = POS_Constants.ITEM_WORN_FLOPPY_DISK
+    local SIGINT_PFX = POS_Constants.ITEM_SIGINT_BOOK_PREFIX
 
     -----------------------------------------------------
     -- PORTABLE COMPUTER
@@ -225,6 +232,95 @@ local function registerDistributions()
     dist("GarageShelves",             FLOPPY_C, 0.02)
     dist("ElectronicStoreMisc",       FLOPPY_C, 0.02)
     dist("SchoolLockers",             FLOPPY_C, 0.01)
+
+    -----------------------------------------------------
+    -- EXPANDED SPAWN LOCATIONS (v0.24.0)
+    -- Addresses bottleneck: key POSnet devices were too
+    -- rare to find in normal exploration.
+    -----------------------------------------------------
+
+    -- Camcorder — more military/police/journalist locations
+    dist("ArmyBunkerStorage",         CAMCORD, 0.05)
+    dist("GunStoreCounter",           CAMCORD, 0.03)
+    dist("WarehouseElectronics",      CAMCORD, 0.04)
+
+    -- Data Recorder — more professional settings
+    dist("MedicalClinicDrawers",      RECORDER, 0.02)
+    dist("FireStorageElectronics",    RECORDER, 0.02)
+
+    -- Blank Floppy — more office/computer locations
+    dist("OfficeDrawers",             FLOPPY, 0.04)
+    dist("WarehouseElectronics",      FLOPPY, 0.03)
+    dist("SchoolDesk",                FLOPPY, 0.02)
+    dist("DeskDrawers",               FLOPPY, 0.03)
+
+    -- Field Survey Logger — construction/engineering sites
+    dist("ArmyStorageElectronics",    LOGGER, 0.03)
+    dist("FireStorageTools",          LOGGER, 0.02)
+
+    -- Microcassette — dictation supply, common in offices
+    dist("DeskDrawers",               MICRO, 0.05)
+    dist("BedroomSideTable",          MICRO, 0.03)
+
+    -----------------------------------------------------
+    -- WORN VHS TAPE — was not in loot at all
+    -- Old tapes found in residential + electronics
+    -----------------------------------------------------
+
+    dist("LivingRoomShelf",           WORN_VHS, 0.08)
+    dist("BedroomDresser",            WORN_VHS, 0.06)
+    dist("GarageShelves",             WORN_VHS, 0.05)
+    dist("ClosetShelves",             WORN_VHS, 0.04)
+    dist("ElectronicStoreMisc",       WORN_VHS, 0.04)
+
+    -----------------------------------------------------
+    -- WORN FLOPPY DISK — was not in loot at all
+    -- Old floppies in offices and tech junk drawers
+    -----------------------------------------------------
+
+    dist("OfficeDrawers",             WORN_FLP, 0.03)
+    dist("GarageShelves",             WORN_FLP, 0.02)
+    dist("WarehouseShelves",          WORN_FLP, 0.02)
+    dist("ElectronicStoreMisc",       WORN_FLP, 0.02)
+
+    -----------------------------------------------------
+    -- SIGINT SKILL BOOKS
+    -- Book 1-2: common (amateur radio basics)
+    -- Book 3-4: uncommon (signal interpretation)
+    -- Book 5:   rare (advanced correlation — military only)
+    -----------------------------------------------------
+
+    local BOOK1 = SIGINT_PFX .. "1"
+    local BOOK2 = SIGINT_PFX .. "2"
+    local BOOK3 = SIGINT_PFX .. "3"
+    local BOOK4 = SIGINT_PFX .. "4"
+    local BOOK5 = SIGINT_PFX .. "5"
+
+    -- Book 1: Amateur Radio Monitoring (L1-2)
+    dist("ElectronicStoreMisc",       BOOK1, 0.08)
+    dist("LibraryBooks",              BOOK1, 0.06)
+    dist("GarageShelves",             BOOK1, 0.04)
+    dist("LivingRoomShelf",           BOOK1, 0.03)
+
+    -- Book 2: Signal Interpretation Basics (L3-4)
+    dist("ElectronicStoreMisc",       BOOK2, 0.06)
+    dist("LibraryBooks",              BOOK2, 0.05)
+    dist("ArmyStorageElectronics",    BOOK2, 0.04)
+    dist("OfficeDesk",                BOOK2, 0.02)
+
+    -- Book 3: Cold War Intelligence Techniques (L5-6)
+    dist("LibraryBooks",              BOOK3, 0.04)
+    dist("ArmyStorageElectronics",    BOOK3, 0.03)
+    dist("PoliceDesk",                BOOK3, 0.02)
+
+    -- Book 4: Field Analysis & Recon Doctrine (L7-8)
+    dist("ArmyStorageElectronics",    BOOK4, 0.03)
+    dist("ArmyBunkerStorage",         BOOK4, 0.02)
+    dist("LibraryBooks",              BOOK4, 0.02)
+
+    -- Book 5: Advanced Signal Correlation (L9-10)
+    dist("ArmyBunkerStorage",         BOOK5, 0.02)
+    dist("ArmyStorageElectronics",    BOOK5, 0.01)
 end
 
 ---------------------------------------------------------------
