@@ -4143,6 +4143,18 @@ Starlit events for loose coupling:
 
 Future phases will add: `OnFreeAgentStateChanged`, `OnConnectionStateChanged`.
 
+**Event→Price coupling**: Zone-level market events (theft raids, bulk arrivals,
+convoy delays, etc.) generate pressure records in `POS_EventService`. During
+the economy tick's zone pressure aggregation phase,
+`POS_EventService.getEventPressure(zoneId, categoryId, currentDay)` is summed
+with wholesaler contributions to produce the final zone pressure that feeds
+into the price engine.
+
+**Fragment→Market bridge**: Radio-sourced signal fragments are fed into
+`POS_MarketDatabase.addRecord()` as low-confidence broadcast-tier observations
+(direction + confidence, no exact price). This makes radio listening a passive
+source of market intelligence alongside active recon.
+
 ### 55.2 DynamicRadio API
 
 WBN uses vanilla PZ's radio system — **not** custom `sendServerCommand`

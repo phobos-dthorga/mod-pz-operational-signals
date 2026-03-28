@@ -564,7 +564,18 @@ function POS_MarketSimulation.tickSimulation(currentDay)
     for _, zoneId in ipairs(POS_Constants.MARKET_ZONES) do
         local zoneState = _ensureZoneState(zoneId)
         for _, cat in ipairs(visibleCategories) do
-            zoneState.pressure[cat.id] = POS_MarketSimulation.getZonePressure(zoneId, cat.id)
+            local wholesalerPressure = POS_MarketSimulation.getZonePressure(zoneId, cat.id)
+            -- Add zone-level event pressure (theft raids, bulk arrivals, etc.)
+            local eventPressure = 0
+            if POS_EventService and POS_EventService.getEventPressure then
+                local ok_ep, ep = PhobosLib.safecall(
+                    POS_EventService.getEventPressure, zoneId, cat.id, currentDay)
+                if ok_ep and ep then eventPressure = ep end
+            end
+            zoneState.pressure[cat.id] = PhobosLib.clamp(
+                wholesalerPressure + eventPressure,
+                POS_Constants.SIMULATION_PRESSURE_CLAMP_MIN,
+                POS_Constants.SIMULATION_PRESSURE_CLAMP_MAX)
         end
     end
 

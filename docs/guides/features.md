@@ -137,10 +137,11 @@ apocalypse-world flavour: trade rumours, safety advisories, scavenging
 reports, and community updates.
 
 **Intelligence feedback** — listening to broadcasts generates Signal
-Fragments (low-confidence intelligence) that appear in your terminal's
-market data. Repeated broadcasts about the same topic build confidence;
-contradicting broadcasts reduce it. Intel discoveries trigger a
-notification toast.
+Fragments (low-confidence intelligence) that feed directly into your
+terminal's market database as broadcast-tier observations. Repeated
+broadcasts about the same topic build confidence; contradicting broadcasts
+reduce it. Intel discoveries trigger a notification toast. Simply having a
+radio on near your base is a passive source of market intelligence.
 
 Frequencies are assigned dynamically via AZAS Frequency Index. Check your
 radio dial for the Market Broadcast and Emergency Broadcast channels.

@@ -246,3 +246,6 @@ POS_Constants.WBN_PRESSURE_DEFAULT       = 0.5   -- fallback absolute pressure f
 
 -- Scheduler bulletin metadata cache
 POS_Constants.WBN_BULLETIN_META_MAX      = 50    -- rolling cap for bulletin → candidate metadata cache
+
+-- Fragment → MarketDatabase bridge
+POS_Constants.WBN_FRAGMENT_SOURCE        = "radio_broadcast"  -- source tag for DB records

@@ -149,7 +149,7 @@ local function generateSignalFragment(candidate, stationClassId, currentDay)
         estimatedChange = candidate.percentChange,
         confidence      = conf,
         freshness       = 1.0,
-        source          = "radio_broadcast",
+        source          = POS_Constants.WBN_FRAGMENT_SOURCE,
         verified        = false,
         receivedDay     = currentDay,
         stationClassId  = stationClassId,
@@ -323,6 +323,23 @@ local function processIntelFromBroadcast(lineText, stationClassId, currentDay)
     local fragment = generateSignalFragment(candidateData, stationClassId, currentDay)
     if fragment then
         storeFragment(fragment)
+
+        -- Feed market fragments into MarketDatabase as radio-sourced
+        -- observations (direction + confidence, no exact price).
+        -- In SP the client is authority so addRecord() succeeds directly.
+        if fragment.categoryId and fragment.zoneId
+                and POS_MarketDatabase and POS_MarketDatabase.addRecord then
+            PhobosLib.safecall(POS_MarketDatabase.addRecord, {
+                categoryId  = fragment.categoryId,
+                zoneId      = fragment.zoneId,
+                direction   = fragment.direction,
+                confidence  = fragment.confidence,
+                source      = POS_Constants.WBN_FRAGMENT_SOURCE,
+                sourceTier  = POS_Constants.SOURCE_TIER_BROADCAST,
+                day         = fragment.receivedDay,
+            })
+        end
+
         PhobosLib.safecall(reinforceRumours, fragment)
         PhobosLib.safecall(notifyIntelDiscovery, fragment)
 
