@@ -320,6 +320,24 @@ function POS_WholesalerService.tickWholesaler(wholesaler, currentDay)
     wholesaler._operationalState = POS_WholesalerService.resolveOperationalState(wholesaler)
     wholesaler.lastUpdateDay = currentDay
 
+    -- Phase 7B: Write concealment to fog-of-market entropy state
+    if POS_EntropyService and POS_EntropyService.updateConcealment then
+        local opState = wholesaler._operationalState
+        local concealmentDmg = 0
+        if opState == POS_Constants.WHOLESALER_STATE_WITHHOLDING
+                or opState == POS_Constants.WHOLESALER_STATE_COLLAPSING then
+            concealmentDmg = POS_Constants.ENTROPY_CONCEALMENT_STRONG_DAMAGE
+        elseif opState == POS_Constants.WHOLESALER_STATE_STRAINED then
+            concealmentDmg = POS_Constants.ENTROPY_CONCEALMENT_MILD_DAMAGE
+        end
+        if concealmentDmg > 0 and wholesaler.categories then
+            for _, catId in ipairs(wholesaler.categories) do
+                POS_EntropyService.updateConcealment(
+                    wholesaler.regionId, catId, concealmentDmg)
+            end
+        end
+    end
+
     if wholesaler._operationalState ~= prevState then
         PhobosLib.debug("POS", _TAG, wholesaler.id .. ": state "
             .. tostring(prevState) .. " -> " .. tostring(wholesaler._operationalState))

@@ -85,17 +85,41 @@ end
 function POS_EntropyService.tickZoneEntropy(zoneState, zoneId, currentDay)
     if not zoneState or not zoneState.intelState then return end
 
+    -- Phase 2: Fetch environmental modifiers from Signal Ecology
+    local weatherDecayMult = 1.0
+    local weatherNoiseMult = 0.0
+    local weatherTrustDrift = 0.0
+    local isBlackout = false
+    if POS_SignalEcologyService and POS_SignalEcologyService.getSignalState then
+        local ok_sig, sigState = PhobosLib.safecall(
+            POS_SignalEcologyService.getSignalState)
+        if ok_sig and sigState and sigState.pillars then
+            -- Weather: propagation pillar (1.0 = clear, 0.3 = storm)
+            local prop = sigState.pillars.propagation or 1.0
+            weatherDecayMult = 1.0
+                + (1.0 - prop) * POS_Constants.ENTROPY_WEATHER_DECAY_FACTOR
+            weatherNoiseMult = (1.0 - prop)
+                * POS_Constants.ENTROPY_WEATHER_NOISE_FACTOR
+            if prop >= POS_Constants.ENTROPY_WEATHER_GOOD_THRESHOLD then
+                weatherTrustDrift = POS_Constants.ENTROPY_WEATHER_TRUST_DRIFT_GOOD
+            elseif prop < POS_Constants.ENTROPY_WEATHER_BAD_THRESHOLD then
+                weatherTrustDrift = POS_Constants.ENTROPY_WEATHER_TRUST_DRIFT_BAD
+            end
+            -- Blackout: infrastructure pillar
+            isBlackout = (sigState.pillars.infrastructure or 1.0)
+                < POS_Constants.ENTROPY_BLACKOUT_INFRA_THRESHOLD
+        end
+    end
+
     for categoryId, state in pairs(zoneState.intelState) do
-        -- Freshness decay (multiplicative, per design doc)
+        -- Freshness decay (multiplicative, scaled by weather)
         state.freshness = PhobosLib.decayMultiplicative(
             state.freshness,
-            POS_Constants.ENTROPY_FRESHNESS_DECAY, 0)
+            POS_Constants.ENTROPY_FRESHNESS_DECAY * weatherDecayMult, 0)
 
         -- Silence tracking
         if state._observedThisTick then
-            -- Fresh data arrived this tick — reset silence
             if state.silenceDays > POS_Constants.ENTROPY_SILENCE_STALE_DAYS then
-                -- Was stale, now recovered — notify
                 POS_EntropyService._notifyRecovery(zoneId, categoryId)
             end
             state.silenceDays = 0
@@ -122,10 +146,32 @@ function POS_EntropyService.tickZoneEntropy(zoneState, zoneId, currentDay)
             state.rumourLoad,
             POS_Constants.ENTROPY_RUMOUR_LOAD_DECAY, 0)
 
-        -- Trust is clamped (Phase 1: no active trust changes, just bounds)
-        state.trust = PhobosLib.clamp(state.trust,
+        -- Phase 2: Weather-driven rumour injection + trust drift
+        state.rumourLoad = PhobosLib.clamp(
+            state.rumourLoad + weatherNoiseMult, 0, 1)
+        state.trust = PhobosLib.clamp(
+            state.trust + weatherTrustDrift,
             POS_Constants.ENTROPY_TRUST_MIN,
             POS_Constants.ENTROPY_TRUST_MAX)
+
+        -- Phase 2: Blackout penalties
+        if isBlackout then
+            state.certainty = PhobosLib.clamp(
+                state.certainty - POS_Constants.ENTROPY_BLACKOUT_CERTAINTY_PENALTY,
+                0, 1)
+            state.rumourLoad = PhobosLib.clamp(
+                state.rumourLoad + POS_Constants.ENTROPY_BLACKOUT_RUMOUR_BOOST,
+                0, 1)
+            state.trust = PhobosLib.clamp(
+                state.trust + POS_Constants.ENTROPY_BLACKOUT_TRUST_DRIFT,
+                POS_Constants.ENTROPY_TRUST_MIN,
+                POS_Constants.ENTROPY_TRUST_MAX)
+        end
+
+        -- Phase 2: Concealment natural decay
+        state.concealment = PhobosLib.decayMultiplicative(
+            state.concealment,
+            POS_Constants.ENTROPY_CONCEALMENT_DECAY, 0)
 
         -- Detect atmospheric band transitions for notifications
         local band = POS_EntropyService._resolveBand(state.certainty)
@@ -141,7 +187,14 @@ function POS_EntropyService.tickZoneEntropy(zoneState, zoneId, currentDay)
         end
     end
 
-    PhobosLib.debug("POS", _TAG, "tickZoneEntropy: " .. tostring(zoneId))
+    -- Phase 2: Blackout notification (once per zone per blackout onset)
+    if isBlackout then
+        POS_EntropyService._notifyBlackout(zoneId)
+    end
+
+    PhobosLib.debug("POS", _TAG, "tickZoneEntropy: " .. tostring(zoneId)
+        .. " weather=" .. string.format("%.2f", weatherDecayMult)
+        .. " blackout=" .. tostring(isBlackout))
 end
 
 ---------------------------------------------------------------
@@ -241,6 +294,38 @@ function POS_EntropyService.addRumourNoise(zoneId, categoryId, amount)
 
     state.rumourLoad = PhobosLib.clamp(
         state.rumourLoad + (amount or 0), 0, 1)
+end
+
+--- Update concealment level from wholesaler posture changes.
+--- Sandbox-gated: does nothing when POS.EnableConcealmentEffects is OFF.
+---@param zoneId     string  Zone identifier
+---@param categoryId string  Category identifier
+---@param amount     number  Concealment damage amount (e.g. 0.15 for strong)
+function POS_EntropyService.updateConcealment(zoneId, categoryId, amount)
+    -- Gated behind sandbox option (default OFF — opt-in feature)
+    if POS_Sandbox and POS_Sandbox.isEnableConcealmentEffects
+            and not POS_Sandbox.isEnableConcealmentEffects() then
+        return
+    end
+    local state = POS_EntropyService._getOrCreateState(zoneId, categoryId)
+    if not state then return end
+
+    state.concealment = PhobosLib.clamp(
+        state.concealment + (amount or 0), 0, 1)
+    -- Concealment also damages certainty
+    state.certainty = PhobosLib.clamp(
+        state.certainty - (amount or 0) * POS_Constants.ENTROPY_CONCEALMENT_CERTAINTY_MULT,
+        0, 1)
+
+    PhobosLib.debug("POS", _TAG,
+        "updateConcealment: " .. tostring(zoneId) .. "/" .. tostring(categoryId)
+        .. " amount=" .. tostring(amount)
+        .. " concealment=" .. string.format("%.2f", state.concealment))
+
+    -- Notify if SIGINT-gated detection threshold crossed
+    if state.concealment >= POS_Constants.ENTROPY_CONCEALMENT_LABEL_THRESHOLD then
+        POS_EntropyService._notifyConcealment(zoneId, categoryId)
+    end
 end
 
 ---------------------------------------------------------------
@@ -398,6 +483,49 @@ function POS_EntropyService._notifyRecovery(zoneId, categoryId)
             tostring(categoryId), tostring(zoneId)),
         colour   = "success",
         priority = "low",
+        channel  = POS_Constants.PN_CHANNEL_INTEL,
+    })
+end
+
+--- Notify: blackout entropy spike (per zone, throttled).
+function POS_EntropyService._notifyBlackout(zoneId)
+    local key = "blackout:" .. tostring(zoneId)
+    if not POS_EntropyService._canNotify(key) then return end
+
+    local player = getSpecificPlayer and getSpecificPlayer(0)
+    if not player then return end
+
+    PhobosLib.notifyOrSay(player, {
+        title    = PhobosLib.safeGetText("UI_POS_Entropy_PN_BlackoutTitle"),
+        message  = PhobosLib.safeGetText("UI_POS_Entropy_PN_Blackout",
+            tostring(zoneId)),
+        colour   = "error",
+        priority = "high",
+        channel  = POS_Constants.PN_CHANNEL_MARKET,
+    })
+end
+
+--- Notify: concealment detected (SIGINT-gated, per zone/category, throttled).
+function POS_EntropyService._notifyConcealment(zoneId, categoryId)
+    -- SIGINT gate: only notify if player has sufficient skill
+    local player = getSpecificPlayer and getSpecificPlayer(0)
+    if not player then return end
+
+    local sigintLevel = 0
+    if POS_SIGINTSkill and POS_SIGINTSkill.getLevel then
+        sigintLevel = POS_SIGINTSkill.getLevel(player) or 0
+    end
+    if sigintLevel < POS_Constants.ENTROPY_CONCEALMENT_SIGINT_GATE then return end
+
+    local key = "conceal:" .. tostring(zoneId) .. ":" .. tostring(categoryId)
+    if not POS_EntropyService._canNotify(key) then return end
+
+    PhobosLib.notifyOrSay(player, {
+        title    = PhobosLib.safeGetText("UI_POS_Entropy_PN_ConcealmentTitle"),
+        message  = PhobosLib.safeGetText("UI_POS_Entropy_PN_Concealment",
+            tostring(categoryId), tostring(zoneId)),
+        colour   = "warning",
+        priority = "normal",
         channel  = POS_Constants.PN_CHANNEL_INTEL,
     })
 end
