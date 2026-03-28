@@ -192,12 +192,18 @@ end
 --- @param sectionName string Voice pack section (e.g. "wbn_opener")
 --- @param fallbackKeys table Array of translation key strings to use as default
 --- @return table Array of translation key strings
+--- Text pool require path prefix. Voice pack definitions use short IDs
+--- (e.g. "voice_wbn_quartermaster_openers"); the actual files live under
+--- Definitions/TextPools/ in the shared Lua path.
+local TEXT_POOL_PATH_PREFIX = "Definitions/TextPools/"
+
 local function resolveArchetypePool(archetypeId, sectionName, fallbackKeys)
     -- Try voice pack registry first
     if POS_VoicePackRegistry and POS_VoicePackRegistry.getOverride then
         local poolId = POS_VoicePackRegistry.getOverride(archetypeId, sectionName)
         if poolId then
-            local ok, poolDef = PhobosLib.safecall(require, poolId)
+            local requirePath = TEXT_POOL_PATH_PREFIX .. poolId
+            local ok, poolDef = PhobosLib.safecall(require, requirePath)
             if ok and poolDef and poolDef.entries and #poolDef.entries > 0 then
                 -- Convert text pool entries to translation key array
                 local keys = {}
@@ -206,7 +212,7 @@ local function resolveArchetypePool(archetypeId, sectionName, fallbackKeys)
                 end
                 if #keys > 0 then
                     PhobosLib.debug("POS", _TAG,
-                        "resolved voice pack pool: " .. poolId .. " (" .. #keys .. " entries)")
+                        "resolved voice pack pool: " .. requirePath .. " (" .. #keys .. " entries)")
                     return keys
                 end
             end
