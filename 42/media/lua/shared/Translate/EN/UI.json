@@ -1966,5 +1966,12 @@
     "UI_POS_Entropy_PN_BlackoutTitle": "Infrastructure Alert",
     "UI_POS_Entropy_PN_Blackout": "Power grid failure in %1 -- intelligence degrading",
     "UI_POS_Entropy_PN_ConcealmentTitle": "SIGINT Alert",
-    "UI_POS_Entropy_PN_Concealment": "Coordinated concealment detected for %1 in %2"
+    "UI_POS_Entropy_PN_Concealment": "Coordinated concealment detected for %1 in %2",
+
+    "UI_POS_Entropy_Shadow": "Information shadow",
+    "UI_POS_Entropy_PN_ShadowTitle": "Infrastructure Alert",
+    "UI_POS_Entropy_PN_Shadow": "Information shadow over %1 in %2 -- data unreliable",
+    "UI_POS_Rumour_Speculative_Shortage": "Unverified reports of shortage",
+    "UI_POS_Rumour_Speculative_Surplus": "Unconfirmed surplus speculation",
+    "UI_POS_Rumour_Speculative_Disruption": "Rumoured supply disruption"
 }

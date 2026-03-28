@@ -186,3 +186,44 @@ POS_Constants.ENTROPY_CONCEALMENT_CERTAINTY_MULT = 0.30
 
 --- Minimum concealment level before UI label is shown
 POS_Constants.ENTROPY_CONCEALMENT_LABEL_THRESHOLD = 0.10
+
+---------------------------------------------------------------
+-- Phase 3: Information shadow zones
+-- Accumulate during severe weather + blackout combo.
+---------------------------------------------------------------
+
+POS_Constants.ENTROPY_SHADOW_PROPAGATION_MIN      = 0.40
+POS_Constants.ENTROPY_SHADOW_ACCUMULATION         = 0.10
+POS_Constants.ENTROPY_SHADOW_DECAY                = 0.85
+POS_Constants.ENTROPY_SHADOW_BROADCAST_DEGRADE    = 0.30
+POS_Constants.ENTROPY_SHADOW_PRESSURE_ATTENUATION = 0.20
+POS_Constants.ENTROPY_SHADOW_LABEL_THRESHOLD      = 0.30
+
+---------------------------------------------------------------
+-- Phase 3: Speculative overreaction
+---------------------------------------------------------------
+
+POS_Constants.ENTROPY_SPECULATION_THRESHOLD        = 0.40
+POS_Constants.ENTROPY_SPECULATION_SPAWN_MULT       = 0.30
+POS_Constants.ENTROPY_SPECULATION_LIFESPAN_BONUS   = 5
+POS_Constants.ENTROPY_SPECULATION_CONFIDENCE_FLOOR = 0.10
+
+---------------------------------------------------------------
+-- Phase 3: Trust erosion from failed broadcast predictions
+---------------------------------------------------------------
+
+POS_Constants.ENTROPY_TRUST_ACCURACY_GAIN          = 0.02
+POS_Constants.ENTROPY_TRUST_MISINFO_LOSS           = 0.05
+POS_Constants.ENTROPY_BROADCAST_LOOKBACK_DAYS      = 3
+
+---------------------------------------------------------------
+-- Phase 3: Desperation multipliers
+---------------------------------------------------------------
+
+POS_Constants.ENTROPY_DESPERATION_PRESSURE_WEIGHT      = 0.25
+POS_Constants.ENTROPY_DESPERATION_CERTAINTY_WEIGHT     = 0.30
+POS_Constants.ENTROPY_DESPERATION_TRUST_WEIGHT         = 0.20
+POS_Constants.ENTROPY_DESPERATION_CONTRADICTION_WEIGHT = 0.25
+POS_Constants.ENTROPY_DESPERATION_DAMAGE_MULT          = 0.50
+POS_Constants.ENTROPY_DESPERATION_SPAWN_MULT           = 0.50
+POS_Constants.ENTROPY_DESPERATION_RUMOUR_BOOST_MULT    = 0.50

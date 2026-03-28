@@ -235,4 +235,60 @@ function POS_RumourGenerator.getRumourCount(currentDay)
     return #POS_RumourGenerator.getActiveRumours(currentDay)
 end
 
+---------------------------------------------------------------
+-- Phase 3: Speculative rumour generation (entropy-driven)
+---------------------------------------------------------------
+
+--- Generate a speculative rumour when certainty is low.
+--- Picks a template from POS_SpeculationRegistry using weighted
+--- random selection. Tagged with sourceHint = "speculation".
+---@param zoneId     string  Zone identifier
+---@param categoryId string  Category identifier
+---@param certainty  number  Current zone/category certainty (0-1)
+---@param currentDay number  Current in-game day
+function POS_RumourGenerator.generateSpeculativeRumour(zoneId, categoryId, certainty, currentDay)
+    if not POS_SpeculationRegistry then
+        pcall(require, "POS_SpeculationRegistry")
+    end
+    if not POS_SpeculationRegistry or not POS_SpeculationRegistry.pickWeighted then
+        return
+    end
+
+    local template = POS_SpeculationRegistry.pickWeighted()
+    if not template then return end
+
+    -- Confidence from template range, scaled down by uncertainty
+    local confRange = (template.confidenceMax or 0.35) - (template.confidenceMin or 0.10)
+    local confidence = (template.confidenceMin or 0.10) + confRange * (certainty or 0.5)
+    confidence = math.max(confidence, POS_Constants.ENTROPY_SPECULATION_CONFIDENCE_FLOOR)
+
+    -- Extended lifespan from uncertainty
+    local baseExpiry = currentDay + (POS_Constants.RUMOUR_EXPIRY_DAYS or 7)
+    local uncertaintyBonus = (1.0 - (certainty or 0.5))
+        * POS_Constants.ENTROPY_SPECULATION_LIFESPAN_BONUS
+    local expiryDay = baseExpiry + math.floor(uncertaintyBonus)
+
+    local rumour = {
+        id              = "spec_" .. tostring(zoneId) .. "_" .. tostring(categoryId)
+            .. "_" .. tostring(currentDay) .. "_" .. tostring(ZombRand(100000)),
+        regionId        = zoneId,
+        categoryIds     = { categoryId },
+        impactHint      = template.impactHint,
+        confidenceNumeric = confidence,
+        expiryDay       = expiryDay,
+        createdDay      = currentDay,
+        sourceHint      = "speculation",
+        descriptionKey  = template.descriptionKey,
+    }
+
+    POS_RumourGenerator.addRumour(rumour, currentDay)
+
+    PhobosLib.debug("POS", _TAG,
+        "Speculative rumour: " .. tostring(template.id)
+        .. " zone=" .. tostring(zoneId)
+        .. " cat=" .. tostring(categoryId)
+        .. " conf=" .. string.format("%.2f", confidence)
+        .. " expires=" .. tostring(expiryDay))
+end
+
 return POS_RumourGenerator

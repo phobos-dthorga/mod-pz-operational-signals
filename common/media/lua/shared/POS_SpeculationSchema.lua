@@ -15,11 +15,11 @@
 --
 
 ---------------------------------------------------------------
--- POS_SignalModifierSchema.lua
--- Schema for Signal Ecology environmental modifier definitions.
--- Validated by PhobosLib_Schema via the SignalModifier registry.
+-- POS_SpeculationSchema.lua
+-- Schema for speculative rumour template definitions.
+-- Validated by PhobosLib_Schema via the Speculation registry.
 --
--- See design-guidelines.md §26 for data-pack architecture.
+-- See design-guidelines.md §59 and entropy-system-design.md §4.2.
 ---------------------------------------------------------------
 
 return {
@@ -27,18 +27,11 @@ return {
     fields = {
         schemaVersion  = { type = "number",  required = true },
         id             = { type = "string",  required = true },
-        pillar         = { type = "string",  required = true, enum = { "propagation", "infrastructure", "saturation" } },
-        trigger        = { type = "string",  required = true },
-        propagation    = { type = "number",  default = 0 },
-        noise          = { type = "number",  default = 0 },
-        saturation     = { type = "number",  default = 0 },
-        infrastructure = { type = "number",  default = 0 },
-        severity       = { type = "number",  default = 0.5, min = 0, max = 1 },
-        description    = { type = "string",  default = "" },
+        impactHint     = { type = "string",  required = true, enum = { "shortage", "surplus", "disruption" } },
+        weight         = { type = "number",  default = 10, min = 1 },
+        confidenceMin  = { type = "number",  default = 0.10, min = 0, max = 1 },
+        confidenceMax  = { type = "number",  default = 0.35, min = 0, max = 1 },
+        descriptionKey = { type = "string",  default = "" },
         enabled        = { type = "boolean", default = true },
-        -- Entropy system: seasonal baseline modifiers (optional, used by season defs)
-        entropyDecayMult  = { type = "number", default = 1.0 },
-        entropyNoiseMult  = { type = "number", default = 1.0 },
-        entropyTrustDrift = { type = "number", default = 0.0 },
     }
 }

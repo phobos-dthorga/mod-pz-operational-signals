@@ -136,6 +136,17 @@ function POS_MarketDatabase.addRecord(record)
             record.zoneId, record.categoryId, record.confidence or 0.5)
     end
 
+    -- Phase 3: Trust erosion — validate broadcast predictions against reality.
+    -- Only non-broadcast observations can validate (to avoid circular trust).
+    if record.zoneId and record.direction
+            and record.sourceTier ~= POS_Constants.SOURCE_TIER_BROADCAST
+            and POS_EntropyService and POS_EntropyService.validateBroadcastAccuracy then
+        local currentDay = record.recordedDay or 0
+        if currentDay <= 0 and getCurrentDay then currentDay = getCurrentDay() end
+        POS_EntropyService.validateBroadcastAccuracy(
+            record.zoneId, record.categoryId, record.direction, currentDay)
+    end
+
     -- Also log to event log
     if POS_EventLog and POS_EventLog.append then
         POS_EventLog.append(POS_Constants.EVENT_SYSTEM_ECONOMY, "observation",

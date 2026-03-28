@@ -47,6 +47,30 @@ character's ability to intercept, decode, and analyse radio signals.
 Higher SIGINT levels unlock terminal screens, improve data quality, boost
 operation rewards, and increase negotiation success rates.
 
+## Market Entropy (Fog-of-Market)
+
+Information in POSnet is never permanent. Every zone and category has a
+hidden intelligence state that decays over time unless actively maintained.
+
+- **Silence decays certainty** -- neglected markets become unreliable.
+  Active recon fights the decay.
+- **Contradictions damage confidence** -- disagreeing sources create
+  confusion, not clarity. Markets become "messy" rather than clear.
+- **Seasons shift the baseline** -- winter is maximum entropy (fast decay,
+  high noise, eroding trust), summer is signal-rich but truth-poor.
+- **Storms and blackouts create information shadows** -- severe weather
+  plus power failure make data from affected zones unreliable. Broadcasts
+  are distorted, prices are lagged.
+- **Speculation thrives in uncertainty** -- when certainty drops low,
+  speculative rumours spawn autonomously. Rumours survive longer when
+  nobody is checking.
+- **Trust tracks broadcast accuracy** -- broadcasts that match reality
+  build trust; wrong predictions erode it. Trust attenuates how strongly
+  broadcasts influence prices.
+- **Desperation amplifies bad inference** -- zones under high pressure
+  with low certainty take larger damage from contradictions and generate
+  more speculative noise.
+
 ---
 
 ## Trading

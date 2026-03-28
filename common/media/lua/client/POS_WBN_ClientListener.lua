@@ -141,6 +141,19 @@ local function generateSignalFragment(candidate, stationClassId, currentDay)
         and PhobosLib.clamp(rawConf, POS_Constants.WBN_FRAGMENT_CONF_MIN, POS_Constants.WBN_FRAGMENT_CONF_MAX)
         or rawConf
 
+    -- Phase 3: Information shadow degrades broadcast fragment confidence
+    if candidate.zoneId and POS_EntropyService
+            and POS_EntropyService.getIntelState then
+        local intelState = POS_EntropyService.getIntelState(
+            candidate.zoneId, candidate.categoryId)
+        if intelState and (intelState.shadowState or 0)
+                > POS_Constants.ENTROPY_SHADOW_LABEL_THRESHOLD then
+            conf = conf * (1.0 - intelState.shadowState
+                * POS_Constants.ENTROPY_SHADOW_BROADCAST_DEGRADE)
+            conf = math.max(conf, POS_Constants.WBN_FRAGMENT_CONF_MIN)
+        end
+    end
+
     return {
         type            = fragmentType,
         zoneId          = candidate.zoneId,
@@ -236,15 +249,24 @@ local function reinforceRumours(fragment)
                 -- Initialise numeric confidence if absent
                 if not r.confidenceNumeric then r.confidenceNumeric = 0.30 end
 
+                -- Phase 3: Desperation amplifies rumour confidence swings
+                local desperationMult = 1.0
+                if fragment.zoneId and fragment.categoryId
+                        and POS_EntropyService and POS_EntropyService.getDesperationIndex then
+                    local desp = POS_EntropyService.getDesperationIndex(
+                        fragment.zoneId, fragment.categoryId) or 0
+                    desperationMult = 1.0 + desp * POS_Constants.ENTROPY_DESPERATION_RUMOUR_BOOST_MULT
+                end
+
                 if sameDirection then
                     r.confidenceNumeric = math.min(
-                        r.confidenceNumeric + POS_Constants.WBN_RUMOUR_REINFORCE_BOOST,
+                        r.confidenceNumeric + POS_Constants.WBN_RUMOUR_REINFORCE_BOOST * desperationMult,
                         POS_Constants.WBN_FRAGMENT_CONF_MAX)
                     PhobosLib.debug("POS", _TAG, "rumour reinforced: " .. tostring(r.id)
                         .. " -> " .. string.format("%.2f", r.confidenceNumeric))
                 else
                     r.confidenceNumeric = math.max(
-                        r.confidenceNumeric - POS_Constants.WBN_RUMOUR_CONTRADICT_DROP,
+                        r.confidenceNumeric - POS_Constants.WBN_RUMOUR_CONTRADICT_DROP * desperationMult,
                         POS_Constants.WBN_RUMOUR_CONF_FLOOR)
                     PhobosLib.debug("POS", _TAG, "rumour contradicted: " .. tostring(r.id)
                         .. " -> " .. string.format("%.2f", r.confidenceNumeric))
