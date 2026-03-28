@@ -1960,5 +1960,11 @@
     "UI_POS_Entropy_PN_TransitionTitle": "Market Outlook",
     "UI_POS_Entropy_PN_Transition": "Intelligence on %1: %2",
     "UI_POS_Entropy_PN_RecoveryTitle": "Intelligence Update",
-    "UI_POS_Entropy_PN_Recovery": "Fresh data received for %1 in %2"
+    "UI_POS_Entropy_PN_Recovery": "Fresh data received for %1 in %2",
+
+    "UI_POS_Entropy_ConcealmentSuspected": "Wholesaler concealment likely",
+    "UI_POS_Entropy_PN_BlackoutTitle": "Infrastructure Alert",
+    "UI_POS_Entropy_PN_Blackout": "Power grid failure in %1 -- intelligence degrading",
+    "UI_POS_Entropy_PN_ConcealmentTitle": "SIGINT Alert",
+    "UI_POS_Entropy_PN_Concealment": "Coordinated concealment detected for %1 in %2"
 }

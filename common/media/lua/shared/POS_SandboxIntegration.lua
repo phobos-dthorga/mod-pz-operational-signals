@@ -566,3 +566,14 @@ function POS_Sandbox.getAmbientIntelInterval()
     return PhobosLib.getSandboxVar("POS", "AmbientIntelInterval",
         POS_Constants.AMBIENT_INTEL_INTERVAL_DEFAULT)
 end
+
+---------------------------------------------------------------
+-- Entropy: Wholesaler Concealment
+---------------------------------------------------------------
+
+--- Whether wholesaler concealment affects intelligence quality.
+--- When false, concealment only affects supply pressure (existing behaviour).
+--- Default: false (opt-in feature).
+function POS_Sandbox.isEnableConcealmentEffects()
+    return PhobosLib.getSandboxVar("POS", "EnableConcealmentEffects", false)
+end

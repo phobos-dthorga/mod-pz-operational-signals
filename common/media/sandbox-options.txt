@@ -1048,3 +1048,11 @@ option POS.RelayDiscoveryRange
     page = POS_Sandbox,
     translation = POS_RelayDiscoveryRange,
 }
+
+option POS.EnableConcealmentEffects
+{
+    type = boolean,
+    default = false,
+    page = POS_Sandbox,
+    translation = POS_EnableConcealmentEffects,
+}

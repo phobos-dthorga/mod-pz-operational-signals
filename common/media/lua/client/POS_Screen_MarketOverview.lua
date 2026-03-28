@@ -191,6 +191,19 @@ local function renderSummary(ctx, params)
                                 entropyStr = " {" .. W.safeGetText(band.key) .. "}"
                             end
                         end
+                        -- SIGINT-gated concealment indicator
+                        if intelState and intelState.concealment
+                                and intelState.concealment > POS_Constants.ENTROPY_CONCEALMENT_LABEL_THRESHOLD then
+                            local player = getSpecificPlayer(0)
+                            local sigintLevel = 0
+                            if player and POS_SIGINTSkill and POS_SIGINTSkill.getLevel then
+                                sigintLevel = POS_SIGINTSkill.getLevel(player) or 0
+                            end
+                            if sigintLevel >= POS_Constants.ENTROPY_CONCEALMENT_SIGINT_GATE then
+                                entropyStr = entropyStr .. " {"
+                                    .. W.safeGetText("UI_POS_Entropy_ConcealmentSuspected") .. "}"
+                            end
+                        end
                     end
                 end
 

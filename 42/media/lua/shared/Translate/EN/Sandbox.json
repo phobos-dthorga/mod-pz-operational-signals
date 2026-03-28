@@ -245,5 +245,8 @@
     "Sandbox_POS_AmbientIntelInterval_tooltip": "Minutes between passive market intelligence observations. Lower = more data but noisier. <BR> <BR> <INDENT:20> Range: 10-120. Default: 30.",
 
     "Sandbox_POS_RelayDiscoveryRange": "Relay Discovery Range",
-    "Sandbox_POS_RelayDiscoveryRange_tooltip": "Maximum distance (in tiles) from a Tier V relay dish required to discover and register it as a relay site. Default: 5 tiles."
+    "Sandbox_POS_RelayDiscoveryRange_tooltip": "Maximum distance (in tiles) from a Tier V relay dish required to discover and register it as a relay site. Default: 5 tiles.",
+
+    "Sandbox_POS_EnableConcealmentEffects": "Wholesaler Concealment Effects",
+    "Sandbox_POS_EnableConcealmentEffects_tooltip": "When enabled, wholesaler concealment (withholding, collapsing) damages intelligence quality in affected zones. Detection requires SIGINT level 3+. <BR> <BR> <INDENT:20> Default: OFF (opt-in feature)."
 }

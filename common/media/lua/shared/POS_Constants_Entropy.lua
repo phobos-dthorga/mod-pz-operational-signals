@@ -123,3 +123,66 @@ POS_Constants.ENTROPY_OBSERVATION_FRESHNESS_BOOST = 0.30
 
 --- How much certainty is restored per observation (scaled by confidence)
 POS_Constants.ENTROPY_OBSERVATION_CERTAINTY_BOOST = 0.10
+
+---------------------------------------------------------------
+-- Phase 2: Weather entropy multipliers
+-- Applied to base decay rates based on Signal Ecology propagation.
+---------------------------------------------------------------
+
+--- Maximum decay rate boost from bad weather (multiplier on freshness decay)
+POS_Constants.ENTROPY_WEATHER_DECAY_FACTOR       = 1.50
+
+--- Maximum rumourLoad boost per tick from weather noise
+POS_Constants.ENTROPY_WEATHER_NOISE_FACTOR       = 0.30
+
+--- Trust drift per tick during storms/blizzards (propagation < 0.50)
+POS_Constants.ENTROPY_WEATHER_TRUST_DRIFT_BAD    = -0.01
+
+--- Trust recovery per tick during clear weather (propagation >= 0.85)
+POS_Constants.ENTROPY_WEATHER_TRUST_DRIFT_GOOD   = 0.005
+
+--- Propagation threshold below which weather trust drift is negative
+POS_Constants.ENTROPY_WEATHER_BAD_THRESHOLD      = 0.50
+
+--- Propagation threshold above which weather trust drift is positive
+POS_Constants.ENTROPY_WEATHER_GOOD_THRESHOLD     = 0.85
+
+---------------------------------------------------------------
+-- Phase 2: Blackout penalties (per tick while grid is off)
+---------------------------------------------------------------
+
+--- Certainty loss per tick during blackout
+POS_Constants.ENTROPY_BLACKOUT_CERTAINTY_PENALTY = 0.05
+
+--- RumourLoad boost per tick during blackout
+POS_Constants.ENTROPY_BLACKOUT_RUMOUR_BOOST      = 0.08
+
+--- Trust drift per tick during blackout
+POS_Constants.ENTROPY_BLACKOUT_TRUST_DRIFT       = -0.015
+
+--- Infrastructure pillar threshold below which blackout penalties apply
+POS_Constants.ENTROPY_BLACKOUT_INFRA_THRESHOLD   = 0.50
+
+---------------------------------------------------------------
+-- Phase 2: Wholesaler concealment
+-- Sandbox-gated (POS.EnableConcealmentEffects, default OFF).
+-- SIGINT-gated detection on terminal UI.
+---------------------------------------------------------------
+
+--- Concealment multiplicative decay per tick
+POS_Constants.ENTROPY_CONCEALMENT_DECAY          = 0.90
+
+--- Minimum SIGINT level to see concealment indicators on terminal
+POS_Constants.ENTROPY_CONCEALMENT_SIGINT_GATE    = 3
+
+--- Concealment damage from withholding/collapsing posture
+POS_Constants.ENTROPY_CONCEALMENT_STRONG_DAMAGE  = 0.15
+
+--- Concealment damage from tight/strained posture
+POS_Constants.ENTROPY_CONCEALMENT_MILD_DAMAGE    = 0.05
+
+--- Certainty damage multiplier from concealment (concealment * this)
+POS_Constants.ENTROPY_CONCEALMENT_CERTAINTY_MULT = 0.30
+
+--- Minimum concealment level before UI label is shown
+POS_Constants.ENTROPY_CONCEALMENT_LABEL_THRESHOLD = 0.10
