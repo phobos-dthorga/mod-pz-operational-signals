@@ -122,6 +122,11 @@ function POS_EconomyTick.processDayTick()
         PhobosLib.safecall(POS_MarketSimulation.tickSimulation, currentDay)
     end
 
+    -- Phase 5.8: Broadcast Influence decay
+    if POS_BroadcastInfluenceService and POS_BroadcastInfluenceService.tickDecay then
+        PhobosLib.safecall(POS_BroadcastInfluenceService.tickDecay, currentDay)
+    end
+
     -- Phase 5.9: Free agent state machine tick
     if POS_FreeAgentService and POS_FreeAgentService.tick then
         PhobosLib.safecall(POS_FreeAgentService.tick, currentDay)

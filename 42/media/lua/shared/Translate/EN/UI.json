@@ -1973,5 +1973,14 @@
     "UI_POS_Entropy_PN_Shadow": "Information shadow over %1 in %2 -- data unreliable",
     "UI_POS_Rumour_Speculative_Shortage": "Unverified reports of shortage",
     "UI_POS_Rumour_Speculative_Surplus": "Unconfirmed surplus speculation",
-    "UI_POS_Rumour_Speculative_Disruption": "Rumoured supply disruption"
+    "UI_POS_Rumour_Speculative_Disruption": "Rumoured supply disruption",
+
+    "UI_POS_Broadcast_PN_TransmittedTitle": "Broadcast Transmitted",
+    "UI_POS_Broadcast_PN_Transmitted": "%1 broadcast transmitted to %2",
+    "UI_POS_Broadcast_PN_TrustRisingTitle": "Trust Rising",
+    "UI_POS_Broadcast_PN_TrustRising": "Network trust in %1 is increasing",
+    "UI_POS_Broadcast_PN_TrustFallingTitle": "Trust Falling",
+    "UI_POS_Broadcast_PN_TrustFalling": "Network trust in %1 is deteriorating",
+    "UI_POS_Broadcast_PN_ResolvedTitle": "Broadcast Faded",
+    "UI_POS_Broadcast_PN_Resolved": "Broadcast influence on %1 in %2 has dissipated"
 }

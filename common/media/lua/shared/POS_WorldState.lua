@@ -69,6 +69,10 @@ function POS_WorldState.getMarketData()
     return PhobosLib.getWorldModData(POS_Constants.WMD_MARKET_DATA)
 end
 
+function POS_WorldState.getBroadcastInfluence()
+    return PhobosLib.getWorldModData(POS_Constants.WMD_BROADCAST_INFLUENCE)
+end
+
 ---------------------------------------------------------------
 -- PZ API thin wrappers (forward-compatibility layer)
 ---------------------------------------------------------------
@@ -249,6 +253,10 @@ function POS_WorldState.bootstrap()
     -- Ensure market data container (observations + rolling closes)
     local marketData = POS_WorldState.getMarketData()
     marketData.categories = marketData.categories or {}
+
+    -- Ensure broadcast influence container
+    local broadcastInfluence = POS_WorldState.getBroadcastInfluence()
+    broadcastInfluence.records = broadcastInfluence.records or {}
 
     -- One-time migration from player modData to world ModData
     if not meta.migrated then

@@ -19,7 +19,7 @@
 
 **Branch**: `dev/broadcast-influence` (future)
 **Date**: 2026-03-25
-**Status**: Design phase -- implementation not started
+**Status**: Phase A implemented -- record lifecycle, perceived pressure, entropy integration
 **Prerequisites**: Satellite Uplink operational (see `satellite-uplink-design.md`),
 Living Market active (see `living-market-design.md`), Free Agent System
 registered (see `free-agent-system.md`)

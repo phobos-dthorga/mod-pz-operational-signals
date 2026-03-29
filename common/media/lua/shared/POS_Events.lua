@@ -183,3 +183,16 @@ POS_Events.OnRelayCalibrated = LuaEvent.new("POS.OnRelayCalibrated")
 --- Screens subscribe to this to refresh live-updating displays.
 --- Payload: { processId = string, progress = number (0-1), label = string }
 POS_Events.OnBackgroundProgressUpdated = LuaEvent.new("POS.OnBackgroundProgressUpdated")
+
+---------------------------------------------------------------
+-- Satellite Broadcast Influence
+---------------------------------------------------------------
+
+--- Fired when a satellite broadcast influence record is created.
+--- Payload: { mode = string, zoneId = string, strength = number,
+---            categories = table, day = number }
+POS_Events.OnBroadcastTransmitted = LuaEvent.new("POS.OnBroadcastTransmitted")
+
+--- Fired when a broadcast influence record's freshness decays below floor.
+--- Payload: { mode = string, zoneId = string, day = number }
+POS_Events.OnBroadcastResolved    = LuaEvent.new("POS.OnBroadcastResolved")

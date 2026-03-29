@@ -68,6 +68,9 @@ local function getAllWorldKeys()
     if POS_Constants.WMD_MAILBOX_CACHE      then keys[#keys + 1] = POS_Constants.WMD_MAILBOX_CACHE end
     if POS_Constants.WMD_PENDING_RESOLUTIONS then keys[#keys + 1] = POS_Constants.WMD_PENDING_RESOLUTIONS end
 
+    -- Broadcast Influence System (Tier IV satellite broadcast records)
+    if POS_Constants.WMD_BROADCAST_INFLUENCE then keys[#keys + 1] = POS_Constants.WMD_BROADCAST_INFLUENCE end
+
     -- Dynamic per-player payout key (world-level ModData keyed by username)
     if POS_Constants.PENDING_PAYOUT_PREFIX then
         local player = getSpecificPlayer(0)
