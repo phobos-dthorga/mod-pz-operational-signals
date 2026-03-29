@@ -142,6 +142,14 @@ POS_Constants.SIGNAL_DEFAULT_TIER = 2  -- used when SIGINT is unavailable
 POS_Constants.SIGNAL_ECOLOGY_BPS_SCALE = 4000
 
 ---------------------------------------------------------------
+-- WBN broadcast proximity gate
+-- Maximum squared tile distance from receiving device to player.
+-- Matches WORLD_RADIO_SCAN_RADIUS (20 tiles) for consistency.
+---------------------------------------------------------------
+
+POS_Constants.WBN_HEARING_RANGE_SQ = 400  -- 20^2
+
+---------------------------------------------------------------
 -- Receiver quality (hardware-dependent WBN dropout scaling)
 -- See design-guidelines.md §60 for receiver quality architecture.
 ---------------------------------------------------------------

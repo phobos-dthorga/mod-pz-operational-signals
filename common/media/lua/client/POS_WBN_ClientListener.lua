@@ -430,6 +430,20 @@ local function onDeviceText(guid, codes, x, y, z, text, device)
     local isWBN, stationId = isWBNFrequency(freq)
     if not isWBN then return end
 
+    -- Proximity gate: only accept broadcasts from devices within hearing range.
+    -- OnDeviceText fires globally for ALL radios in the world tuned to the
+    -- frequency. Without this check, a radio thousands of tiles away would
+    -- deliver intel to the player.
+    local player = getPlayer and getPlayer()
+    if player and x and y then
+        local px, py = player:getX(), player:getY()
+        local dx, dy = x - px, y - py
+        local distSq = dx * dx + dy * dy
+        if distSq > (POS_Constants.WBN_HEARING_RANGE_SQ or 400) then
+            return  -- device too far from player
+        end
+    end
+
     -- Extract text from either a plain string or a RadioLine object
     local lineText = ""
     if type(text) == "string" then
