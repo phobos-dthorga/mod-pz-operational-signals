@@ -1561,13 +1561,19 @@ architecture described below.
 
 ### 23.2 Delivery Balance
 
-- **Major tier transitions** → Notice Popups (5 total): first connection,
+- **Major tier transitions** → Notice Popups (9 total): first connection,
   first operation completed, SIGINT L3, first camera compile, first satellite
-  broadcast.
-- **Incremental achievements** → toast notifications (9 total): first op
+  broadcast, first WBN bulletin, first entropy warning, first trade, first
+  relay discovery.
+- **Incremental achievements** → toast notifications (13 total): first op
   received, first market note, first analysis, SIGINT L6, SIGINT L9, first
-  investment, first delivery, first data recorder use, first cross-correlation.
+  investment, first delivery, first data recorder use, first cross-correlation,
+  first signal fragment, first free agent, first market view, first broadcast
+  mode.
 - Toasts use the `"tutorial"` colour preset (teal) from PhobosNotifications.
+- Tutorial notifications use the dedicated `PN_CHANNEL_TUTORIAL` channel
+  (`posnet_tutorial`) so players can mute tutorials independently of
+  operational alerts.
 
 ### 23.3 Sandbox Gate
 
@@ -1600,6 +1606,24 @@ architecture described below.
 
 - `POS_TutorialService.init()` checks for existing `MD_RECORDER_TUTORIAL_SHOWN`
   modData and auto-awards `first_data_recorder_use` if set.
+
+### 23.8 Phase 1 Expansion (v0.25.0)
+
+Phase 1 tutorial expansion added 8 new milestones covering previously absent
+tutorial areas (WBN radio, signal fragments, entropy/decay, trading, free
+agents, relay networks, market overview, broadcast modes):
+
+- `first_wbn_bulletin` — first WBN radio bulletin received (intel)
+- `first_signal_fragment` — first signal fragment captured from broadcast (intel)
+- `first_entropy_warning` — first atmospheric band downward transition (core)
+- `first_trade` — first spot sell completed (core)
+- `first_free_agent` — first free agent deployed (core)
+- `first_relay_discovery` — first Tier V relay site discovered (intel)
+- `first_market_view` — first Markets screen opened (core)
+- `first_broadcast_mode` — first satellite broadcast with mode (intel)
+
+Of these, 4 have Notice Popups (WBN, entropy, trade, relay) and 4 are
+toast-only (fragment, free agent, market view, broadcast mode).
 
 ---
 

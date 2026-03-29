@@ -107,6 +107,11 @@ function POS_StrategicRelayService.discoverRelay(player, sq)
         PhobosLib.safecall(POS_SIGINTSkill.addXP, player, POS_Constants.SIGINT_XP_RELAY_DISCOVER)
     end
 
+    -- Tutorial: first relay discovery
+    if POS_TutorialService and POS_TutorialService.tryAward then
+        POS_TutorialService.tryAward(player, POS_Constants.TUTORIAL_FIRST_RELAY_DISCOVERY)
+    end
+
     -- Fire discovery event
     if POS_Events and POS_Events.OnRelayDiscovered then
         PhobosLib.safecall(function()

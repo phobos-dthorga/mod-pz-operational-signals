@@ -345,6 +345,7 @@ POS_Constants.PN_CHANNEL_CONTRACTS = "posnet_contracts"
 POS_Constants.PN_CHANNEL_MARKET    = "posnet_market"
 POS_Constants.PN_CHANNEL_TRADE     = "posnet_trade"
 POS_Constants.PN_CHANNEL_INTEL     = "posnet_intel"
+POS_Constants.PN_CHANNEL_TUTORIAL  = "posnet_tutorial"
 
 ---------------------------------------------------------------
 -- Mission categories & statuses
@@ -885,6 +886,16 @@ POS_Constants.TUTORIAL_FIRST_INVESTMENT         = "first_investment"
 POS_Constants.TUTORIAL_FIRST_DELIVERY           = "first_delivery"
 POS_Constants.TUTORIAL_FIRST_DATA_RECORDER      = "first_data_recorder_use"
 POS_Constants.TUTORIAL_FIRST_CROSS_CORRELATION  = "first_cross_correlation"
+
+-- Phase 1 expansion milestones (v0.25.0)
+POS_Constants.TUTORIAL_FIRST_WBN_BULLETIN       = "first_wbn_bulletin"
+POS_Constants.TUTORIAL_FIRST_SIGNAL_FRAGMENT     = "first_signal_fragment"
+POS_Constants.TUTORIAL_FIRST_ENTROPY_WARNING     = "first_entropy_warning"
+POS_Constants.TUTORIAL_FIRST_TRADE               = "first_trade"
+POS_Constants.TUTORIAL_FIRST_FREE_AGENT          = "first_free_agent"
+POS_Constants.TUTORIAL_FIRST_RELAY_DISCOVERY     = "first_relay_discovery"
+POS_Constants.TUTORIAL_FIRST_MARKET_VIEW         = "first_market_view"
+POS_Constants.TUTORIAL_FIRST_BROADCAST_MODE      = "first_broadcast_mode"
 
 POS_Constants.TUTORIAL_TOAST_TAG                = "pos_tutorial"
 POS_Constants.TUTORIAL_TOAST_COLOUR             = "tutorial"

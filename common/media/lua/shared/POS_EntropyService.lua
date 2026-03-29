@@ -514,6 +514,14 @@ function POS_EntropyService._notifyTransition(zoneId, categoryId, band, currentD
     -- Only notify on downward transitions (getting worse)
     if band.name == "clear" then return end
 
+    -- Tutorial: first entropy warning (any downward band transition)
+    if POS_TutorialService and POS_TutorialService.tryAward then
+        local tPlayer = getSpecificPlayer and getSpecificPlayer(0)
+        if tPlayer then
+            POS_TutorialService.tryAward(tPlayer, POS_Constants.TUTORIAL_FIRST_ENTROPY_WARNING)
+        end
+    end
+
     local key = "trans:" .. tostring(zoneId) .. ":" .. tostring(categoryId)
     if not POS_EntropyService._canNotify(key) then return end
 
