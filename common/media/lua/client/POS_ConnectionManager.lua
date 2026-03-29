@@ -114,20 +114,31 @@ function POS_ConnectionManager.findPortableComputer(player)
     return inv:getFirstType(PORTABLE_COMPUTER_TYPE)
 end
 
---- Check if a world object is a radio (IsoWaveSignal).
+--- Check if a world object is a radio (IsoWaveSignal but NOT a television).
 --- @param obj any World object
 --- @return boolean
 function POS_ConnectionManager.isWorldRadio(obj)
     if not obj then return false end
-    return instanceof(obj, "IsoWaveSignal")
+    if not instanceof(obj, "IsoWaveSignal") then return false end
+    -- Exclude televisions (IsoTelevision extends IsoWaveSignal)
+    if PhobosLib_Radio and PhobosLib_Radio.isTelevision
+            and PhobosLib_Radio.isTelevision(obj) then
+        return false
+    end
+    return true
 end
 
---- Check if an inventory item is a radio device.
+--- Check if an inventory item is a radio device (not a television).
 --- @param item any InventoryItem
 --- @return boolean
 function POS_ConnectionManager.isInventoryRadio(item)
     if not item then return false end
     if not item.getDeviceData then return false end
+    -- Exclude televisions
+    if PhobosLib_Radio and PhobosLib_Radio.isTelevision
+            and PhobosLib_Radio.isTelevision(item) then
+        return false
+    end
     local ok, result = PhobosLib.safecall(function()
         return item:getDeviceData() ~= nil
     end)

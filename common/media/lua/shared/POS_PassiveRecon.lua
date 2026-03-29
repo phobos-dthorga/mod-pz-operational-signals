@@ -47,8 +47,14 @@ local TIER_CONFIDENCE = {
 }
 
 --- Determine the scanner tier of a radio item (1-4) or nil if not usable.
+--- Television sets are explicitly excluded (not usable as scanners).
 local function getRadioTier(item)
     if not item then return nil end
+    -- Exclude televisions — they are not scanning devices
+    if PhobosLib_Radio and PhobosLib_Radio.isTelevision
+            and PhobosLib_Radio.isTelevision(item) then
+        return nil
+    end
     local ok, dd = PhobosLib.safecall(function()
         return item.getDeviceData and item:getDeviceData()
     end)

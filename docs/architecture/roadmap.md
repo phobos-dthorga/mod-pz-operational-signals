@@ -1,7 +1,7 @@
 # POSnet Expansion Roadmap
 
 > Living document. No implementation dates. Updated as features are
-> completed or reprioritised. Last audit: 2026-03-29.
+> completed or reprioritised. Last audit: 2026-03-30.
 
 ---
 
@@ -32,10 +32,12 @@
 | 21 | Fragment-to-MarketDatabase Bridge | **DONE** | design-guidelines.md 55.1 |
 | 22 | Item Spawn Expansion + SIGINT Books | **DONE** | POS_Distributions.lua |
 | 23 | Entropy System (all 3 phases) | **DONE** | entropy-system-design.md |
-| 24 | Broadcast Influence System | **Phase A: DONE** | broadcast-influence-design.md |
-| 25 | Signal Ecology v2 | Partial (stub) | signal-ecology-design.md |
-| 26 | Physical Item Trading (Contacts) | Designed, 0% | design-guidelines.md 1.3 |
-| 27 | Satellite Passive Collection | Design only | satellite-passive-collection-design.md |
+| 24 | Signal Ecology v2 | **DONE** | signal-ecology-design.md |
+| 25 | Receiver Quality (hardware-scaled WBN) | **DONE** (feat branch) | design-guidelines.md §60 |
+| 26 | Broadcast Influence System | Impl. complete (feat branch) | broadcast-influence-design.md |
+| 27 | Tutorial Expansion (+8 milestones) | Impl. complete (feat branch) | design-guidelines.md 23 |
+| 28 | Physical Item Trading (Contacts) | Designed, 0% | design-guidelines.md 1.3 |
+| 29 | Satellite Passive Collection | Design only | satellite-passive-collection-design.md |
 
 ---
 
@@ -63,10 +65,29 @@
 - **WBN Radio Pipeline**: Harvest → Editorial → Composition → Scheduling
   → Delivery. 3 channels, 9 voice packs, 415+ translation keys, signal
   degradation, voice pack text pool resolution.
-- **Radio Proximity Filtering**: Intercepts gated by hearing range.
-  Generic API in PhobosLib (`findNearbyTunedRadio`).
+- **Radio Proximity Filtering**: Intercepts AND WBN broadcasts gated by
+  vanilla PZ hearing range (`HasPlayerInRange()`). Generic API in
+  PhobosLib (`findNearbyTunedRadio`).
 - **Event-to-Market Coupling**: Zone events affect prices directly.
 - **Fragment-to-MarketDatabase Bridge**: Radio = passive market intel.
+
+### Signal Ecology v2 (All 5 Pillars Operational)
+
+Five-pillar multiplicative composite model (propagation × infrastructure
+× (clarity − noise) × (1 − saturation) × intent). Replaces the former
+flat signal-strength percentage.
+
+- **Propagation**: Weather + season modifiers (8 weather triggers, 4
+  seasons, data-pack definitions via SignalModifierSchema)
+- **Infrastructure**: Power grid state (grid_on/off/failing/generator)
+- **Clarity**: SIGINT skill tier (0.70–1.00 across 5 tiers)
+- **Saturation**: Active agents + market state + seasonal modifiers
+- **Intent**: 1.0 stub (reserved for Tier V Phase E)
+- **Noise**: Active weather + market triggers (subtracted from clarity)
+- **Qualitative states**: locked / clear / faded / fragmented / ghosted / lost
+- **Tier clamping**: Floor/ceiling per SIGINT tier
+- **Hourly recalculation** with event-driven invalidation
+- **WBN text degradation**: Per-word dropout scaled by ecology state
 
 ### Entropy System (All 3 Phases Complete)
 
@@ -94,37 +115,74 @@
 
 ---
 
-## Active Development Queue
+## Awaiting Merge (CI-green feature branches)
 
-### Priority 1: Broadcast Influence System
+### Receiver Quality System (`feat/receiver-quality`)
 
-**Status**: Phase A complete. Phases B (wholesaler nudging + rumour echoes)
-and C (screen UI completion) pending.
+**Status**: Implementation complete, CI green on both PhobosLib + POSnet.
 
-Phase A delivers: broadcast record persistence, perceived pressure
-generation, entropy trust mutation, Starlit events, decay lifecycle,
-and PN notifications.
+Radio hardware quality scales WBN text degradation. Military radios
+pierce storms; makeshift receivers produce near-unreadable output.
 
-**Remaining (Phase B/C)**:
-- Wholesaler posture nudging from broadcasts
-- Rumour echo generation
-- Broadcast consequences (saturation, misinformation penalties)
-- Terminal UI for broadcast influence state
+**Key features**:
+- Client-side degradation: ecology dropout × receiver quality factor
+- Data-pack profiles (`POS_ReceiverProfileSchema` + registry) for all 17
+  vanilla radios, with formula fallback for modded radios
+- Item condition scaling (worn radios perform worse)
+- `PN_CHANNEL_SIGNAL` notification channel + "Weak Receiver" one-shot toast
+- Fragment confidence scaled by receiver quality
+- `OnBroadcastReceived` event enriched with quality metadata
 
-**Design ref**: `broadcast-influence-design.md`.
+**Also includes**:
+- TV type gap remediation (3 TVs added to PhobosLib lookup tables)
+- `isTelevision()` public API in PhobosLib_Radio
+- TV exclusion in ConnectionManager, PassiveRecon (no "Connect" on TVs)
+- WBN proximity gate: `HasPlayerInRange()` for world radios,
+  `inv:contains(device)` for inventory radios (fixes global reception bug)
+
+**PhobosLib changes** (same branch): `getReceiverQualityFactor()`,
+`isTelevision()`, `getDeviceData()` instanceof guard, inventory scan
+`instanceof(item, "Radio")` guard.
+
+**Depends on**: PhobosLib `feat/receiver-quality` branch.
 
 ---
 
-### Priority 2: Signal Ecology v2
+### Broadcast Influence System (`dev/broadcast-influence`)
 
-**Status**: Design complete, SIGNAL_INTENT_STUB placeholder in code.
-**Complexity**: Very High (estimated 80-120 hours for full migration).
+**Status**: Implementation complete, CI green.
 
-Replace flat signal-strength percentage with five-pillar composite model.
-The entropy system's weather and seasonal integration (Phase 2-3) shares
-the Signal Ecology propagation pillar, providing a natural on-ramp.
+Makes Tier IV satellite broadcasts affect perceived market pressure
+through a trust-attenuated influence layer.
 
-**Design ref**: `signal-ecology-design.md`, `design-guidelines.md` 56.
+**Key features**:
+- `POS_BroadcastInfluenceService`: record persistence, trust mutation,
+  freshness decay, perceived pressure calculation
+- 3 notification events (transmitted, trust threshold, resolved)
+- Data reset integration (`WMD_BROADCAST_INFLUENCE`)
+- Fragment ID generation fix
+
+---
+
+### Tutorial Expansion (`dev/tutorial-expansion`)
+
+**Status**: Implementation complete, CI green.
+
+8 new milestones covering WBN radio, signal fragments, entropy warnings,
+first trade, free agents, relay discovery, market view, broadcast mode.
+
+---
+
+## Active Development Queue
+
+### Priority 1: Merge Feature Branches
+
+Three CI-green branches awaiting merge to main:
+1. `feat/receiver-quality` (PhobosLib + POSnet)
+2. `dev/broadcast-influence` (POSnet)
+3. `dev/tutorial-expansion` (POSnet)
+
+Version bump + release tags after merge.
 
 ---
 
@@ -145,11 +203,17 @@ the Signal Ecology propagation pillar, providing a natural on-ramp.
 ## Dependencies Graph
 
 ```
-Entropy System (COMPLETE — all 3 phases)
+Entropy System (COMPLETE)
     |
-    +---> Broadcast Influence (trust attenuation ready)
+    +---> Broadcast Influence (COMPLETE — feat branch)
     |
-    +---> Signal Ecology v2 (propagation pillar shared)
+    +---> Signal Ecology v2 (COMPLETE)
+              |
+              +---> Receiver Quality (COMPLETE — feat branch)
+
+Tutorial System (COMPLETE)
+    |
+    +---> Tutorial Expansion (COMPLETE — feat branch)
 ```
 
 ---
@@ -168,3 +232,19 @@ Features shipped:
 9. Entropy Phase 3: seasonal, shadows, speculation, trust, desperation
 10. Voice pack text pool path fix
 11. PhobosLib v1.66.0: decayMultiplicative + resolveQualitativeBand
+
+## Session Log (2026-03-30)
+
+Features shipped:
+1. PhobosLib_Radio: `getDeviceData()` instanceof guard (fixes Kahlua crash)
+2. PhobosLib_Radio: `instanceof(item, "Radio")` inventory scan guard
+3. PhobosLib_Radio: TV types added (TvAntique, TvBlack, TvWideScreen)
+4. PhobosLib_Radio: `isTelevision()` public API
+5. PhobosLib_Radio: `getReceiverQualityFactor()` with profile lookup + condition scaling
+6. POSnet: Receiver quality data-pack (schema + registry + 17 vanilla profiles)
+7. POSnet: Client-side WBN degradation (ecology × receiver quality)
+8. POSnet: WBN proximity gate via vanilla `HasPlayerInRange()` / `inv:contains()`
+9. POSnet: TV exclusion in ConnectionManager + PassiveRecon
+10. POSnet: `PN_CHANNEL_SIGNAL` notification channel + weak receiver toast
+11. POSnet: `OnBroadcastReceived` enriched with receiver quality metadata
+12. POSnet: 6 new translation keys for receiver quality labels

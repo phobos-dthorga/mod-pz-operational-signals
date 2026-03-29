@@ -2017,5 +2017,12 @@
     "UI_POS_Tutorial_Popup_Relay_Line3": "Connect to the relay via the terminal to access the Relay Command dashboard. Calibrate the dish, manage bandwidth, and monitor network health.",
     "UI_POS_Tutorial_Popup_Relay_Line4": "Relay sites require power and maintenance. A well-maintained relay network dramatically improves signal quality across the region.",
 
-    "UI_POS_PN_Channel_Tutorial": "POSnet Tutorial"
+    "UI_POS_PN_Channel_Tutorial": "POSnet Tutorial",
+
+    "UI_POS_Signal_Receiver_Excellent": "Excellent",
+    "UI_POS_Signal_Receiver_Good": "Good",
+    "UI_POS_Signal_Receiver_Fair": "Fair",
+    "UI_POS_Signal_Receiver_Poor": "Poor",
+    "UI_POS_Signal_ReceiverWeak_Title": "Weak Receiver",
+    "UI_POS_Signal_ReceiverWeak_Msg": "Your radio is struggling in these conditions. A more powerful device would improve reception."
 }
