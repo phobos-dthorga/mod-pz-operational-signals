@@ -345,6 +345,7 @@ POS_Constants.PN_CHANNEL_CONTRACTS = "posnet_contracts"
 POS_Constants.PN_CHANNEL_MARKET    = "posnet_market"
 POS_Constants.PN_CHANNEL_TRADE     = "posnet_trade"
 POS_Constants.PN_CHANNEL_INTEL     = "posnet_intel"
+POS_Constants.PN_CHANNEL_SIGNAL    = "posnet_signal"
 
 ---------------------------------------------------------------
 -- Mission categories & statuses

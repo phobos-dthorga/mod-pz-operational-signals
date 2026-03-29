@@ -206,15 +206,13 @@ function POS_WBN_SchedulerService.tick()
             if q and #q > 0 then
                 local bulletin = table.remove(q, 1)  -- pop highest priority
 
-                -- Apply signal degradation to bulletin text
+                -- Signal gate: suppress emission if signal is completely lost.
+                -- Text degradation based on signal ecology + receiver quality
+                -- is now applied client-side in POS_WBN_ClientListener.onDeviceText()
+                -- (see design-guidelines.md §60).
                 local skipEmit = false
                 if POS_SignalEcologyService and POS_SignalEcologyService.getQualitativeState then
                     local state = POS_SignalEcologyService.getQualitativeState()
-                    if POS_WBN_CompositionService.degradeBulletin then
-                        bulletin._composedLines = POS_WBN_CompositionService.degradeBulletin(
-                            bulletin._composedLines, state)
-                    end
-                    -- Skip emit entirely if signal is "lost"
                     if state == "lost" then
                         PhobosLib.debug("POS", _TAG,
                             "emit skipped on " .. stationId .. ": signal lost")

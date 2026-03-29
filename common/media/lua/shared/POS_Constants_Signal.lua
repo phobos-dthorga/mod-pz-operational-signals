@@ -141,6 +141,36 @@ POS_Constants.SIGNAL_DEFAULT_TIER = 2  -- used when SIGINT is unavailable
 
 POS_Constants.SIGNAL_ECOLOGY_BPS_SCALE = 4000
 
+---------------------------------------------------------------
+-- Receiver quality (hardware-dependent WBN dropout scaling)
+-- See design-guidelines.md §60 for receiver quality architecture.
+---------------------------------------------------------------
+
+-- Formula constants (fallback for radios without a registered profile)
+POS_Constants.RECEIVER_RANGE_NORMALISER   = 20000  -- max transmit range for 0-1 normalisation
+POS_Constants.RECEIVER_RANGE_WEIGHT       = 0.70   -- how much range contributes to quality
+POS_Constants.RECEIVER_HAM_BONUS          = 0.10   -- subtracted from factor for ham category
+POS_Constants.RECEIVER_MAKESHIFT_PENALTY  = 0.15   -- added to factor for makeshift items
+POS_Constants.RECEIVER_COMMERCIAL_BASE    = 0.75   -- fixed factor for 0-range commercial/tv
+POS_Constants.RECEIVER_FACTOR_MIN         = 0.20   -- absolute floor (military-grade)
+POS_Constants.RECEIVER_FACTOR_MAX         = 0.95   -- absolute ceiling (worst makeshift)
+POS_Constants.RECEIVER_FACTOR_FALLBACK    = 1.00   -- when no radio detected (ecology-only)
+POS_Constants.RECEIVER_CONDITION_WEIGHT   = 0.50   -- minimum performance at 0% condition
+POS_Constants.RECEIVER_CONFIDENCE_SCALE   = 0.30   -- how much quality affects fragment confidence
+
+-- Receiver quality band thresholds (inverted: 1.0 - factor, higher = better)
+-- Used with PhobosLib.resolveQualitativeBand() for label resolution
+POS_Constants.RECEIVER_QUALITY_BANDS = {
+    { name = "excellent", min = 0.70 },  -- factor ≤ 0.30 (ManPack, HamRadio2)
+    { name = "good",      min = 0.50 },  -- factor ≤ 0.50 (WT4-5, HamRadio1)
+    { name = "fair",      min = 0.25 },  -- factor ≤ 0.75 (commercial, WT2-3)
+    { name = "poor",      min = 0.00 },  -- factor > 0.75 (makeshift, damaged)
+}
+
+---------------------------------------------------------------
+-- SIGINT skill level → signal tier mapping (level 0-10 → tier 1-5)
+---------------------------------------------------------------
+
 -- Index = SIGINT level (0-10), value = signal tier (1-5)
 POS_Constants.SIGNAL_SIGINT_TIER_MAP = {
     [0]  = 1,

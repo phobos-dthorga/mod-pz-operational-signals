@@ -19,7 +19,7 @@
 -- Registers PhobosNotifications channels for POSnet so players
 -- can mute notification categories independently.
 --
--- 5 channels: agents, contracts, market, trade, intel.
+-- 6 channels: agents, contracts, market, trade, intel, signal.
 -- Registered on game start, guarded by PN availability check.
 --
 -- See design-guidelines.md §46.8.
@@ -72,6 +72,13 @@ function POS_NotificationChannels.init()
         id          = POS_Constants.PN_CHANNEL_INTEL,
         name        = "POSnet Intelligence",
         description = "Item discoveries, ambient intel observations",
+        defaultEnabled = true,
+    })
+
+    PN_ChannelRegistry.register({
+        id          = POS_Constants.PN_CHANNEL_SIGNAL,
+        name        = "POSnet Signal Quality",
+        description = "Receiver quality warnings and signal status",
         defaultEnabled = true,
     })
 end

@@ -818,3 +818,51 @@ function POS_WBN_CompositionService.degradeBulletin(lines, qualitativeState)
 
     return degraded
 end
+
+--- Get the ecology dropout rate for a qualitative signal state.
+--- Exposed for client-side degradation with receiver quality scaling.
+---@param qualitativeState string  Signal state (locked/clear/faded/fragmented/ghosted/lost)
+---@return number dropoutRate  0.0-1.0 base dropout probability
+function POS_WBN_CompositionService.getDropoutRate(qualitativeState)
+    return WBN_DROPOUT_RATES[qualitativeState] or 0.00
+end
+
+--- Degrade a single text string based on dropout rate and qualitative state.
+--- Used by the client-side WBN listener to apply receiver-quality-scaled
+--- degradation to broadcast text. Returns the degraded string.
+---
+--- Unlike degradeBulletin() (which works on line arrays), this operates on
+--- a single plain text string. The qualitative state controls which
+--- replacement tokens are used (e.g. "???" for numbers in fragmented/ghosted).
+---
+---@param text string              The text to degrade
+---@param dropoutRate number       Effective dropout probability (ecology × receiver quality)
+---@param qualitativeState string  Signal state for replacement token selection
+---@return string degradedText
+function POS_WBN_CompositionService.degradeTextString(text, dropoutRate, qualitativeState)
+    if not text or text == "" then return text or "" end
+    if not dropoutRate or dropoutRate <= 0 then return text end
+
+    local state = qualitativeState or "clear"
+    local words = {}
+    for w in text:gmatch("%S+") do
+        words[#words + 1] = w
+    end
+
+    local out = {}
+    local prevWasEllipsis = false
+    for _, w in ipairs(words) do
+        local result = degradeWord(w, dropoutRate, state)
+        if result == "..." then
+            if not prevWasEllipsis then
+                out[#out + 1] = result
+            end
+            prevWasEllipsis = true
+        else
+            out[#out + 1] = result
+            prevWasEllipsis = false
+        end
+    end
+
+    return table.concat(out, " ")
+end

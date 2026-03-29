@@ -34,6 +34,7 @@ POS_WBN_ClientListener = {}
 
 -- PN notification throttle state
 local _lastIntelNotifyMinute = 0
+local _weakReceiverNotified = false  -- one-shot guard for poor receiver PN toast
 
 --- Check if a device frequency belongs to a WBN channel.
 --- Uses AZAS-resolved frequencies for accurate per-world matching.
@@ -120,8 +121,9 @@ end
 --- @param candidate table Candidate metadata from scheduler cache
 --- @param stationClassId string Station class
 --- @param currentDay number Current game day
+--- @param receiverQualityFactor number|nil Receiver quality (0.20-0.95, nil=no scaling)
 --- @return table|nil Fragment table or nil
-local function generateSignalFragment(candidate, stationClassId, currentDay)
+local function generateSignalFragment(candidate, stationClassId, currentDay, receiverQualityFactor)
     if not candidate then return nil end
     -- Only generate fragments for data-bearing domains (not flavour)
     local domain = candidate.domain
@@ -152,6 +154,13 @@ local function generateSignalFragment(candidate, stationClassId, currentDay)
                 * POS_Constants.ENTROPY_SHADOW_BROADCAST_DEGRADE)
             conf = math.max(conf, POS_Constants.WBN_FRAGMENT_CONF_MIN)
         end
+    end
+
+    -- Receiver quality degrades fragment confidence (poor radio = less reliable intel)
+    if receiverQualityFactor and receiverQualityFactor > 0 then
+        local confScale = POS_Constants.RECEIVER_CONFIDENCE_SCALE or 0.30
+        conf = conf * (1.0 - receiverQualityFactor * confScale)
+        conf = math.max(conf, POS_Constants.WBN_FRAGMENT_CONF_MIN)
     end
 
     return {
@@ -340,7 +349,7 @@ end
 --- @param lineText string The broadcast text
 --- @param stationClassId string Station class
 --- @param currentDay number Current game day
-local function processIntelFromBroadcast(lineText, stationClassId, currentDay)
+local function processIntelFromBroadcast(lineText, stationClassId, currentDay, receiverQualityFactor, effectiveDropout)
     -- Look up candidate metadata from the scheduler's shared cache
     local candidateData = nil
     if POS_WBN_SchedulerService and POS_WBN_SchedulerService.consumeBulletinMeta then
@@ -348,8 +357,8 @@ local function processIntelFromBroadcast(lineText, stationClassId, currentDay)
     end
     if not candidateData then return end
 
-    -- Generate and store signal fragment
-    local fragment = generateSignalFragment(candidateData, stationClassId, currentDay)
+    -- Generate and store signal fragment (receiver quality scales confidence)
+    local fragment = generateSignalFragment(candidateData, stationClassId, currentDay, receiverQualityFactor)
     if fragment then
         storeFragment(fragment)
 
@@ -372,13 +381,17 @@ local function processIntelFromBroadcast(lineText, stationClassId, currentDay)
         PhobosLib.safecall(reinforceRumours, fragment)
         PhobosLib.safecall(notifyIntelDiscovery, fragment)
 
-        -- Fire Starlit events
+        -- Fire Starlit events (enriched with receiver quality data)
         local ok_events, POS_Events = PhobosLib.safecall(require, "POS_Events")
         if ok_events and POS_Events then
             if POS_Events.OnBroadcastReceived then
                 PhobosLib.safecall(POS_Events.OnBroadcastReceived.trigger,
                     POS_Events.OnBroadcastReceived, {
-                        text = lineText, stationClassId = stationClassId, day = currentDay,
+                        text                 = lineText,
+                        stationClassId       = stationClassId,
+                        day                  = currentDay,
+                        receiverQualityFactor = receiverQualityFactor,
+                        effectiveDropoutRate = effectiveDropout,
                     })
             end
             if POS_Events.OnSignalFragmentGenerated then
@@ -426,14 +439,72 @@ local function onDeviceText(guid, codes, x, y, z, text, device)
     end
 
     if lineText ~= "" then
-        addToHistory(lineText, stationId)
+        -- Compute receiver quality factor from the receiving device
+        local qualityFactor = POS_Constants.RECEIVER_FACTOR_FALLBACK
+        if PhobosLib_Radio and PhobosLib_Radio.getReceiverQualityFactor then
+            local profileLookup = POS_ReceiverProfileRegistry
+                and POS_ReceiverProfileRegistry.getByFullType or nil
+            local qfOk, qf = PhobosLib.safecall(
+                PhobosLib_Radio.getReceiverQualityFactor, device, {
+                    profileLookup    = profileLookup,
+                    rangeNormaliser  = POS_Constants.RECEIVER_RANGE_NORMALISER,
+                    rangeWeight      = POS_Constants.RECEIVER_RANGE_WEIGHT,
+                    hamBonus         = POS_Constants.RECEIVER_HAM_BONUS,
+                    makeshiftPenalty = POS_Constants.RECEIVER_MAKESHIFT_PENALTY,
+                    commercialBase   = POS_Constants.RECEIVER_COMMERCIAL_BASE,
+                    factorMin        = POS_Constants.RECEIVER_FACTOR_MIN,
+                    factorMax        = POS_Constants.RECEIVER_FACTOR_MAX,
+                    conditionWeight  = POS_Constants.RECEIVER_CONDITION_WEIGHT,
+                })
+            if qfOk and type(qf) == "number" then
+                qualityFactor = qf
+            end
+        end
 
-        -- Process intel: signal fragment generation, rumour reinforcement, PN notification
+        -- One-shot notification for poor receiver quality (factor ≥ 0.80)
+        if qualityFactor >= 0.80 and not _weakReceiverNotified then
+            _weakReceiverNotified = true
+            local tPlayer = getPlayer and getPlayer()
+            if tPlayer then
+                PhobosLib.notifyOrSay(tPlayer, {
+                    title   = PhobosLib.safeGetText("UI_POS_Signal_ReceiverWeak_Title"),
+                    message = PhobosLib.safeGetText("UI_POS_Signal_ReceiverWeak_Msg"),
+                    colour  = "warning",
+                    channel = POS_Constants.PN_CHANNEL_SIGNAL,
+                })
+            end
+        end
+
+        -- Apply client-side text degradation (ecology × receiver quality)
+        local ecologyState = "clear"
+        if POS_SignalEcologyService and POS_SignalEcologyService.getQualitativeState then
+            ecologyState = POS_SignalEcologyService.getQualitativeState() or "clear"
+        end
+        local baseDropout = 0
+        if POS_WBN_CompositionService and POS_WBN_CompositionService.getDropoutRate then
+            baseDropout = POS_WBN_CompositionService.getDropoutRate(ecologyState)
+        end
+        local effectiveDropout = baseDropout * qualityFactor
+        local degradedText = lineText
+        if effectiveDropout > 0 and POS_WBN_CompositionService
+                and POS_WBN_CompositionService.degradeTextString then
+            degradedText = POS_WBN_CompositionService.degradeTextString(
+                lineText, effectiveDropout, ecologyState)
+        end
+
+        -- Store degraded text in history (what the player reads)
+        addToHistory(degradedText, stationId)
+
+        -- Process intel using CLEAN text (metadata cache keys on undegraded text)
         local currentDay = getGameTime and getGameTime():getNightsSurvived() or 0
-        PhobosLib.safecall(processIntelFromBroadcast, lineText, stationId, currentDay)
+        PhobosLib.safecall(processIntelFromBroadcast,
+            lineText, stationId, currentDay, qualityFactor, effectiveDropout)
 
         PhobosLib.debug("POS", _TAG,
-            "captured broadcast on " .. tostring(stationId) .. ": " .. lineText:sub(1, 50))
+            "captured broadcast on " .. tostring(stationId)
+            .. " (receiver=" .. string.format("%.2f", qualityFactor)
+            .. " dropout=" .. string.format("%.2f", effectiveDropout)
+            .. "): " .. degradedText:sub(1, 50))
     end
 end
 
