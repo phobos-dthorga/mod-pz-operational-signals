@@ -671,6 +671,11 @@ function POS_TradeService.executeSell(player, wholesalerId, fullType, quantity)
     local ok4, newBalance = PhobosLib.safecall(PhobosLib.countPlayerMoney, player)
     if not ok4 then newBalance = 0 end
 
+    -- Tutorial: first trade completed
+    if POS_TutorialService and POS_TutorialService.tryAward then
+        POS_TutorialService.tryAward(player, POS_Constants.TUTORIAL_FIRST_TRADE)
+    end
+
     -- Notify player
     notifyTrade(player, "UI_POS_Trade_SellSuccess", {
         displayName, tostring(quantity), tostring(totalRevenue),

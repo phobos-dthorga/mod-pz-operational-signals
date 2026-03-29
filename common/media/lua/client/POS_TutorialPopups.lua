@@ -233,6 +233,122 @@ PhobosLib.registerNoticePopup("POS", "tutorial_first_satellite", {
     end,
 })
 
+---------------------------------------------------------------
+-- Popup 6: First WBN Bulletin
+---------------------------------------------------------------
+
+PhobosLib.registerNoticePopup("POS", "tutorial_first_wbn_bulletin", {
+    title = POS_TerminalWidgets.safeGetText("UI_POS_Tutorial_Popup_WBN_Title"),
+    width = POPUP_WIDTH,
+    height = POPUP_HEIGHT,
+    shouldShow = makeShouldShow(POS_Constants.TUTORIAL_FIRST_WBN_BULLETIN),
+    buildContent = buildPopupContent({
+        { key = "UI_POS_Tutorial_Popup_WBN_Title", rgb = "0.3,1.0,0.3" },
+        { key = "UI_POS_Tutorial_Popup_WBN_Line1" },
+        { key = "UI_POS_Tutorial_Popup_WBN_Line2", rgb = "0.6,1.0,0.6" },
+        { key = "UI_POS_Tutorial_Popup_WBN_Line3", rgb = "0.6,1.0,0.6" },
+        { key = "UI_POS_Tutorial_Popup_WBN_Line4", rgb = "0.7,0.7,0.7" },
+    }),
+    backgroundColor = BG_COLOUR,
+    borderColor = BORDER_COLOUR,
+    onDismiss = function(player)
+        if not player then return end
+        local modData = player:getModData()
+        if modData then
+            modData[POS_Constants.TUTORIAL_POPUP_SHOWN_PREFIX
+                .. POS_Constants.TUTORIAL_FIRST_WBN_BULLETIN] = true
+            PhobosLib.safecall(function() player:transmitModData() end)
+        end
+    end,
+})
+
+---------------------------------------------------------------
+-- Popup 7: First Entropy Warning
+---------------------------------------------------------------
+
+PhobosLib.registerNoticePopup("POS", "tutorial_first_entropy_warning", {
+    title = POS_TerminalWidgets.safeGetText("UI_POS_Tutorial_Popup_Entropy_Title"),
+    width = POPUP_WIDTH,
+    height = POPUP_HEIGHT,
+    shouldShow = makeShouldShow(POS_Constants.TUTORIAL_FIRST_ENTROPY_WARNING),
+    buildContent = buildPopupContent({
+        { key = "UI_POS_Tutorial_Popup_Entropy_Title", rgb = "0.3,1.0,0.3" },
+        { key = "UI_POS_Tutorial_Popup_Entropy_Line1" },
+        { key = "UI_POS_Tutorial_Popup_Entropy_Line2", rgb = "0.6,1.0,0.6" },
+        { key = "UI_POS_Tutorial_Popup_Entropy_Line3", rgb = "0.6,1.0,0.6" },
+        { key = "UI_POS_Tutorial_Popup_Entropy_Line4", rgb = "0.7,0.7,0.7" },
+    }),
+    backgroundColor = BG_COLOUR,
+    borderColor = BORDER_COLOUR,
+    onDismiss = function(player)
+        if not player then return end
+        local modData = player:getModData()
+        if modData then
+            modData[POS_Constants.TUTORIAL_POPUP_SHOWN_PREFIX
+                .. POS_Constants.TUTORIAL_FIRST_ENTROPY_WARNING] = true
+            PhobosLib.safecall(function() player:transmitModData() end)
+        end
+    end,
+})
+
+---------------------------------------------------------------
+-- Popup 8: First Trade
+---------------------------------------------------------------
+
+PhobosLib.registerNoticePopup("POS", "tutorial_first_trade", {
+    title = POS_TerminalWidgets.safeGetText("UI_POS_Tutorial_Popup_Trade_Title"),
+    width = POPUP_WIDTH,
+    height = POPUP_HEIGHT,
+    shouldShow = makeShouldShow(POS_Constants.TUTORIAL_FIRST_TRADE),
+    buildContent = buildPopupContent({
+        { key = "UI_POS_Tutorial_Popup_Trade_Title", rgb = "0.3,1.0,0.3" },
+        { key = "UI_POS_Tutorial_Popup_Trade_Line1" },
+        { key = "UI_POS_Tutorial_Popup_Trade_Line2", rgb = "0.6,1.0,0.6" },
+        { key = "UI_POS_Tutorial_Popup_Trade_Line3", rgb = "0.6,1.0,0.6" },
+        { key = "UI_POS_Tutorial_Popup_Trade_Line4", rgb = "0.7,0.7,0.7" },
+    }),
+    backgroundColor = BG_COLOUR,
+    borderColor = BORDER_COLOUR,
+    onDismiss = function(player)
+        if not player then return end
+        local modData = player:getModData()
+        if modData then
+            modData[POS_Constants.TUTORIAL_POPUP_SHOWN_PREFIX
+                .. POS_Constants.TUTORIAL_FIRST_TRADE] = true
+            PhobosLib.safecall(function() player:transmitModData() end)
+        end
+    end,
+})
+
+---------------------------------------------------------------
+-- Popup 9: First Relay Discovery
+---------------------------------------------------------------
+
+PhobosLib.registerNoticePopup("POS", "tutorial_first_relay_discovery", {
+    title = POS_TerminalWidgets.safeGetText("UI_POS_Tutorial_Popup_Relay_Title"),
+    width = POPUP_WIDTH,
+    height = POPUP_HEIGHT,
+    shouldShow = makeShouldShow(POS_Constants.TUTORIAL_FIRST_RELAY_DISCOVERY),
+    buildContent = buildPopupContent({
+        { key = "UI_POS_Tutorial_Popup_Relay_Title", rgb = "0.3,1.0,0.3" },
+        { key = "UI_POS_Tutorial_Popup_Relay_Line1" },
+        { key = "UI_POS_Tutorial_Popup_Relay_Line2", rgb = "0.6,1.0,0.6" },
+        { key = "UI_POS_Tutorial_Popup_Relay_Line3", rgb = "0.6,1.0,0.6" },
+        { key = "UI_POS_Tutorial_Popup_Relay_Line4", rgb = "0.7,0.7,0.7" },
+    }),
+    backgroundColor = BG_COLOUR,
+    borderColor = BORDER_COLOUR,
+    onDismiss = function(player)
+        if not player then return end
+        local modData = player:getModData()
+        if modData then
+            modData[POS_Constants.TUTORIAL_POPUP_SHOWN_PREFIX
+                .. POS_Constants.TUTORIAL_FIRST_RELAY_DISCOVERY] = true
+            PhobosLib.safecall(function() player:transmitModData() end)
+        end
+    end,
+})
+
 end -- _registerTutorialPopups
 
 Events.OnGameStart.Add(_registerTutorialPopups)

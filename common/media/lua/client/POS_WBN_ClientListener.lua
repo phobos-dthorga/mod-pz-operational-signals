@@ -353,6 +353,14 @@ local function processIntelFromBroadcast(lineText, stationClassId, currentDay)
     if fragment then
         storeFragment(fragment)
 
+        -- Tutorial: first signal fragment captured
+        if POS_TutorialService and POS_TutorialService.tryAward then
+            local tPlayer = getPlayer and getPlayer()
+            if tPlayer then
+                POS_TutorialService.tryAward(tPlayer, POS_Constants.TUTORIAL_FIRST_SIGNAL_FRAGMENT)
+            end
+        end
+
         -- Feed market fragments into MarketDatabase as radio-sourced
         -- observations (direction + confidence, no exact price).
         -- In SP the client is authority so addRecord() succeeds directly.
@@ -430,6 +438,14 @@ local function onDeviceText(guid, codes, x, y, z, text, device)
 
     if lineText ~= "" then
         addToHistory(lineText, stationId)
+
+        -- Tutorial: first WBN bulletin received
+        if POS_TutorialService and POS_TutorialService.tryAward then
+            local tPlayer = getPlayer and getPlayer()
+            if tPlayer then
+                POS_TutorialService.tryAward(tPlayer, POS_Constants.TUTORIAL_FIRST_WBN_BULLETIN)
+            end
+        end
 
         -- Process intel: signal fragment generation, rumour reinforcement, PN notification
         local currentDay = getGameTime and getGameTime():getNightsSurvived() or 0

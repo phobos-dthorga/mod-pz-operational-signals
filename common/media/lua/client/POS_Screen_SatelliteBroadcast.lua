@@ -502,6 +502,13 @@ function screen.create(contentPanel, params, _terminal)
                     local bOk, bErr = PhobosLib.safecall(
                         POS_SatelliteService.broadcast, artifact, mode, zoneId)
                     if bOk then
+                        -- Tutorial: first satellite broadcast mode
+                        if POS_TutorialService and POS_TutorialService.tryAward then
+                            local tPlayer = getPlayer and getPlayer()
+                            if tPlayer then
+                                POS_TutorialService.tryAward(tPlayer, POS_Constants.TUTORIAL_FIRST_BROADCAST_MODE)
+                            end
+                        end
                         _isTransmitting = true
                         _transmitProgress = 0
                         _transmitStartTime = getGameTime():getWorldAgeHours()

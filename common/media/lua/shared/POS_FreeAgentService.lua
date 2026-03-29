@@ -243,6 +243,14 @@ function POS_FreeAgentService.deploy(contractId, archetype, zoneId,
     store.agents[#store.agents + 1] = agent
     saveAgentStore(store)
 
+    -- Tutorial: first free agent deployed
+    if POS_TutorialService and POS_TutorialService.tryAward then
+        local tPlayer = getPlayer and getPlayer()
+        if tPlayer then
+            POS_TutorialService.tryAward(tPlayer, POS_Constants.TUTORIAL_FIRST_FREE_AGENT)
+        end
+    end
+
     PhobosLib.debug("POS", _TAG, "Deployed agent: " .. agent.agentName
         .. " (" .. archetype .. ") to " .. zoneId)
 

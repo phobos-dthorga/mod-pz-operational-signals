@@ -484,6 +484,14 @@ function screen.create(contentPanel, params, _terminal)
     local C = W.COLOURS
     local ctx = W.initLayout(contentPanel)
 
+    -- Tutorial: first market view opened
+    if POS_TutorialService and POS_TutorialService.tryAward then
+        local tPlayer = getPlayer and getPlayer()
+        if tPlayer then
+            POS_TutorialService.tryAward(tPlayer, POS_Constants.TUTORIAL_FIRST_MARKET_VIEW)
+        end
+    end
+
     _activeTab = (params and params.tab) or _activeTab or "summary"
 
     W.drawHeader(ctx, "UI_POS_MarketOverview_Title")

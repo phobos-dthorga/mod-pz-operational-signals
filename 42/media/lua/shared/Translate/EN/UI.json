@@ -1982,5 +1982,40 @@
     "UI_POS_Broadcast_PN_TrustFallingTitle": "Trust Falling",
     "UI_POS_Broadcast_PN_TrustFalling": "Network trust in %1 is deteriorating",
     "UI_POS_Broadcast_PN_ResolvedTitle": "Broadcast Faded",
-    "UI_POS_Broadcast_PN_Resolved": "Broadcast influence on %1 in %2 has dissipated"
+    "UI_POS_Broadcast_PN_Resolved": "Broadcast influence on %1 in %2 has dissipated",
+
+    "UI_POS_Tutorial_Toast_FirstWBNBulletin": "You've received your first radio bulletin! Tune a vanilla radio to WBN frequencies to hear market reports, weather updates, and emergency broadcasts. Listening generates intelligence fragments.",
+    "UI_POS_Tutorial_Toast_FirstSignalFragment": "Signal fragment captured! Radio broadcasts generate low-confidence market intelligence. Fragments appear in your terminal's Signal Fragments screen.",
+    "UI_POS_Tutorial_Toast_FirstEntropyWarning": "Market data is ageing! Without fresh observations, certainty decays over time. Active recon and radio listening fight information decay.",
+    "UI_POS_Tutorial_Toast_FirstTrade": "First trade completed! POSnet offers three ways to sell: spot trades, contracts, and free agent deployment. Each has different risk and reward profiles.",
+    "UI_POS_Tutorial_Toast_FirstFreeAgent": "Free agent deployed! Agents operate autonomously -- they assemble, travel, negotiate, and settle. Monitor their progress on the Contacts screen.",
+    "UI_POS_Tutorial_Toast_FirstRelayDiscovery": "Relay site discovered! Strategic relays are Tier V installations that coordinate the POSnet network. Connect to manage bandwidth and signal routing.",
+    "UI_POS_Tutorial_Toast_FirstMarketView": "Welcome to the Markets terminal. Prices, trends, and confidence levels are shown per category. Data quality indicators show how reliable each reading is.",
+    "UI_POS_Tutorial_Toast_FirstBroadcastMode": "Satellite broadcast mode selected! Different modes affect markets differently: scarcity alerts push prices up, surplus notices push them down. Your broadcast reputation affects regional trust.",
+
+    "UI_POS_Tutorial_Popup_WBN_Title": "World Broadcast Network",
+    "UI_POS_Tutorial_Popup_WBN_Line1": "POSnet's radio network broadcasts market intelligence, weather reports, and emergency alerts on dedicated frequencies.",
+    "UI_POS_Tutorial_Popup_WBN_Line2": "Tune any vanilla radio to a WBN frequency to hear bulletins from market reporters, military logisticians, and field correspondents.",
+    "UI_POS_Tutorial_Popup_WBN_Line3": "Listening generates Signal Fragments -- low-confidence intelligence that feeds into your terminal's market data over time.",
+    "UI_POS_Tutorial_Popup_WBN_Line4": "Keep a radio on near your base. The longer you listen, the more your picture of the market builds -- but stale data decays without reinforcement.",
+
+    "UI_POS_Tutorial_Popup_Entropy_Title": "Information Decay",
+    "UI_POS_Tutorial_Popup_Entropy_Line1": "Market intelligence in POSnet is never permanent. Data ages, certainty erodes, and neglected regions become unreliable.",
+    "UI_POS_Tutorial_Popup_Entropy_Line2": "The terminal shows atmospheric labels like 'Market picture ageing' or 'Conflicting field readings' when data quality drops.",
+    "UI_POS_Tutorial_Popup_Entropy_Line3": "Active recon (scanning, recording, camera analysis) fights decay. Radio listening helps but provides lower-confidence data.",
+    "UI_POS_Tutorial_Popup_Entropy_Line4": "Storms and blackouts accelerate decay. Winter is especially harsh. Maintain your intelligence network -- or trade on ghosts and guesses.",
+
+    "UI_POS_Tutorial_Popup_Trade_Title": "Trading System",
+    "UI_POS_Tutorial_Popup_Trade_Line1": "POSnet offers three ways to sell goods: spot trades, contracts, and free agent deployment.",
+    "UI_POS_Tutorial_Popup_Trade_Line2": "Spot trades are instant but offer the lowest price. Contracts commit you to a delivery for better terms. Free agents handle everything autonomously.",
+    "UI_POS_Tutorial_Popup_Trade_Line3": "Market prices fluctuate based on zone pressure, events, and broadcast influence. Buy low in surplus zones, sell high in scarcity zones.",
+    "UI_POS_Tutorial_Popup_Trade_Line4": "Your reputation and SIGINT skill affect prices and negotiation success. Build trust through accurate intelligence and reliable deliveries.",
+
+    "UI_POS_Tutorial_Popup_Relay_Title": "Strategic Relay Network",
+    "UI_POS_Tutorial_Popup_Relay_Line1": "You've discovered a Tier V Strategic Relay site -- a permanent signal installation at a civic facility.",
+    "UI_POS_Tutorial_Popup_Relay_Line2": "Unlike Tier IV (broadcasting), Tier V coordinates the network itself: relay queuing, bandwidth allocation, and signal routing.",
+    "UI_POS_Tutorial_Popup_Relay_Line3": "Connect to the relay via the terminal to access the Relay Command dashboard. Calibrate the dish, manage bandwidth, and monitor network health.",
+    "UI_POS_Tutorial_Popup_Relay_Line4": "Relay sites require power and maintenance. A well-maintained relay network dramatically improves signal quality across the region.",
+
+    "UI_POS_PN_Channel_Tutorial": "POSnet Tutorial"
 }

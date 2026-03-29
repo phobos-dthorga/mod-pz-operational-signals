@@ -48,6 +48,16 @@ local MILESTONES = {
     { id = POS_Constants.TUTORIAL_FIRST_DELIVERY,          group = POS_Constants.TUTORIAL_GROUP_CORE,   labelKey = "UI_POS_Tutorial_Toast_FirstDelivery" },
     { id = POS_Constants.TUTORIAL_FIRST_DATA_RECORDER,     group = POS_Constants.TUTORIAL_GROUP_INTEL,  labelKey = "UI_POS_Tutorial_Toast_FirstDataRecorder" },
     { id = POS_Constants.TUTORIAL_FIRST_CROSS_CORRELATION, group = POS_Constants.TUTORIAL_GROUP_INTEL,  labelKey = "UI_POS_Tutorial_Toast_FirstCrossCorrelation" },
+
+    -- Phase 1 expansion milestones (v0.25.0)
+    { id = POS_Constants.TUTORIAL_FIRST_WBN_BULLETIN,     group = POS_Constants.TUTORIAL_GROUP_INTEL,  labelKey = "UI_POS_Tutorial_Toast_FirstWBNBulletin" },
+    { id = POS_Constants.TUTORIAL_FIRST_SIGNAL_FRAGMENT,   group = POS_Constants.TUTORIAL_GROUP_INTEL,  labelKey = "UI_POS_Tutorial_Toast_FirstSignalFragment" },
+    { id = POS_Constants.TUTORIAL_FIRST_ENTROPY_WARNING,   group = POS_Constants.TUTORIAL_GROUP_CORE,   labelKey = "UI_POS_Tutorial_Toast_FirstEntropyWarning" },
+    { id = POS_Constants.TUTORIAL_FIRST_TRADE,             group = POS_Constants.TUTORIAL_GROUP_CORE,   labelKey = "UI_POS_Tutorial_Toast_FirstTrade" },
+    { id = POS_Constants.TUTORIAL_FIRST_FREE_AGENT,        group = POS_Constants.TUTORIAL_GROUP_CORE,   labelKey = "UI_POS_Tutorial_Toast_FirstFreeAgent" },
+    { id = POS_Constants.TUTORIAL_FIRST_RELAY_DISCOVERY,   group = POS_Constants.TUTORIAL_GROUP_INTEL,  labelKey = "UI_POS_Tutorial_Toast_FirstRelayDiscovery" },
+    { id = POS_Constants.TUTORIAL_FIRST_MARKET_VIEW,       group = POS_Constants.TUTORIAL_GROUP_CORE,   labelKey = "UI_POS_Tutorial_Toast_FirstMarketView" },
+    { id = POS_Constants.TUTORIAL_FIRST_BROADCAST_MODE,    group = POS_Constants.TUTORIAL_GROUP_INTEL,  labelKey = "UI_POS_Tutorial_Toast_FirstBroadcastMode" },
 }
 
 --- Milestones that trigger a Notice Popup (major progression gates).
@@ -57,6 +67,12 @@ local POPUP_MILESTONES = {
     [POS_Constants.TUTORIAL_SIGINT_L3]         = true,
     [POS_Constants.TUTORIAL_FIRST_CAMERA]      = true,
     [POS_Constants.TUTORIAL_FIRST_SATELLITE]   = true,
+
+    -- Phase 1 expansion popups (v0.25.0)
+    [POS_Constants.TUTORIAL_FIRST_WBN_BULLETIN]     = true,
+    [POS_Constants.TUTORIAL_FIRST_ENTROPY_WARNING]   = true,
+    [POS_Constants.TUTORIAL_FIRST_TRADE]             = true,
+    [POS_Constants.TUTORIAL_FIRST_RELAY_DISCOVERY]   = true,
 }
 
 ---------------------------------------------------------------
